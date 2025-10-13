@@ -1,0 +1,65 @@
+{
+	"luci-app-podman": {
+		"description": "Grant access to Podman RPC methods",
+		"read": {
+			"ubus": {
+				"luci.podman": [
+					"containers_list",
+					"container_inspect",
+					"container_logs",
+					"container_stats",
+					"images_list",
+					"image_inspect",
+					"image_pull_status",
+					"networks_list",
+					"network_inspect",
+					"volumes_list",
+					"volume_inspect",
+					"pods_list",
+					"pod_inspect",
+					"pod_stats",
+					"secrets_list",
+					"secret_inspect",
+					"system_df",
+					"version",
+					"info"
+				]
+			},
+			"uci": ["podman"]
+		},
+		"write": {
+			"ubus": {
+				"luci.podman": [
+					"container_start",
+					"container_stop",
+					"container_restart",
+					"container_remove",
+					"container_create",
+					"container_rename",
+					"container_update",
+					"image_remove",
+					"image_pull",
+					"image_pull_stream",
+					"network_create",
+					"network_remove",
+					"network_connect",
+					"network_disconnect",
+					"volume_create",
+					"volume_remove",
+					"pod_start",
+					"pod_stop",
+					"pod_restart",
+					"pod_pause",
+					"pod_unpause",
+					"pod_remove",
+					"pod_create",
+					"secret_create",
+					"secret_remove",
+					"system_prune",
+					"auto_update"
+				]
+			},
+			"uci": ["podman"]
+		}
+	}
+}

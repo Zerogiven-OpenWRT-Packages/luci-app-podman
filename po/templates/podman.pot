@@ -1,0 +1,1137 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+# Navigation / Menu
+msgid "Podman"
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Containers"
+msgstr ""
+
+msgid "Images"
+msgstr ""
+
+msgid "Volumes"
+msgstr ""
+
+msgid "Networks"
+msgstr ""
+
+msgid "Pods"
+msgstr ""
+
+msgid "Secrets"
+msgstr ""
+
+# Common Actions
+msgid "Start"
+msgstr ""
+
+msgid "Stop"
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
+msgid "Pause"
+msgstr ""
+
+msgid "Unpause"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Create"
+msgstr ""
+
+msgid "Delete Selected"
+msgstr ""
+
+msgid "Pull Latest Selected"
+msgstr ""
+
+msgid "Prune"
+msgstr ""
+
+# Common States/Messages
+msgid "Loading..."
+msgstr ""
+
+msgid "Collecting data..."
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Success"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+# Container Management
+msgid "Create Container"
+msgstr ""
+
+msgid "Container Name"
+msgstr ""
+
+msgid "Container created successfully"
+msgstr ""
+
+msgid "Container image to use"
+msgstr ""
+
+msgid "Creating Container"
+msgstr ""
+
+msgid "my-container (optional)"
+msgstr ""
+
+msgid "Leave empty to auto-generate"
+msgstr ""
+
+msgid "-- Select Image --"
+msgstr ""
+
+msgid "Please select an image"
+msgstr ""
+
+msgid "Command"
+msgstr ""
+
+msgid "Command to run (space-separated)"
+msgstr ""
+
+msgid "Port Mappings"
+msgstr ""
+
+msgid "One per line, format: host:container"
+msgstr ""
+
+msgid "8080:80\n8443:443"
+msgstr ""
+
+msgid "Environment Variables"
+msgstr ""
+
+msgid "One per line, format: KEY=value"
+msgstr ""
+
+msgid "VAR1=value1\nVAR2=value2"
+msgstr ""
+
+msgid "Volumes"
+msgstr ""
+
+msgid "One per line, format: source:destination"
+msgstr ""
+
+msgid "/host/path:/container/path\nvolume-name:/data"
+msgstr ""
+
+msgid "Network Mode"
+msgstr ""
+
+msgid "Restart Policy"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Always"
+msgstr ""
+
+msgid "On Failure"
+msgstr ""
+
+msgid "Unless Stopped"
+msgstr ""
+
+msgid "Privileged Mode"
+msgstr ""
+
+msgid "Interactive (-i)"
+msgstr ""
+
+msgid "Allocate TTY (-t)"
+msgstr ""
+
+msgid "Auto Remove (--rm)"
+msgstr ""
+
+msgid "Auto-Update"
+msgstr ""
+
+msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
+msgstr ""
+
+msgid "Start after creation"
+msgstr ""
+
+msgid "Automatically start the container after it is created"
+msgstr ""
+
+msgid "Container created and started successfully"
+msgstr ""
+
+msgid "Container created but failed to start: %s"
+msgstr ""
+
+msgid "Starting container..."
+msgstr ""
+
+msgid "Using Form"
+msgstr ""
+
+msgid "Import from Run Command"
+msgstr ""
+
+msgid "Import from Compose File (Coming Soon)"
+msgstr ""
+
+msgid "Paste a docker or podman run command below:"
+msgstr ""
+
+msgid "Please enter a run command"
+msgstr ""
+
+msgid "Failed to parse command: %s"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Compose import will be available in a future release"
+msgstr ""
+
+msgid "Working Directory"
+msgstr ""
+
+msgid "Hostname"
+msgstr ""
+
+msgid "Labels"
+msgstr ""
+
+msgid "One per line, format: key=value"
+msgstr ""
+
+msgid "key1=value1\nkey2=value2"
+msgstr ""
+
+msgid "CPU Limit"
+msgstr ""
+
+msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0)"
+msgstr ""
+
+msgid "Memory Limit"
+msgstr ""
+
+msgid "Memory limit (e.g., 512m, 1g)"
+msgstr ""
+
+msgid "Invalid format. Use: 512m, 1g, etc."
+msgstr ""
+
+msgid "Container started successfully"
+msgstr ""
+
+msgid "Container stopped successfully"
+msgstr ""
+
+msgid "Container restarted successfully"
+msgstr ""
+
+msgid "Container paused successfully"
+msgstr ""
+
+msgid "Container resumed successfully"
+msgstr ""
+
+msgid "Container removed successfully"
+msgstr ""
+
+msgid "Container committed successfully"
+msgstr ""
+
+msgid "Starting Container"
+msgstr ""
+
+msgid "Stopping Container"
+msgstr ""
+
+msgid "Restarting Container"
+msgstr ""
+
+msgid "Pausing Container"
+msgstr ""
+
+msgid "Resuming Container"
+msgstr ""
+
+msgid "Removing Container"
+msgstr ""
+
+msgid "Committing Container"
+msgstr ""
+
+msgid "Failed to start container"
+msgstr ""
+
+msgid "Failed to stop container"
+msgstr ""
+
+msgid "Failed to restart container"
+msgstr ""
+
+msgid "Failed to pause container"
+msgstr ""
+
+msgid "Failed to resume container"
+msgstr ""
+
+msgid "Failed to remove container"
+msgstr ""
+
+msgid "Failed to commit container"
+msgstr ""
+
+msgid "Failed to create container: %s"
+msgstr ""
+
+msgid "Failed to load images: %s"
+msgstr ""
+
+msgid "Show all containers"
+msgstr ""
+
+msgid "Logs"
+msgstr ""
+
+msgid "Live Stream"
+msgstr ""
+
+msgid "Lines: "
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Loading logs..."
+msgstr ""
+
+msgid "No logs available"
+msgstr ""
+
+msgid "Failed to load logs: %s"
+msgstr ""
+
+msgid "Stats"
+msgstr ""
+
+msgid "CPU Usage"
+msgstr ""
+
+msgid "Memory Usage"
+msgstr ""
+
+msgid "Memory %"
+msgstr ""
+
+msgid "Network I/O"
+msgstr ""
+
+msgid "Block I/O"
+msgstr ""
+
+msgid "PIDs"
+msgstr ""
+
+msgid "Console"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+msgid "Container: %s"
+msgstr ""
+
+msgid "Back to List"
+msgstr ""
+
+msgid "Basic Information"
+msgstr ""
+
+msgid "Started"
+msgstr ""
+
+msgid "Finished"
+msgstr ""
+
+msgid "Configuration"
+msgstr ""
+
+msgid "Entrypoint"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Privileged"
+msgstr ""
+
+msgid "Interactive"
+msgstr ""
+
+msgid "Environment Variables"
+msgstr ""
+
+msgid "Variable"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Network Mode"
+msgstr ""
+
+msgid "IP Address"
+msgstr ""
+
+msgid "Port Mappings"
+msgstr ""
+
+msgid "Host IP"
+msgstr ""
+
+msgid "Host Port"
+msgstr ""
+
+msgid "Container Port"
+msgstr ""
+
+msgid "Links"
+msgstr ""
+
+msgid "Mounts"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "Destination"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Resources"
+msgstr ""
+
+msgid "Configure resource limits for this container. Changes will be applied immediately."
+msgstr ""
+
+msgid "CPU Limit"
+msgstr ""
+
+msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited."
+msgstr ""
+
+msgid "CPU Shares Weight"
+msgstr ""
+
+msgid "CPU shares (relative weight), default is 1024. 0 = use default."
+msgstr ""
+
+msgid "Memory Limit"
+msgstr ""
+
+msgid "Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited."
+msgstr ""
+
+msgid "Memory + Swap Limit"
+msgstr ""
+
+msgid "Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited."
+msgstr ""
+
+msgid "Block IO Weight"
+msgstr ""
+
+msgid "Block IO weight (relative weight), 10-1000. 0 = use default."
+msgstr ""
+
+msgid "Update Resources"
+msgstr ""
+
+msgid "Updating Resources"
+msgstr ""
+
+msgid "Updating container resources..."
+msgstr ""
+
+msgid "Resources updated successfully"
+msgstr ""
+
+msgid "Failed to update resources: %s"
+msgstr ""
+
+msgid "Invalid memory format. Use: 512m, 1g, etc."
+msgstr ""
+
+msgid "Invalid memory swap format. Use: 512m, 1g, -1, etc."
+msgstr ""
+
+msgid "No changes to apply"
+msgstr ""
+
+msgid "CPU Shares"
+msgstr ""
+
+msgid "Unlimited"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Key"
+msgstr ""
+
+msgid "Terminal access coming soon..."
+msgstr ""
+
+msgid "Loading stats..."
+msgstr ""
+
+msgid "Loading logs..."
+msgstr ""
+
+msgid "Terminal"
+msgstr ""
+
+msgid "Never"
+msgstr ""
+
+msgid "Health"
+msgstr ""
+
+msgid "Connect to"
+msgstr ""
+
+msgid "Disconnect"
+msgstr ""
+
+msgid "IP (optional)"
+msgstr ""
+
+msgid "Renaming container..."
+msgstr ""
+
+msgid "Container renamed successfully"
+msgstr ""
+
+msgid "Failed to rename container: %s"
+msgstr ""
+
+msgid "Updating restart policy..."
+msgstr ""
+
+msgid "Restart policy updated successfully"
+msgstr ""
+
+msgid "Failed to update restart policy: %s"
+msgstr ""
+
+msgid "Connecting to Network"
+msgstr ""
+
+msgid "Connecting container to network..."
+msgstr ""
+
+msgid "Connected to network successfully"
+msgstr ""
+
+msgid "Failed to connect to network: %s"
+msgstr ""
+
+msgid "Disconnect from network %s?"
+msgstr ""
+
+msgid "Disconnecting from Network"
+msgstr ""
+
+msgid "Disconnecting container from network..."
+msgstr ""
+
+msgid "Disconnected from network successfully"
+msgstr ""
+
+msgid "Failed to disconnect from network: %s"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "-- Select Network --"
+msgstr ""
+
+msgid "Updating Container"
+msgstr ""
+
+msgid "Commit"
+msgstr ""
+
+msgid "Inspect"
+msgstr ""
+
+msgid "Creating container from image %s..."
+msgstr ""
+
+# Image Management
+msgid "Pull Image"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid "Registry"
+msgstr ""
+
+msgid "Image removed successfully"
+msgstr ""
+
+msgid "Removing Image"
+msgstr ""
+
+msgid "Image Name/Tag"
+msgstr ""
+
+msgid "nginx:latest"
+msgstr ""
+
+msgid "Pulling Image"
+msgstr ""
+
+msgid "Pulling image %s..."
+msgstr ""
+
+msgid "Image pull started"
+msgstr ""
+
+msgid "Image pulled successfully"
+msgstr ""
+
+msgid "Failed to pull image: %s"
+msgstr ""
+
+msgid "Failed to remove image: %s"
+msgstr ""
+
+msgid "Prune Unused Images"
+msgstr ""
+
+msgid "Pruning Images"
+msgstr ""
+
+msgid "Pruning unused images..."
+msgstr ""
+
+msgid "Images pruned successfully"
+msgstr ""
+
+msgid "Failed to prune images: %s"
+msgstr ""
+
+msgid "Pull latest for selected images"
+msgstr ""
+
+msgid "Remove selected images"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid " images"
+msgstr ""
+
+msgid " containers"
+msgstr ""
+
+msgid " volumes"
+msgstr ""
+
+# Volume Management
+msgid "Create Volume"
+msgstr ""
+
+msgid "Volume Name"
+msgstr ""
+
+msgid "Volume name. Leave empty to auto-generate."
+msgstr ""
+
+msgid "my-volume (optional)"
+msgstr ""
+
+msgid "Driver"
+msgstr ""
+
+msgid "Volume driver to use"
+msgstr ""
+
+msgid "Mount Options"
+msgstr ""
+
+msgid "Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)"
+msgstr ""
+
+msgid "type=tmpfs,device=tmpfs,o=size=100m"
+msgstr ""
+
+msgid "Labels in key=value format, one per line"
+msgstr ""
+
+msgid "Creating Volume"
+msgstr ""
+
+msgid "Creating volume..."
+msgstr ""
+
+msgid "Volume created successfully"
+msgstr ""
+
+msgid "Failed to create volume: %s"
+msgstr ""
+
+msgid "Removing Volume"
+msgstr ""
+
+msgid "Removing volume..."
+msgstr ""
+
+msgid "Volume removed successfully"
+msgstr ""
+
+msgid "Failed to remove volume: %s"
+msgstr ""
+
+msgid "Prune Unused Volumes"
+msgstr ""
+
+msgid "Pruning Volumes"
+msgstr ""
+
+msgid "Pruning unused volumes..."
+msgstr ""
+
+msgid "Volumes pruned successfully"
+msgstr ""
+
+msgid "Failed to prune volumes: %s"
+msgstr ""
+
+msgid "Delete selected volumes"
+msgstr ""
+
+# Network Management
+msgid "Create Network"
+msgstr ""
+
+msgid "Network Name"
+msgstr ""
+
+msgid "Name for the network"
+msgstr ""
+
+msgid "my-network"
+msgstr ""
+
+msgid "Network name is required"
+msgstr ""
+
+msgid "Network driver"
+msgstr ""
+
+msgid "IPv4 Subnet (CIDR)"
+msgstr ""
+
+msgid "IPv4 subnet in CIDR notation"
+msgstr ""
+
+msgid "IPv4 Gateway"
+msgstr ""
+
+msgid "IPv4 gateway address"
+msgstr ""
+
+msgid "IP Range (CIDR)"
+msgstr ""
+
+msgid "Allocate container IP from this range"
+msgstr ""
+
+msgid "Enable IPv6"
+msgstr ""
+
+msgid "Enable IPv6 networking"
+msgstr ""
+
+msgid "Internal Network"
+msgstr ""
+
+msgid "Restrict external access to the network"
+msgstr ""
+
+msgid "Creating Network"
+msgstr ""
+
+msgid "Creating network..."
+msgstr ""
+
+msgid "Network created successfully"
+msgstr ""
+
+msgid "Failed to create network: %s"
+msgstr ""
+
+msgid "Removing Network"
+msgstr ""
+
+msgid "Removing network..."
+msgstr ""
+
+msgid "Network removed successfully"
+msgstr ""
+
+msgid "Failed to remove network: %s"
+msgstr ""
+
+msgid "Prune Unused Networks"
+msgstr ""
+
+msgid "Pruning Networks"
+msgstr ""
+
+msgid "Pruning unused networks..."
+msgstr ""
+
+msgid "Networks pruned successfully"
+msgstr ""
+
+msgid "Failed to prune networks: %s"
+msgstr ""
+
+msgid "Delete selected networks"
+msgstr ""
+
+# Pod Management
+msgid "Create Pod"
+msgstr ""
+
+msgid "Pod Name"
+msgstr ""
+
+msgid "Pod name is required"
+msgstr ""
+
+msgid "Name for the pod"
+msgstr ""
+
+msgid "my-pod"
+msgstr ""
+
+msgid "Hostname to assign to the pod"
+msgstr ""
+
+msgid "pod-hostname"
+msgstr ""
+
+msgid "Publish ports, one per line (host:container format)"
+msgstr ""
+
+msgid "Creating Pod"
+msgstr ""
+
+msgid "Creating pod..."
+msgstr ""
+
+msgid "Pod created successfully"
+msgstr ""
+
+msgid "Failed to create pod: %s"
+msgstr ""
+
+msgid "Pod started successfully"
+msgstr ""
+
+msgid "Pod stopped successfully"
+msgstr ""
+
+msgid "Pod restarted successfully"
+msgstr ""
+
+msgid "Pod removed successfully"
+msgstr ""
+
+msgid "Starting Pod"
+msgstr ""
+
+msgid "Starting pod..."
+msgstr ""
+
+msgid "Stopping Pod"
+msgstr ""
+
+msgid "Stopping pod..."
+msgstr ""
+
+msgid "Restarting Pod"
+msgstr ""
+
+msgid "Restarting pod..."
+msgstr ""
+
+msgid "Removing Pod"
+msgstr ""
+
+msgid "Removing pod..."
+msgstr ""
+
+msgid "Failed to start pod: %s"
+msgstr ""
+
+msgid "Failed to stop pod: %s"
+msgstr ""
+
+msgid "Failed to restart pod: %s"
+msgstr ""
+
+msgid "Failed to remove pod: %s"
+msgstr ""
+
+msgid "Prune Unused Pods"
+msgstr ""
+
+msgid "Pruning Pods"
+msgstr ""
+
+msgid "Pruning unused pods..."
+msgstr ""
+
+msgid "Pods pruned successfully"
+msgstr ""
+
+msgid "Failed to prune pods: %s"
+msgstr ""
+
+msgid "Delete selected pods"
+msgstr ""
+
+# Secret Management
+msgid "Create Secret"
+msgstr ""
+
+msgid "Secret Name"
+msgstr ""
+
+msgid "Secret name is required"
+msgstr ""
+
+msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
+msgstr ""
+
+msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
+msgstr ""
+
+msgid "my-secret"
+msgstr ""
+
+msgid "Secret Data"
+msgstr ""
+
+msgid "Secret data is required"
+msgstr ""
+
+msgid "The sensitive data to store securely"
+msgstr ""
+
+msgid "Enter secret data (password, token, key, etc.)"
+msgstr ""
+
+msgid "Security Notice:"
+msgstr ""
+
+msgid "Secret data is stored encrypted"
+msgstr ""
+
+msgid "Once created, secret data cannot be viewed or retrieved"
+msgstr ""
+
+msgid "Secrets can only be used by containers, not displayed"
+msgstr ""
+
+msgid "To update a secret, delete and recreate it"
+msgstr ""
+
+msgid "Creating Secret"
+msgstr ""
+
+msgid "Creating secret..."
+msgstr ""
+
+msgid "Secret created successfully"
+msgstr ""
+
+msgid "Failed to create secret: %s"
+msgstr ""
+
+msgid "Removing Secret"
+msgstr ""
+
+msgid "Removing secret..."
+msgstr ""
+
+msgid "Secret removed successfully"
+msgstr ""
+
+msgid "Failed to remove secret: %s"
+msgstr ""
+
+msgid "Delete selected secrets"
+msgstr ""
+
+# System / Overview
+msgid "System Information"
+msgstr ""
+
+msgid "Podman Version"
+msgstr ""
+
+msgid "API Version"
+msgstr ""
+
+msgid "Go Version"
+msgstr ""
+
+msgid "Built"
+msgstr ""
+
+msgid "OS/Arch"
+msgstr ""
+
+msgid "Running Containers"
+msgstr ""
+
+msgid "Total Images"
+msgstr ""
+
+msgid "Total Volumes"
+msgstr ""
+
+msgid "Total Networks"
+msgstr ""
+
+msgid "Total Pods"
+msgstr ""
+
+msgid "Total Secrets"
+msgstr ""
+
+msgid "Disk Usage"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Count"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "Reclaimable"
+msgstr ""
+
+msgid "Cleanup / Prune"
+msgstr ""
+
+msgid "Cleanup Unused Resources"
+msgstr ""
+
+msgid "All unused resources (images, containers, volumes, networks)"
+msgstr ""
+
+msgid "Include stopped containers"
+msgstr ""
+
+msgid "Include unused volumes"
+msgstr ""
+
+msgid "Clean Up Now"
+msgstr ""
+
+msgid "Cleaning Up"
+msgstr ""
+
+msgid "Cleaning up unused resources..."
+msgstr ""
+
+msgid "Cleanup Complete"
+msgstr ""
+
+msgid "Cleanup successful!"
+msgstr ""
+
+msgid "Failed to cleanup: %s"
+msgstr ""
+
+msgid "Auto-Update Containers"
+msgstr ""
+
+msgid "Auto-Update Check"
+msgstr ""
+
+msgid "Checking for container updates..."
+msgstr ""
+
+msgid "Auto-Update Complete"
+msgstr ""
+
+msgid "Auto-Update Available"
+msgstr ""
+
+msgid "No container updates available"
+msgstr ""
+
+msgid "Failed to check updates: %s"
+msgstr ""

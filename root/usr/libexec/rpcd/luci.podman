@@ -1,0 +1,519 @@
+#!/bin/sh
+# RPC backend for LuCI Podman app
+
+. /usr/share/libubox/jshn.sh
+
+SOCKET="/run/podman/podman.sock"
+API_BASE="/v5.0.0/libpod"
+
+# URL encode a string (preserves : / @ for image references)
+urlencode() {
+	local string="$1"
+	local strlen=${#string}
+	local encoded="" pos c o
+
+	for pos in $(seq 0 $((strlen - 1))); do
+		c=$(printf '%s' "$string" | cut -c $((pos + 1)))
+		case "$c" in
+			[-_.~a-zA-Z0-9:/@]) o="$c" ;;
+			*) printf -v o '%%%02x' "'$c" ;;
+		esac
+		encoded="${encoded}${o}"
+	done
+	echo "$encoded"
+}
+
+# URL encode for image references (allows : / @ which are valid in image refs)
+urlencode_image() {
+	# For image references, we only need to escape spaces and special chars
+	# Colons, slashes, and @ are valid in image references
+	echo "$1"
+}
+
+# Get JSON parameters from input
+get_json_params() {
+	read -r input
+	json_load "$input"
+	for var in "$@"; do
+		json_get_var "$var" "$var"
+	done
+}
+
+# Validate required parameter
+require_param() {
+	local var_name="$1"
+	eval "local var_value=\"\$$var_name\""
+	if [ -z "$var_value" ]; then
+		echo "{\"error\":\"Missing required parameter: $var_name\"}"
+		exit 1
+	fi
+}
+
+# Make curl request with error handling
+curl_request() {
+	local method="$1"
+	local path="$2"
+	local data="$3"
+	local result exit_code
+
+	if [ -n "$data" ]; then
+		result=$(curl -s --unix-socket "$SOCKET" -X "$method" \
+			-H "Content-Type: application/json" \
+			-d "$data" \
+			"http://localhost$path" 2>&1)
+		exit_code=$?
+	else
+		result=$(curl -s --unix-socket "$SOCKET" -X "$method" \
+			"http://localhost$path" 2>&1)
+		exit_code=$?
+	fi
+
+	if [ $exit_code -ne 0 ]; then
+		echo "{\"error\":\"Request failed\",\"details\":\"curl exit code $exit_code\"}"
+		return $exit_code
+	fi
+
+	# Check if result is an array and wrap it in an object for ubus compatibility
+	case "$result" in
+		\[*)
+			echo "{\"data\":$result}"
+			;;
+		*)
+			echo "$result"
+			;;
+	esac
+	return 0
+}
+
+# Add force parameter to path
+add_force() {
+	local path="$1"
+	local force="$2"
+	# Check for both "true" and "1" since JSON booleans become 1/0
+	if [ "$force" = "true" -o "$force" = "1" ]; then
+		echo "${path}?force=true"
+	else
+		echo "$path"
+	fi
+}
+
+case "$1" in
+	list)
+		cat <<EOF
+{
+	"containers_list": { "query": "" },
+	"container_inspect": { "id": "" },
+	"container_start": { "id": "" },
+	"container_stop": { "id": "" },
+	"container_restart": { "id": "" },
+	"container_remove": { "id": "", "force": false },
+	"container_logs": { "id": "", "params": "" },
+	"container_stats": { "id": "" },
+	"container_create": { "data": {} },
+	"container_rename": { "id": "", "name": "" },
+	"container_update": { "id": "", "data": {} },
+	"images_list": {},
+	"image_inspect": { "id": "" },
+	"image_remove": { "id": "", "force": false },
+	"image_pull": { "image": "" },
+	"image_pull_stream": { "image": "" },
+	"image_pull_status": { "session_id": "", "offset": 0 },
+	"networks_list": {},
+	"network_inspect": { "name": "" },
+	"network_remove": { "name": "", "force": false },
+	"network_create": { "data": {} },
+	"network_connect": { "name": "", "data": {} },
+	"network_disconnect": { "name": "", "data": {} },
+	"volumes_list": {},
+	"volume_inspect": { "name": "" },
+	"volume_remove": { "name": "", "force": false },
+	"volume_create": { "data": {} },
+	"pods_list": {},
+	"pod_inspect": { "name": "" },
+	"pod_start": { "name": "" },
+	"pod_stop": { "name": "" },
+	"pod_restart": { "name": "" },
+	"pod_pause": { "name": "" },
+	"pod_unpause": { "name": "" },
+	"pod_remove": { "name": "", "force": false },
+	"pod_create": { "data": {} },
+	"pod_stats": { "name": "" },
+	"secrets_list": {},
+	"secret_inspect": { "name": "" },
+	"secret_create": { "name": "", "data": "" },
+	"secret_remove": { "name": "" },
+	"system_df": {},
+	"system_prune": { "all": false, "volumes": false },
+	"auto_update": { "dry_run": false },
+	"version": {},
+	"info": {}
+}
+EOF
+		;;
+	call)
+		# Check socket availability
+		if [ ! -S "$SOCKET" ]; then
+			echo '{"error":"Podman socket not found or not accessible"}'
+			exit 1
+		fi
+
+		case "$2" in
+			containers_list)
+				get_json_params query
+				path="${API_BASE}/containers/json"
+				[ -n "$query" ] && path="${path}?${query}"
+				curl_request "GET" "$path"
+				;;
+			container_inspect)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "GET" "${API_BASE}/containers/${id_enc}/json"
+				;;
+			container_start)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "POST" "${API_BASE}/containers/${id_enc}/start"
+				;;
+			container_stop)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "POST" "${API_BASE}/containers/${id_enc}/stop"
+				;;
+			container_restart)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "POST" "${API_BASE}/containers/${id_enc}/restart"
+				;;
+			container_remove)
+				get_json_params id force
+				require_param id
+				id_enc=$(urlencode "$id")
+				path=$(add_force "${API_BASE}/containers/${id_enc}" "$force")
+				curl_request "DELETE" "$path"
+				;;
+			container_logs)
+				get_json_params id params
+				require_param id
+				id_enc=$(urlencode "$id")
+				path="${API_BASE}/containers/${id_enc}/logs"
+				[ -n "$params" ] && path="${path}?${params}" || path="${path}?stdout=true&stderr=true&tail=1000"
+				curl_request "GET" "$path"
+				;;
+			container_stats)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "GET" "${API_BASE}/containers/${id_enc}/stats?stream=false"
+				;;
+			container_create)
+				get_json_params data
+				curl_request "POST" "${API_BASE}/containers/create" "$data"
+				;;
+			container_rename)
+				get_json_params id name
+				require_param id
+				require_param name
+				id_enc=$(urlencode "$id")
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/containers/${id_enc}/rename?name=${name_enc}"
+				;;
+			container_update)
+				get_json_params id data
+				require_param id
+				require_param data
+				id_enc=$(urlencode "$id")
+
+				# Parse the data JSON to extract restart policy (query params) and other resources (body)
+				json_load "$data"
+				json_get_var restart_policy RestartPolicy
+				json_get_var restart_retries RestartRetries
+
+				# Build query parameters for restart policy
+				query=""
+				[ -n "$restart_policy" ] && query="${query}restartPolicy=${restart_policy}&"
+				[ -n "$restart_retries" ] && query="${query}restartRetries=${restart_retries}&"
+				# Remove trailing &
+				query="${query%&}"
+				# Add ? if we have parameters
+				[ -n "$query" ] && query="?${query}"
+
+				# Check if we have resource updates (cpu, memory, blockIO) to send as body
+				# If the JSON contains fields other than RestartPolicy/RestartRetries, send as body
+				# This is a simple check - if data contains 'cpu', 'memory', or 'blockIO', use body
+				case "$data" in
+					*cpu*|*memory*|*blockIO*)
+						# Send with body for resource updates
+						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}" "$data"
+						;;
+					*)
+						# Query params only (restart policy)
+						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}"
+						;;
+				esac
+				;;
+			images_list)
+				read -r input
+				curl_request "GET" "${API_BASE}/images/json"
+				;;
+			image_inspect)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "GET" "${API_BASE}/images/${id_enc}/json"
+				;;
+			image_remove)
+				get_json_params id force
+				require_param id
+				id_enc=$(urlencode "$id")
+				path=$(add_force "${API_BASE}/images/${id_enc}" "$force")
+				curl_request "DELETE" "$path"
+				;;
+			image_pull)
+				get_json_params image
+				require_param image
+				image_enc=$(urlencode_image "$image")
+				curl_request "POST" "${API_BASE}/images/pull?reference=${image_enc}"
+				;;
+			image_pull_stream)
+				get_json_params image
+				require_param image
+
+				# Generate secure session ID
+				session_id="podman_$(date +%s)_$$_${RANDOM}"
+				image_enc=$(urlencode_image "$image")
+
+				# Start pull in background
+				(curl -s --unix-socket "$SOCKET" -X POST \
+					"http://localhost${API_BASE}/images/pull?reference=${image_enc}" \
+					> "/tmp/${session_id}.log" 2>&1
+				echo $? > "/tmp/${session_id}.status") &
+
+				echo "{\"session_id\":\"${session_id}\"}"
+				;;
+			image_pull_status)
+				get_json_params session_id offset
+				require_param session_id
+
+				# Validate session_id format for security
+				case "$session_id" in
+					podman_[0-9]*_[0-9]*_[0-9]*)
+						;;
+					*)
+						echo '{"error":"Invalid session ID format"}'
+						exit 1
+						;;
+				esac
+
+				# Validate offset is numeric
+				case "$offset" in
+					''|*[!0-9]*) offset=0 ;;
+				esac
+
+				log_file="/tmp/${session_id}.log"
+				status_file="/tmp/${session_id}.status"
+
+				# Job completed
+				if [ -f "$status_file" ]; then
+					exit_code=$(cat "$status_file")
+					success="false"
+					[ "$exit_code" = "0" ] && success="true"
+
+					output=""
+					if [ -f "$log_file" ]; then
+						output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
+					fi
+
+					echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
+					rm -f "$log_file" "$status_file"
+					exit 0
+				fi
+
+				# Job in progress
+				if [ -f "$log_file" ]; then
+					output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
+					echo "{\"output\":\"${output}\",\"complete\":false,\"success\":false}"
+					exit 0
+				fi
+
+				# Job not started yet
+				echo '{"output":"","complete":false,"success":false}'
+				;;
+			networks_list)
+				read -r input
+				curl_request "GET" "${API_BASE}/networks/json"
+				;;
+			network_inspect)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "GET" "${API_BASE}/networks/${name_enc}/json"
+				;;
+			network_remove)
+				get_json_params name force
+				require_param name
+				name_enc=$(urlencode "$name")
+				path=$(add_force "${API_BASE}/networks/${name_enc}" "$force")
+				curl_request "DELETE" "$path"
+				;;
+			network_create)
+				get_json_params data
+				curl_request "POST" "${API_BASE}/networks/create" "$data"
+				;;
+			network_connect)
+				get_json_params name data
+				require_param name
+				require_param data
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/networks/${name_enc}/connect" "$data"
+				;;
+			network_disconnect)
+				get_json_params name data
+				require_param name
+				require_param data
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/networks/${name_enc}/disconnect" "$data"
+				;;
+			volumes_list)
+				read -r input
+				curl_request "GET" "${API_BASE}/volumes/json"
+				;;
+			volume_inspect)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "GET" "${API_BASE}/volumes/${name_enc}/json"
+				;;
+			volume_remove)
+				get_json_params name force
+				require_param name
+				name_enc=$(urlencode "$name")
+				path=$(add_force "${API_BASE}/volumes/${name_enc}" "$force")
+				curl_request "DELETE" "$path"
+				;;
+			volume_create)
+				get_json_params data
+				curl_request "POST" "${API_BASE}/volumes/create" "$data"
+				;;
+			pods_list)
+				read -r input
+				curl_request "GET" "${API_BASE}/pods/json"
+				;;
+			pod_inspect)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "GET" "${API_BASE}/pods/${name_enc}/json"
+				;;
+			pod_start)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/pods/${name_enc}/start"
+				;;
+			pod_stop)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/pods/${name_enc}/stop"
+				;;
+			pod_restart)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/pods/${name_enc}/restart"
+				;;
+			pod_pause)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/pods/${name_enc}/pause"
+				;;
+			pod_unpause)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "POST" "${API_BASE}/pods/${name_enc}/unpause"
+				;;
+			pod_remove)
+				get_json_params name force
+				require_param name
+				name_enc=$(urlencode "$name")
+				path=$(add_force "${API_BASE}/pods/${name_enc}" "$force")
+				curl_request "DELETE" "$path"
+				;;
+			pod_create)
+				get_json_params data
+				curl_request "POST" "${API_BASE}/pods/create" "$data"
+				;;
+			pod_stats)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "GET" "${API_BASE}/pods/stats?stream=false&namesOrIDs=${name_enc}"
+				;;
+			secrets_list)
+				read -r input
+				curl_request "GET" "${API_BASE}/secrets/json"
+				;;
+			secret_inspect)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "GET" "${API_BASE}/secrets/${name_enc}/json"
+				;;
+			secret_create)
+				get_json_params name data
+				require_param name
+				require_param data
+				# Base64 encode the secret data
+				data_b64=$(echo -n "$data" | base64)
+				# URL encode the name for query parameter
+				name_enc=$(urlencode "$name")
+				# Build JSON payload - just the base64 data as a JSON string
+				payload="\"${data_b64}\""
+				curl_request "POST" "${API_BASE}/secrets/create?name=${name_enc}" "$payload"
+				;;
+			secret_remove)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+				curl_request "DELETE" "${API_BASE}/secrets/${name_enc}"
+				;;
+			system_df)
+				read -r input
+				curl_request "GET" "${API_BASE}/system/df"
+				;;
+			system_prune)
+				get_json_params all volumes
+				# Build query parameters (check for both "true" and "1" since JSON booleans become 1/0)
+				query=""
+				[ "$all" = "true" -o "$all" = "1" ] && query="${query}all=true&"
+				[ "$volumes" = "true" -o "$volumes" = "1" ] && query="${query}volumes=true&"
+				# Remove trailing &
+				query="${query%&}"
+				# Add ? if we have parameters
+				[ -n "$query" ] && query="?${query}"
+				curl_request "POST" "${API_BASE}/system/prune${query}"
+				;;
+			auto_update)
+				get_json_params dry_run
+				# Build query parameter (check for both "true" and "1" since JSON booleans become 1/0)
+				query=""
+				[ "$dry_run" = "true" -o "$dry_run" = "1" ] && query="?dryRun=true"
+				curl_request "GET" "${API_BASE}/auto-update${query}"
+				;;
+			version)
+				read -r input
+				curl_request "GET" "${API_BASE}/version"
+				;;
+			info)
+				read -r input
+				curl_request "GET" "${API_BASE}/info"
+				;;
+		esac
+		;;
+esac

@@ -1,0 +1,76 @@
+{
+	"admin/podman": {
+		"title": "Podman",
+		"order": 60,
+		"action": {
+			"type": "firstchild"
+		},
+		"depends": {
+			"fs": {
+				"/etc/config/podman": "file"
+			}
+		}
+	},
+	"admin/podman/overview": {
+		"title": "Overview",
+		"order": 10,
+		"action": {
+			"type": "view",
+			"path": "podman/overview"
+		}
+	},
+	"admin/podman/containers": {
+		"title": "Containers",
+		"order": 20,
+		"action": {
+			"type": "view",
+			"path": "podman/containers"
+		}
+	},
+	"admin/podman/container/*": {
+		"action": {
+			"type": "view",
+			"path": "podman/container"
+		}
+	},
+	"admin/podman/pods": {
+		"title": "Pods",
+		"order": 25,
+		"action": {
+			"type": "view",
+			"path": "podman/pods"
+		}
+	},
+	"admin/podman/images": {
+		"title": "Images",
+		"order": 30,
+		"action": {
+			"type": "view",
+			"path": "podman/images"
+		}
+	},
+	"admin/podman/networks": {
+		"title": "Networks",
+		"order": 40,
+		"action": {
+			"type": "view",
+			"path": "podman/networks"
+		}
+	},
+	"admin/podman/volumes": {
+		"title": "Volumes",
+		"order": 50,
+		"action": {
+			"type": "view",
+			"path": "podman/volumes"
+		}
+	},
+	"admin/podman/secrets": {
+		"title": "Secrets",
+		"order": 60,
+		"action": {
+			"type": "view",
+			"path": "podman/secrets"
+		}
+	}
+}
