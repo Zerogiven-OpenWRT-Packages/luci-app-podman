@@ -16,24 +16,10 @@ return view.extend({
 	handleReset: null,
 
 	/**
-	 * Generic failure handler for rendering errors
-	 * @param {string} message - Error message to display
-	 * @returns {Element} Error element
-	 */
-	generic_failure: function(message) {
-		return E('div', {
-			'class': 'alert-message error'
-		}, [
-			E('h3', {}, _('Error')),
-			E('p', {}, message)
-		]);
-	},
-
-	/**
 	 * Load container data on view initialization
 	 * @returns {Promise<Object>} Container inspect data and networks
 	 */
-	load: function() {
+	load: async function() {
 		// Extract container ID from URL path
 		// URL format: /cgi-bin/luci/admin/podman/container/<id>
 		const path = window.location.pathname;
@@ -52,7 +38,7 @@ return view.extend({
 			podmanRPC.network.list(),
 		]).then((results) => {
 			return {
-				containerId: containerId,
+				containerId,
 				container: results[0],
 				networks: results[1] || []
 			};
@@ -70,13 +56,8 @@ return view.extend({
 	 */
 	render: function(data) {
 		// Handle errors from load()
-		if (data && data.error) {
-			return this.generic_failure(data.error);
-		}
-
-		// Handle missing data
-		if (!data || !data.container) {
-			return this.generic_failure(_('Container not found'));
+		if (data && data.error || !data.container) {
+			return utils.renderError(data.error || _('Container not found'));
 		}
 
 		// Store data for use in methods
@@ -236,6 +217,14 @@ return view.extend({
 		// Add restart policy with edit
 		basicRows.push(this.createEditableRestartRow(hostConfig.RestartPolicy ? hostConfig.RestartPolicy.Name || 'no' : 'no'));
 
+		// Add auto-update status from labels
+		const autoUpdateLabel = config.Labels && config.Labels['io.containers.autoupdate'];
+		if (autoUpdateLabel) {
+			basicRows.push(this.createInfoRow(_('Auto-Update'), autoUpdateLabel));
+		} else {
+			basicRows.push(this.createInfoRow(_('Auto-Update'), _('Disabled')));
+		}
+
 		// Add health status if exists
 		if (data.State && data.State.Health) {
 			basicRows.push(this.createInfoRow(_('Health'), data.State.Health.Status || '-'));
@@ -269,7 +258,16 @@ return view.extend({
 
 		// Add network connections
 		if (networkSettings.Networks && Object.keys(networkSettings.Networks).length > 0) {
-			Object.keys(networkSettings.Networks).forEach((netName) => {
+			// System networks that cannot be disconnected (default Podman networks)
+			const systemNetworks = ['bridge', 'host', 'none', 'container', 'slirp4netns'];
+
+			// Filter to only show user-created networks
+			const userNetworks = Object.keys(networkSettings.Networks).filter((netName) => {
+				return !systemNetworks.includes(netName);
+			});
+
+			// Only display user-created networks with disconnect buttons
+			userNetworks.forEach((netName) => {
 				const net = networkSettings.Networks[netName];
 				networkRows.push(
 					E('tr', { 'class': 'tr' }, [
@@ -343,8 +341,8 @@ return view.extend({
 			const mountRows = data.Mounts.map(function(mount) {
 				return E('tr', { 'class': 'tr' }, [
 					E('td', { 'class': 'td' }, mount.Type || '-'),
-					E('td', { 'class': 'td', 'style': 'word-break: break-all;' }, mount.Source || '-'),
-					E('td', { 'class': 'td', 'style': 'word-break: break-all;' }, mount.Destination || '-'),
+					E('td', { 'class': 'td', 'title': mount.Source || '-' }, utils.truncate(mount.Source || '-', 50)),
+					E('td', { 'class': 'td', 'title': mount.Destination || '-' }, utils.truncate(mount.Destination || '-', 50)),
 					E('td', { 'class': 'td' }, mount.RW ? 'rw' : 'ro')
 				]);
 			});
@@ -352,22 +350,6 @@ return view.extend({
 			sections.push(this.createTableSection(_('Mounts'),
 				[_('Type'), _('Source'), _('Destination'), _('Mode')],
 				mountRows
-			));
-		}
-
-		// Labels
-		if (config.Labels && Object.keys(config.Labels).length > 0) {
-			const labelRows = [];
-			Object.keys(config.Labels).forEach(function(key) {
-				labelRows.push(E('tr', { 'class': 'tr' }, [
-					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' }, key),
-					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' }, config.Labels[key])
-				]));
-			});
-
-			sections.push(this.createTableSection(_('Labels'),
-				[_('Key'), _('Value')],
-				labelRows
 			));
 		}
 
@@ -588,7 +570,7 @@ return view.extend({
 			document.getElementById('stat-pids').textContent = pids;
 
 		}).catch((err) => {
-			console.error('Failed to load stats:', err);
+			// Stats failed to load - silently ignore if container is stopped
 		});
 	},
 
@@ -988,27 +970,8 @@ return view.extend({
 		const blkioWeight = document.getElementById('resource-blkio-weight').value;
 
 		// Parse memory values (convert from human readable to bytes)
-		const parseMemory = function(str) {
-			if (!str) return 0;
-			const match = str.match(/^(\d+(?:\.\d+)?)\s*([kmgt]?b?)?$/i);
-			if (!match) return null;
-
-			const value = parseFloat(match[1]);
-			const unit = (match[2] || 'b').toLowerCase();
-
-			const multipliers = {
-				'b': 1,
-				'k': 1024, 'kb': 1024,
-				'm': 1024 * 1024, 'mb': 1024 * 1024,
-				'g': 1024 * 1024 * 1024, 'gb': 1024 * 1024 * 1024,
-				't': 1024 * 1024 * 1024 * 1024, 'tb': 1024 * 1024 * 1024 * 1024
-			};
-
-			return Math.floor(value * (multipliers[unit] || 1));
-		};
-
-		const memory = parseMemory(memoryStr);
-		const memorySwap = memorySwapStr === '-1' ? -1 : parseMemory(memorySwapStr);
+		const memory = utils.parseMemory(memoryStr, true);
+		const memorySwap = memorySwapStr === '-1' ? -1 : utils.parseMemory(memorySwapStr, true);
 
 		// Validate
 		if (memory === null && memoryStr) {
@@ -1023,47 +986,41 @@ return view.extend({
 		// Build update data according to UpdateEntities schema
 		const updateData = {};
 
-		// CPU configuration
-		if (cpuLimit || cpuShares) {
-			updateData.cpu = {};
+		// CPU configuration - always include to allow resetting limits
+		updateData.cpu = {};
 
-			// CPU Limit: Convert CPUs to quota (quota = CPUs * period)
-			if (cpuLimit) {
-				const period = 100000; // Default period in microseconds
-				updateData.cpu.quota = Math.floor(parseFloat(cpuLimit) * period);
-				updateData.cpu.period = period;
-			}
-
-			// CPU Shares
-			if (cpuShares) {
-				updateData.cpu.shares = parseInt(cpuShares) || 0;
-			}
+		// CPU Limit: Convert CPUs to quota (quota = CPUs * period)
+		// 0 or empty = unlimited (removes limit)
+		if (cpuLimit) {
+			const period = 100000; // Default period in microseconds
+			updateData.cpu.quota = Math.floor(parseFloat(cpuLimit) * period);
+			updateData.cpu.period = period;
+		} else {
+			// Send 0 to remove CPU limit
+			updateData.cpu.quota = 0;
+			updateData.cpu.period = 0;
 		}
 
-		// Memory configuration
-		if (memory > 0 || memorySwap) {
-			updateData.memory = {};
+		// CPU Shares - 0 = use default
+		updateData.cpu.shares = parseInt(cpuShares) || 0;
 
-			if (memory > 0) {
-				updateData.memory.limit = memory;
-			}
+		// Memory configuration - always include to allow resetting limits
+		updateData.memory = {};
 
-			if (memorySwap !== 0) {
-				updateData.memory.swap = memorySwap;
-			}
+		// Memory limit - 0 = unlimited (removes limit)
+		updateData.memory.limit = memory > 0 ? memory : 0;
+
+		// Memory swap - 0 = default, -1 = unlimited swap
+		if (memorySwap !== 0) {
+			updateData.memory.swap = memorySwap;
+		} else {
+			updateData.memory.swap = 0;
 		}
 
-		// Block IO configuration
-		if (blkioWeight) {
-			updateData.blockIO = {
-				weight: parseInt(blkioWeight) || 0
-			};
-		}
-
-		if (Object.keys(updateData).length === 0) {
-			ui.addNotification(null, E('p', _('No changes to apply')), 'warning');
-			return;
-		}
+		// Block IO configuration - 0 = use default
+		updateData.blockIO = {
+			weight: parseInt(blkioWeight) || 0
+		};
 
 		ui.showModal(_('Updating Resources'), [
 			E('p', { 'class': 'spinning' }, _('Updating container resources...'))

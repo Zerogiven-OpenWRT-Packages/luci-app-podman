@@ -306,7 +306,7 @@ return view.extend({
         let o;
 
         section.anonymous = true;
-        section.nodescription = true;
+        section.nodescriptions = true;
 
         // Checkbox column for selection
         o = section.option(form.DummyValue, 'Name', new ui.Checkbox(0, { hiddenname: 'all' }).render());
@@ -649,3 +649,343 @@ return view.extend({
 - [ ] All strings translated with _()
 - [ ] Error handling with proper user feedback
 - [ ] API calls match Podman swagger schemas
+
+
+## OpenWrt Network Integration
+
+### Overview
+
+Podman networks created via the API need matching OpenWrt network/firewall configuration to function properly. This app provides **opt-in OpenWrt integration** that automatically configures:
+
+1. **Bridge device** (`/etc/config/network`) - Virtual bridge interface
+2. **Network interface** (`/etc/config/network`) - Static IP configuration
+3. **Firewall zone** (`/etc/config/firewall`) - Network isolation
+4. **Firewall rules** (`/etc/config/firewall`) - DNS access for containers
+
+Without this integration, containers may not have proper network connectivity, as Podman's built-in firewall is disabled on OpenWrt (configured with `firewall_driver = "none"`).
+
+### Architecture
+
+**Module**: `podman/openwrt-network.js`  
+**Technology**: LuCI JavaScript API (network, uci modules)  
+**No RPC required**: Direct UCI/network manipulation from frontend
+
+### Key Components
+
+#### 1. OpenWrt Network Helper (`podman/openwrt-network.js`)
+
+Provides integration methods using native LuCI APIs:
+
+**Main Methods**:
+- `createIntegration(networkName, options)` - Create OpenWrt config
+- `removeIntegration(networkName, bridgeName)` - Remove OpenWrt config
+- `hasIntegration(networkName)` - Check if integration exists
+- `getIntegration(networkName)` - Get integration details
+- `validateIntegration(networkName, options)` - Validate before creation
+
+**Example Usage**:
+```javascript
+'require podman.openwrt-network as openwrtNetwork';
+
+// Create integration
+openwrtNetwork.createIntegration('mynetwork', {
+    bridgeName: 'podman0',
+    subnet: '10.129.0.0/24',
+    gateway: '10.129.0.1'
+}).then(() => {
+    console.log('OpenWrt integration created');
+});
+
+// Check integration status
+openwrtNetwork.hasIntegration('mynetwork').then((exists) => {
+    if (exists) {
+        console.log('Integration active');
+    }
+});
+
+// Remove integration
+openwrtNetwork.removeIntegration('mynetwork', 'podman0').then(() => {
+    console.log('Integration removed');
+});
+```
+
+#### 2. Network Creation Form (`podman/network-form.js`)
+
+Enhanced with OpenWrt integration checkbox:
+
+**New Form Fields**:
+- `setup_openwrt` (Flag) - Enable/disable integration (default: enabled)
+- `bridge_name` (Value) - Custom bridge name (default: `<network>0`)
+
+**Workflow**:
+1. User creates network with subnet/gateway
+2. Checks "Setup OpenWrt Integration" (enabled by default)
+3. Form validates required fields (subnet + gateway for integration)
+4. Creates Podman network via RPC
+5. If integration enabled, calls `openwrtNetwork.createIntegration()`
+6. Displays appropriate success/warning messages
+
+**Error Handling**:
+- If Podman network fails → Show error, abort
+- If Podman succeeds but OpenWrt fails → Show warning, suggest manual config
+- If both succeed → Show success message
+
+#### 3. Network List View (`networks.js`)
+
+Enhanced with integration status column and cleanup on delete:
+
+**New Column**: "OpenWrt" - Shows integration status
+- `✓` (green) - Integration active
+- `—` (gray) - No integration
+- `✗` (red) - Check failed
+
+**Status Check**: Async check for each network after rendering
+
+**Delete Behavior**:
+1. Check integration status for selected networks
+2. Show confirmation with OpenWrt cleanup notice
+3. Delete Podman network
+4. If integration exists, remove OpenWrt configs
+5. Display results (Podman deleted, OpenWrt cleanup status)
+
+### User Workflow
+
+#### Creating a Network with OpenWrt Integration
+
+1. Navigate to **Networks** → **Create Network**
+2. Enter network details:
+   - Name: `mynetwork`
+   - Subnet: `10.129.0.0/24`
+   - Gateway: `10.129.0.1`
+3. Ensure **Setup OpenWrt Integration** is checked (default)
+4. Optional: Customize **Bridge Interface Name** (default: `mynetwork0`)
+5. Click **Create**
+
+**Result**:
+- Podman network `mynetwork` created
+- Bridge device `mynetwork0` created
+- Network interface `mynetwork` with IP `10.129.0.1` created
+- Firewall zone `mynetwork` created with restrictive rules
+- DNS access rule created (containers can resolve DNS)
+- Container network traffic properly routed
+
+#### Deleting a Network with OpenWrt Integration
+
+1. Navigate to **Networks**
+2. Select networks to delete (OpenWrt column shows `✓` for integrated networks)
+3. Click **Delete Selected**
+4. Confirm deletion (notice mentions OpenWrt cleanup)
+5. System removes:
+   - Podman network
+   - Firewall rules
+   - Firewall zone
+   - Network interface
+   - Bridge device (if not used by other networks)
+
+### Technical Details
+
+#### UCI Configuration Created
+
+**Network Device** (`/etc/config/network`):
+```
+config device
+	option type 'bridge'
+	option name 'mynetwork0'
+	option bridge_empty '1'
+	option ipv6 '0'
+```
+
+**Network Interface** (`/etc/config/network`):
+```
+config interface 'mynetwork'
+	option proto 'static'
+	option device 'mynetwork0'
+	option ipaddr '10.129.0.1'
+	option netmask '255.255.255.0'
+```
+
+**Firewall Zone** (`/etc/config/firewall`):
+```
+config zone
+	option name 'mynetwork'
+	option input 'DROP'
+	option output 'ACCEPT'
+	option forward 'REJECT'
+	list network 'mynetwork'
+```
+
+**Firewall DNS Rule** (`/etc/config/firewall`):
+```
+config rule
+	option name 'Allow-mynetwork-DNS'
+	option src 'mynetwork'
+	option dest_port '53'
+	option target 'ACCEPT'
+```
+
+#### LuCI API Usage
+
+The module uses official LuCI JavaScript APIs (no shell scripts):
+
+**Network API**:
+- `network.flushCache()` - Reload network state
+- `network.prefixToMask(prefix)` - Convert CIDR to netmask
+
+**UCI API**:
+- `uci.load(packages)` - Load configs (network, firewall)
+- `uci.add(conf, type, name)` - Create new section
+- `uci.set(conf, sid, opt, val)` - Set option value
+- `uci.get(conf, sid, opt)` - Get option value
+- `uci.sections(conf, type)` - List sections
+- `uci.remove(conf, sid)` - Remove section
+- `uci.save()` - Save changes to ubus
+- `uci.apply(timeout)` - Apply changes with rollback protection
+
+**Benefits**:
+- ✅ No shell script dependencies
+- ✅ Proper Promise-based error handling
+- ✅ Automatic UCI transaction management
+- ✅ Rollback protection on apply
+- ✅ Type-safe JavaScript code
+
+### Configuration Requirements
+
+For proper OpenWrt integration, ensure `/etc/containers/containers.conf` contains:
+
+```
+[network]
+network_backend = "netavark"
+firewall_driver = "none"
+network_config_dir = "/etc/containers/networks/"
+default_network = "podman"
+default_subnet = "10.129.0.0/24"
+```
+
+**Important**: `firewall_driver = "none"` disables Podman's built-in firewall, requiring OpenWrt firewall configuration.
+
+### Troubleshooting
+
+**Problem**: Container can't resolve DNS  
+**Solution**: Check if DNS rule exists in firewall. Integration creates rule allowing containers to access port 53.
+
+**Problem**: Container can't reach external networks  
+**Solution**: Check firewall zone configuration. Integration sets `output = ACCEPT` for outbound traffic.
+
+**Problem**: OpenWrt integration fails with "already exists"  
+**Solution**: Network interface name conflicts with existing config. Choose different network name or manually remove conflicting config.
+
+**Problem**: Bridge device not created  
+**Solution**: Check UCI apply status. Integration uses 90-second rollback timeout. May need manual UCI commit.
+
+**Problem**: After network deletion, bridge still exists  
+**Solution**: Bridge is shared if multiple networks use same device. Integration only removes bridge when no other interfaces use it.
+
+### Best Practices
+
+1. **Always enable OpenWrt integration** for bridge networks on OpenWrt
+2. **Use descriptive network names** (e.g., `frontend`, `backend`, not `net1`)
+3. **Plan subnet ranges** to avoid conflicts with existing networks
+4. **Test with one container** before deploying multiple containers
+5. **Document custom firewall rules** if you modify the generated zone
+6. **Backup configs** before bulk network operations
+7. **Check integration status** column before deleting networks
+
+### Future Enhancements
+
+Potential improvements for OpenWrt integration:
+
+- [ ] Support for custom firewall rules in creation form
+- [ ] Integration with OpenWrt firewall zones (forward to lan/wan)
+- [ ] IPv6 support
+- [ ] Port forwarding configuration UI
+- [ ] Network traffic statistics
+- [ ] Automatic detection and repair of broken integrations
+- [ ] Bulk integration setup for existing networks
+- [ ] Integration status details modal (show UCI config)
+- [ ] Custom netmask/CIDR calculation in form
+- [ ] Bridge STP configuration options
+
+## OpenWrt Network Integration - Shared Zone Architecture
+
+### Zone Management Strategy
+
+The implementation uses a **shared firewall zone** approach for all Podman networks:
+
+**Shared Zone Benefits:**
+- ✅ Simpler management - one zone, one DNS rule for all Podman networks
+- ✅ Less UCI configuration clutter
+- ✅ Consistent with Docker's single-zone approach
+- ✅ Easier to enable inter-network communication if needed
+- ✅ Podman networks already have Layer 2 isolation via separate bridges
+
+**Zone Name:** `podman` (fixed, shared by all integrated networks)
+
+**Workflow:**
+
+**Creating First Network:**
+1. Create Podman network
+2. Create bridge device
+3. Create network interface
+4. Create shared `podman` firewall zone
+5. Create DNS rule for `podman` zone (once)
+6. Add network to zone's network list
+
+**Creating Subsequent Networks:**
+1. Create Podman network
+2. Create bridge device
+3. Create network interface
+4. Add network to existing `podman` zone's network list
+
+**Deleting Network:**
+1. Delete Podman network
+2. Remove network from `podman` zone's network list
+3. Delete network interface
+4. Delete bridge device (if not used by others)
+5. If last network removed: Delete `podman` zone and DNS rule
+
+**UCI Configuration (Shared Zone):**
+
+```
+config zone 'podman_zone'
+	option name 'podman'
+	option input 'DROP'
+	option output 'ACCEPT'
+	option forward 'REJECT'
+	list network 'frontend'
+	list network 'backend'
+	list network 'database'
+
+config rule 'podman_dns'
+	option name 'Allow-Podman-DNS'
+	option src 'podman'
+	option dest_port '53'
+	option target 'ACCEPT'
+```
+
+### Alert Icon for Incomplete Integration
+
+Networks without complete OpenWrt integration show a **warning icon (⚠)** next to their name:
+
+**Detection:**
+- Checks for: device, interface, and zone membership
+- Missing any component → Shows alert icon
+
+**Click Behavior:**
+1. Extracts subnet/gateway from Podman network data
+2. Shows confirmation modal with detected configuration
+3. On confirm: Creates all missing components
+4. On success: Hides alert icon (in-place update)
+5. User sees immediate feedback without page reload
+
+**User Experience:**
+```
+Network List:
+  [✓] frontend     bridge  10.10.0.0/24   10.10.0.1  ...
+  [✓] backend ⚠    bridge  10.20.0.0/24   10.20.0.1  ...
+           ↑
+  Click here to setup OpenWrt integration
+```
+
+**Tooltip:** "OpenWrt integration incomplete. Click to setup. Missing: device, zone_membership"
+
+This provides a seamless way to fix networks that were created before the integration feature was added or where integration failed partially.

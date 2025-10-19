@@ -139,13 +139,6 @@ return view.extend({
 	 * @returns {Element} Disk usage section element
 	 */
 	createDiskUsageSection: function(diskUsage) {
-		var formatSize = function(bytes) {
-			if (!bytes) return '0 B';
-			var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-			var i = Math.floor(Math.log(bytes) / Math.log(1024));
-			return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
-		};
-
 		var imageSize = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Size) || 0;
 		var imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Reclaimable) || 0;
 		var imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) || 0;
@@ -171,20 +164,20 @@ return view.extend({
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td' }, _('Images')),
 						E('td', { 'class': 'td' }, String(imageCount)),
-						E('td', { 'class': 'td' }, formatSize(imageSize)),
-						E('td', { 'class': 'td' }, formatSize(imageReclaimable))
+						E('td', { 'class': 'td' }, utils.formatBytes(imageSize)),
+						E('td', { 'class': 'td' }, utils.formatBytes(imageReclaimable))
 					]),
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td' }, _('Containers')),
 						E('td', { 'class': 'td' }, String(containerCount)),
-						E('td', { 'class': 'td' }, formatSize(containerSize)),
-						E('td', { 'class': 'td' }, formatSize(containerReclaimable))
+						E('td', { 'class': 'td' }, utils.formatBytes(containerSize)),
+						E('td', { 'class': 'td' }, utils.formatBytes(containerReclaimable))
 					]),
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td' }, _('Volumes')),
 						E('td', { 'class': 'td' }, String(volumeCount)),
-						E('td', { 'class': 'td' }, formatSize(volumeSize)),
-						E('td', { 'class': 'td' }, formatSize(volumeReclaimable))
+						E('td', { 'class': 'td' }, utils.formatBytes(volumeSize)),
+						E('td', { 'class': 'td' }, utils.formatBytes(volumeReclaimable))
 					])
 				])
 			])
@@ -491,20 +484,13 @@ return view.extend({
 				}
 			}
 
-			var formatSize = function(bytes) {
-				if (!bytes) return '0 B';
-				var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-				var i = Math.floor(Math.log(bytes) / Math.log(1024));
-				return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
-			};
-
 			ui.showModal(_('Cleanup Complete'), [
 				E('p', {}, _('Cleanup successful!')),
 				deletedItems.length > 0 ?
 					E('p', { 'style': 'margin-top: 10px;' }, _('Removed: %s').format(deletedItems.join(', '))) :
 					E('p', { 'style': 'margin-top: 10px;' }, _('No unused resources found')),
 				E('p', { 'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;' },
-					_('Space freed: %s').format(formatSize(freedSpace))),
+					_('Space freed: %s').format(utils.formatBytes(freedSpace))),
 				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
 					E('button', {
 						'class': 'cbi-button',

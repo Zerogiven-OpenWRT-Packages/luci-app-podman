@@ -26,7 +26,7 @@
  *     prefix: 'volumes',
  *     itemName: 'volume',
  *     rpc: podmanRPC.volume,
- *     data: data.volumes
+ *     data: data  // Pass full data object
  * });
  */
 'use strict';
@@ -72,9 +72,9 @@ const UIButton = baseclass.extend({
             'class': this.cssClass ? 'cbi-button cbi-button-' + this.cssClass : 'cbi-button',
             'click': typeof this.href === 'function'
                 ? this.href
-                : L.bind(function(ev) {  // ⚠️ L.bind() verwenden!
+                : L.bind(function(ev) {
                     ev.preventDefault();
-                    window.location.href = this.href;  // Sonst ist 'this' hier falsch
+                    window.location.href = this.href;
                 }, this)
         }, this.text || '');
     }
@@ -184,14 +184,17 @@ const UIMultiButton = baseclass.extend({
  * @example
  * // Basic usage in a list view
  * render: function(data) {
- *     // Initialize list helper
+ *     // Initialize list helper with full data object
  *     this.listHelper = new pui.ListViewHelper({
  *         prefix: 'volumes',
  *         itemName: 'volume',
  *         rpc: podmanRPC.volume,
- *         data: data.volumes,
+ *         data: data,  // Pass full { volumes: [] } object
  *         view: this
  *     });
+ *
+ *     // Use this.listHelper.data as single source of truth
+ *     this.map = new form.JSONMap(this.listHelper.data, _('Volumes'));
  *
  *     // Create toolbar
  *     const toolbar = this.listHelper.createToolbar({
@@ -234,7 +237,7 @@ const UIListViewHelper = baseclass.extend({
      * @param {string} options.prefix - Checkbox name prefix (e.g., 'containers', 'images')
      * @param {string} options.itemName - Singular item name (e.g., 'container', 'image')
      * @param {Object} options.rpc - RPC module reference (e.g., podmanRPC.container)
-     * @param {Array} options.data - Data array from load()
+     * @param {Object|Array} options.data - Data object from load() (e.g., { containers: [] }) or array
      * @param {Object} [options.view] - View context reference
      */
     __init__: function(options) {
@@ -243,6 +246,40 @@ const UIListViewHelper = baseclass.extend({
         this.rpc = options.rpc;
         this.data = options.data;
         this.view = options.view;
+
+        // Determine the data key for accessing the array
+        // Try prefix first, fallback to first key in object
+        if (this.data && typeof this.data === 'object' && !Array.isArray(this.data)) {
+            if (this.data[this.prefix]) {
+                this.dataKey = this.prefix;
+            } else {
+                // Fallback: use first key
+                const keys = Object.keys(this.data);
+                if (keys.length > 0) {
+                    this.dataKey = keys[0];
+                }
+            }
+        }
+    },
+
+    /**
+     * Get the data array from the data object
+     * @returns {Array} The array of items
+     */
+    getDataArray: function() {
+        if (!this.data) return [];
+
+        // If data is already an array, return it
+        if (Array.isArray(this.data)) {
+            return this.data;
+        }
+
+        // If data is an object, extract array using dataKey
+        if (this.dataKey && this.data[this.dataKey]) {
+            return this.data[this.dataKey];
+        }
+
+        return [];
     },
 
     /**
@@ -285,7 +322,7 @@ const UIListViewHelper = baseclass.extend({
      * }
      */
     getSelected: function(extractFn) {
-        return utils.getSelectedFromCheckboxes(this.prefix, this.data, extractFn);
+        return utils.getSelectedFromCheckboxes(this.prefix, this.getDataArray(), extractFn);
     },
 
     /**
@@ -494,6 +531,86 @@ const UIListViewHelper = baseclass.extend({
             ui.hideModal();
             ui.addNotification(null, E('p', _('Failed to inspect: %s').format(err.message)), 'error');
         });
+    },
+
+    /**
+     * Refresh table data without full page reload.
+     * Reloads data via view.load(), updates map sections, and optionally clears selections.
+     *
+     * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
+     *
+     * @example
+     * // Refresh after creating/updating item (keep selections)
+     * handleCreateVolume: function() {
+     *     VolumeForm.render(() => this.listHelper.refreshTable(false));
+     * }
+     *
+     * @example
+     * // Refresh after bulk delete (clear selections)
+     * handleDeleteSelected: function() {
+     *     utils.handleBulkDelete({
+     *         selected: this.getSelectedVolumes(),
+     *         itemName: 'volume',
+     *         deletePromiseFn: (name) => podmanRPC.volume.remove(name, false),
+     *         onSuccess: () => this.listHelper.refreshTable(true)
+     *     });
+     * }
+     *
+     * @example
+     * // Manual refresh button
+     * handleRefresh: function() {
+     *     this.listHelper.refreshTable(false);
+     * }
+     */
+    refreshTable: function(clearSelections) {
+        if (!this.view) {
+            console.error('ListViewHelper: view reference is required for refreshTable()');
+            return Promise.reject(new Error('view reference required'));
+        }
+
+        const indicatorId = 'podman-refresh-' + this.prefix;
+        ui.showIndicator(indicatorId, _('Refreshing %s...').format(this.prefix));
+
+        return this.view.load().then((data) => {
+            // Update listHelper data reference - single source of truth
+            this.data = data;
+console.log('data', data);
+            // Get the data array
+            const itemsArray = this.getDataArray();
+console.log('itemsArray', itemsArray);
+            const config_name = this.view.map.config;
+
+            // Remove all existing sections
+            const existingSections = this.view.map.data.sections(config_name, this.prefix);
+            existingSections.forEach((section) => {
+                this.view.map.data.remove(config_name, section['.name']);
+            });
+
+            // Add new sections from fresh data
+            (itemsArray || []).forEach(() => {
+                this.view.map.data.add(config_name, this.prefix);
+            });
+
+            return this.view.map.save(null, true);
+        }).then(() => {
+            // Always setup checkboxes after refresh, optionally clear them
+            const container = document.querySelector('.podman-view-container');
+            if (container) {
+                this.setupSelectAll(container);
+
+                // Clear all checkboxes if requested
+                if (clearSelections) {
+                    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach((cb) => {
+                        cb.checked = false;
+                    });
+                }
+            }
+            ui.hideIndicator(indicatorId);
+        }).catch((err) => {
+            ui.hideIndicator(indicatorId);
+            ui.addNotification(null, E('p', _('Failed to refresh: %s').format(err.message)), 'error');
+        });
     }
 });
 
@@ -501,6 +618,30 @@ const PUI = baseclass.extend({
     Button: UIButton,
     MultiButton: UIMultiButton,
     ListViewHelper: UIListViewHelper,
+    showSpinningModal: (title, text) => {
+        ui.showModal(title, [ E('p', { 'class': 'spinning' }, text) ]);
+    },
+    simpleNotification: (text, type = '') => {
+        ui.addNotification(null, E('p', text), type);
+    },
+    warningNotification: (text) => {
+        ui.addNotification(null, E('p', text), 'warning');
+    },
+    errorNotification: (text) => {
+        ui.addNotification(null, E('p', text), 'error');
+    },
+    simpleTimeNotification: (text, type = '', duration = 3000) => {
+        ui.addTimeLimitedNotification(null, E('p', text), duration, type);
+    },
+    infoTimeNotification: (text, duration = 3000) => {
+        ui.addTimeLimitedNotification(null, E('p', text), duration, 'info');
+    },
+    warningTimeNotification: (text, duration = 3000) => {
+        ui.addTimeLimitedNotification(null, E('p', text), duration, 'warning');
+    },
+    successTimeNotification: (text, duration = 3000) => {
+        ui.addTimeLimitedNotification(null, E('p', text), duration, 'success');
+    },
 });
 
 return PUI;

@@ -5,7 +5,7 @@
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.ui as pui';
-'require podman.secret-form as SecretForm';
+'require podman.form as pform';
 
 /**
  * @module view.podman.secrets
@@ -18,17 +18,6 @@ return view.extend({
 
 	map: null,
 	listHelper: null,
-
-	/**
-	 * Generic failure handler for rendering errors
-	 * @param {string} message - Error message to display
-	 * @returns {Element} Error element
-	 */
-	generic_failure: function(message) {
-		return E('div', {
-			'class': 'alert-message error'
-		}, [_('RPC call failure: '), message]);
-	},
 
 	/**
 	 * Load secret data on view initialization
@@ -52,26 +41,29 @@ return view.extend({
 	render: function(data) {
 		// Handle errors from load()
 		if (data && data.error) {
-			return this.generic_failure(data.error);
+			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper
+		// Initialize list helper with full data object
 		this.listHelper = new pui.ListViewHelper({
 			prefix: 'secrets',
 			itemName: 'secret',
 			rpc: podmanRPC.secret,
-			data: data.secrets,
+			data: data,
 			view: this
 		});
 
-		const getSecretData = (sectionId) => data.secrets[sectionId.replace('secrets', '')];
+		const getSecretData = (sectionId) => {
+			return this.listHelper.data.secrets[sectionId.replace('secrets', '')];
+		};
 
-		this.map = new form.JSONMap(data, _('Secrets'));
+		this.map = new form.JSONMap(this.listHelper.data, _('Secrets'));
+
 		const section = this.map.section(form.TableSection, 'secrets', '', _('Manage Podman secrets'));
 		let o;
 
 		section.anonymous = true;
-		section.nodescription = true;
+		section.nodescriptions = true;
 
 		// Checkbox column for selection
 		o = section.option(form.DummyValue, 'ID', new ui.Checkbox(0, { hiddenname: 'all' }).render());
@@ -116,17 +108,28 @@ return view.extend({
 			onCreate: () => this.handleCreateSecret()
 		});
 
-		return this.map.render().then((rendered) => {
-			const header = rendered.querySelector('.cbi-section');
-			if (header) {
-				header.insertBefore(toolbar.container, header.firstChild);
-			}
+		return this.map.render().then((mapRendered) => {
+			const viewContainer = E('div', { 'class': 'podman-view-container' });
+
+			// Add toolbar outside map (persists during refresh)
+			viewContainer.appendChild(toolbar.container);
+
+			// Add map content
+			viewContainer.appendChild(mapRendered);
 
 			// Setup "select all" checkbox using helper
-			this.listHelper.setupSelectAll(rendered);
+			this.listHelper.setupSelectAll(mapRendered);
 
-			return rendered;
+			return viewContainer;
 		});
+	},
+
+	/**
+	 * Refresh table data without full page reload
+	 * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
+	 */
+	refreshTable: function(clearSelections) {
+		return this.listHelper.refreshTable(clearSelections);
 	},
 
 	/**
@@ -146,7 +149,8 @@ return view.extend({
 		utils.handleBulkDelete({
 			selected: this.getSelectedSecrets(),
 			itemName: 'secret',
-			deletePromiseFn: (name) => podmanRPC.secret.remove(name)
+			deletePromiseFn: (name) => podmanRPC.secret.remove(name),
+			onSuccess: () => this.refreshTable(true)
 		});
 	},
 
@@ -154,14 +158,15 @@ return view.extend({
 	 * Refresh secret list
 	 */
 	handleRefresh: function() {
-		window.location.reload();
+		this.refreshTable(false);
 	},
 
 	/**
 	 * Show create secret dialog
 	 */
 	handleCreateSecret: function() {
-		SecretForm.render(() => this.handleRefresh());
+		console.log('pform', pform);
+		new pform.Secret().render(() => this.handleRefresh());
 	},
 
 	/**

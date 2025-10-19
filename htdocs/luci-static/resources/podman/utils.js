@@ -1,5 +1,6 @@
 'use strict';
 'require ui';
+'require podman.ui as pui';
 
 /**
  * @file Shared utility functions for Podman LuCI application
@@ -7,40 +8,16 @@
  */
 
 return L.Class.extend({
-	/**
-	 * Show a loading modal dialog
-	 * @param {string} title - Modal title
-	 * @param {string} message - Loading message
-	 */
-	showLoadingModal: function(title, message) {
-		ui.showModal(title, [
-			E('p', { 'class': 'spinning' }, message)
-		]);
-	},
 
 	/**
-	 * Show an error modal with close button
-	 * @param {string} title - Modal title
-	 * @param {string} errorMessage - Error message to display
+	 * Generic failure handler for rendering errors
+	 * @param {string} message - Error message to display
+	 * @returns {Element} Error element
 	 */
-	showErrorModal: function(title, errorMessage) {
-		ui.showModal(title, [
-			E('p', {}, errorMessage),
-			this.createCloseButton()
-		]);
-	},
-
-	/**
-	 * Create a close button for modals
-	 * @returns {Element} Close button element
-	 */
-	createCloseButton: function() {
-		return E('div', { 'class': 'right' }, [
-			E('button', {
-				'class': 'cbi-button',
-				'click': ui.hideModal
-			}, _('Close'))
-		]);
+	renderError: function(message) {
+		return E('div', {
+			'class': 'alert-message error'
+		}, [_('RPC call failure: '), message]);
 	},
 
 	/**
@@ -55,7 +32,7 @@ return L.Class.extend({
 	 * @param {Function} [options.onError] - Error callback
 	 */
 	handleOperation: function(options) {
-		this.showLoadingModal(options.loadingTitle, options.loadingMessage);
+		pui.showSpinningModal(options.loadingTitle, options.loadingMessage);
 
 		options.operation.then((result) => {
 			ui.hideModal();
@@ -73,29 +50,6 @@ return L.Class.extend({
 			ui.addNotification(null, E('p', _('%s: %s').format(options.errorPrefix, err.message)), 'error');
 			if (options.onError) options.onError(err);
 		});
-	},
-
-	/**
-	 * Create an empty placeholder row for tables
-	 * @param {string} message - Placeholder message
-	 * @param {number} colSpan - Number of columns to span
-	 * @returns {Element} Table row element
-	 */
-	createPlaceholderRow: function(message, colSpan) {
-		return E('tr', { 'class': 'tr placeholder' }, [
-			E('td', { 'class': 'td', 'colspan': colSpan },
-				E('em', {}, message))
-		]);
-	},
-
-	/**
-	 * Clear table rows except header
-	 * @param {HTMLTableElement} table - Table element
-	 */
-	clearTableRows: function(table) {
-		while (table.rows.length > 1) {
-			table.deleteRow(1);
-		}
 	},
 
 	/**
@@ -174,22 +128,47 @@ return L.Class.extend({
 	},
 
 	/**
-	 * Setup "select all" checkbox functionality for table views
+	 * Setup "select all" checkbox functionality for table views with shift-select support
 	 * @param {HTMLElement} rendered - Rendered table container
 	 * @param {string} prefix - Checkbox name prefix (e.g., 'containers', 'images')
 	 */
 	setupSelectAllCheckbox: function(rendered, prefix) {
 		requestAnimationFrame(() => {
 			const selectAllCheckbox = rendered.querySelector('input[type="hidden"][name="all"] ~ input[type=checkbox]');
+			const checkboxes = rendered.querySelectorAll('input[type="hidden"][name^="' + prefix + '"] ~ input[type=checkbox]');
+
+			// Track last clicked checkbox for shift-select
+			let lastClickedIndex = -1;
+
+			// Setup "select all" functionality
 			if (selectAllCheckbox) {
 				selectAllCheckbox.addEventListener('change', (ev) => {
 					const checked = ev.target.checked;
-					const checkboxes = rendered.querySelectorAll('input[type="hidden"][name^="' + prefix + '"] ~ input[type=checkbox]');
 					checkboxes.forEach((cb) => {
 						cb.checked = checked;
 					});
 				});
 			}
+
+			// Setup shift-select functionality for individual checkboxes
+			checkboxes.forEach((checkbox, index) => {
+				checkbox.addEventListener('click', (ev) => {
+					// Handle shift+click for range selection
+					if (ev.shiftKey && lastClickedIndex !== -1 && lastClickedIndex !== index) {
+						const start = Math.min(lastClickedIndex, index);
+						const end = Math.max(lastClickedIndex, index);
+						const targetState = checkbox.checked;
+
+						// Select/deselect all checkboxes in range
+						for (let i = start; i <= end; i++) {
+							checkboxes[i].checked = targetState;
+						}
+					}
+
+					// Update last clicked index
+					lastClickedIndex = index;
+				});
+			});
 		});
 	},
 
@@ -263,6 +242,35 @@ return L.Class.extend({
 	},
 
 	/**
+	 * Parse memory string to bytes
+	 * Supports formats: 512m, 1g, 2gb, 1024, etc.
+	 * @param {string} memStr - Memory string (e.g., "512m", "1g", "2gb")
+	 * @param {boolean} [returnNullOnError=false] - If true, returns null on parse error; otherwise returns 0
+	 * @returns {number|null} Size in bytes, or 0/null if invalid
+	 */
+	parseMemory: function(memStr, returnNullOnError) {
+		if (!memStr) return returnNullOnError ? null : 0;
+
+		// Match number with optional unit (k, kb, m, mb, g, gb, t, tb, or b)
+		const match = memStr.match(/^(\d+(?:\.\d+)?)\s*([kmgt]?b?)?$/i);
+		if (!match) return returnNullOnError ? null : 0;
+
+		const value = parseFloat(match[1]);
+		const unit = (match[2] || 'b').toLowerCase();
+
+		// Multipliers for common units
+		const multipliers = {
+			'b': 1,
+			'k': 1024, 'kb': 1024,
+			'm': 1024 * 1024, 'mb': 1024 * 1024,
+			'g': 1024 * 1024 * 1024, 'gb': 1024 * 1024 * 1024,
+			't': 1024 * 1024 * 1024 * 1024, 'tb': 1024 * 1024 * 1024 * 1024
+		};
+
+		return Math.floor(value * (multipliers[unit] || 1));
+	},
+
+	/**
 	 * Generic bulk delete handler
 	 * @param {Object} options - Delete operation options
 	 * @param {Array} options.selected - Array of selected items
@@ -275,7 +283,7 @@ return L.Class.extend({
 		const selected = options.selected;
 
 		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No %s selected').format(options.itemName + 's')), 3000, 'warning');
+			pui.warningTimeNotification(_('No %s selected').format(options.itemName + 's'));
 			return;
 		}
 
@@ -304,15 +312,15 @@ return L.Class.extend({
 			ui.hideModal();
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
-				ui.addNotification(null, E('p', _('Failed to delete %d %s').format(
+				pui.errorNotification(_('Failed to delete %d %s').format(
 					errors.length,
 					errors.length === 1 ? options.itemName : options.itemName + 's'
-				)), 'error');
+				));
 			} else {
-				ui.addTimeLimitedNotification(null, E('p', _('Successfully deleted %d %s').format(
+				pui.successTimeNotification(_('Successfully deleted %d %s').format(
 					selected.length,
 					selected.length === 1 ? options.itemName : options.itemName + 's'
-				)), 3000, 'info');
+				));
 			}
 
 			if (options.onSuccess) {
@@ -322,10 +330,10 @@ return L.Class.extend({
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to delete some %s: %s').format(
+			pui.addNotification(_('Failed to delete some %s: %s').format(
 				options.itemName + 's',
 				err.message
-			)), 'error');
+			));
 		});
 	}
 });

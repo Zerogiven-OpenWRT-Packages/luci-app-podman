@@ -250,8 +250,8 @@ EOF
 						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}" "$data"
 						;;
 					*)
-						# Query params only (restart policy)
-						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}"
+						# Query params only (restart policy) - but Podman still requires empty body
+						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}" "{}"
 						;;
 				esac
 				;;

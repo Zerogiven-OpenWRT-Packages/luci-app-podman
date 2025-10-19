@@ -4,6 +4,7 @@
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.ui as pui';
+'require podman.form as pform';
 'require ui';
 'require podman.container-form as ContainerForm';
 
@@ -12,260 +13,226 @@
  * @description Container management view using proper LuCI form components
  */
 return view.extend({
-	handleSaveApply: null,
-	handleSave: null,
-	handleReset: null,
+    handleSaveApply: null,
+    handleSave: null,
+    handleReset: null,
 
-	map: null,
-	listHelper: null,
+    map: null,
+    listHelper: null,
 
-	/**
-	 * Generic failure handler for rendering errors
-	 * @param {string} message - Error message to display
-	 * @returns {Element} Error element
-	 */
-	generic_failure: function(message) {
-		return E('div', {
-			'class': 'alert-message error'
-		}, [_('RPC call failure: '), message]);
-	},
+    /**
+     * Load container data on view initialization
+     * @returns {Promise<Object>} Container data wrapped in object
+     */
+    load: async () => {
+        return podmanRPC.container.list('all=true')
+            .then((containers) => { 
+                return { containers: containers || [] };
+            })
+            .catch((err) => {
+                return { error: err.message || _('Failed to load containers') };
+            });
+    },
 
-	/**
-	 * Load container data on view initialization
-	 * @returns {Promise<Object>} Container data wrapped in object
-	 */
-	load: async () => {
-		return podmanRPC.container.list('all=true')
-			.then((containers) => {
-				return { containers: containers || [] };
-			})
-			.catch((err) => {
-				return { error: err.message || _('Failed to load containers') };
-			});
-	},
+    /**
+     * Render the containers view using form components
+     * @param {Object} data - Data from load()
+     * @returns {Element} Container view element
+     */
+    render: function (data) {
+        // Handle errors from load()
+        if (data && data.error) {
+            return utils.renderError(data.error);
+        }
 
-	/**
-	 * Render the containers view using form components
-	 * @param {Object} data - Data from load()
-	 * @returns {Element} Container view element
-	 */
-	render: function(data) {
-		// Handle errors from load()
-		if (data && data.error) {
-			return this.generic_failure(data.error);
-		}
+        // Initialize list helper with full data object
+        this.listHelper = new pui.ListViewHelper({
+            prefix: 'containers',
+            itemName: 'container',
+            rpc: podmanRPC.container,
+            data: data,
+            view: this
+        });
 
-		// Initialize list helper
-		this.listHelper = new pui.ListViewHelper({
-			prefix: 'containers',
-			itemName: 'container',
-			rpc: podmanRPC.container,
-			data: data.containers,
-			view: this
-		});
+        this.map = new form.JSONMap(this.listHelper.data, _('Containers'));
 
-		const getContainerData = (sectionId) => data.containers[sectionId.replace('containers', '')];
+        const section = this.map.section(form.TableSection, 'containers', '', _('Manage Podman containers'));
+        section.anonymous = true;
 
-		this.map = new form.JSONMap(data, _('Containers'));
-		const section = this.map.section(form.TableSection, 'containers', '', _('Manage Podman containers'));
-		let o;
+        let o;
 
-		section.anonymous = true;
-		section.nodescription = true;
+        // Checkbox column for selection
+        o = section.option(pform.field.SelectDummyValue, 'ID', new ui.Checkbox(0, { hiddenname: 'all' }).render());
 
-		// Checkbox column for selection
-		o = section.option(form.DummyValue, 'ID', new ui.Checkbox(0, { hiddenname: 'all' }).render());
-		o.cfgvalue = (sectionId) => {
-			return new ui.Checkbox(0, { hiddenname: sectionId }).render();
-		};
+        // Name column
+        o = section.option(form.DummyValue, 'Names', _('Name'));
+        o.cfgvalue = (sectionId) => {
+            const container = this.map.data.data[sectionId];
 
-		// Name column
-		o = section.option(form.DummyValue, 'Names', _('Name'));
-		o.cfgvalue = (sectionId) => {
-			const container = getContainerData(sectionId);
-			if (container.Names && container.Names[0]) {
-				return container.Names[0];
-			}
-			return getContainerData(sectionId).Id.substring(0, 12);
-		};
+            if (container.Names && container.Names[0]) {
+                return container.Names[0];
+            }
+            return container.Id.substring(0, 12);
+        };
 
-		// Id column
-		o = section.option(form.DummyValue, 'Id', _('Id'));
-		o.cfgvalue = (sectionId) => {
-			return E('a', {
-				href: L.url('admin/podman/container', getContainerData(sectionId).Id)
-			}, utils.truncate(getContainerData(sectionId).Id, 10));
-		};
-		o.rawhtml = true;
+        // Id column
+        o = section.option(form.DummyValue, 'Id', _('Id'));
+        o.cfgvalue = (sectionId) => {
+            const containerId = this.map.data.data[sectionId].Id;
+            return E('a', {
+                href: L.url('admin/podman/container', containerId)
+            }, utils.truncate(containerId, 10));
+        };
 
-		// Image column
-		o = section.option(form.DummyValue, 'Image', _('Image'));
+        // Image column
+        o = section.option(pform.field.DataDummyValue, 'Image', _('Image'));
+        // Status column
+        o = section.option(pform.field.DataDummyValue, 'State', _('Status'));
+        // Created column
+        o = section.option(pform.field.DataDummyValue, 'Created', _('Created'));
+        o.cfgformatter = utils.formatDate;
 
-		// Status column
-		o = section.option(form.DummyValue, 'State', _('Status'));
+        // Create toolbar using helper with custom buttons
+        const toolbar = this.listHelper.createToolbar({
+            onDelete: () => this.handleRemove(),
+            onRefresh: undefined, // No refresh button for containers
+            onCreate: undefined, // Create handled by MultiButton below
+            customButtons: [
+                {
+                    text: '&#9658;', // Play symbol
+                    handler: () => this.handleStart(),
+                    cssClass: 'positive'
+                },
+                {
+                    text: '&#9724;', // Stop symbol
+                    handler: () => this.handleStop(),
+                    cssClass: 'negative'
+                }
+            ]
+        });
 
-		// Created column
-		o = section.option(form.DummyValue, 'Created', _('Created'));
-		o.cfgvalue = (sectionId) => {
-			const container = getContainerData(sectionId);
-			return container && container.Created ? utils.formatDate(container.Created) : _('Unknown');
-		};
+        // Add create menu button at the beginning of the toolbar
+        const createButton = new pui.MultiButton({}, 'add')
+            .addItem(_('Create Container'), () => this.handleCreateContainer())
+            .addItem(_('Import from Run Command'), () => this.handleImportFromRunCommand())
+            .addItem(_('Import from Compose File'), () => this.handleImportFromCompose())
+            .render();
 
-		// Create toolbar using helper with custom buttons
-		const toolbar = this.listHelper.createToolbar({
-			onDelete: () => this.handleRemove(),
-			onRefresh: undefined, // No refresh button for containers
-			onCreate: undefined, // Create handled by MultiButton below
-			customButtons: [
-				{
-					text: '&#9658;', // Play symbol
-					handler: () => this.handleStart(),
-					cssClass: 'positive'
-				},
-				{
-					text: '&#9724;', // Stop symbol
-					handler: () => this.handleStop(),
-					cssClass: 'negative'
-				}
-			]
-		});
+        toolbar.prependButton(createButton);
 
-		// Add create menu button at the beginning of the toolbar
-		const createButton = new pui.MultiButton({}, 'add')
-			.addItem(_('Create Container'), () => this.handleCreateContainer())
-			.addItem(_('Import from Run Command'), () => this.handleImportFromRunCommand())
-			.addItem(_('Import from Compose File'), () => this.handleImportFromCompose())
-			.render();
+        return this.map.render().then((mapRendered) => {
+            const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-		toolbar.prependButton(createButton);
+            // Add toolbar outside map (persists during refresh)
+            viewContainer.appendChild(toolbar.container);
+            // Add map content
+            viewContainer.appendChild(mapRendered);
+            // Setup "select all" checkbox using helper
+            this.listHelper.setupSelectAll(mapRendered);
 
-		return this.map.render().then((rendered) => {
-			const header = rendered.querySelector('.cbi-section');
-			if (header) {
-				header.insertBefore(toolbar.container, header.firstChild);
-			}
+            return viewContainer;
+        });
+    },
 
-			// Setup "select all" checkbox using helper
-			this.listHelper.setupSelectAll(rendered);
+    /**
+     * Refresh table data without full page reload
+     * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
+     */
+    refreshTable: function (clearSelections) {
+        return this.listHelper.refreshTable(clearSelections);
+    },
 
-			return rendered;
-		});
-	},
+    /**
+     * Get selected container IDs from checkboxes
+     * @returns {Array<string>} Array of selected container IDs
+     */
+    getSelectedContainerIds: function () {
+        return this.listHelper.getSelected((container) => container.Id);
+    },
 
-	/**
-	 * Get selected container IDs from checkboxes
-	 * @returns {Array<string>} Array of selected container IDs
-	 */
-	getSelectedContainerIds: function() {
-		return this.listHelper.getSelected((container) => container.Id);
-	},
+    handleCreateContainer: function () {
+        new pform.Container().render(() => this.refreshTable(false));
+    },
 
-	handleCreateContainer: function() {
-		ContainerForm.render();
-	},
+    handleImportFromRunCommand: function () {
+        new pform.Container().showImportFromRunCommand(() => this.refreshTable(false));
+    },
 
-	handleImportFromRunCommand: function() {
-		ui.showModal(_('Import from Run Command'), [
-			E('p', {}, _('Import a container configuration from a docker/podman run command.')),
-			E('div', { 'class': 'cbi-value' }, [
-				E('label', { 'class': 'cbi-value-title' }, _('Run Command')),
-				E('div', { 'class': 'cbi-value-field' }, [
-					E('textarea', {
-						'id': 'import-run-command',
-						'class': 'cbi-input-textarea',
-						'style': 'width: 100%; min-height: 150px;',
-						'placeholder': 'docker run -d --name mycontainer -p 8080:80 nginx:latest'
-					})
-				])
-			]),
-			E('div', { 'class': 'right' }, [
-				new pui.Button(_('Cancel'), () => ui.hideModal(), 'neutral').render(),
-				' ',
-				new pui.Button(_('Import'), () => {
-					const cmd = document.getElementById('import-run-command').value;
-					if (!cmd.trim()) {
-						ui.addNotification(null, E('p', _('Please enter a run command')), 'error');
-						return;
-					}
-					ui.hideModal();
-					ui.addTimeLimitedNotification(null, E('p', _('Import from run command not yet implemented')), 3000, 'warning');
-				}, 'positive').render()
-			])
-		]);
-	},
+    handleImportFromCompose: function () {
+        // Feature not yet implemented
+    },
 
-	handleImportFromCompose: function() {
-		// Feature not yet implemented
-	},
+    /**
+     * Handle container start action for selected containers
+     */
+    handleStart: function () {
+        const selected = this.getSelectedContainerIds();
+        
+        if (selected.length === 0) {
+            pui.simpleTimeNotification(_('No containers selected'), 'warning');
+            return;
+        }
 
-	/**
-	 * Handle container start action for selected containers
-	 */
-	handleStart: function() {
-		const selected = this.getSelectedContainerIds();
-		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No containers selected')), 3000, 'warning');
-			return;
-		}
+        pui.showSpinningModal(_('Starting Containers'), _('Starting %d container(s)...').format(selected.length));
 
-		ui.showModal(_('Starting Containers'), [
-			E('p', { 'class': 'spinning' }, _('Starting %d container(s)...').format(selected.length))
-		]);
+        const promises = selected.map((id) => podmanRPC.container.start(id));
+        Promise.all(promises).then((results) => {
+            ui.hideModal();
 
-		const promises = selected.map((id) => podmanRPC.container.start(id));
-		Promise.all(promises).then((results) => {
-			ui.hideModal();
-			const errors = results.filter((r) => r && r.error);
-			if (errors.length > 0) {
-				ui.addNotification(null, E('p', _('Failed to start %d container(s)').format(errors.length)), 'error');
-			} else {
-				ui.addTimeLimitedNotification(null, E('p', _('Started %d container(s) successfully').format(selected.length)), 3000, 'info');
-			}
-			window.location.reload();
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to start containers: %s').format(err.message)), 'error');
-		});
-	},
+            const errors = results.filter((r) => r && r.error);
+            if (errors.length > 0) {
+                pui.simpleNotification(_('Failed to start %d container(s)').format(errors.length), 'error');
+            } else {
+                pui.simpleTimeNotification(_('Started %d container(s) successfully').format(selected.length), 'info');
+            }
 
-	/**
-	 * Handle container stop action for selected containers
-	 */
-	handleStop: function() {
-		const selected = this.getSelectedContainerIds();
-		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No containers selected')), 3000, 'warning');
-			return;
-		}
+            this.refreshTable(false);
+        }).catch((err) => {
+            ui.hideModal();
+            pui.simpleNotification(_('Failed to start containers: %s').format(err.message), 'error');
+        });
+    },
 
-		ui.showModal(_('Stopping Containers'), [
-			E('p', { 'class': 'spinning' }, _('Stopping %d container(s)...').format(selected.length))
-		]);
+    /**
+     * Handle container stop action for selected containers
+     */
+    handleStop: function () {
+        const selected = this.getSelectedContainerIds();
 
-		const promises = selected.map((id) => podmanRPC.container.stop(id));
-		Promise.all(promises).then((results) => {
-			ui.hideModal();
-			const errors = results.filter((r) => r && r.error);
-			if (errors.length > 0) {
-				ui.addNotification(null, E('p', _('Failed to stop %d container(s)').format(errors.length)), 'error');
-			} else {
-				ui.addTimeLimitedNotification(null, E('p', _('Stopped %d container(s) successfully').format(selected.length)), 3000, 'info');
-			}
-			window.location.reload();
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to stop containers: %s').format(err.message)), 'error');
-		});
-	},
+        if (selected.length === 0) {
+            pui.simpleTimeNotification(_('No containers selected'), 'warning');
+            return;
+        }
 
-	/**
-	 * Handle container remove action for selected containers
-	 */
-	handleRemove: function() {
-		utils.handleBulkDelete({
-			selected: this.getSelectedContainerIds(),
-			itemName: 'container',
-			deletePromiseFn: (id) => podmanRPC.container.remove(id, false)
-		});
-	}
+        pui.showSpinningModal(_('Stopping Containers'), _('Stopping %d container(s)...').format(selected.length));
+
+        const promises = selected.map((id) => podmanRPC.container.stop(id));
+        Promise.all(promises).then((results) => {
+            ui.hideModal();
+
+            const errors = results.filter((r) => r && r.error);
+            if (errors.length > 0) {
+                pui.errorNotification(_('Failed to stop %d container(s)').format(errors.length));
+            } else {
+                pui.successTimeNotification(_('Stopped %d container(s) successfully').format(selected.length));
+            }
+
+            this.refreshTable(false);
+        }).catch((err) => {
+            ui.hideModal();
+            pui.errorNotification(_('Failed to stop containers: %s').format(err.message));
+        });
+    },
+
+    /**
+     * Handle container remove action for selected containers
+     */
+    handleRemove: function () {
+        utils.handleBulkDelete({
+            selected: this.getSelectedContainerIds(),
+            itemName: 'container',
+            deletePromiseFn: (id) => podmanRPC.container.remove(id, false),
+            onSuccess: () => this.refreshTable(true)
+        });
+    }
 });
