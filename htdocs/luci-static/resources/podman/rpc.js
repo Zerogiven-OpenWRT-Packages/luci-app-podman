@@ -100,12 +100,47 @@ return L.Class.extend({
 		 * Get container logs
 		 * @param {string} id - Container ID
 		 * @param {string} params - Log parameters (e.g., 'stdout=true&stderr=true&tail=100')
-		 * @returns {Promise<string>} Container logs
+		 * @returns {Promise<string>} Container logs (plain text)
 		 */
 		logs: rpc.declare({
 			object: 'luci.podman',
 			method: 'container_logs',
 			params: ['id', 'params']
+		}),
+
+		/**
+		 * Start streaming container logs
+		 * @param {string} id - Container ID
+		 * @param {string} params - Log parameters (must include follow=true for streaming)
+		 * @returns {Promise<Object>} Session object with session_id
+		 */
+		logsStream: rpc.declare({
+			object: 'luci.podman',
+			method: 'container_logs_stream',
+			params: ['id', 'params']
+		}),
+
+		/**
+		 * Get container logs stream status
+		 * @param {string} session_id - Logs session ID
+		 * @param {number} offset - Output offset for streaming
+		 * @returns {Promise<Object>} Status object with output, complete, and success flags
+		 */
+		logsStatus: rpc.declare({
+			object: 'luci.podman',
+			method: 'container_logs_status',
+			params: ['session_id', 'offset']
+		}),
+
+		/**
+		 * Stop container logs stream and cleanup resources
+		 * @param {string} session_id - Logs session ID
+		 * @returns {Promise<Object>} Success result
+		 */
+		logsStop: rpc.declare({
+			object: 'luci.podman',
+			method: 'container_logs_stop',
+			params: ['session_id']
 		}),
 
 		/**

@@ -2,6 +2,7 @@
 'require view';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
+'require podman.ui as pui';
 'require ui';
 
 /**
@@ -280,14 +281,8 @@ return view.extend({
 			E('div', { 'class': 'cbi-section-node' }, [
 				E('h3', { 'style': 'margin-bottom: 15px;' }, _('System Maintenance')),
 				E('div', { 'style': 'display: flex; gap: 10px; flex-wrap: wrap;' }, [
-					E('button', {
-						'class': 'cbi-button cbi-button-action',
-						'click': L.bind(this.handleAutoUpdate, this)
-					}, _('Auto-Update Containers')),
-					E('button', {
-						'class': 'cbi-button cbi-button-remove',
-						'click': L.bind(this.handlePrune, this)
-					}, _('Cleanup / Prune'))
+					new pui.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(), 'action').render(),
+					new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove').render()
 				])
 			])
 		]);
@@ -315,12 +310,11 @@ return view.extend({
 					E('p', {}, _('No containers are configured for auto-update or all containers are up to date.')),
 					E('p', { 'style': 'margin-top: 10px; font-size: 0.9em; opacity: 0.8;' },
 						_('To enable auto-update, add label io.containers.autoupdate=registry to your containers.')),
-					E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-						E('button', {
-							'class': 'cbi-button',
-							'click': ui.hideModal
-						}, _('Close'))
-					])
+					new pui.ModalButtons({
+						confirmText: _('Close'),
+						onConfirm: ui.hideModal,
+						onCancel: null
+					}).render()
 				]);
 				return;
 			}
@@ -334,27 +328,22 @@ return view.extend({
 			ui.showModal(_('Auto-Update Available'), [
 				E('p', {}, _('The following containers can be updated:')),
 				E('ul', { 'style': 'margin: 10px 0; padding-left: 20px;' }, updateList),
-				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-					E('button', {
-						'class': 'cbi-button cbi-button-negative',
-						'click': ui.hideModal
-					}, _('Cancel')),
-					' ',
-					E('button', {
-						'class': 'cbi-button cbi-button-positive',
-						'click': function() {
-							ui.hideModal();
-							self.performAutoUpdate();
-						}
-					}, _('Update Now'))
-				])
+				new pui.ModalButtons({
+					confirmText: _('Update Now'),
+					onConfirm: () => {
+						ui.hideModal();
+						self.performAutoUpdate();
+					}
+				}).render()
 			]);
 		}).catch(function(err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Failed to check for updates: %s').format(err.message)),
-				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-					E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Close'))
-				])
+				new pui.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: ui.hideModal,
+					onCancel: null
+				}).render()
 			]);
 		});
 	},
@@ -376,22 +365,23 @@ return view.extend({
 
 			ui.showModal(_('Auto-Update Complete'), [
 				E('p', {}, _('Updated %d container(s) successfully.').format(successful)),
-				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-					E('button', {
-						'class': 'cbi-button',
-						'click': function() {
-							ui.hideModal();
-							window.location.reload();
-						}
-					}, _('Close'))
-				])
+				new pui.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: () => {
+						ui.hideModal();
+						window.location.reload();
+					},
+					onCancel: null
+				}).render()
 			]);
 		}).catch(function(err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Auto-update failed: %s').format(err.message)),
-				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-					E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Close'))
-				])
+				new pui.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: ui.hideModal,
+					onCancel: null
+				}).render()
 			]);
 		});
 	},
@@ -423,22 +413,16 @@ return view.extend({
 					_('This will permanently delete unused containers, images, networks, and optionally volumes.')
 				])
 			]),
-			E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-				E('button', {
-					'class': 'cbi-button cbi-button-negative',
-					'click': ui.hideModal
-				}, _('Cancel')),
-				' ',
-				E('button', {
-					'class': 'cbi-button cbi-button-remove',
-					'click': function() {
-						var allImages = document.getElementById('prune-all-images').checked;
-						var volumes = document.getElementById('prune-volumes').checked;
-						ui.hideModal();
-						self.performPrune(allImages, volumes);
-					}
-				}, _('Clean Up Now'))
-			])
+			new pui.ModalButtons({
+				confirmText: _('Clean Up Now'),
+				confirmClass: 'remove',
+				onConfirm: () => {
+					var allImages = document.getElementById('prune-all-images').checked;
+					var volumes = document.getElementById('prune-volumes').checked;
+					ui.hideModal();
+					self.performPrune(allImages, volumes);
+				}
+			}).render()
 		]);
 	},
 
@@ -491,22 +475,23 @@ return view.extend({
 					E('p', { 'style': 'margin-top: 10px;' }, _('No unused resources found')),
 				E('p', { 'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;' },
 					_('Space freed: %s').format(utils.formatBytes(freedSpace))),
-				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-					E('button', {
-						'class': 'cbi-button',
-						'click': function() {
-							ui.hideModal();
-							window.location.reload();
-						}
-					}, _('Close'))
-				])
+				new pui.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: () => {
+						ui.hideModal();
+						window.location.reload();
+					},
+					onCancel: null
+				}).render()
 			]);
 		}).catch(function(err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Cleanup failed: %s').format(err.message)),
-				E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-					E('button', { 'class': 'cbi-button', 'click': ui.hideModal }, _('Close'))
-				])
+				new pui.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: ui.hideModal,
+					onCancel: null
+				}).render()
 			]);
 		});
 	},

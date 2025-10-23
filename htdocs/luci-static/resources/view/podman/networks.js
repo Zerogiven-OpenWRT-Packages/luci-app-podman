@@ -4,8 +4,9 @@
 'require ui';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
-'require podman.ui as pui';
-'require podman.form as pform';
+'require podman.ui as podmanUI';
+'require podman.form as podmanForm';
+'require podman.list as List';
 'require podman.openwrt-network as openwrtNetwork';
 
 /**
@@ -46,17 +47,12 @@ return view.extend({
         }
 
         // Initialize list helper with full data object
-        this.listHelper = new pui.ListViewHelper({
-            prefix: 'networks',
+        this.listHelper = new List.Util({
             itemName: 'network',
             rpc: podmanRPC.network,
             data: data,
             view: this
         });
-
-        const getNetworkData = (sectionId) => {
-            return this.listHelper.data.networks[sectionId.replace('networks', '')];
-        }
 
         this.map = new form.JSONMap(this.listHelper.data, _('Networks'));
 
@@ -66,12 +62,12 @@ return view.extend({
         let o;
 
         // Checkbox column for selection
-        o = section.option(pform.field.SelectDummyValue, 'name', new ui.Checkbox(0, { hiddenname: 'all' }).render());
+        o = section.option(podmanForm.field.SelectDummyValue, 'name', new ui.Checkbox(0, { hiddenname: 'all' }).render());
 
         // Name column with integration alert icon
         o = section.option(form.DummyValue, 'Name', _('Name'));
         o.cfgvalue = (sectionId) => {
-            const network = getNetworkData(sectionId);
+            const network = this.map.data.data[sectionId];
             const name = network.name || network.Name || _('Unknown');
 
             return E('span', {}, [
@@ -91,12 +87,12 @@ return view.extend({
         };
 
         // Driver column
-        o = section.option(pform.field.DataDummyValue, 'Driver', _('Driver'));
+        o = section.option(podmanForm.field.DataDummyValue, 'Driver', _('Driver'));
 
         // Subnet column
         o = section.option(form.DummyValue, 'Subnet', _('Subnet'));
         o.cfgvalue = (sectionId) => {
-            const network = getNetworkData(sectionId);
+            const network = this.map.data.data[sectionId];
             // Handle Podman API format (lowercase)
             if (network.subnets && network.subnets.length > 0) {
                 return network.subnets[0].subnet || _('N/A');
@@ -111,7 +107,7 @@ return view.extend({
         // Gateway column
         o = section.option(form.DummyValue, 'Gateway', _('Gateway'));
         o.cfgvalue = (sectionId) => {
-            const network = getNetworkData(sectionId);
+            const network = this.map.data.data[sectionId];
             // Handle Podman API format (lowercase)
             if (network.subnets && network.subnets.length > 0) {
                 return network.subnets[0].gateway || _('N/A');
@@ -124,7 +120,7 @@ return view.extend({
         };
 
         // Created column
-        o = section.option(pform.field.DataDummyValue, 'Created', _('Created'));
+        o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
         o.cfgformatter = (created) => utils.formatDate(new Date(created).getTime() / 1000);
 
         // Create toolbar using helper
@@ -145,41 +141,41 @@ return view.extend({
             this.listHelper.setupSelectAll(mapRendered);
 
             // Check OpenWrt integration completeness for each network (async)
-            (data.networks || []).forEach((network) => {
-                const name = network.name || network.Name;
-                openwrtNetwork.isIntegrationComplete(name).then((result) => {
-                    const iconEl = document.getElementById('integration-icon-' + name);
-                    if (iconEl && !result.complete) {
-                        // Show alert icon for incomplete integration
-                        iconEl.innerHTML = '';
-                        iconEl.appendChild(E('a', {
-                            'href': '#',
-                            'class': 'alert-icon',
-                            'style': 'color: #f90; text-decoration: none; cursor: pointer;',
-                            'title': _('OpenWrt integration incomplete. Click to setup. Missing: %s').format(result.missing.join(', ')),
-                            'click': (ev) => {
-                                ev.preventDefault();
-                                ev.stopPropagation();
-                                this.handleSetupIntegration(network);
-                            }
-                        }, '⚠'));
-                        iconEl.style.display = 'inline';
-                    }
-                }).catch(() => {
-                    // Ignore errors (network might not have subnet/gateway configured)
-                });
-            });
+            this.checkIntegrationStatus();
 
             return viewContainer;
         });
     },
 
     /**
-     * Refresh table data without full page reload
-     * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
+     * Check OpenWrt integration status for all networks and update icons
      */
-    refreshTable: function(clearSelections) {
-        return this.listHelper.refreshTable(clearSelections);
+    checkIntegrationStatus: function() {
+        const networks = this.listHelper.getDataArray();
+        (networks || []).forEach((network) => {
+            const name = network.name || network.Name;
+            openwrtNetwork.isIntegrationComplete(name).then((result) => {
+                const iconEl = document.getElementById('integration-icon-' + name);
+                if (iconEl && !result.complete) {
+                    // Show alert icon for incomplete integration
+                    iconEl.innerHTML = '';
+                    iconEl.appendChild(E('a', {
+                        'href': '#',
+                        'class': 'alert-icon',
+                        'style': 'color: #f90; text-decoration: none; cursor: pointer;',
+                        'title': _('OpenWrt integration incomplete. Click to setup. Missing: %s').format(result.missing.join(', ')),
+                        'click': (ev) => {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            this.handleSetupIntegration(network);
+                        }
+                    }, '⚠'));
+                    iconEl.style.display = 'inline';
+                }
+            }).catch(() => {
+                // Ignore errors (network might not have subnet/gateway configured)
+            });
+        });
     },
 
     /**
@@ -197,7 +193,7 @@ return view.extend({
         const selected = this.getSelectedNetworks();
 
         if (selected.length === 0) {
-            pui.warningTimeNotification(_('No networks selected'));
+            podmanUI.warningTimeNotification(_('No networks selected'));
             return;
         }
 
@@ -225,7 +221,7 @@ return view.extend({
 
             if (!confirm(confirmMsg)) return;
 
-            pui.showSpinningModal(_('Deleting Networks'), _('Deleting %d selected network(s)...').format(selected.length));
+            podmanUI.showSpinningModal(_('Deleting Networks'), _('Deleting %d selected network(s)...').format(selected.length));
             
             // Delete networks and their OpenWrt integrations
             const deletePromises = selected.map((name) => {
@@ -260,17 +256,17 @@ return view.extend({
                 const openwrtErrors = results.filter((r) => r.openwrtError);
 
                 if (errors.length > 0) {
-                    pui.errorNotification(_('Failed to delete %d network(s)').format(errors.length));
+                    podmanUI.errorNotification(_('Failed to delete %d network(s)').format(errors.length));
                 } else if (openwrtErrors.length > 0) {
-                    pui.warningNotification(_('Networks deleted but %d OpenWrt integration(s) failed to remove').format(openwrtErrors.length));
+                    podmanUI.warningNotification(_('Networks deleted but %d OpenWrt integration(s) failed to remove').format(openwrtErrors.length));
                 } else {
-                    pui.successTimeNotification(_('Successfully deleted %d network(s)').format(selected.length));
+                    podmanUI.successTimeNotification(_('Successfully deleted %d network(s)').format(selected.length));
                 }
 
-                this.refreshTable(true);
+                this.handleRefresh(true);
             }).catch((err) => {
                 ui.hideModal();
-                pui.errorNotification(_('Failed to delete networks: %s').format(err.message));
+                podmanUI.errorNotification(_('Failed to delete networks: %s').format(err.message));
             });
         });
     },
@@ -278,15 +274,20 @@ return view.extend({
     /**
      * Refresh network list
      */
-    handleRefresh: function() {
-        this.refreshTable(false);
+    handleRefresh: function(clearSelections) {
+        this.listHelper.refreshTable(clearSelections).then(() => {
+            // Re-check integration status after table refresh
+            this.checkIntegrationStatus();
+        });
     },
 
     /**
      * Show create network dialog
      */
     handleCreateNetwork: function() {
-        new pform.Network().render(() => this.handleRefresh());
+        const form = new podmanForm.Network();
+        form.submit = () => this.handleRefresh();
+        form.render();
     },
 
     /**
@@ -320,7 +321,7 @@ return view.extend({
 
         // Validate we have the required data
         if (!subnet || !gateway) {
-            pui.errorNotification(_('Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured').format(name));
+            podmanUI.errorNotification(_('Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured').format(name));
             return;
         }
 
@@ -344,20 +345,13 @@ return view.extend({
                 E('li', {}, _('Add to shared "podman" firewall zone')),
                 E('li', {}, _('DNS access rule (if first network)'))
             ]),
-            E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-                E('button', {
-                    'class': 'cbi-button',
-                    'click': () => ui.hideModal()
-                }, _('Cancel')),
-                ' ',
-                E('button', {
-                    'class': 'cbi-button cbi-button-positive',
-                    'click': () => {
-                        ui.hideModal();
-                        this.executeSetupIntegration(name, bridgeName, subnet, gateway);
-                    }
-                }, _('Setup'))
-            ])
+            new podmanUI.ModalButtons({
+                confirmText: _('Setup'),
+                onConfirm: () => {
+                    ui.hideModal();
+                    this.executeSetupIntegration(name, bridgeName, subnet, gateway);
+                }
+            }).render()
         ]);
     },
 
@@ -369,7 +363,7 @@ return view.extend({
      * @param {string} gateway - Gateway IP
      */
     executeSetupIntegration: function(name, bridgeName, subnet, gateway) {
-        pui.showSpinningModal(_('Setting up Integration'), _('Creating OpenWrt integration for network "%s"...').format(name));
+        podmanUI.showSpinningModal(_('Setting up Integration'), _('Creating OpenWrt integration for network "%s"...').format(name));
 
         openwrtNetwork.createIntegration(name, {
             bridgeName: bridgeName,
@@ -377,7 +371,7 @@ return view.extend({
             gateway: gateway
         }).then(() => {
             ui.hideModal();
-            pui.successTimeNotification(_('OpenWrt integration for network "%s" created successfully').format(name));
+            podmanUI.successTimeNotification(_('OpenWrt integration for network "%s" created successfully').format(name));
 
             // Update icon in place - hide alert icon
             const iconEl = document.getElementById('integration-icon-' + name);
@@ -387,7 +381,7 @@ return view.extend({
             }
         }).catch((err) => {
             ui.hideModal();
-            pui.errorNotification(_('Failed to setup OpenWrt integration: %s').format(err.message));
+            podmanUI.errorNotification(_('Failed to setup OpenWrt integration: %s').format(err.message));
         });
     }
 });

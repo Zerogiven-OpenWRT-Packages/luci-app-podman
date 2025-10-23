@@ -4,8 +4,9 @@
 'require ui';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
-'require podman.ui as pui';
-'require podman.form as pform';
+'require podman.ui as podmanUI';
+'require podman.form as podmanForm';
+'require podman.list as List';
 
 /**
  * @module view.podman.images
@@ -58,8 +59,7 @@ return view.extend({
         }
 
         // Initialize list helper with full data object
-        this.listHelper = new pui.ListViewHelper({
-            prefix: 'images',
+        this.listHelper = new List.Util({
             itemName: 'image',
             rpc: podmanRPC.image,
             data: data,
@@ -74,7 +74,7 @@ return view.extend({
         let o;
 
         // Checkbox column for selection
-        o = section.option(pform.field.SelectDummyValue, 'Id', new ui.Checkbox(0, { hiddenname: 'all' }).render());
+        o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(0, { hiddenname: 'all' }).render());
 
         // Repository column
         o = section.option(form.DummyValue, 'Repository', _('Repository'));
@@ -95,23 +95,15 @@ return view.extend({
         };
 
         // Image ID column
-        o = section.option(form.DummyValue, 'ImageId', _('Image ID'));
-        o.cfgvalue = (sectionId) => {
-            const image = this.map.data.data[sectionId];
-            return E('a', {
-                href: '#',
-                click: (ev) => {
-                    ev.preventDefault();
-                    this.handleInspect(image.Id);
-                }
-            }, utils.truncate(image.Id ? image.Id.substring(7, 19) : '', 10));
-        };
+        o = section.option(podmanForm.field.LinkDataDummyValue, 'ImageId', _('Image ID'));
+        o.click = (image) => this.handleInspect(image.Id);
+        o.text = (image) => utils.truncate(image.Id ? image.Id.substring(7, 19) : '', 10);
 
         // Size column
-        o = section.option(pform.field.DataDummyValue, 'Size', _('Size'));
+        o = section.option(podmanForm.field.DataDummyValue, 'Size', _('Size'));
         o.cfgformatter = utils.formatBytes;
         // Created column
-        o = section.option(pform.field.DataDummyValue, 'Created', _('Created'));
+        o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
         o.cfgformatter = utils.formatDate;
 
         // Create toolbar using helper
@@ -123,8 +115,11 @@ return view.extend({
             ]
         });
 
+        const formImage = new podmanForm.Image();
+        formImage.submit = () => this.handleRefresh();
+
         return Promise.all([
-            new pform.Image().render(() => this.refreshTable(false)),
+            formImage.render(),
             this.map.render(),
         ]).then((rendered) => {
             const formRendered = rendered[0];
@@ -143,30 +138,6 @@ return view.extend({
 
             return viewContainer;
         });
-
-        // return this.map.render().then((mapRendered) => {
-        // 	const viewContainer = E('div', { 'class': 'podman-view-container' });
-
-        // 	// Add pull section first
-        // 	viewContainer.appendChild(pullSection);
-        // 	// Add toolbar outside map (persists during refresh)
-        // 	viewContainer.appendChild(toolbar.container);
-        // 	// Add map content
-        // 	viewContainer.appendChild(mapRendered);
-
-        // 	// Setup "select all" checkbox using helper
-        // 	this.listHelper.setupSelectAll(mapRendered);
-
-        // 	return viewContainer;
-        // });
-    },
-
-    /**
-     * Refresh table data without full page reload
-     * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
-     */
-    refreshTable: function (clearSelections) {
-        return this.listHelper.refreshTable(clearSelections);
     },
 
     /**
@@ -186,13 +157,11 @@ return view.extend({
      * Delete selected images
      */
     handleDeleteSelected: function () {
-        utils.handleBulkDelete({
+        this.listHelper.bulkDelete({
             selected: this.getSelectedImages(),
-            itemName: 'image',
-            // Use repo:tag instead of ID to remove individual tags
             deletePromiseFn: (img) => podmanRPC.image.remove(img.name, false),
             formatItemName: (img) => img.name,
-            onSuccess: () => this.refreshTable(true)
+            onSuccess: () => this.handleRefresh(true)
         });
     },
 
@@ -203,7 +172,7 @@ return view.extend({
         const selected = this.getSelectedImages();
 
         if (selected.length === 0) {
-            pui.simpleTimeNotification(_('No images selected'), 'warning');
+            podmanUI.simpleTimeNotification(_('No images selected'), 'warning');
             return;
         }
 
@@ -211,34 +180,31 @@ return view.extend({
         if (!confirm(_('Pull latest version of %d image(s)?\n\n%s').format(selected.length, imageNames)))
             return;
 
-        ui.showModal(_('Pulling Images'), [
-            E('p', { 'class': 'spinning' }, _('Pulling latest version of %d image(s)...').format(selected.length))
-        ]);
+        podmanUI.showSpinningModal(_('Pulling Images'), _('Pulling latest version of %d image(s)...').format(selected.length));
 
-        const pullPromises = selected.map((img) => {
-            return podmanRPC.image.pull(img.name);
-        });
+        const pullPromises = selected.map((img) => podmanRPC.image.pull(img.name));
 
         Promise.all(pullPromises).then((results) => {
             ui.hideModal();
             const errors = results.filter((r) => r && r.error);
             if (errors.length > 0) {
-                pui.errorNotification(_('Failed to pull %d image(s)').format(errors.length));
+                podmanUI.errorNotification(_('Failed to pull %d image(s)').format(errors.length));
             } else {
-                pui.successTimeNotification(_('Successfully pulled %d image(s)').format(selected.length));
+                podmanUI.successTimeNotification(_('Successfully pulled %d image(s)').format(selected.length));
             }
-            this.refreshTable(false);
+            this.handleRefresh();
         }).catch((err) => {
             ui.hideModal();
-            ui.addNotification(null, E('p', _('Failed to pull some images: %s').format(err.message)), 'error');
+            podmanUI.errorNotification(_('Failed to pull some images: %s').format(err.message));
         });
     },
 
     /**
      * Refresh image list
      */
-    handleRefresh: function () {
-        this.refreshTable(false);
+    handleRefresh: function (clearSelections) {
+        clearSelections = clearSelections || false;
+        this.listHelper.refreshTable(clearSelections);
     },
 
     /**

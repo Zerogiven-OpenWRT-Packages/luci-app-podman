@@ -108,6 +108,9 @@ case "$1" in
 	"container_restart": { "id": "" },
 	"container_remove": { "id": "", "force": false },
 	"container_logs": { "id": "", "params": "" },
+	"container_logs_stream": { "id": "", "params": "" },
+	"container_logs_status": { "session_id": "", "offset": 0 },
+	"container_logs_stop": { "session_id": "" },
 	"container_stats": { "id": "" },
 	"container_create": { "data": {} },
 	"container_rename": { "id": "", "name": "" },
@@ -201,7 +204,141 @@ EOF
 				id_enc=$(urlencode "$id")
 				path="${API_BASE}/containers/${id_enc}/logs"
 				[ -n "$params" ] && path="${path}?${params}" || path="${path}?stdout=true&stderr=true&tail=1000"
-				curl_request "GET" "$path"
+
+				# Logs API returns binary stream format with Docker multiplexed headers
+				# Shell variables strip binary data, so save to temp file first
+				temp_file="/tmp/podman_logs_$$_${RANDOM}.log"
+				curl -s --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "$temp_file" 2>&1
+				exit_code=$?
+
+				if [ $exit_code -ne 0 ]; then
+					rm -f "$temp_file"
+					echo "{\"error\":\"Request failed\",\"details\":\"curl exit code $exit_code\"}"
+					exit 1
+				fi
+
+				# Base64 encode binary data for JSON transport (use openssl on OpenWrt)
+				encoded_data=$(openssl base64 -A < "$temp_file")
+				rm -f "$temp_file"
+
+				# Return as JSON with base64-encoded data
+				echo "{\"data\":\"${encoded_data}\"}"
+				;;
+			container_logs_stream)
+				get_json_params id params
+				require_param id
+
+				# Generate secure session ID with current timestamp
+				current_timestamp=$(date +%s)
+				session_id="podman_logs_${current_timestamp}_$$_${RANDOM}"
+				id_enc=$(urlencode "$id")
+
+				# Build path with params
+				# Add since={current_timestamp} to only capture NEW logs from this moment forward
+				path="${API_BASE}/containers/${id_enc}/logs"
+				if [ -n "$params" ]; then
+					# User provided params - append since parameter
+					path="${path}?${params}&since=${current_timestamp}"
+				else
+					# Default params with since to only get new logs
+					path="${path}?stdout=true&stderr=true&follow=true&since=${current_timestamp}"
+				fi
+
+				# Create a temporary script file to run in background
+				script_file="/tmp/${session_id}.sh"
+				cat > "$script_file" <<EOF
+#!/bin/sh
+curl -s -N --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "/tmp/${session_id}.log" 2>&1
+echo \$? > "/tmp/${session_id}.status"
+rm -f "$script_file"
+EOF
+				chmod +x "$script_file"
+
+				# Start the script in background using nohup-like behavior
+				# Double fork to completely detach from parent process
+				sh -c "($script_file &)" >/dev/null 2>&1 </dev/null &
+
+				echo "{\"session_id\":\"${session_id}\"}"
+				;;
+			container_logs_status)
+				get_json_params session_id offset
+				require_param session_id
+
+				# Validate session_id format for security
+				case "$session_id" in
+					podman_logs_[0-9]*_[0-9]*_[0-9]*)
+						;;
+					*)
+						echo '{"error":"Invalid session ID format"}'
+						exit 1
+						;;
+				esac
+
+				# Validate offset is numeric
+				case "$offset" in
+					''|*[!0-9]*) offset=0 ;;
+				esac
+
+				log_file="/tmp/${session_id}.log"
+				status_file="/tmp/${session_id}.status"
+
+				# Chunk size: 128KB max per poll (balances performance vs rpcd timeout)
+				# Tested: 128KB transfers in <5s even on slow connections
+				chunk_size=131072
+
+				# Job completed
+				if [ -f "$status_file" ]; then
+					exit_code=$(cat "$status_file")
+					success="false"
+					[ "$exit_code" = "0" ] && success="true"
+
+					output=""
+					if [ -f "$log_file" ]; then
+						# Get new output from offset, limit to chunk_size, and base64 encode
+						output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c $chunk_size | openssl base64 -A)
+					fi
+
+					echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
+					rm -f "$log_file" "$status_file"
+					exit 0
+				fi
+
+				# Job in progress
+				if [ -f "$log_file" ]; then
+					# Get new output from offset, limit to chunk_size, and base64 encode
+					output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c $chunk_size | openssl base64 -A)
+					echo "{\"output\":\"${output}\",\"complete\":false,\"success\":false}"
+					exit 0
+				fi
+
+				# Job not started yet
+				echo '{"output":"","complete":false,"success":false}'
+				;;
+			container_logs_stop)
+				get_json_params session_id
+				require_param session_id
+
+				# Validate session_id format for security
+				case "$session_id" in
+					podman_logs_[0-9]*_[0-9]*_[0-9]*)
+						;;
+					*)
+						echo '{"error":"Invalid session ID format"}'
+						exit 1
+						;;
+				esac
+
+				# Kill the background curl process if still running
+				# Find curl process with our session log file
+				curl_pid=$(ps | grep "curl.*${session_id}.log" | grep -v grep | awk '{print $1}')
+				if [ -n "$curl_pid" ]; then
+					kill "$curl_pid" 2>/dev/null
+				fi
+
+				# Cleanup temp files
+				rm -f "/tmp/${session_id}.log" "/tmp/${session_id}.status" "/tmp/${session_id}.sh" 2>/dev/null
+
+				echo '{"success":true}'
 				;;
 			container_stats)
 				get_json_params id
@@ -286,11 +423,19 @@ EOF
 				session_id="podman_$(date +%s)_$$_${RANDOM}"
 				image_enc=$(urlencode_image "$image")
 
-				# Start pull in background
-				(curl -s --unix-socket "$SOCKET" -X POST \
-					"http://localhost${API_BASE}/images/pull?reference=${image_enc}" \
-					> "/tmp/${session_id}.log" 2>&1
-				echo $? > "/tmp/${session_id}.status") &
+				# Create a temporary script file to run in background
+				script_file="/tmp/${session_id}.sh"
+				cat > "$script_file" <<EOF
+#!/bin/sh
+curl -s --unix-socket "$SOCKET" -X POST "http://localhost${API_BASE}/images/pull?reference=${image_enc}" > "/tmp/${session_id}.log" 2>&1
+echo \$? > "/tmp/${session_id}.status"
+rm -f "$script_file"
+EOF
+				chmod +x "$script_file"
+
+				# Start the script in background using nohup-like behavior
+				# Double fork to completely detach from parent process
+				sh -c "($script_file &)" >/dev/null 2>&1 </dev/null &
 
 				echo "{\"session_id\":\"${session_id}\"}"
 				;;

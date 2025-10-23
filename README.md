@@ -1,353 +1,368 @@
-# LuCI App for Podman
+# LuCI App Podman
 
-A modern LuCI web interface for managing Podman containers on OpenWrt routers.
+A modern LuCI web interface for managing Podman containers on OpenWrt.
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![OpenWrt](https://img.shields.io/badge/OpenWrt-24.10.x-green.svg)](https://openwrt.org/)
+
+## Table of Contents
+
+- [Features](#features)
+  - [Container Management](#container-management)
+  - [Image Management](#image-management)
+  - [Volume Management](#volume-management)
+  - [Network Management](#network-management)
+  - [Pod Management](#pod-management)
+  - [Secret Management](#secret-management)
+  - [System Overview](#system-overview)
+- [Screenshots](#screenshots)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Option 1: From IPK Package](#option-1-from-ipk-package)
+  - [Option 2: Build from Source](#option-2-build-from-source)
+  - [Option 3: Build Custom OpenWrt Image](#option-3-build-custom-openwrt-image)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+  - [Podman Configuration](#podman-configuration)
+  - [UCI Configuration](#uci-configuration)
+- [Usage Tips](#usage-tips)
+  - [Container Logs](#container-logs)
+  - [Resource Management](#resource-management)
+  - [Network Integration](#network-integration)
+  - [Bulk Operations](#bulk-operations)
+- [Troubleshooting](#troubleshooting)
+- [Development](#development)
+  - [Architecture](#architecture)
+  - [Code Quality](#code-quality)
+  - [Testing](#testing)
+  - [Building](#building)
+- [Project Structure](#project-structure)
+- [Credits](#credits)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
 
 ## Features
 
 ### Container Management
-- List, create, start, stop, restart, and remove containers
-- View container logs in real-time
-- Monitor container statistics (CPU, memory, network, I/O)
-- Attach terminal to running containers
-- Commit container changes to new images
-- Comprehensive container creation form with:
-  - Port mappings
-  - Environment variables
-  - Volume mounts
-  - Network configuration
-  - Resource limits (CPU, memory)
-  - Restart policies
-  - Auto-update support
+- **List & Control**: View all containers with status, start/stop/restart/remove operations
+- **Detail View**: Tabbed interface with Info, Resources, Stats, Logs, and Console tabs
+- **Live Logs**: Real-time log streaming with configurable line count
+- **Resource Limits**: Configure CPU, memory, and Block I/O limits on running containers
+- **Network Management**: Connect/disconnect containers to/from networks with optional static IPs
+- **Restart Policies**: Configure automatic restart behavior (no, always, on-failure, unless-stopped)
 
 ### Image Management
-- List and pull images from registries
-- Remove images (with force and prune options)
-- Inspect image details
-- Pull latest versions in bulk
-- Stream pull progress in real-time
+- **Pull Images**: Download images from registries with streaming progress
+- **Bulk Operations**: Pull latest versions or remove multiple images at once
+- **Image Inspection**: View detailed image metadata and layer information
 
 ### Volume Management
-- Create, inspect, and remove volumes
-- Support for multiple volume drivers (local, image)
-- Custom mount options
-- Volume labels
+- **Create & Manage**: Create volumes with custom drivers (local, image) and mount options
+- **Labels**: Organize volumes with custom labels
+- **Bulk Delete**: Remove multiple volumes with confirmation
 
 ### Network Management
-- Create, inspect, and remove networks
-- Multiple network drivers (bridge, macvlan, ipvlan)
-- Custom subnet and gateway configuration
-- IPv6 support
-- Internal network mode
+- **Multiple Drivers**: Support for bridge, macvlan, and ipvlan networks
+- **OpenWrt Integration** (Optional): Automatic OpenWrt network/firewall configuration
+  - Bridge device creation
+  - Network interface setup with static IP
+  - Firewall zone with DNS access rules
+  - One-click setup for existing networks
+- **Custom Subnets**: Configure subnet, gateway, and IPv6 settings
+- **Internal Networks**: Create isolated container networks
 
 ### Pod Management
-- Create, start, stop, restart, and remove pods
-- Port mappings for pods
-- Pod labels and hostnames
+- **Multi-Container Pods**: Group containers with shared network namespace
+- **Pod Controls**: Start, stop, restart, pause/unpause operations
+- **Port Mappings**: Configure pod-level port forwarding
+- **Resource Stats**: Monitor pod CPU and memory usage
 
 ### Secret Management
-- Create and remove secrets
-- Secure encrypted storage
-- Secrets cannot be retrieved after creation
+- **Secure Storage**: Create encrypted secrets for sensitive data
+- **Base64 Encoding**: Automatic encoding for secret data
+- **Read-Once**: Secrets cannot be retrieved after creation (security by design)
 
 ### System Overview
-- Podman version and API information
-- Running containers, images, volumes, networks, pods, and secrets count
-- Disk usage statistics with reclaimable space
-- System-wide prune operations
-- Auto-update for containers
+- **Dashboard**: System info, version, running resources count
+- **Disk Usage**: View space usage by images, containers, and volumes
+- **Prune Operations**: Clean up unused resources system-wide
+- **Auto-Update**: Trigger automatic container updates
+
+## Screenshots
+
+![Container List](docs/screenshots/containers.png)
+*Container management with status indicators and bulk operations*
+
+![Container Detail](docs/screenshots/container-detail.png)
+*Detailed container view with live logs and stats*
+
+![Network Creation](docs/screenshots/network-create.png)
+*Network creation with OpenWrt integration option*
 
 ## Requirements
 
-- OpenWrt 21.02 or later
-- LuCI web interface
-- Podman 3.0+ installed
-- Podman socket enabled at `/run/podman/podman.sock`
+- **OpenWrt**: 24.10.x or later (tested on 24.10.0)
+- **Podman**: 4.0+ with REST API enabled
+- **LuCI**: Modern LuCI interface
+- **Storage**: Sufficient space for container images and data
 
 ## Installation
 
-### From Package Source
+### Option 1: From IPK Package
 
-Build and install the package:
+Download the latest IPK from [Releases](https://github.com/yourusername/luci-app-podman/releases):
 
 ```bash
-# Clone the repository
+# Transfer to router
+scp luci-app-podman_*.ipk root@192.168.1.1:/tmp/
+
+# Install on router
+ssh root@192.168.1.1
+opkg update
+opkg install /tmp/luci-app-podman_*.ipk
+```
+
+### Option 2: Build from Source
+
+Requires OpenWrt ImageBuilder or SDK:
+
+```bash
+# Clone repository
 git clone https://github.com/yourusername/luci-app-podman.git
 cd luci-app-podman
 
-# Build the package (requires OpenWrt build environment)
-make package/luci-app-podman/compile
+# Build package (in OpenWrt build environment)
+make package/luci-app-podman/compile V=s
 
-# Install on your OpenWrt device
-scp bin/packages/.../luci-app-podman_*.ipk root@router:/tmp/
-ssh root@router 'opkg install /tmp/luci-app-podman_*.ipk'
+# Find built package
+find bin/packages -name "luci-app-podman*.ipk"
 ```
 
-### From Repository
+### Option 3: Build Custom OpenWrt Image
+
+Include this app in your custom firmware:
 
 ```bash
-opkg update
-opkg install luci-app-podman
+# In OpenWrt buildroot
+cd openwrt
+
+# Add this feed to feeds.conf.default:
+# src-git podman https://github.com/yourusername/luci-app-podman.git
+
+# Update feeds
+./scripts/feeds update -a
+./scripts/feeds install -a
+
+# Configure build
+make menuconfig
+# Select: LuCI → Applications → luci-app-podman
+
+# Build image
+make -j$(nproc)
 ```
 
-## Setup
+## Getting Started
 
-### 1. Enable Podman Socket
+The OpenWrt Podman package automatically installs a procd init script that starts the Podman API socket service. After installing `luci-app-podman`, simply access the web interface:
 
-The application communicates with Podman via its REST API over a Unix socket:
+**LuCI Menu**: Navigate to **System → Podman**
 
-```bash
-# Create socket directory
-mkdir -p /run/podman
+**Direct URL**: `http://your-router-ip/cgi-bin/luci/admin/podman`
 
-# Start the Podman service
-podman system service --time=0 unix:///run/podman/podman.sock &
-```
-
-### 2. Make It Persistent
-
-Add to `/etc/rc.local` (before `exit 0`):
-
-```bash
-mkdir -p /run/podman
-podman system service --time=0 unix:///run/podman/podman.sock &
-```
-
-Or create a procd init script at `/etc/init.d/podman-socket`:
-
-```bash
-#!/bin/sh /etc/rc.common
-
-START=99
-STOP=01
-
-USE_PROCD=1
-
-start_service() {
-	procd_open_instance
-	procd_set_param command podman system service --time=0 unix:///run/podman/podman.sock
-	procd_set_param respawn ${respawn_threshold:-3600} ${respawn_timeout:-5} ${respawn_retry:-5}
-	procd_set_param stdout 1
-	procd_set_param stderr 1
-	procd_close_instance
-}
-```
-
-Then enable and start it:
-
-```bash
-chmod +x /etc/init.d/podman-socket
-/etc/init.d/podman-socket enable
-/etc/init.d/podman-socket start
-```
-
-### 3. Access the Interface
-
-Navigate to: **System → Podman** in your LuCI interface, or directly at:
-```
-http://your-router-ip/cgi-bin/luci/admin/podman
-```
+> **Note**: If you encounter "Podman socket not found" errors, ensure the Podman service is running:
+> ```bash
+> /etc/init.d/podman start
+> /etc/init.d/podman enable  # Enable on boot
+> ```
 
 ## Configuration
 
-Configuration file: `/etc/config/podman`
+### Podman Configuration
+
+Recommended `/etc/containers/containers.conf`:
+
+```ini
+[network]
+network_backend = "netavark"
+firewall_driver = "none"  # Let OpenWrt firewall handle rules
+network_config_dir = "/etc/containers/networks/"
+default_network = "podman"
+default_subnet = "10.129.0.0/24"
+```
+
+### UCI Configuration
+
+Edit `/etc/config/podman`:
 
 ```
 config podman 'globals'
 	option socket_path '/run/podman/podman.sock'
-	option remote_endpoint ''
 ```
 
-Options:
-- `socket_path`: Path to Podman Unix socket (default: `/run/podman/podman.sock`)
-- `remote_endpoint`: Optional remote Podman API endpoint (e.g., `tcp://192.168.1.100:8080`)
+## Usage Tips
+
+### Container Logs
+- Use "Live Stream" checkbox for real-time logs
+- Adjust "Lines" field (10-10000) to control history
+- Logs auto-cleanup on stream stop or browser close
+
+### Resource Management
+- Update CPU/memory limits on running containers without restart
+- Changes apply immediately via Podman's update API
+
+### Network Integration
+- Enable "Setup OpenWrt Integration" when creating networks
+- Automatically configures firewall zones and DNS access
+- Alert icon (⚠) shows incomplete integration - click to fix
+
+### Bulk Operations
+- Use checkboxes + "Select All" for batch operations
+- Confirmation dialogs show affected resources
+- Progress feedback for long-running operations
+
+## Troubleshooting
+
+### "Podman socket not found"
+```bash
+# Verify socket exists
+ls -l /run/podman/podman.sock
+
+# Check Podman service
+ps | grep podman
+
+# Restart service
+/etc/init.d/podman-socket restart
+```
+
+### "Access denied" errors
+```bash
+# Check ACL permissions
+cat /usr/share/rpcd/acl.d/luci-app-podman.json
+
+# Restart rpcd
+/etc/init.d/rpcd restart
+```
+
+### Logs not showing
+```bash
+# Check log stream sessions
+ls -l /tmp/podman_logs_*
+
+# Cleanup orphaned sessions (automatic via cron)
+find /tmp -name 'podman_logs_*.log' -mmin +5 -delete
+```
+
+### RPC debugging
+```bash
+# Test RPC methods directly
+ubus call luci.podman containers_list '{"query":"all=true"}'
+ubus call luci.podman version '{}'
+
+# Check logs
+logread | grep -i podman
+```
+
+## Development
+
+### Architecture
+
+**Frontend** (`htdocs/luci-static/resources/`)
+- Modern ES6+ JavaScript with LuCI framework
+- Shared RPC client (`podman/rpc.js`)
+- Reusable utilities (`podman/utils.js`, `podman/ui.js`)
+- Custom components (pui.Button, pui.MultiButton, pui.ListViewHelper)
+
+**Backend** (`root/usr/libexec/rpcd/luci.podman`)
+- Shell script RPC handler
+- Communicates with Podman REST API v5.0.0 via curl
+- Streaming support for logs and image pulls
+- Session-based background operations
+
+**OpenWrt Integration** (`podman/openwrt-network.js`)
+- Direct UCI/network API manipulation
+- Bridge device, interface, and firewall zone creation
+- No shell script dependencies - pure JavaScript
+
+### Code Quality
+
+- JSDoc documentation for all functions
+- Arrow functions for callbacks, `function` for lifecycle methods
+- Proper error handling with user-friendly notifications
+- Production-ready: debug code removed, console.error retained
+
+### Testing
+
+```bash
+# Test RPC backend
+ubus call luci.podman containers_list '{"query":"all=true"}'
+
+# Test network integration
+ubus call luci.podman network_create '{"data":"{\"name\":\"test\",\"driver\":\"bridge\"}"}'
+
+# Monitor logs
+logread -f | grep luci.podman
+```
+
+### Building
+
+See [Installation Option 2](#option-2-build-from-source) above.
 
 ## Project Structure
 
 ```
 luci-app-podman/
-├── Makefile                                  # OpenWrt build configuration
+├── Makefile                                    # OpenWrt package build
 ├── htdocs/luci-static/resources/
 │   ├── podman/
-│   │   ├── rpc.js                           # RPC API client
-│   │   ├── utils.js                         # Shared utility functions
-│   │   ├── container-form.js                # Container creation form
-│   │   ├── volume-form.js                   # Volume creation form
-│   │   ├── network-form.js                  # Network creation form
-│   │   ├── pod-form.js                      # Pod creation form
-│   │   └── secret-form.js                   # Secret creation form
+│   │   ├── rpc.js                             # RPC API client
+│   │   ├── utils.js                           # Shared utilities
+│   │   ├── ui.js                              # Custom UI components
+│   │   ├── constants.js                       # Constants and defaults
+│   │   ├── form.js                            # Form base classes
+│   │   └── openwrt-network.js                 # OpenWrt network integration
 │   └── view/podman/
-│       ├── overview.js                      # System overview page
-│       ├── containers.js                    # Container management
-│       ├── images.js                        # Image management
-│       ├── volumes.js                       # Volume management
-│       ├── networks.js                      # Network management
-│       ├── pods.js                          # Pod management
-│       └── secrets.js                       # Secret management
+│       ├── overview.js                        # Dashboard
+│       ├── containers.js                      # Container list
+│       ├── container.js                       # Container detail (NEW)
+│       ├── images.js                          # Image management
+│       ├── volumes.js                         # Volume management
+│       ├── networks.js                        # Network management
+│       ├── pods.js                            # Pod management
+│       └── secrets.js                         # Secret management
 ├── root/
-│   ├── etc/config/podman                    # Default configuration
-│   ├── etc/uci-defaults/luci-podman         # UCI defaults script
-│   ├── usr/libexec/rpcd/luci.podman         # RPC backend (shell script)
-│   ├── usr/share/luci/menu.d/
-│   │   └── luci-app-podman.json             # Menu definition
-│   └── usr/share/rpcd/acl.d/
-│       └── luci-app-podman.json             # ACL permissions
-└── README.md
+│   ├── etc/
+│   │   ├── config/podman                      # UCI config
+│   │   ├── cron.d/podman-cleanup              # Orphaned session cleanup
+│   │   └── uci-defaults/luci-podman           # Defaults script
+│   ├── usr/libexec/rpcd/luci.podman           # RPC backend
+│   ├── usr/share/luci/menu.d/luci-app-podman.json
+│   └── usr/share/rpcd/acl.d/luci-app-podman.json
+└── po/                                         # Translations (i18n)
 ```
-
-## Architecture
-
-### Frontend
-- Built with modern JavaScript (ES6+)
-- Uses LuCI's `form.JSONMap` for form handling
-- Shared RPC module for API communication
-- Shared utility functions for common operations
-- Modal-based forms for resource creation
-
-### Backend
-- Shell script RPC handler using `curl` to communicate with Podman API
-- Communicates via Unix socket at `/run/podman/podman.sock`
-- Uses Podman libpod API v5.0.0
-- UCI configuration integration
-
-### RPC API
-
-All RPC methods are exposed under the `luci.podman` namespace:
-
-#### Containers
-- `container_list(all)` - List containers
-- `container_inspect(id)` - Inspect container
-- `container_start(id)` - Start container
-- `container_stop(id)` - Stop container
-- `container_restart(id)` - Restart container
-- `container_remove(id, force)` - Remove container
-- `container_create(spec)` - Create container
-- `container_logs(id, follow, tail)` - Get container logs
-- `container_stats(id, stream)` - Get container stats
-- `container_commit(id, repo, tag, comment, author)` - Commit container
-- `container_prune()` - Remove unused containers
-
-#### Images
-- `image_list()` - List images
-- `image_inspect(name)` - Inspect image
-- `image_remove(name, force)` - Remove image
-- `image_pull(reference)` - Pull image
-- `image_pull_stream(reference, offset)` - Stream pull progress
-- `image_prune(all)` - Remove unused images
-
-#### Volumes
-- `volume_list()` - List volumes
-- `volume_inspect(name)` - Inspect volume
-- `volume_create(spec)` - Create volume
-- `volume_remove(name, force)` - Remove volume
-- `volume_prune()` - Remove unused volumes
-
-#### Networks
-- `network_list()` - List networks
-- `network_inspect(name)` - Inspect network
-- `network_create(spec)` - Create network
-- `network_remove(name, force)` - Remove network
-- `network_prune()` - Remove unused networks
-
-#### Pods
-- `pod_list()` - List pods
-- `pod_inspect(name)` - Inspect pod
-- `pod_create(spec)` - Create pod
-- `pod_start(name)` - Start pod
-- `pod_stop(name)` - Stop pod
-- `pod_restart(name)` - Restart pod
-- `pod_remove(name, force)` - Remove pod
-- `pod_prune()` - Remove unused pods
-
-#### Secrets
-- `secret_list()` - List secrets
-- `secret_inspect(name)` - Inspect secret
-- `secret_create(name, data)` - Create secret
-- `secret_remove(name)` - Remove secret
-
-#### System
-- `system_version()` - Get Podman version
-- `system_info()` - Get system information
-- `system_df()` - Get disk usage
-- `system_prune(all, volumes)` - System-wide prune
-- `auto_update()` - Auto-update containers
-
-## Development
-
-### Code Style
-- Modern JavaScript (ES6+) with `const`/`let` and arrow functions
-- Comprehensive JSDoc comments for all functions
-- Consistent error handling and user feedback
-- Shared utilities to minimize code duplication
-
-### Testing
-Test the RPC backend directly:
-
-```bash
-# Test container list
-ubus call luci.podman container_list '{"all":"true"}'
-
-# Test image list
-ubus call luci.podman image_list '{}'
-
-# Test system info
-ubus call luci.podman system_info '{}'
-```
-
-### Building
-
-Requires OpenWrt build environment:
-
-```bash
-# In your OpenWrt build root
-./scripts/feeds update -a
-./scripts/feeds install -a
-make menuconfig  # Select LuCI → Applications → luci-app-podman
-make package/luci-app-podman/compile V=s
-```
-
-## Troubleshooting
-
-### Podman Socket Not Found
-```bash
-# Check if socket exists
-ls -la /run/podman/podman.sock
-
-# Start the service
-podman system service --time=0 unix:///run/podman/podman.sock &
-```
-
-### Permission Denied
-```bash
-# Check socket permissions
-chmod 666 /run/podman/podman.sock
-```
-
-### RPC Errors
-```bash
-# Check ubus permissions
-ubus list luci.podman
-
-# Test RPC call
-ubus call luci.podman system_version '{}'
-
-# Check logs
-logread | grep podman
-```
-
-## License
-
-Apache-2.0
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Submit a pull request
 
 ## Credits
 
-- Inspired by [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman)
-- Built for OpenWrt and LuCI
-- Uses Podman libpod REST API
+Heavily inspired by:
+- [openwrt-podman](https://github.com/breeze303/openwrt-podman/) - Podman on OpenWrt foundation
+- [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman) - Docker LuCI app design patterns
+
+## Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+Apache License 2.0 - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- Issues: [GitHub Issues](https://github.com/yourusername/luci-app-podman/issues)
+- Documentation: [Wiki](https://github.com/yourusername/luci-app-podman/wiki)
+- OpenWrt Forum: [LuCI Podman Thread](https://forum.openwrt.org/)

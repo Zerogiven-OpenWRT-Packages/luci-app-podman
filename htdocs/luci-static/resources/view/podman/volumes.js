@@ -4,8 +4,9 @@
 'require ui';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
-'require podman.ui as pui';
-'require podman.form as pform';
+'require podman.ui as podmanUI';
+'require podman.form as podmanForm';
+'require podman.list as List';
 
 /**
  * @module view.podman.volumes
@@ -45,65 +46,41 @@ return view.extend({
 		}
 
 		// Initialize list helper with full data object
-		this.listHelper = new pui.ListViewHelper({
-			prefix: 'volumes',
+		this.listHelper = new List.Util({
 			itemName: 'volume',
 			rpc: podmanRPC.volume,
 			data: data,
 			view: this
 		});
 
-		const getVolumeData = (sectionId) => {
-			return this.listHelper.data.volumes[sectionId.replace('volumes', '')];
-		}
-
 		this.map = new form.JSONMap(this.listHelper.data, _('Volumes'));
+		
 		const section = this.map.section(form.TableSection, 'volumes', '', _('Manage Podman volumes'));
+		section.anonymous = true;
+
 		let o;
 
-		section.anonymous = true;
-		section.nodescriptions = true;
-
 		// Checkbox column for selection
-		o = section.option(form.DummyValue, 'Name', new ui.Checkbox(0, { hiddenname: 'all' }).render());
-		o.cfgvalue = (sectionId) => {
-			return new ui.Checkbox(0, { hiddenname: sectionId }).render();
-		};
-
+		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(0, { hiddenname: 'all' }).render());
+		
 		// Name column
-		o = section.option(form.DummyValue, 'VolumeName', _('Name'));
-		o.cfgvalue = (sectionId) => {
-			const volume = getVolumeData(sectionId);
-			return E('a', {
-				href: '#',
-				click: (ev) => {
-					ev.preventDefault();
-					this.handleInspect(volume.Name);
-				}
-			}, E('strong', { 'title': volume.Name || _('Unknown') }, utils.truncate(volume.Name || _('Unknown'), 20)));
-		};
-		o.rawhtml = true;
+		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
+        o.click = (volume) => this.handleInspect(volume.Name);
+        o.text = (volume) => utils.truncate(volume.Name || _('Unknown'), 20);
+		o.linktitle = (volume) => volume.Name || _('Unknown');
 
 		// Driver column
-		o = section.option(form.DummyValue, 'Driver', _('Driver'));
-		o.cfgvalue = (sectionId) => {
-			const volume = getVolumeData(sectionId);
-			return volume && volume.Driver ? volume.Driver : _('local');
-		};
+		o = section.option(podmanForm.field.DataDummyValue, 'Driver', _('Driver'));
+		o.cfgdefault = _('local');
 
 		// Mountpoint column
-		o = section.option(form.DummyValue, 'Mountpoint', _('Mountpoint'));
-		o.cfgvalue = (sectionId) => {
-			const volume = getVolumeData(sectionId);
-			return utils.truncate(volume.Mountpoint || _('N/A'), 30);
-		};
+		o = section.option(podmanForm.field.DataDummyValue, 'Mountpoint', _('Mountpoint'));
+		o.cfgdefault = _('N/A');
+		o.cfgformatter = (cfg) => utils.truncate(cfg, 30);
 
 		// Created column
-		o = section.option(form.DummyValue, 'CreatedAt', _('Created'));
-		o.cfgvalue = (sectionId) => {
-			const volume = getVolumeData(sectionId);
-			return volume.CreatedAt ? utils.formatDate(Date.parse(volume.CreatedAt) / 1000) : _('Unknown');
-		};
+		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
+        o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
 		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({
@@ -113,13 +90,10 @@ return view.extend({
 		});
 
 		return this.map.render().then((mapRendered) => {
-			// Create wrapper container to separate toolbar from map
-			// This prevents toolbar from being wiped during map.save() refresh
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-
 			// Add map content
 			viewContainer.appendChild(mapRendered);
 
@@ -131,45 +105,31 @@ return view.extend({
 	},
 
 	/**
-	 * Refresh table data without full page reload
-	 * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
-	 */
-	refreshTable: function (clearSelections) {
-		return this.listHelper.refreshTable(clearSelections);
-	},
-
-	/**
-	 * Get selected volume names from checkboxes
-	 * @returns {Array<string>} Array of selected volume names
-	 */
-	getSelectedVolumes: function () {
-		return this.listHelper.getSelected((volume) => volume.Name);
-	},
-
-	/**
 	 * Delete selected volumes
 	 */
 	handleDeleteSelected: function () {
-		utils.handleBulkDelete({
-			selected: this.getSelectedVolumes(),
-			itemName: 'volume',
+		this.listHelper.bulkDelete({
+			selected: this.listHelper.getSelected((volume) => volume.Name),
 			deletePromiseFn: (name) => podmanRPC.volume.remove(name, false),
-			onSuccess: () => this.refreshTable(true)
+			onSuccess: () => this.handleRefresh(true)
 		});
 	},
 
 	/**
 	 * Refresh volume list
 	 */
-	handleRefresh: function () {
-		this.refreshTable(false);
+	handleRefresh: function (clearSelections) {
+		clearSelections = clearSelections || false;
+		this.listHelper.refreshTable(clearSelections);
 	},
 
 	/**
 	 * Show create volume dialog
 	 */
 	handleCreateVolume: function () {
-		new pform.Volume().render(() => this.handleRefresh());
+		const form = new podmanForm.Volume();
+		form.submit = () => this.handleRefresh();
+		form.render();
 	},
 
 	/**

@@ -1,6 +1,4 @@
 'use strict';
-'require ui';
-'require podman.ui as pui';
 
 /**
  * @file Shared utility functions for Podman LuCI application
@@ -18,38 +16,6 @@ return L.Class.extend({
 		return E('div', {
 			'class': 'alert-message error'
 		}, [_('RPC call failure: '), message]);
-	},
-
-	/**
-	 * Handle RPC operation with loading modal and notifications
-	 * @param {Object} options - Operation options
-	 * @param {string} options.loadingTitle - Loading modal title
-	 * @param {string} options.loadingMessage - Loading modal message
-	 * @param {string} options.successMessage - Success notification message
-	 * @param {string} options.errorPrefix - Error message prefix
-	 * @param {Promise} options.operation - RPC operation promise
-	 * @param {Function} [options.onSuccess] - Success callback
-	 * @param {Function} [options.onError] - Error callback
-	 */
-	handleOperation: function(options) {
-		pui.showSpinningModal(options.loadingTitle, options.loadingMessage);
-
-		options.operation.then((result) => {
-			ui.hideModal();
-
-			if (result && result.error) {
-				ui.addNotification(null, E('p', _('%s: %s').format(options.errorPrefix, result.error)), 'error');
-				if (options.onError) options.onError(result);
-				return;
-			}
-
-			ui.addNotification(null, E('p', options.successMessage));
-			if (options.onSuccess) options.onSuccess(result);
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('%s: %s').format(options.errorPrefix, err.message)), 'error');
-			if (options.onError) options.onError(err);
-		});
 	},
 
 	/**
@@ -192,56 +158,6 @@ return L.Class.extend({
 	},
 
 	/**
-	 * Show inspect modal with JSON data
-	 * @param {string} title - Modal title
-	 * @param {Object} data - Data to display as JSON
-	 * @param {Array<string>} [hiddenFields] - Fields to hide (will be replaced with '***HIDDEN***')
-	 * @param {Function} [closeButton] - Optional custom close button renderer
-	 */
-	showInspectModal: function(title, data, hiddenFields, closeButton) {
-		// Clone data to avoid modifying original
-		const displayData = JSON.parse(JSON.stringify(data));
-
-		// Hide sensitive fields
-		if (hiddenFields && hiddenFields.length > 0) {
-			hiddenFields.forEach((field) => {
-				if (displayData[field]) {
-					displayData[field] = '***HIDDEN***';
-				}
-			});
-		}
-
-		const content = [
-			E('pre', {
-				'style': 'max-height: 500px; max-width: 800px; overflow: auto; background: #000; color: #0f0; padding: 15px; font-family: monospace; font-size: 12px; white-space: pre; border-radius: 4px;'
-			}, JSON.stringify(displayData, null, 2))
-		];
-
-		// Add security notice if fields were hidden
-		if (hiddenFields && hiddenFields.length > 0) {
-			content.unshift(E('p', { 'style': 'margin-bottom: 10px; color: #e74c3c;' }, [
-				E('strong', {}, _('Security Notice:')),
-				' ',
-				_('Sensitive data is hidden for security reasons.')
-			]));
-		}
-
-		// Add close button
-		if (closeButton && typeof closeButton === 'function') {
-			content.push(closeButton());
-		} else {
-			content.push(E('div', { 'class': 'right', 'style': 'margin-top: 10px;' }, [
-				E('button', {
-					'class': 'cbi-button',
-					'click': () => ui.hideModal()
-				}, _('Close'))
-			]));
-		}
-
-		ui.showModal(title, content);
-	},
-
-	/**
 	 * Parse memory string to bytes
 	 * Supports formats: 512m, 1g, 2gb, 1024, etc.
 	 * @param {string} memStr - Memory string (e.g., "512m", "1g", "2gb")
@@ -268,72 +184,5 @@ return L.Class.extend({
 		};
 
 		return Math.floor(value * (multipliers[unit] || 1));
-	},
-
-	/**
-	 * Generic bulk delete handler
-	 * @param {Object} options - Delete operation options
-	 * @param {Array} options.selected - Array of selected items
-	 * @param {string} options.itemName - Name of items being deleted (e.g., 'container', 'image')
-	 * @param {Function} options.deletePromiseFn - Function that returns delete promise for an item
-	 * @param {Function} [options.onSuccess] - Success callback
-	 * @param {Function} [options.formatItemName] - Function to format item for display in confirm dialog
-	 */
-	handleBulkDelete: function(options) {
-		const selected = options.selected;
-
-		if (selected.length === 0) {
-			pui.warningTimeNotification(_('No %s selected').format(options.itemName + 's'));
-			return;
-		}
-
-		// Format item names for confirmation
-		const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item : item.name || item.Name || item.id || item.Id);
-		const itemNames = selected.map(formatFn).join(', ');
-
-		if (!confirm(_('Are you sure you want to remove %d %s?\n\n%s').format(
-			selected.length,
-			selected.length === 1 ? options.itemName : options.itemName + 's',
-			itemNames
-		))) {
-			return;
-		}
-
-		ui.showModal(_('Deleting %s').format(options.itemName + 's'), [
-			E('p', { 'class': 'spinning' }, _('Deleting %d selected %s...').format(
-				selected.length,
-				selected.length === 1 ? options.itemName : options.itemName + 's'
-			))
-		]);
-
-		const deletePromises = selected.map(options.deletePromiseFn);
-
-		Promise.all(deletePromises).then((results) => {
-			ui.hideModal();
-			const errors = results.filter((r) => r && r.error);
-			if (errors.length > 0) {
-				pui.errorNotification(_('Failed to delete %d %s').format(
-					errors.length,
-					errors.length === 1 ? options.itemName : options.itemName + 's'
-				));
-			} else {
-				pui.successTimeNotification(_('Successfully deleted %d %s').format(
-					selected.length,
-					selected.length === 1 ? options.itemName : options.itemName + 's'
-				));
-			}
-
-			if (options.onSuccess) {
-				options.onSuccess();
-			} else {
-				window.location.reload();
-			}
-		}).catch((err) => {
-			ui.hideModal();
-			pui.addNotification(_('Failed to delete some %s: %s').format(
-				options.itemName + 's',
-				err.message
-			));
-		});
 	}
 });

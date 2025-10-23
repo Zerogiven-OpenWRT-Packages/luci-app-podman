@@ -4,8 +4,9 @@
 'require ui';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
-'require podman.ui as pui';
-'require podman.form as pform';
+'require podman.ui as podmanUI';
+'require podman.form as podmanForm';
+'require podman.list as List';
 
 /**
  * @module view.podman.secrets
@@ -45,61 +46,41 @@ return view.extend({
 		}
 
 		// Initialize list helper with full data object
-		this.listHelper = new pui.ListViewHelper({
-			prefix: 'secrets',
+		this.listHelper = new List.Util({
 			itemName: 'secret',
 			rpc: podmanRPC.secret,
 			data: data,
 			view: this
 		});
 
-		const getSecretData = (sectionId) => {
-			return this.listHelper.data.secrets[sectionId.replace('secrets', '')];
-		};
-
 		this.map = new form.JSONMap(this.listHelper.data, _('Secrets'));
 
 		const section = this.map.section(form.TableSection, 'secrets', '', _('Manage Podman secrets'));
+		section.anonymous = true;
+
 		let o;
 
-		section.anonymous = true;
-		section.nodescriptions = true;
-
 		// Checkbox column for selection
-		o = section.option(form.DummyValue, 'ID', new ui.Checkbox(0, { hiddenname: 'all' }).render());
-		o.cfgvalue = (sectionId) => {
-			return new ui.Checkbox(0, { hiddenname: sectionId }).render();
-		};
+		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(0, { hiddenname: 'all' }).render());
 
 		// Name column
-		o = section.option(form.DummyValue, 'Name', _('Name'));
-		o.cfgvalue = (sectionId) => {
-			const secret = getSecretData(sectionId);
+		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
+        o.click = (secret) => {
 			const name = secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name || _('Unknown'));
-			return E('a', {
-				href: '#',
-				click: (ev) => {
-					ev.preventDefault();
-					this.handleInspect(name);
-				}
-			}, E('strong', {}, name));
+			this.handleInspect(name);
 		};
-		o.rawhtml = true;
+        o.text = (secret) => secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name || _('Unknown'));
 
 		// Driver column
 		o = section.option(form.DummyValue, 'Driver', _('Driver'));
 		o.cfgvalue = (sectionId) => {
-			const secret = getSecretData(sectionId);
+			const secret = this.map.data.data[sectionId];
 			return secret.Spec && secret.Spec.Driver && secret.Spec.Driver.Name ?
 				secret.Spec.Driver.Name : _('file');
 		};
 
-		// Created column
-		o = section.option(form.DummyValue, 'CreatedAt', _('Created'));
-		o.cfgvalue = (sectionId) => {
-			const secret = getSecretData(sectionId);
-			return secret.CreatedAt ? utils.formatDate(Date.parse(secret.CreatedAt) / 1000) : _('Unknown');
-		};
+		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
+        o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
 		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({
@@ -113,23 +94,13 @@ return view.extend({
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-
 			// Add map content
 			viewContainer.appendChild(mapRendered);
-
 			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;
 		});
-	},
-
-	/**
-	 * Refresh table data without full page reload
-	 * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
-	 */
-	refreshTable: function(clearSelections) {
-		return this.listHelper.refreshTable(clearSelections);
 	},
 
 	/**
@@ -146,27 +117,28 @@ return view.extend({
 	 * Delete selected secrets
 	 */
 	handleDeleteSelected: function() {
-		utils.handleBulkDelete({
+		this.listHelper.bulkDelete({
 			selected: this.getSelectedSecrets(),
-			itemName: 'secret',
 			deletePromiseFn: (name) => podmanRPC.secret.remove(name),
-			onSuccess: () => this.refreshTable(true)
+			onSuccess: () => this.handleRefresh(true)
 		});
 	},
 
 	/**
 	 * Refresh secret list
 	 */
-	handleRefresh: function() {
-		this.refreshTable(false);
+	handleRefresh: function(clearSelections) {
+		clearSelections = clearSelections || false;
+		this.listHelper.refreshTable(clearSelections)
 	},
 
 	/**
 	 * Show create secret dialog
 	 */
 	handleCreateSecret: function() {
-		console.log('pform', pform);
-		new pform.Secret().render(() => this.handleRefresh());
+		const form = new podmanForm.Secret();
+		form.submit = () => this.handleRefresh();
+		form.render();
 	},
 
 	/**

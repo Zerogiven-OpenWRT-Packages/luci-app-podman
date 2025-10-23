@@ -1,0 +1,64 @@
+name: Build OpenWRT package (test)
+
+on:
+  workflow_dispatch:
+    inputs:
+      openwrt_version:
+        description: 'OpenWrt version to test'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+        - '23.05'
+        - '24.10'
+        - 'both'
+      verbose:
+        description: 'Verbose build output'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-test:
+    name: Build Test - OpenWrt ${{ matrix.openwrt_version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - openwrt_version: '23.05'
+            arch: 'x86_64-23.05.0'
+          - openwrt_version: '24.10'
+            arch: 'x86_64-24.10.0'
+      fail-fast: false
+    
+    steps:
+      - name: Check if version should be built
+        run: |
+          # Check if this matrix combination should be built
+          if [ "${{ github.event.inputs.openwrt_version }}" != "both" ] && [ "${{ github.event.inputs.openwrt_version }}" != "${{ matrix.openwrt_version }}" ]; then
+            echo "Skipping build: OpenWrt version mismatch (requested: ${{ github.event.inputs.openwrt_version }}, matrix: ${{ matrix.openwrt_version }})"
+            exit 0
+          fi
+          
+          echo "Proceeding with build for OpenWrt ${{ matrix.openwrt_version }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/feed/gpio-fan-rpm
+
+      - name: Create artifacts directory structure
+        run: |
+          mkdir -p ${{ github.workspace }}/artifacts
+
+      - name: Build OpenWrt ${{ matrix.openwrt_version }} package
+        uses: openwrt/gh-action-sdk@main
+        env:
+          ARCH: ${{ matrix.arch }}
+          PACKAGES: gpio-fan-rpm
+          V: ${{ github.event.inputs.verbose == 'true' && 's' || '0' }}
+          FEED_DIR: ${{ github.workspace }}/feed
+          ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+
+      - name: Verify package built
+        run: find ${{ github.workspace }}/artifacts/bin/ -name 'gpio-fan-rpm*.ipk' -type f | grep . 

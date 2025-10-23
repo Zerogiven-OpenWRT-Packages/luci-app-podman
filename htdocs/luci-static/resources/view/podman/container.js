@@ -1,7 +1,9 @@
 'use strict';
 'require view';
+'require poll';
 'require ui';
 'require form';
+'require podman.container-util as ContainerUtil';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.ui as pui';
@@ -252,17 +254,14 @@ return view.extend({
 			this.createInfoRow(_('Network Mode'), hostConfig.NetworkMode || 'default')
 		];
 
-		if (networkSettings.IPAddress) {
-			networkRows.push(this.createInfoRow(_('IP Address'), networkSettings.IPAddress));
-		}
-
 		// Add network connections
-		if (networkSettings.Networks && Object.keys(networkSettings.Networks).length > 0) {
-			// System networks that cannot be disconnected (default Podman networks)
-			const systemNetworks = ['bridge', 'host', 'none', 'container', 'slirp4netns'];
+		// System networks that cannot be disconnected (default Podman networks)
+		const systemNetworks = ['bridge', 'host', 'none', 'container', 'slirp4netns'];
+		let userNetworks = [];
 
+		if (networkSettings.Networks && Object.keys(networkSettings.Networks).length > 0) {
 			// Filter to only show user-created networks
-			const userNetworks = Object.keys(networkSettings.Networks).filter((netName) => {
+			userNetworks = Object.keys(networkSettings.Networks).filter((netName) => {
 				return !systemNetworks.includes(netName);
 			});
 
@@ -282,6 +281,12 @@ return view.extend({
 					])
 				);
 			});
+		}
+
+		// Only show legacy IP Address row if no user networks are displayed
+		// (avoids duplicate IP display when networks are shown with their IPs)
+		if (networkSettings.IPAddress && userNetworks.length === 0) {
+			networkRows.push(this.createInfoRow(_('IP Address'), networkSettings.IPAddress));
 		}
 
 		// Add connect to network option
@@ -531,46 +536,146 @@ return view.extend({
 	},
 
 	/**
+	 * Format network I/O stats for display
+	 * @param {Object} networks - Network stats object or pre-formatted string
+	 * @returns {string} Formatted network I/O string
+	 */
+	formatNetworkIO: function(networks) {
+		// Already formatted string (NetIO field)
+		if (typeof networks === 'string') {
+			return networks;
+		}
+
+		// Networks object format: { eth0: { rx_bytes: 123, tx_bytes: 456, ... }, ... }
+		if (typeof networks === 'object' && networks !== null) {
+			const parts = [];
+			Object.keys(networks).forEach((iface) => {
+				const net = networks[iface];
+				if (net && typeof net === 'object') {
+					const rx = net.rx_bytes ? utils.formatBytes(net.rx_bytes) : '0B';
+					const tx = net.tx_bytes ? utils.formatBytes(net.tx_bytes) : '0B';
+					parts.push(`${iface}: ↓ ${rx} / ↑ ${tx}`);
+				}
+			});
+			return parts.length > 0 ? parts.join(', ') : '-';
+		}
+
+		return '-';
+	},
+
+	/**
+	 * Format block I/O stats for display
+	 * @param {Object} blkio - Block I/O stats object or pre-formatted string
+	 * @returns {string} Formatted block I/O string
+	 */
+	formatBlockIO: function(blkio) {
+		// Already formatted string (BlockIO field)
+		if (typeof blkio === 'string') {
+			return blkio;
+		}
+
+		// Block I/O stats object
+		if (typeof blkio === 'object' && blkio !== null) {
+			// Try io_service_bytes_recursive first (most common)
+			if (blkio.io_service_bytes_recursive && Array.isArray(blkio.io_service_bytes_recursive) && blkio.io_service_bytes_recursive.length > 0) {
+				let read = 0;
+				let write = 0;
+				blkio.io_service_bytes_recursive.forEach((entry) => {
+					if (entry.op === 'read' || entry.op === 'Read') {
+						read += entry.value || 0;
+					} else if (entry.op === 'write' || entry.op === 'Write') {
+						write += entry.value || 0;
+					}
+				});
+				return `Read: ${utils.formatBytes(read)} / Write: ${utils.formatBytes(write)}`;
+			}
+
+			// No data available
+			return _('No I/O');
+		}
+
+		return '-';
+	},
+
+	/**
+	 * Format PIDs stats for display
+	 * @param {*} pids - PIDs stats (number, string, or object)
+	 * @returns {string} Formatted PIDs string
+	 */
+	formatPIDs: function(pids) {
+		// Direct number or string
+		if (typeof pids === 'number' || typeof pids === 'string') {
+			return String(pids);
+		}
+
+		// Object format { current: X, limit: Y }
+		if (typeof pids === 'object' && pids !== null) {
+			const current = pids.current || pids.Current || 0;
+			const limit = pids.limit || pids.Limit;
+			if (limit && limit > 0) {
+				return `${current} / ${limit}`;
+			}
+			return String(current);
+		}
+
+		return '0';
+	},
+
+	/**
 	 * Update stats display
 	 */
 	updateStats: function() {
 		podmanRPC.container.stats(this.containerId).then((result) => {
-			if (!result || !result.Stats || result.Stats.length === 0) {
+			// Podman stats API returns different formats:
+			// - With stream=false: Single stats object
+			// - CLI format: Wrapped in Stats array
+			// Try both formats
+			let stats = null;
+			if (result && result.Stats && result.Stats.length > 0) {
+				// Array format (CLI-style)
+				stats = result.Stats[0];
+			} else if (result && typeof result === 'object') {
+				// Direct object format (API)
+				stats = result;
+			}
+
+			if (!stats) {
 				return;
 			}
 
-			const stats = result.Stats[0];
-
-			// CPU Usage
-			const cpuPercent = stats.CPUPerc || '0%';
+			// CPU Usage - try different field names
+			const cpuPercent = stats.CPUPerc || stats.cpu_percent || stats.cpu || '0%';
 			document.getElementById('stat-cpu').textContent = cpuPercent;
 
-			// Memory Usage
-			const memUsage = stats.MemUsage || '-';
+			// Memory Usage - try different field names
+			const memUsage = stats.MemUsage || stats.mem_usage ||
+			                 (stats.memory_stats && stats.memory_stats.usage ? utils.formatBytes(stats.memory_stats.usage) : '-');
 			document.getElementById('stat-memory').textContent = memUsage;
 
-			// Memory Limit
-			const memLimit = stats.MemLimit ? utils.formatBytes(stats.MemLimit) : _('Unlimited');
+			// Memory Limit - try different field names
+			const memLimit = stats.MemLimit || stats.mem_limit ||
+			                 (stats.memory_stats && stats.memory_stats.limit ? utils.formatBytes(stats.memory_stats.limit) : _('Unlimited'));
 			document.getElementById('stat-memory-limit').textContent = memLimit;
 
-			// Memory Percent
-			const memPercent = stats.MemPerc || '0%';
+			// Memory Percent - try different field names
+			const memPercent = stats.MemPerc || stats.mem_percent || stats.mem || '0%';
 			document.getElementById('stat-memory-percent').textContent = memPercent;
 
-			// Network I/O
-			const netIO = stats.NetIO || '-';
-			document.getElementById('stat-network').textContent = netIO;
+			// Network I/O - format nicely
+			const netIO = stats.NetIO || stats.net_io || stats.network_io || stats.networks;
+			document.getElementById('stat-network').textContent = this.formatNetworkIO(netIO);
 
-			// Block I/O
-			const blockIO = stats.BlockIO || '-';
-			document.getElementById('stat-blockio').textContent = blockIO;
+			// Block I/O - format nicely
+			const blockIO = stats.BlockIO || stats.block_io || stats.blkio || stats.blkio_stats;
+			document.getElementById('stat-blockio').textContent = this.formatBlockIO(blockIO);
 
-			// PIDs
-			const pids = stats.PIDs || '0';
-			document.getElementById('stat-pids').textContent = pids;
+			// PIDs - format nicely
+			const pids = stats.PIDs || stats.pids || stats.pids_stats;
+			document.getElementById('stat-pids').textContent = this.formatPIDs(pids);
 
 		}).catch((err) => {
-			// Stats failed to load - silently ignore if container is stopped
+			console.error('Stats error:', err);
+			// Stats failed to load - show error only in console
 		});
 	},
 
@@ -631,7 +736,65 @@ return view.extend({
 	},
 
 	/**
-	 * Refresh logs
+	 * Strip Docker stream format headers (8-byte headers before each frame)
+	 * Docker/Podman logs use multiplexed stream format:
+	 * - Byte 0: Stream type (1=stdout, 2=stderr, 3=stdin)
+	 * - Bytes 1-3: Padding
+	 * - Bytes 4-7: Frame size (uint32 big-endian)
+	 * - Bytes 8+: Actual data
+	 * @param {string} text - Text with Docker stream headers
+	 * @returns {string} Text without headers
+	 */
+	stripDockerStreamHeaders: function(text) {
+		if (!text || text.length === 0) return text;
+
+		let result = '';
+		let pos = 0;
+
+		while (pos < text.length) {
+			// Need at least 8 bytes for header
+			if (pos + 8 > text.length) {
+				// Incomplete header, skip rest
+				break;
+			}
+
+			// Read frame size from bytes 4-7 (big-endian uint32)
+			const size = (text.charCodeAt(pos + 4) << 24) |
+			             (text.charCodeAt(pos + 5) << 16) |
+			             (text.charCodeAt(pos + 6) << 8) |
+			             text.charCodeAt(pos + 7);
+
+			// Skip 8-byte header
+			pos += 8;
+
+			// Extract frame data
+			if (pos + size <= text.length) {
+				result += text.substring(pos, pos + size);
+				pos += size;
+			} else {
+				// Incomplete frame, take what we can
+				result += text.substring(pos);
+				break;
+			}
+		}
+
+		return result;
+	},
+
+	/**
+	 * Strip ANSI escape sequences from log text
+	 * @param {string} text - Text with ANSI codes
+	 * @returns {string} Clean text
+	 */
+	stripAnsi: function(text) {
+		if (!text) return text;
+		// Remove ANSI escape sequences (colors, cursor movement, etc.)
+		// eslint-disable-line no-control-regex
+		return text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\x1B\[[\?]?[0-9;]*[a-zA-Z]/g, '');
+	},
+
+	/**
+	 * Refresh logs (non-streaming version for manual refresh)
 	 */
 	refreshLogs: function() {
 		const output = document.getElementById('logs-output');
@@ -641,15 +804,49 @@ return view.extend({
 		const linesInput = document.getElementById('log-lines');
 		const lines = linesInput ? parseInt(linesInput.value) || 1000 : 1000;
 
-		podmanRPC.container.logs(this.containerId, 'stdout=true&stderr=true&tail=' + lines).then(function(result) {
-			if (result && result.data) {
-				output.textContent = result.data || _('No logs available');
+		// Get last N lines (non-streaming)
+		const params = 'stdout=true&stderr=true&tail=' + lines;
+
+		output.textContent = _('Loading logs...');
+
+		podmanRPC.container.logs(this.containerId, params).then((result) => {
+			// Backend returns base64-encoded binary data in {data: "..."} object
+			let base64Data = '';
+			if (result && typeof result === 'object' && result.data) {
+				base64Data = result.data;
+			} else if (typeof result === 'string') {
+				base64Data = result;
+			}
+
+			if (!base64Data) {
+				output.textContent = _('No logs available');
+				return;
+			}
+
+			// Decode base64 to binary string
+			let binaryText = '';
+			try {
+				binaryText = atob(base64Data);
+			} catch (e) {
+				console.error('Base64 decode error:', e);
+				output.textContent = _('Failed to decode logs');
+				return;
+			}
+
+			// Strip Docker stream headers (8-byte headers)
+			const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
+
+			// Strip ANSI escape sequences
+			const cleanText = this.stripAnsi(withoutHeaders);
+
+			if (cleanText && cleanText.trim().length > 0) {
+				output.textContent = cleanText;
 			} else {
 				output.textContent = _('No logs available');
 			}
-			// Scroll to bottom
 			output.scrollTop = output.scrollHeight;
-		}).catch(function(err) {
+		}).catch((err) => {
+			console.error('LOG ERROR:', err);
 			output.textContent = _('Failed to load logs: %s').format(err.message);
 		});
 	},
@@ -671,15 +868,178 @@ return view.extend({
 		const enabled = ev.target.checked;
 
 		if (enabled) {
-			// Start streaming
-			this.logStreamInterval = setInterval(() => this.refreshLogs(), 2000);
+			// Start streaming session
+			this.startLogStream();
 		} else {
 			// Stop streaming
-			if (this.logStreamInterval) {
-				clearInterval(this.logStreamInterval);
-				this.logStreamInterval = null;
-			}
+			this.stopLogStream();
 		}
+	},
+
+	/**
+	 * Start log streaming session
+	 */
+	startLogStream: function() {
+		const output = document.getElementById('logs-output');
+		if (!output) return;
+
+		// Get the number of lines from input
+		const linesInput = document.getElementById('log-lines');
+		const lines = linesInput ? parseInt(linesInput.value) || 1000 : 1000;
+
+		// Clear output and show loading
+		output.textContent = _('Loading logs...');
+
+		// First load existing logs with non-streaming call
+		const params = 'stdout=true&stderr=true&tail=' + lines;
+		podmanRPC.container.logs(this.containerId, params).then((result) => {
+			// Extract base64-encoded log data
+			let base64Data = '';
+			if (result && typeof result === 'object' && result.data) {
+				base64Data = result.data;
+			} else if (typeof result === 'string') {
+				base64Data = result;
+			}
+
+			if (!base64Data) {
+				output.textContent = '';
+			} else {
+				// Decode base64 to binary string
+				const binaryText = atob(base64Data);
+
+				// Strip Docker headers and ANSI codes
+				const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
+				const cleanText = this.stripAnsi(withoutHeaders);
+
+				output.textContent = cleanText || '';
+			}
+			output.scrollTop = output.scrollHeight;
+
+			// Start streaming for NEW logs
+			// NOTE: Don't use tail=0 with follow - it causes curl to exit immediately
+			// Just use follow=true to stream new logs as they arrive
+			return podmanRPC.container.logsStream(
+				this.containerId,
+				'stdout=true&stderr=true&follow=true'
+			);
+		}).then((result) => {
+			if (!result || !result.session_id) {
+				console.error('Failed to start stream:', result);
+				const checkbox = document.getElementById('log-stream-toggle');
+				if (checkbox) checkbox.checked = false;
+				return;
+			}
+
+			// Store session ID and track byte offset in stream file (not displayed text length)
+			this.logStreamSessionId = result.session_id;
+			this.logStreamFileOffset = 0;  // Start reading from beginning of stream file
+
+			// Start polling for logs
+			this.pollLogsStatus();
+		}).catch((err) => {
+			console.error('Stream error:', err);
+			output.textContent = _('Failed to start log stream: %s').format(err.message);
+			const checkbox = document.getElementById('log-stream-toggle');
+			if (checkbox) checkbox.checked = false;
+		});
+	},
+
+	/**
+	 * Stop log streaming session
+	 */
+	stopLogStream: function() {
+		// Store session ID for cleanup before clearing
+		const sessionId = this.logStreamSessionId;
+
+		// Clear session ID first to prevent poll function from running again
+		this.logStreamSessionId = null;
+
+		// Remove poll function if registered
+		if (this.logPollFn) {
+			try {
+				poll.remove(this.logPollFn);
+			} catch (e) {
+				// Ignore errors if poll function was already removed
+			}
+			this.logPollFn = null;
+		}
+
+		// Cleanup backend resources (kill curl process, remove temp files)
+		if (sessionId) {
+			podmanRPC.container.logsStop(sessionId).catch((err) => {
+				console.error('Failed to cleanup log stream:', err);
+			});
+		}
+	},
+
+	/**
+	 * Poll log stream status using poll.add()
+	 *
+	 * Uses byte offset tracking to only fetch new data from the stream file.
+	 */
+	pollLogsStatus: function() {
+		const outputEl = document.getElementById('logs-output');
+		const view = this;
+
+		// Store poll function reference for later removal
+		this.logPollFn = poll.add(function() {
+			// Check if session still exists (user may have stopped it)
+			if (!view.logStreamSessionId) {
+				view.stopLogStream();
+				return Promise.resolve();
+			}
+
+			// MUST return a Promise
+			// Read from current offset to get only NEW data
+			return podmanRPC.container.logsStatus(view.logStreamSessionId, view.logStreamFileOffset).then((status) => {
+				// Check for output
+				if (status.output && status.output.length > 0 && outputEl) {
+					// Backend returns base64-encoded data - decode it first
+					let binaryText = '';
+					try {
+						binaryText = atob(status.output);
+					} catch (e) {
+						console.error('Base64 decode error in streaming:', e);
+						return;
+					}
+
+					// Update file offset BEFORE processing (in case of errors)
+					view.logStreamFileOffset += binaryText.length;
+
+					// Strip Docker headers first, then ANSI codes
+					const withoutHeaders = view.stripDockerStreamHeaders(binaryText);
+					const cleanOutput = view.stripAnsi(withoutHeaders);
+
+					// Append the new content
+					if (cleanOutput.length > 0) {
+						outputEl.textContent += cleanOutput;
+						outputEl.scrollTop = outputEl.scrollHeight;
+					}
+				}
+
+				// Check for completion
+				if (status.complete) {
+					view.stopLogStream();
+
+					const checkbox = document.getElementById('log-stream-toggle');
+					if (checkbox) checkbox.checked = false;
+
+					if (!status.success && outputEl) {
+						outputEl.textContent += '\n\n' + _('Log stream ended with error');
+					}
+				}
+			}).catch((err) => {
+				console.error('Poll error:', err);
+				view.stopLogStream();
+
+				if (outputEl) {
+					outputEl.textContent += '\n\n' + _('Error polling log stream: %s').format(err.message);
+				}
+
+				const checkbox = document.getElementById('log-stream-toggle');
+				if (checkbox) checkbox.checked = false;
+			});
+		}, 1); // Poll every 1 second
 	},
 
 	/**
@@ -849,9 +1209,7 @@ return view.extend({
 			return;
 		}
 
-		ui.showModal(_('Updating Container'), [
-			E('p', { 'class': 'spinning' }, _('Renaming container...'))
-		]);
+		pui.showSpinningModal(_('Updating Container'), _('Renaming container...'));
 
 		// Podman rename API call
 		podmanRPC.container.rename(this.containerId, newName).then((result) => {
@@ -873,9 +1231,7 @@ return view.extend({
 	 * @param {string} policy - New restart policy
 	 */
 	handleUpdateRestartPolicy: function(policy) {
-		ui.showModal(_('Updating Container'), [
-			E('p', { 'class': 'spinning' }, _('Updating restart policy...'))
-		]);
+		pui.showSpinningModal(_('Updating Container'), _('Updating restart policy...'));
 
 		// Podman libpod API uses query parameters for restart policy
 		const updateData = {
@@ -907,9 +1263,7 @@ return view.extend({
 	 * @param {string} ip - Optional IP address
 	 */
 	handleNetworkConnect: function(networkName, ip) {
-		ui.showModal(_('Connecting to Network'), [
-			E('p', { 'class': 'spinning' }, _('Connecting container to network...'))
-		]);
+		pui.showSpinningModal(_('Connecting to Network'), _('Connecting container to network...'));
 
 		// Build params according to Podman API NetworkConnectOptions schema
 		const params = { container: this.containerId };
@@ -939,9 +1293,7 @@ return view.extend({
 		if (!confirm(_('Disconnect from network %s?').format(networkName)))
 			return;
 
-		ui.showModal(_('Disconnecting from Network'), [
-			E('p', { 'class': 'spinning' }, _('Disconnecting container from network...'))
-		]);
+		pui.showSpinningModal(_('Disconnecting from Network'), _('Disconnecting container from network...'));
 
 		// Build params according to Podman API DisconnectOptions schema (capital C for Container)
 		podmanRPC.network.disconnect(networkName, JSON.stringify({ Container: this.containerId })).then((result) => {
@@ -1022,9 +1374,7 @@ return view.extend({
 			weight: parseInt(blkioWeight) || 0
 		};
 
-		ui.showModal(_('Updating Resources'), [
-			E('p', { 'class': 'spinning' }, _('Updating container resources...'))
-		]);
+		pui.showSpinningModal(_('Updating Resources'), _('Updating container resources...'));
 
 		// Call update RPC with body data
 		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((result) => {
@@ -1048,15 +1398,9 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 */
 	handleStart: function(id) {
-		utils.handleOperation({
-			loadingTitle: _('Starting Container'),
-			loadingMessage: _('Starting container...'),
-			successMessage: _('Container started successfully'),
-			errorPrefix: _('Failed to start container'),
-			operation: podmanRPC.container.start(id),
-			onSuccess: () => {
-				window.location.reload();
-			}
+		new ContainerUtil.startContainers(id).then(() => {
+			// reload page only for now
+			window.location.reload();
 		});
 	},
 
@@ -1065,15 +1409,9 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 */
 	handleStop: function(id) {
-		utils.handleOperation({
-			loadingTitle: _('Stopping Container'),
-			loadingMessage: _('Stopping container...'),
-			successMessage: _('Container stopped successfully'),
-			errorPrefix: _('Failed to stop container'),
-			operation: podmanRPC.container.stop(id),
-			onSuccess: () => {
-				window.location.reload();
-			}
+		new ContainerUtil.stopContainers(id).then(() => {
+			// reload page only for now
+			window.location.reload();
 		});
 	},
 
@@ -1082,15 +1420,9 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 */
 	handleRestart: function(id) {
-		utils.handleOperation({
-			loadingTitle: _('Restarting Container'),
-			loadingMessage: _('Restarting container...'),
-			successMessage: _('Container restarted successfully'),
-			errorPrefix: _('Failed to restart container'),
-			operation: podmanRPC.container.restart(id),
-			onSuccess: () => {
-				window.location.reload();
-			}
+		new ContainerUtil.restartContainers(id).then(() => {
+			// reload page only for now
+			window.location.reload();
 		});
 	},
 
@@ -1103,15 +1435,19 @@ return view.extend({
 		if (!confirm(_('Are you sure you want to remove container %s?').format(name)))
 			return;
 
-		utils.handleOperation({
-			loadingTitle: _('Removing Container'),
-			loadingMessage: _('Removing container...'),
-			successMessage: _('Container removed successfully'),
-			errorPrefix: _('Failed to remove container'),
-			operation: podmanRPC.container.remove(id, false),
-			onSuccess: function() {
+		pui.showSpinningModal(_('Removing Container'), _('Removing container...'));
+
+		podmanRPC.container.remove(id, true).then((result) => {
+			ui.hideModal();
+			if (result && result.error) {
+				ui.addNotification(null, E('p', _('Failed to remove container: %s').format(result.error)), 'error');
+			} else {
+				ui.addNotification(null, E('p', _('Container removed successfully')));
 				window.location.href = L.url('admin/podman/containers');
 			}
+		}).catch((err) => {
+			ui.hideModal();
+			ui.addNotification(null, E('p', _('Failed to remove container: %s').format(err.message)), 'error');
 		});
 	}
 });

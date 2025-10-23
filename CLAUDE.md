@@ -1,5 +1,86 @@
 # LuCI Podman App - Development Notes
 
+## ⚠️ CRITICAL WORKFLOW - READ THIS FIRST
+
+### ALWAYS Check These Resources BEFORE Starting Any Task
+
+#### 1. Podman API Swagger Documentation
+**Location**: `docs/swagger-latest.yaml` (in project root)
+
+**MANDATORY - Check BEFORE**:
+- ❌ **NEVER** make assumptions about API parameters
+- ✅ **ALWAYS** read swagger FIRST when working on:
+  - ANY RPC-related code changes
+  - Modifying `podman/rpc.js`
+  - Implementing new API calls
+  - Fixing API-related bugs
+  - Adding/changing API parameters
+  - Debugging endpoint behavior
+
+**Why This Matters**:
+- Swagger is THE source of truth for correct parameter names, types, formats
+- Wrong parameters cause silent failures or unexpected behavior
+- Reading swagger FIRST saves debugging time later
+
+**Example - Before implementing logs API**:
+```bash
+# WRONG: Assume tail accepts a number
+params = 'tail=1000'
+
+# CORRECT: Read swagger, see tail accepts string with 'all' as default
+# docs/swagger-latest.yaml shows: tail (string, default: 'all')
+params = 'tail=1000'  # String format, not number
+```
+
+#### 2. LuCI JavaScript API Documentation
+**Location**: https://openwrt.github.io/luci/jsapi/
+
+**MANDATORY - Check BEFORE**:
+- ❌ **NEVER** create custom UI implementations
+- ✅ **ALWAYS** check jsapi FIRST for:
+  - Modal dialogs → Use `ui.showModal()`
+  - Notifications → Use `ui.addNotification()` / `ui.addTimeLimitedNotification()`
+  - Tables/Grids → Use `form.GridSection` / `form.TableSection`
+  - Tabs → Use `ui.tabs.initTabGroup()`
+  - Form fields → Use `form.*` components
+  - Any UI component needs
+
+**Why This Matters**:
+- LuCI provides battle-tested components
+- Custom implementations break with LuCI updates
+- Official components are accessible and i18n-ready
+
+**Example - Before creating a table**:
+```javascript
+// WRONG: Manual HTML table construction
+const table = E('table', {}, rows.map(r => E('tr', {}, ...)));
+
+// CORRECT: Check jsapi, use GridSection
+const s = map.section(form.GridSection, 'items');
+s.option(form.DummyValue, 'name', _('Name'));
+```
+
+### Workflow Checklist
+
+When you receive a task involving:
+- [ ] **APIs/RPC**: Open `docs/swagger-latest.yaml` FIRST
+- [ ] **UI Components**: Open https://openwrt.github.io/luci/jsapi/ FIRST
+- [ ] **Code patterns**: Check existing views in `htdocs/luci-static/resources/view/podman/`
+- [ ] **Custom components**: Check `podman/ui.js` for existing helpers
+
+### Why This Section Exists
+
+You have repeatedly:
+1. Made API calls without checking swagger (wrong parameters)
+2. Created custom UI when LuCI provides official components
+3. Assumed parameter types/formats instead of verifying
+
+**This costs time and creates bugs.**
+
+Going forward, treat swagger + jsapi as **required reading** before any code changes.
+
+---
+
 ## Project Overview
 This is a LuCI web interface application for managing Podman containers on OpenWrt. It provides a modern, user-friendly interface for container lifecycle management, resource configuration, networking, and monitoring.
 
