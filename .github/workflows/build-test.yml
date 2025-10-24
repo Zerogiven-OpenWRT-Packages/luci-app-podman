@@ -9,9 +9,9 @@ on:
         default: 'both'
         type: choice
         options:
-        - '23.05'
+        # - '23.05'
         - '24.10'
-        - 'both'
+        # - 'both'
       verbose:
         description: 'Verbose build output'
         required: false
@@ -25,8 +25,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - openwrt_version: '23.05'
-            arch: 'x86_64-23.05.0'
+          # - openwrt_version: '23.05'
+          #   arch: 'x86_64-23.05.0'
           - openwrt_version: '24.10'
             arch: 'x86_64-24.10.0'
       fail-fast: false
@@ -45,7 +45,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          path: ${{ github.workspace }}/feed/gpio-fan-rpm
+          path: ${{ github.workspace }}/feed/luci-app-podman
 
       - name: Create artifacts directory structure
         run: |
@@ -55,10 +55,10 @@ jobs:
         uses: openwrt/gh-action-sdk@main
         env:
           ARCH: ${{ matrix.arch }}
-          PACKAGES: gpio-fan-rpm
+          PACKAGES: luci-app-podman
           V: ${{ github.event.inputs.verbose == 'true' && 's' || '0' }}
           FEED_DIR: ${{ github.workspace }}/feed
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
       - name: Verify package built
-        run: find ${{ github.workspace }}/artifacts/bin/ -name 'gpio-fan-rpm*.ipk' -type f | grep . 
+        run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | grep . 
