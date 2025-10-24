@@ -1,7 +1,7 @@
 # Must do
 
-- Pods list should not have the actions column. Should be handled like the containers list.
-
+- Pods list should have action buttons like container list
+- Deleting a container from a POD shows success without deleting (cause of existing pod i think);
 
 # Should have
 
@@ -18,4 +18,4 @@
 - Show parts from inspect json as tooltip(title) for the inspect links. For example, network could show if IPv6 is enabled so user can get neccessary informations without the need to open the inspect modal
 - Pods list views container ids with link to container details instead of just the number of containers
 - Poll the container stats
-- Console
+- Console for container
