@@ -250,14 +250,23 @@ const FormContainer = baseclass.extend({
             // Parse volumes
             if (container.volumes) {
                 spec.mounts = [];
+                spec.volumes = [];
                 container.volumes.split('\n').forEach((line) => {
                     const parts = line.trim().split(':');
                     if (parts.length >= 2) {
-                        spec.mounts.push({
-                            source: parts[0],
-                            destination: parts[1],
-                            type: 'bind'
-                        });
+                        console.log(parts, parts[0].indexOf('/'));
+
+                        if (parts[0].indexOf('/') > -1) {
+                            spec.mounts.push({
+                                source: parts[0],
+                                destination: parts[1],
+                            });
+                        } else {
+                            spec.volumes.push({
+                                name: parts[0],
+                                dest: parts[1],
+                            });
+                        }
                     }
                 });
             }
@@ -1252,6 +1261,7 @@ const FormVolume = baseclass.extend({
 
             ui.hideModal();
             this.map.reset();
+            console.log('this.map', this.map);
 
             pui.showSpinningModal(_('Creating Volume'), _('Creating volume...'));
 
@@ -1653,19 +1663,28 @@ const FormSelectDummyValue = form.DummyValue.extend({
 const FormDataDummyValue = form.DummyValue.extend({
     containerProperty: '',
     cfgdefault: _('Unknown'),
+    cfgtitle: null,
     cfgformatter: (cfg) => cfg,
     cfgvalue: function (sectionId) {
         const property = this.containerProperty || this.option;
         if (!property) return '';
 
         const container = this.map.data.data[sectionId];
-        return container &&
+        const cfg = container &&
             container[property] || container[property.toLowerCase()]
             ?
-            this.cfgformatter(container[property] || container[property.toLowerCase()])
+            container[property] || container[property.toLowerCase()]
             :
             this.cfgdefault
-            ;
+        ;
+
+        let cfgtitle = null;
+
+        if (this.cfgtitle) {
+            cfgtitle = this.cfgtitle(cfg);
+        }
+
+        return E('span', { title: cfgtitle }, this.cfgformatter(cfg));
     }
 });
 
@@ -1684,7 +1703,6 @@ const FormLinkDataDummyValue = form.DummyValue.extend({
                 }
             }, this.text(data));
     }
-                
 });
 
 const PodmanForm = baseclass.extend({
