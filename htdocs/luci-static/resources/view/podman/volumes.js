@@ -76,6 +76,7 @@ return view.extend({
 		// Mountpoint column
 		o = section.option(podmanForm.field.DataDummyValue, 'Mountpoint', _('Mountpoint'));
 		o.cfgdefault = _('N/A');
+		o.cfgtitle = (cfg) => cfg;
 		o.cfgformatter = (cfg) => utils.truncate(cfg, 30);
 
 		// Created column
