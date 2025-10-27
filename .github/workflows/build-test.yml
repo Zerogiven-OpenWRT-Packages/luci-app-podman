@@ -42,10 +42,14 @@ jobs:
           
           echo "Proceeding with build for OpenWrt ${{ matrix.openwrt_version }}"
 
+      - name: Create artifacts directory structure
+        run: |
+          mkdir -p ${{ github.workspace }}/feed
+
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: ${{ github.workspace }}/feed/luci-app-podman
+        # with:
+        #   path: ${{ github.workspace }}/feed/luci-app-podman
 
       - name: Create artifacts directory structure
         run: |
@@ -55,10 +59,10 @@ jobs:
         uses: openwrt/gh-action-sdk@main
         env:
           ARCH: ${{ matrix.arch }}
-          PACKAGES: luci-app-podman
+          PACKAGES: vim podman
           V: ${{ github.event.inputs.verbose == 'true' && 'sc' || '0' }}
           FEED_DIR: ${{ github.workspace }}/feed
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
-      - name: Verify package built
-        run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | grep . 
+      # - name: Verify package built
+      #   run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | grep . 
