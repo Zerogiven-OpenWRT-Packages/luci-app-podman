@@ -42,7 +42,7 @@ jobs:
           
           echo "Proceeding with build for OpenWrt ${{ matrix.openwrt_version }}"
 
-      - name: Create artifacts directory structure
+      - name: Create feeds directory structure
         run: |
           mkdir -p ${{ github.workspace }}/feed
 
