@@ -3,10 +3,14 @@
 'require poll';
 'require ui';
 'require form';
+'require uci';
+'require network';
+'require session';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.ui as pui';
 'require podman.openwrt-network as openwrtNetwork';
+'require podman.ipv6 as ipv6';
 
 const FormContainer = baseclass.extend({
     map: null,
@@ -254,8 +258,6 @@ const FormContainer = baseclass.extend({
                 container.volumes.split('\n').forEach((line) => {
                     const parts = line.trim().split(':');
                     if (parts.length >= 2) {
-                        console.log(parts, parts[0].indexOf('/'));
-
                         if (parts[0].indexOf('/') > -1) {
                             spec.mounts.push({
                                 source: parts[0],
@@ -350,7 +352,7 @@ const FormContainer = baseclass.extend({
                         } else {
                             pui.successTimeNotification(_('Container created and started successfully'));
                         }
-                        
+
                         this.submit();
                     }).catch((err) => {
                         ui.hideModal();
@@ -460,7 +462,7 @@ const FormContainer = baseclass.extend({
         });
     },
 
-    submit: () => {},
+    submit: () => { },
 });
 
 const FormImage = baseclass.extend({
@@ -682,7 +684,7 @@ const FormImage = baseclass.extend({
         poll.add(this.pollFn, 1); // Poll every 1 second
     },
 
-    submit: () => {},
+    submit: () => { },
 });
 
 const FormNetwork = baseclass.extend({
@@ -787,42 +789,59 @@ const FormNetwork = baseclass.extend({
     },
 
     handleCreate: function () {
+        const ulaPrefix = uci.get('network', 'globals', 'ula_prefix');
+
         this.map.save().then(() => {
-            const network = this.map.data.data.network;
-            const setupOpenwrt = network.setup_openwrt === '1';
-            const bridgeName = network.bridge_name || (network.name + '0');
+            const podnetwork = this.map.data.data.network;
+            const setupOpenwrt = podnetwork.setup_openwrt === '1';
+            const bridgeName = podnetwork.bridge_name || (podnetwork.name + '0');
 
             // Validate OpenWrt integration if requested
-            if (setupOpenwrt && !network.subnet) {
+            if (setupOpenwrt && !podnetwork.subnet) {
                 pui.errorNotification(_('OpenWrt integration requires subnet to be specified'));
                 return;
             }
 
-            if (!network.gateway && network.subnet) {
+            if (!podnetwork.gateway && podnetwork.subnet) {
                 const regex = new RegExp('(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.)(\\d{1,3})', 'gm')
-                network.gateway = network.subnet.replace(regex, (m, g1, g2) => g1 + (Number(g2) + 1)).replace(/\/\d+$/, '');
+                podnetwork.gateway = podnetwork.subnet.replace(regex, (m, g1, g2) => g1 + (Number(g2) + 1)).replace(/\/\d+$/, '');
             }
 
             const payload = {
-                name: network.name,
-                driver: network.driver || 'bridge',
+                name: podnetwork.name,
+                driver: podnetwork.driver || 'bridge',
                 network_interface: bridgeName  // Set the bridge interface name for Podman
             };
 
             // Build IPAM config if subnet provided
-            if (network.subnet) {
-                payload.subnets = [{ subnet: network.subnet }];
-                if (network.gateway) payload.subnets[0].gateway = network.gateway;
-                if (network.ip_range) payload.subnets[0].lease_range = { start_ip: '', end_ip: '' };
+            if (podnetwork.subnet) {
+                payload.subnets = [{ subnet: podnetwork.subnet }];
+                if (podnetwork.gateway) payload.subnets[0].gateway = podnetwork.gateway;
+                if (podnetwork.ip_range) payload.subnets[0].lease_range = { start_ip: '', end_ip: '' };
             }
 
-            payload.ipv6_enabled = network.ipv6 === '1';
-            payload.internal = network.internal === '1';
+            payload.ipv6_enabled = false;
+            if (podnetwork.ipv6 === '1') {
+                const ipv6obj = ipv6.deriveUlaFromIpv4(podnetwork.subnet, ulaPrefix);
+
+                podnetwork.ipv6subnet = ipv6obj.ipv6subnet;
+                podnetwork.ipv6gateway = ipv6obj.ipv6gateway;
+
+                payload.ipv6_enabled = true;
+
+                if (podnetwork.subnet) {
+                    payload.subnets.push({ subnet: ipv6obj.ipv6subnet });
+                    if (podnetwork.gateway) payload.subnets[1].gateway = ipv6obj.ipv6gateway;
+                    // if (podnetwork.ip_range) payload.subnets[1].lease_range = { start_ip: '', end_ip: '' };
+                }
+            }
+
+            payload.internal = podnetwork.internal === '1';
 
             // Parse labels
-            if (network.labels) {
+            if (podnetwork.labels) {
                 payload.labels = {};
-                network.labels.split('\n').forEach((line) => {
+                podnetwork.labels.split('\n').forEach((line) => {
                     const parts = line.split('=');
                     if (parts.length >= 2) {
                         const key = parts[0].trim();
@@ -861,10 +880,12 @@ const FormNetwork = baseclass.extend({
                     ui.hideModal();
                     pui.showSpinningModal(_('Creating Network'), _('Setting up OpenWrt integration...'));
 
-                    return openwrtNetwork.createIntegration(network.name, {
+                    return openwrtNetwork.createIntegration(podnetwork.name, {
                         bridgeName: bridgeName,
-                        subnet: network.subnet,
-                        gateway: network.gateway
+                        subnet: podnetwork.subnet,
+                        gateway: podnetwork.gateway,
+                        ipv6subnet: podnetwork.ipv6subnet || null,
+                        ipv6gateway: podnetwork.ipv6gateway || null,
                     }).then(() => {
                         return { podmanCreated: true, openwrtCreated: true };
                     }).catch((err) => {
@@ -899,7 +920,7 @@ const FormNetwork = baseclass.extend({
         }).catch(() => { });
     },
 
-    submit: () => {},
+    submit: () => { },
 });
 
 const FormPod = baseclass.extend({
@@ -1014,7 +1035,7 @@ const FormPod = baseclass.extend({
                     return;
                 }
                 pui.successTimeNotification(_('Pod created successfully'));
-                
+
                 this.submit();
             }).catch((err) => {
                 ui.hideModal();
@@ -1023,7 +1044,7 @@ const FormPod = baseclass.extend({
         }).catch(() => { });
     },
 
-    submit: () => {},
+    submit: () => { },
 });
 
 const FormSecret = baseclass.extend({
@@ -1161,7 +1182,7 @@ const FormSecret = baseclass.extend({
         });
     },
 
-    submit: () => {},
+    submit: () => { },
 });
 
 /**
@@ -1261,7 +1282,6 @@ const FormVolume = baseclass.extend({
 
             ui.hideModal();
             this.map.reset();
-            console.log('this.map', this.map);
 
             pui.showSpinningModal(_('Creating Volume'), _('Creating volume...'));
 
@@ -1280,7 +1300,7 @@ const FormVolume = baseclass.extend({
         }).catch(() => { });
     },
 
-    submit: () => {},
+    submit: () => { },
 });
 
 /**
@@ -1452,7 +1472,7 @@ const FormResourceEditor = baseclass.extend({
                 } else {
                     pui.successTimeNotification(_('Resources updated successfully'));
                     // Store current tab before reload
-                    sessionStorage.setItem('podman_active_tab', 'resources');
+                    session.setLocalData('podman_active_tab', 'resources');
                     window.location.reload();
                 }
             }).catch((err) => {
@@ -1676,7 +1696,7 @@ const FormDataDummyValue = form.DummyValue.extend({
             container[property] || container[property.toLowerCase()]
             :
             this.cfgdefault
-        ;
+            ;
 
         let cfgtitle = null;
 
@@ -1695,13 +1715,13 @@ const FormLinkDataDummyValue = form.DummyValue.extend({
     cfgvalue: function (sectionId) {
         const data = this.map.data.data[sectionId];
         return E('a', {
-                href: '#',
-                title: this.linktitle(data),
-                click: (ev) => {
-                    ev.preventDefault();
-                    this.click(data);
-                }
-            }, this.text(data));
+            href: '#',
+            title: this.linktitle(data),
+            click: (ev) => {
+                ev.preventDefault();
+                this.click(data);
+            }
+        }, this.text(data));
     }
 });
 

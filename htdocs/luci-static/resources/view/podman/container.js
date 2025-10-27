@@ -3,6 +3,7 @@
 'require poll';
 'require ui';
 'require form';
+'require session';
 'require podman.container-util as ContainerUtil';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
@@ -87,9 +88,9 @@ return view.extend({
 		]);
 
 		// Check if we should restore a specific tab
-		const savedTab = sessionStorage.getItem('podman_active_tab');
+		const savedTab = session.getLocalData('podman_active_tab');
 		if (savedTab) {
-			sessionStorage.removeItem('podman_active_tab');
+			session.setLocalData('podman_active_tab', null);
 		}
 
 		// Create tab container
@@ -981,8 +982,8 @@ return view.extend({
 		const outputEl = document.getElementById('logs-output');
 		const view = this;
 
-		// Store poll function reference for later removal
-		this.logPollFn = poll.add(function() {
+		// Define poll function and store reference for later removal
+		this.logPollFn = function() {
 			// Check if session still exists (user may have stopped it)
 			if (!view.logStreamSessionId) {
 				view.stopLogStream();
@@ -1039,7 +1040,10 @@ return view.extend({
 				const checkbox = document.getElementById('log-stream-toggle');
 				if (checkbox) checkbox.checked = false;
 			});
-		}, 1); // Poll every 1 second
+		};
+
+		// Add the poll using stored function reference
+		poll.add(this.logPollFn, 1); // Poll every 1 second
 	},
 
 	/**
@@ -1384,7 +1388,7 @@ return view.extend({
 			} else {
 				ui.addNotification(null, E('p', _('Resources updated successfully')));
 				// Store current tab before reload
-				sessionStorage.setItem('podman_active_tab', 'resources');
+				session.setLocalData('podman_active_tab', 'resources');
 				window.location.reload();
 			}
 		}).catch((err) => {

@@ -56,7 +56,7 @@ jobs:
         env:
           ARCH: ${{ matrix.arch }}
           PACKAGES: luci-app-podman
-          V: ${{ github.event.inputs.verbose == 'true' && 's' || '0' }}
+          V: ${{ github.event.inputs.verbose == 'true' && 'sc' || '0' }}
           FEED_DIR: ${{ github.workspace }}/feed
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 

@@ -110,6 +110,11 @@ return L.Class.extend({
 				uci.set('network', bridgeName, 'name', bridgeName);
 				uci.set('network', bridgeName, 'bridge_empty', '1');
 				uci.set('network', bridgeName, 'ipv6', '0');
+
+				if (options.ipv6subnet) {
+					uci.set('network', bridgeName, 'ipv6', '1');
+					uci.set('network', bridgeName, 'ip6assign', '64');
+				}
 			}
 
 			// 2. Create network interface
@@ -120,6 +125,10 @@ return L.Class.extend({
 				uci.set('network', networkName, 'device', bridgeName);
 				uci.set('network', networkName, 'ipaddr', gateway);
 				uci.set('network', networkName, 'netmask', netmask);
+
+				if (options.ipv6subnet && options.ipv6gateway) {
+					uci.set('network', networkName, 'ip6addr', options.ipv6gateway + '/64');
+				}
 			}
 
 			// 3. Check if shared 'podman' zone exists
