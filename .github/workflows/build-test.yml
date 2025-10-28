@@ -60,7 +60,7 @@ jobs:
         env:
           ARCH: ${{ matrix.arch }}
           PACKAGES: podman
-          V: ${{ github.event.inputs.verbose == 'true' && 'sc' || '0' }} -j1
+          V: sc -j1
           FEED_DIR: ${{ github.workspace }}/feed
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
