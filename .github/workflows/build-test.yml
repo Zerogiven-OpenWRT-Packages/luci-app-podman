@@ -46,8 +46,8 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/feed
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # - name: Checkout repository
+      #   uses: actions/checkout@v4
         # with:
         #   path: ${{ github.workspace }}/feed/luci-app-podman
 
