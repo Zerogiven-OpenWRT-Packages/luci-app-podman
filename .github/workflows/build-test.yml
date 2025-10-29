@@ -57,11 +57,16 @@ jobs:
 
       - name: Disable CI-llvm downloads
         run: |
-          if [ ! -f "config.toml" ]; then cat > "config.toml" <<'EOF' [llvm] download-ci-llvm = false 'EOF' fi
-      
+          if [ ! -f "config.toml" ]; then
+            printf '%s\n' "[llvm]" "download-ci-llvm = false" > "config.toml"
+          fi
+
       - name: Disable CI-llvm downloads #2
         run: |
-          if [ ! -f "${{ github.workspace }}/config.toml" ]; then cat > "${{ github.workspace }}/config.toml" <<'EOF' [llvm] download-ci-llvm = false 'EOF' fi
+          CONFIG="${{ github.workspace }}/config.toml"
+          if [ ! -f "$CONFIG" ]; then
+            printf '%s\n' "[llvm]" "download-ci-llvm = false" > "$CONFIG"
+          fi
 
       - name: Build OpenWrt ${{ matrix.openwrt_version }} package
         uses: openwrt/gh-action-sdk@main
