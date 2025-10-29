@@ -55,21 +55,8 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/artifacts
 
-      - name: Disable CI-llvm downloads
-        run: |
-          if [ ! -f "config.toml" ]; then
-            printf '%s\n' "[llvm]" "download-ci-llvm = false" > "config.toml"
-          fi
-
-      - name: Disable CI-llvm downloads #2
-        run: |
-          CONFIG="${{ github.workspace }}/config.toml"
-          if [ ! -f "$CONFIG" ]; then
-            printf '%s\n' "[llvm]" "download-ci-llvm = false" > "$CONFIG"
-          fi
-
       - name: Build OpenWrt ${{ matrix.openwrt_version }} package
-        uses: openwrt/gh-action-sdk@main
+        uses: Zerogiven/gh-action-openwrt-sdk@main
         env:
           ARCH: ${{ matrix.arch }}
           PACKAGES: podman
