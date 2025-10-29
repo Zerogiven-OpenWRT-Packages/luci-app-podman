@@ -184,5 +184,71 @@ return L.Class.extend({
 		};
 
 		return Math.floor(value * (multipliers[unit] || 1));
+	},
+
+	/**
+	 * Parse duration string to nanoseconds (Podman format)
+	 * Supports formats: 30s, 1m, 1h, 500ms, etc.
+	 * @param {string} duration - Duration string (e.g., "30s", "1m", "1h")
+	 * @returns {number} Duration in nanoseconds, or 0 if invalid
+	 */
+	parseDuration: function(duration) {
+		if (!duration) return 0;
+
+		// Match number with unit (ns, us, ms, s, m, h)
+		const match = duration.match(/^(\d+(?:\.\d+)?)\s*(ns|us|ms|s|m|h)$/);
+		if (!match) return 0;
+
+		const value = parseFloat(match[1]);
+		const unit = match[2];
+
+		// Multipliers to convert to nanoseconds
+		const multipliers = {
+			'ns': 1,
+			'us': 1000,
+			'ms': 1000000,
+			's': 1000000000,
+			'm': 60000000000,
+			'h': 3600000000000
+		};
+
+		return Math.floor(value * (multipliers[unit] || 0));
+	},
+
+	/**
+	 * Format nanosecond duration to human-readable string
+	 * @param {number} ns - Duration in nanoseconds
+	 * @returns {string} Formatted duration string (e.g., "30s", "1m", "1h")
+	 */
+	formatDuration: function(ns) {
+		if (!ns || ns === 0) return '0s';
+
+		const units = [
+			{ name: 'h', value: 3600000000000 },
+			{ name: 'm', value: 60000000000 },
+			{ name: 's', value: 1000000000 },
+			{ name: 'ms', value: 1000000 },
+			{ name: 'us', value: 1000 },
+			{ name: 'ns', value: 1 }
+		];
+
+		for (let i = 0; i < units.length; i++) {
+			const unit = units[i];
+			if (ns >= unit.value) {
+				const value = Math.floor(ns / unit.value);
+				const remainder = ns % unit.value;
+
+				// If there's a significant remainder, show decimal
+				if (remainder > 0 && i < units.length - 1) {
+					const nextUnit = units[i + 1];
+					const decimalValue = (ns / unit.value).toFixed(1);
+					return decimalValue + unit.name;
+				}
+
+				return value + unit.name;
+			}
+		}
+
+		return ns + 'ns';
 	}
 });

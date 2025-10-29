@@ -106,7 +106,7 @@ case "$1" in
 	"container_start": { "id": "" },
 	"container_stop": { "id": "" },
 	"container_restart": { "id": "" },
-	"container_remove": { "id": "", "force": false },
+	"container_remove": { "id": "", "force": false, "depend": false },
 	"container_logs": { "id": "", "params": "" },
 	"container_logs_stream": { "id": "", "params": "" },
 	"container_logs_status": { "session_id": "", "offset": 0 },
@@ -115,6 +115,7 @@ case "$1" in
 	"container_create": { "data": {} },
 	"container_rename": { "id": "", "name": "" },
 	"container_update": { "id": "", "data": {} },
+	"container_healthcheck_run": { "id": "" },
 	"images_list": {},
 	"image_inspect": { "id": "" },
 	"image_remove": { "id": "", "force": false },
@@ -192,11 +193,18 @@ EOF
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/restart"
 				;;
 			container_remove)
-				get_json_params id force
+				get_json_params id force depend
 				require_param id
 				id_enc=$(urlencode "$id")
-				path=$(add_force "${API_BASE}/containers/${id_enc}" "$force")
-				curl_request "DELETE" "$path"
+				# Build query parameters
+				query=""
+				[ "$force" = "true" -o "$force" = "1" ] && query="${query}force=true&"
+				[ "$depend" = "true" -o "$depend" = "1" ] && query="${query}depend=true&"
+				# Remove trailing &
+				query="${query%&}"
+				# Add ? if we have parameters
+				[ -n "$query" ] && query="?${query}"
+				curl_request "DELETE" "${API_BASE}/containers/${id_enc}${query}"
 				;;
 			container_logs)
 				get_json_params id params
@@ -391,6 +399,12 @@ EOF
 						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}" "{}"
 						;;
 				esac
+				;;
+			container_healthcheck_run)
+				get_json_params id
+				require_param id
+				id_enc=$(urlencode "$id")
+				curl_request "GET" "${API_BASE}/containers/${id_enc}/healthcheck"
 				;;
 			images_list)
 				read -r input

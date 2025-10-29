@@ -36,7 +36,8 @@ return L.Class.extend({
 			netns: null,
 			work_dir: null,
 			hostname: null,
-			resource_limits: {}
+			resource_limits: {},
+			healthconfig: {}
 		};
 
 		// Parse flags and options
@@ -115,6 +116,27 @@ return L.Class.extend({
 				if (memBytes > 0) {
 					spec.resource_limits.memory = { limit: memBytes };
 				}
+			} else if (token === '--health-cmd') {
+				i++;
+				spec.healthconfig.Test = ['CMD-SHELL', tokens[i]];
+			} else if (token === '--health-interval') {
+				i++;
+				spec.healthconfig.Interval = this.parseDuration(tokens[i]);
+			} else if (token === '--health-timeout') {
+				i++;
+				spec.healthconfig.Timeout = this.parseDuration(tokens[i]);
+			} else if (token === '--health-retries') {
+				i++;
+				const retries = parseInt(tokens[i], 10);
+				if (!isNaN(retries)) {
+					spec.healthconfig.Retries = retries;
+				}
+			} else if (token === '--health-start-period') {
+				i++;
+				spec.healthconfig.StartPeriod = this.parseDuration(tokens[i]);
+			} else if (token === '--health-start-interval') {
+				i++;
+				spec.healthconfig.StartInterval = this.parseDuration(tokens[i]);
 			}
 
 			i++;
@@ -130,6 +152,7 @@ return L.Class.extend({
 		if (spec.mounts.length === 0) delete spec.mounts;
 		if (Object.keys(spec.labels).length === 0) delete spec.labels;
 		if (Object.keys(spec.resource_limits).length === 0) delete spec.resource_limits;
+		if (Object.keys(spec.healthconfig).length === 0) delete spec.healthconfig;
 		if (!spec.name) delete spec.name;
 		if (!spec.command || spec.command.length === 0) delete spec.command;
 		if (!spec.restart_policy) delete spec.restart_policy;
@@ -299,5 +322,34 @@ return L.Class.extend({
 		};
 
 		return Math.floor(value * (multipliers[unit] || 1));
+	},
+
+	/**
+	 * Parse duration string to nanoseconds (Podman format)
+	 * Supports formats: 30s, 1m, 1h, 500ms, etc.
+	 * @param {string} duration - Duration string (e.g., "30s", "1m", "1h")
+	 * @returns {number} Duration in nanoseconds, or 0 if invalid
+	 */
+	parseDuration: function(duration) {
+		if (!duration) return 0;
+
+		// Match number with unit (ns, us, ms, s, m, h)
+		const match = duration.match(/^(\d+(?:\.\d+)?)\s*(ns|us|ms|s|m|h)$/);
+		if (!match) return 0;
+
+		const value = parseFloat(match[1]);
+		const unit = match[2];
+
+		// Multipliers to convert to nanoseconds
+		const multipliers = {
+			'ns': 1,
+			'us': 1000,
+			'ms': 1000000,
+			's': 1000000000,
+			'm': 60000000000,
+			'h': 3600000000000
+		};
+
+		return Math.floor(value * (multipliers[unit] || 0));
 	}
 });

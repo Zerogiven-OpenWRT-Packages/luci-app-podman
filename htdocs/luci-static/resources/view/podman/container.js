@@ -93,59 +93,84 @@ return view.extend({
 			session.setLocalData('podman_active_tab', null);
 		}
 
+		// Check if container has health check configured
+		const hasHealthCheck = this.containerData.State && this.containerData.State.Health;
+
+		// Build tab panes array dynamically
+		const tabPanes = [
+			// Info Tab (active by default unless savedTab exists)
+			E('div', {
+				'class': 'tab-pane',
+				'data-tab': 'info',
+				'data-tab-title': _('Info'),
+				'data-tab-active': !savedTab || savedTab === 'info' ? 'true' : null
+			}, [
+				E('div', { 'id': 'tab-info-content' })
+			]),
+			// Resources Tab
+			E('div', {
+				'class': 'tab-pane',
+				'data-tab': 'resources',
+				'data-tab-title': _('Resources'),
+				'data-tab-active': savedTab === 'resources' ? 'true' : null
+			}, [
+				E('div', { 'id': 'tab-resources-content' })
+			]),
+			// Stats Tab
+			E('div', {
+				'class': 'tab-pane',
+				'data-tab': 'stats',
+				'data-tab-title': _('Stats')
+			}, [
+				E('div', { 'id': 'tab-stats-content' }, [
+					E('p', {}, _('Loading stats...'))
+				])
+			]),
+			// Logs Tab
+			E('div', {
+				'class': 'tab-pane',
+				'data-tab': 'logs',
+				'data-tab-title': _('Logs')
+			}, [
+				E('div', { 'id': 'tab-logs-content' }, [
+					E('p', {}, _('Loading logs...'))
+				])
+			])
+		];
+
+		// Conditionally add Health tab if health check is configured
+		if (hasHealthCheck) {
+			tabPanes.push(
+				E('div', {
+					'class': 'tab-pane',
+					'data-tab': 'health',
+					'data-tab-title': _('Health'),
+					'data-tab-active': savedTab === 'health' ? 'true' : null
+				}, [
+					E('div', { 'id': 'tab-health-content' }, [
+						E('p', {}, _('Loading health check data...'))
+					])
+				])
+			);
+		}
+
+		// Add Console tab last
+		tabPanes.push(
+			E('div', {
+				'class': 'tab-pane',
+				'data-tab': 'console',
+				'data-tab-title': _('Console')
+			}, [
+				E('div', { 'id': 'tab-console-content' }, [
+					E('p', {}, _('Terminal access coming soon...'))
+				])
+			])
+		);
+
 		// Create tab container
 		const tabContainer = E('div', { 'class': 'cbi-section' }, [
 			E('div', { 'class': 'cbi-section-node' }, [
-				E('div', { 'class': 'tab-panes' }, [
-					// Info Tab (active by default unless savedTab exists)
-					E('div', {
-						'class': 'tab-pane',
-						'data-tab': 'info',
-						'data-tab-title': _('Info'),
-						'data-tab-active': !savedTab || savedTab === 'info' ? 'true' : null
-					}, [
-						E('div', { 'id': 'tab-info-content' })
-					]),
-					// Resources Tab
-					E('div', {
-						'class': 'tab-pane',
-						'data-tab': 'resources',
-						'data-tab-title': _('Resources'),
-						'data-tab-active': savedTab === 'resources' ? 'true' : null
-					}, [
-						E('div', { 'id': 'tab-resources-content' })
-					]),
-					// Stats Tab
-					E('div', {
-						'class': 'tab-pane',
-						'data-tab': 'stats',
-						'data-tab-title': _('Stats')
-					}, [
-						E('div', { 'id': 'tab-stats-content' }, [
-							E('p', {}, _('Loading stats...'))
-						])
-					]),
-					// Logs Tab
-					E('div', {
-						'class': 'tab-pane',
-						'data-tab': 'logs',
-						'data-tab-title': _('Logs')
-					}, [
-						E('div', { 'id': 'tab-logs-content' }, [
-							E('p', {}, _('Loading logs...'))
-						])
-					]),
-					// Console Tab
-					E('div', {
-						'class': 'tab-pane',
-						'data-tab': 'console',
-						'data-tab-title': _('Console')
-					}, [
-						E('div', { 'id': 'tab-console-content' }, [
-							E('p', {}, _('Terminal access coming soon...'))
-						])
-					])
-				])
+				E('div', { 'class': 'tab-panes' }, tabPanes)
 			])
 		]);
 
@@ -159,6 +184,11 @@ return view.extend({
 			this.renderResourcesTab();
 			this.renderStatsTab();
 			this.renderLogsTab();
+
+			// Load Health tab if configured
+			if (hasHealthCheck) {
+				this.renderHealthTab();
+			}
 		});
 
 		return E('div', {}, [header, tabContainer]);
@@ -230,7 +260,42 @@ return view.extend({
 
 		// Add health status if exists
 		if (data.State && data.State.Health) {
-			basicRows.push(this.createInfoRow(_('Health'), data.State.Health.Status || '-'));
+			const healthStatus = data.State.Health.Status || 'none';
+			const failingStreak = data.State.Health.FailingStreak || 0;
+			const log = data.State.Health.Log || [];
+			const lastCheck = log.length > 0 ? log[log.length - 1] : null;
+
+			// Build health status display with badge
+			const healthBadge = E('span', {
+				'class': 'badge status-' + healthStatus.toLowerCase(),
+				'style': 'margin-right: 10px;'
+			}, healthStatus);
+
+			const healthDetails = [healthBadge];
+
+			// Add failing streak if unhealthy
+			if (healthStatus === 'unhealthy' && failingStreak > 0) {
+				healthDetails.push(E('span', { 'style': 'color: #ff6b6b;' },
+					_(' (%d consecutive failures)').format(failingStreak)));
+			}
+
+			// Add last check time if available
+			if (lastCheck && lastCheck.End) {
+				healthDetails.push(E('br'));
+				healthDetails.push(E('small', { 'style': 'color: #666;' },
+					_('Last check: %s').format(utils.formatDate(lastCheck.End))));
+			}
+
+			// Add manual health check button if container is running
+			if (status === 'running') {
+				healthDetails.push(' ');
+				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(), 'positive').render());
+			}
+
+			basicRows.push(E('tr', { 'class': 'tr' }, [
+				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Health')),
+				E('td', { 'class': 'td', 'style': 'word-break: break-word;' }, healthDetails)
+			]));
 		}
 
 		sections.push(this.createSection(_('Basic Information'), basicRows));
@@ -1047,6 +1112,135 @@ return view.extend({
 	},
 
 	/**
+	 * Render the Health tab content
+	 */
+	renderHealthTab: function() {
+		const container = document.getElementById('tab-health-content');
+		if (!container) return;
+
+		// Clear existing content
+		while (container.firstChild) {
+			container.removeChild(container.firstChild);
+		}
+
+		const data = this.containerData;
+		const health = data.State && data.State.Health;
+
+		if (!health) {
+			container.appendChild(E('p', {}, _('No health check configured')));
+			return;
+		}
+
+		// Health check configuration from Config.Healthcheck
+		const healthConfig = data.Config && data.Config.Healthcheck;
+
+		// Build health check information
+		const sections = [];
+
+		// Current Status Section
+		const status = health.Status || 'none';
+		const failingStreak = health.FailingStreak || 0;
+
+		const statusRows = [
+			E('tr', { 'class': 'tr' }, [
+				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Status')),
+				E('td', { 'class': 'td' }, [
+					E('span', {
+						'class': 'badge status-' + status.toLowerCase(),
+						'style': 'font-size: 16px;'
+					}, status)
+				])
+			]),
+			E('tr', { 'class': 'tr' }, [
+				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Failing Streak')),
+				E('td', { 'class': 'td', 'style': failingStreak > 0 ? 'color: #ff6b6b; font-weight: bold;' : '' },
+					failingStreak > 0 ? _('%d consecutive failures').format(failingStreak) : _('No failures'))
+			])
+		];
+
+		sections.push(this.createSection(_('Health Status'), statusRows));
+
+		// Configuration Section
+		if (healthConfig) {
+			const configRows = [];
+
+			if (healthConfig.Test && healthConfig.Test.length > 0) {
+				const testCmd = healthConfig.Test.join(' ');
+				configRows.push(this.createInfoRow(_('Test Command'), testCmd));
+			}
+
+			if (healthConfig.Interval) {
+				configRows.push(this.createInfoRow(_('Interval'), utils.formatDuration(healthConfig.Interval)));
+			}
+
+			if (healthConfig.Timeout) {
+				configRows.push(this.createInfoRow(_('Timeout'), utils.formatDuration(healthConfig.Timeout)));
+			}
+
+			if (healthConfig.StartPeriod) {
+				configRows.push(this.createInfoRow(_('Start Period'), utils.formatDuration(healthConfig.StartPeriod)));
+			}
+
+			if (healthConfig.StartInterval) {
+				configRows.push(this.createInfoRow(_('Start Interval'), utils.formatDuration(healthConfig.StartInterval)));
+			}
+
+			if (healthConfig.Retries) {
+				configRows.push(this.createInfoRow(_('Retries'), String(healthConfig.Retries)));
+			}
+
+			if (configRows.length > 0) {
+				sections.push(this.createSection(_('Configuration'), configRows));
+			}
+		}
+
+		// Health Check History
+		const log = health.Log || [];
+		if (log.length > 0) {
+			const historyRows = log.slice(-10).reverse().map((entry) => {
+				const exitCode = entry.ExitCode !== undefined ? entry.ExitCode : '-';
+				const exitStatus = exitCode === 0 ? _('Success') : _('Failed');
+				const exitClass = exitCode === 0 ? 'status-healthy' : 'status-unhealthy';
+
+				// Create output cell with textContent to prevent HTML injection
+				const outputText = entry.Output ? entry.Output.trim() : '-';
+				const outputCell = E('td', {
+					'class': 'td',
+					'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
+					'title': outputText  // Tooltip shows full output on hover
+				});
+				outputCell.textContent = outputText;
+
+				return E('tr', { 'class': 'tr' }, [
+					E('td', { 'class': 'td' }, entry.Start ? utils.formatDate(entry.Start) : '-'),
+					E('td', { 'class': 'td' }, entry.End ? utils.formatDate(entry.End) : '-'),
+					E('td', { 'class': 'td' }, [
+						E('span', { 'class': 'badge ' + exitClass }, exitStatus),
+						' ',
+						E('small', {}, '(Exit: ' + exitCode + ')')
+					]),
+					outputCell
+				]);
+			});
+
+			sections.push(this.createTableSection(_('Recent Checks (Last 10)'),
+				[_('Started'), _('Ended'), _('Result'), _('Output')],
+				historyRows
+			));
+		}
+
+		// Append all sections
+		sections.forEach((section) => {
+			container.appendChild(section);
+		});
+
+		// Add manual health check button
+		container.appendChild(E('div', { 'style': 'margin-top: 20px;' }, [
+			new pui.Button(_('Run Health Check Now'), () => this.handleHealthCheck(), 'positive').render()
+		]));
+	},
+
+	/**
 	 * Create an info section with key-value pairs
 	 * @param {string} title - Section title
 	 * @param {Array} rows - Table rows (already created)
@@ -1402,7 +1596,7 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 */
 	handleStart: function(id) {
-		new ContainerUtil.startContainers(id).then(() => {
+		ContainerUtil.startContainers(id).then(() => {
 			// reload page only for now
 			window.location.reload();
 		});
@@ -1413,7 +1607,7 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 */
 	handleStop: function(id) {
-		new ContainerUtil.stopContainers(id).then(() => {
+		ContainerUtil.stopContainers(id).then(() => {
 			// reload page only for now
 			window.location.reload();
 		});
@@ -1424,7 +1618,7 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 */
 	handleRestart: function(id) {
-		new ContainerUtil.restartContainers(id).then(() => {
+		ContainerUtil.restartContainers(id).then(() => {
 			// reload page only for now
 			window.location.reload();
 		});
@@ -1452,6 +1646,46 @@ return view.extend({
 		}).catch((err) => {
 			ui.hideModal();
 			ui.addNotification(null, E('p', _('Failed to remove container: %s').format(err.message)), 'error');
+		});
+	},
+
+	/**
+	 * Handle manual health check execution
+	 */
+	handleHealthCheck: function() {
+		pui.showSpinningModal(_('Running Health Check'), _('Executing health check...'));
+
+		podmanRPC.container.healthcheck(this.containerId).then((result) => {
+			ui.hideModal();
+
+			if (result && result.error) {
+				ui.addNotification(null, E('p', _('Health check failed: %s').format(result.error)), 'error');
+				return;
+			}
+
+			// Check health check result
+			const status = result.Status || 'unknown';
+			const failingStreak = result.FailingStreak || 0;
+
+			// Show result notification
+			if (status === 'healthy') {
+				pui.successTimeNotification(_('Health check passed'));
+			} else if (status === 'unhealthy') {
+				pui.warningNotification(_('Health check failed (%d consecutive failures)').format(failingStreak));
+			} else {
+				pui.infoNotification(_('Health check status: %s').format(status));
+			}
+
+		// Re-fetch container data and update health tab
+		podmanRPC.container.inspect(this.containerId).then((containerData) => {
+			this.containerData = containerData;
+			this.renderHealthTab();
+		}).catch((err) => {
+			console.error('Failed to refresh container data:', err);
+		});
+		}).catch((err) => {
+			ui.hideModal();
+			ui.addNotification(null, E('p', _('Failed to run health check: %s').format(err.message)), 'error');
 		});
 	}
 });

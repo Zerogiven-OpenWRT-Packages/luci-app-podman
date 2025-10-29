@@ -127,11 +127,23 @@ return view.extend({
 		// };
 		// o.rawhtml = true;
 
-		// Create toolbar using helper
+		// Create toolbar using helper with custom buttons
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
-			onCreate: () => this.handleCreatePod()
+			onCreate: () => this.handleCreatePod(),
+			customButtons: [
+				{
+					text: '&#9658;', // Play symbol
+					handler: () => this.handleStart(),
+					cssClass: 'positive'
+				},
+				{
+					text: '&#9724;', // Stop symbol
+					handler: () => this.handleStop(),
+					cssClass: 'negative'
+				}
+			]
 		});
 
 		return this.map.render().then((mapRendered) => {
@@ -196,47 +208,69 @@ return view.extend({
 		form.render();
 	},
 
-	// /**
-	//  * Start a pod
-	//  * @param {string} id - Pod ID
-	//  */
-	// handleStart: function(id) {
-	// 	podmanUI.showSpinningModal(_('Starting Pod'), _('Starting pod...'));
+	/**
+	 * Handle pod start action for selected pods
+	 */
+	handleStart: function() {
+		const selected = this.getSelectedPods();
 
-	// 	podmanRPC.pod.start(id).then((result) => {
-	// 		ui.hideModal();
-	// 		if (result && result.error) {
-	// 			podmanUI.errorNotification(_('Failed to start pod: %s').format(result.error));
-	// 		} else {
-	// 			podmanUI.successTimeNotification(_('Pod started successfully'));
-	// 			this.handleRefresh(false);
-	// 		}
-	// 	}).catch((err) => {
-	// 		ui.hideModal();
-	// 		podmanUI.errorNotification(_('Failed to start pod: %s').format(err.message));
-	// 	});
-	// },
+		if (selected.length === 0) {
+			ui.addTimeLimitedNotification(null, E('p', _('No pods selected')), 3000, 'warning');
+			return;
+		}
 
-	// /**
-	//  * Stop a pod
-	//  * @param {string} id - Pod ID
-	//  */
-	// handleStop: function(id) {
-	// 	podmanUI.showSpinningModal(_('Stopping Pod'), _('Stopping pod...'));
+		podmanUI.showSpinningModal(_('Starting Pods'), _('Starting selected pods...'));
 
-	// 	podmanRPC.pod.stop(id).then((result) => {
-	// 		ui.hideModal();
-	// 		if (result && result.error) {
-	// 			podmanUI.errorNotification(_('Failed to stop pod: %s').format(result.error));
-	// 		} else {
-	// 			podmanUI.successTimeNotification(_('Pod stopped successfully'));
-	// 			this.handleRefresh(false);
-	// 		}
-	// 	}).catch((err) => {
-	// 		ui.hideModal();
-	// 		podmanUI.errorNotification(_('Failed to stop pod: %s').format(err.message));
-	// 	});
-	// },
+		const startPromises = selected.map((pod) => {
+			return podmanRPC.pod.start(pod.id).catch((err) => {
+				return { error: err.message, name: pod.name };
+			});
+		});
+
+		Promise.all(startPromises).then((results) => {
+			ui.hideModal();
+			const errors = results.filter((r) => r && r.error);
+			if (errors.length > 0) {
+				const errorMsg = errors.map((e) => `${e.name}: ${e.error}`).join(', ');
+				podmanUI.errorNotification(_('Failed to start some pods: %s').format(errorMsg));
+			} else {
+				podmanUI.successTimeNotification(_('Pods started successfully'));
+			}
+			this.handleRefresh(false);
+		});
+	},
+
+	/**
+	 * Handle pod stop action for selected pods
+	 */
+	handleStop: function() {
+		const selected = this.getSelectedPods();
+
+		if (selected.length === 0) {
+			ui.addTimeLimitedNotification(null, E('p', _('No pods selected')), 3000, 'warning');
+			return;
+		}
+
+		podmanUI.showSpinningModal(_('Stopping Pods'), _('Stopping selected pods...'));
+
+		const stopPromises = selected.map((pod) => {
+			return podmanRPC.pod.stop(pod.id).catch((err) => {
+				return { error: err.message, name: pod.name };
+			});
+		});
+
+		Promise.all(stopPromises).then((results) => {
+			ui.hideModal();
+			const errors = results.filter((r) => r && r.error);
+			if (errors.length > 0) {
+				const errorMsg = errors.map((e) => `${e.name}: ${e.error}`).join(', ');
+				podmanUI.errorNotification(_('Failed to stop some pods: %s').format(errorMsg));
+			} else {
+				podmanUI.successTimeNotification(_('Pods stopped successfully'));
+			}
+			this.handleRefresh(false);
+		});
+	},
 
 	// /**
 	//  * Restart a pod

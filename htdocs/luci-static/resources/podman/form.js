@@ -9,6 +9,7 @@
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.ui as pui';
+'require podman.run-command-parser as RunCommandParser';
 'require podman.openwrt-network as openwrtNetwork';
 'require podman.ipv6 as ipv6';
 
@@ -34,7 +35,15 @@ const FormContainer = baseclass.extend({
             hostname: null,
             labels: null,
             cpus: null,
-            memory: null
+            memory: null,
+            enable_healthcheck: '0',
+            healthcheck_type: 'CMD',
+            healthcheck_command: null,
+            healthcheck_interval: null,
+            healthcheck_timeout: null,
+            healthcheck_start_period: null,
+            healthcheck_start_interval: null,
+            healthcheck_retries: null
         }
     },
 
@@ -190,6 +199,88 @@ const FormContainer = baseclass.extend({
         };
         field.description = _('Memory limit (e.g., 512m, 1g)');
 
+        // Health Check Configuration
+        field = section.option(form.Flag, 'enable_healthcheck', _('Enable Health Check'));
+        field.description = _('Configure health check to monitor container health status');
+
+        // Health Check Type
+        field = section.option(form.ListValue, 'healthcheck_type', _('Health Check Type'));
+        field.depends('enable_healthcheck', '1');
+        field.value('CMD', 'CMD');
+        field.value('CMD-SHELL', 'CMD-SHELL');
+        field.description = _('CMD runs command directly, CMD-SHELL runs command in shell');
+
+        // Health Check Command
+        field = section.option(form.Value, 'healthcheck_command', _('Health Check Command'));
+        field.depends('enable_healthcheck', '1');
+        field.placeholder = '/bin/health-check.sh';
+        field.optional = false;
+        field.description = _('Command to run for health check. Exit code 0 = healthy, 1 = unhealthy');
+
+        // Health Check Interval
+        field = section.option(form.Value, 'healthcheck_interval', _('Interval'));
+        field.depends('enable_healthcheck', '1');
+        field.placeholder = '30s';
+        field.optional = true;
+        field.validate = (_section_id, value) => {
+            if (!value) return true;
+            if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
+                return _('Invalid format. Use: 30s, 1m, 1h, etc.');
+            }
+            return true;
+        };
+        field.description = _('Time between health checks (e.g., 30s, 1m, 5m). Default: 30s');
+
+        // Health Check Timeout
+        field = section.option(form.Value, 'healthcheck_timeout', _('Timeout'));
+        field.depends('enable_healthcheck', '1');
+        field.placeholder = '30s';
+        field.optional = true;
+        field.validate = (_section_id, value) => {
+            if (!value) return true;
+            if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
+                return _('Invalid format. Use: 5s, 10s, 30s, etc.');
+            }
+            return true;
+        };
+        field.description = _('Maximum time for health check to complete. Default: 30s');
+
+        // Health Check Start Period
+        field = section.option(form.Value, 'healthcheck_start_period', _('Start Period'));
+        field.depends('enable_healthcheck', '1');
+        field.placeholder = '0s';
+        field.optional = true;
+        field.validate = (_section_id, value) => {
+            if (!value) return true;
+            if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
+                return _('Invalid format. Use: 30s, 1m, 5m, etc.');
+            }
+            return true;
+        };
+        field.description = _('Grace period before health checks count toward failures. Default: 0s');
+
+        // Health Check Start Interval
+        field = section.option(form.Value, 'healthcheck_start_interval', _('Start Interval'));
+        field.depends('enable_healthcheck', '1');
+        field.placeholder = '5s';
+        field.optional = true;
+        field.validate = (_section_id, value) => {
+            if (!value) return true;
+            if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
+                return _('Invalid format. Use: 5s, 10s, etc.');
+            }
+            return true;
+        };
+        field.description = _('Interval during start period (podman 4.8+). Default: 5s');
+
+        // Health Check Retries
+        field = section.option(form.Value, 'healthcheck_retries', _('Retries'));
+        field.depends('enable_healthcheck', '1');
+        field.placeholder = '3';
+        field.optional = true;
+        field.datatype = 'uinteger';
+        field.description = _('Number of consecutive failures before marking unhealthy. Default: 3');
+
         this.map.render().then((formElement) => {
             ui.showModal('', [
                 formElement,
@@ -323,6 +414,32 @@ const FormContainer = baseclass.extend({
                     spec.resource_limits = spec.resource_limits || {};
                     spec.resource_limits.memory = { limit: memBytes };
                 }
+            }
+
+            // Health check configuration
+            if (container.enable_healthcheck === '1' && container.healthcheck_command) {
+                const healthConfig = {
+                    Test: [container.healthcheck_type, container.healthcheck_command]
+                };
+
+                // Add optional duration fields (converted to nanoseconds)
+                if (container.healthcheck_interval) {
+                    healthConfig.Interval = utils.parseDuration(container.healthcheck_interval);
+                }
+                if (container.healthcheck_timeout) {
+                    healthConfig.Timeout = utils.parseDuration(container.healthcheck_timeout);
+                }
+                if (container.healthcheck_start_period) {
+                    healthConfig.StartPeriod = utils.parseDuration(container.healthcheck_start_period);
+                }
+                if (container.healthcheck_start_interval) {
+                    healthConfig.StartInterval = utils.parseDuration(container.healthcheck_start_interval);
+                }
+                if (container.healthcheck_retries) {
+                    healthConfig.Retries = parseInt(container.healthcheck_retries);
+                }
+
+                spec.healthconfig = healthConfig;
             }
 
             ui.hideModal();

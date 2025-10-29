@@ -88,12 +88,13 @@ return L.Class.extend({
 		 * Remove a container
 		 * @param {string} id - Container ID
 		 * @param {boolean} force - Force removal
+		 * @param {boolean} depend - Remove container and its dependencies (e.g., when part of a pod)
 		 * @returns {Promise<Object>} Operation result
 		 */
 		remove: rpc.declare({
 			object: 'luci.podman',
 			method: 'container_remove',
-			params: ['id', 'force']
+			params: ['id', 'force', 'depend']
 		}),
 
 		/**
@@ -187,6 +188,17 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'container_update',
 			params: ['id', 'data']
+		}),
+
+		/**
+		 * Run container health check
+		 * @param {string} id - Container ID
+		 * @returns {Promise<Object>} Health check result with Status, FailingStreak, and Log
+		 */
+		healthcheck: rpc.declare({
+			object: 'luci.podman',
+			method: 'container_healthcheck_run',
+			params: ['id']
 		})
 	},
 
