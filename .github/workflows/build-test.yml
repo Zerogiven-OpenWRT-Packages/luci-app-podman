@@ -65,7 +65,7 @@ jobs:
           echo "Removing large directories"
           # deleting 15GB
           rm -rf /usr/share/dotnet/
-          rm -rf /var/lib/apt/lists/*
+          sudo rm -rf /var/lib/apt/lists/*
           df -h
 
       - name: Create feeds directory structure
