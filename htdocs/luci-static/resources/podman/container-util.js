@@ -57,6 +57,13 @@ return baseclass.extend({
 
         const promises = ids.map((id) => rpcCall(id));
         return Promise.all(promises).then((results) => {
+            // Don't show success notification if any result is undefined/null
+            // This can happen when session expires and redirect occurs
+            if (!results || results.some((r) => r === undefined || r === null)) {
+                ui.hideModal();
+                return;
+            }
+
             ui.hideModal();
 
             const errors = results.filter((r) => r && r.error);
@@ -69,7 +76,11 @@ return baseclass.extend({
             // this.refreshTable(false);
         }).catch((err) => {
             ui.hideModal();
-            podmanUI.errorNotification(textFailedPromise.format(err.message));
+            // Don't show error if it's an authentication/session issue
+            // LuCI will handle redirect to login page
+            if (err && err.message && !err.message.match(/session|auth|login/i)) {
+                podmanUI.errorNotification(textFailedPromise.format(err.message));
+            }
         });
     }
 });
