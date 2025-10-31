@@ -28,7 +28,7 @@ jobs:
           # - openwrt_version: '23.05'
           #   arch: 'x86_64-23.05.0'
           - openwrt_version: '24.10'
-            arch: 'x86_64-24.10.0'
+            arch: 'x86_64-24.10.3'
       fail-fast: false
     
     steps:
@@ -82,7 +82,8 @@ jobs:
           mkdir -p ${{ github.workspace }}/artifacts
 
       - name: Build OpenWrt ${{ matrix.openwrt_version }} package
-        uses: Zerogiven/gh-action-openwrt-sdk@main
+        uses: openwrt/gh-action-sdk@main
+        # uses: Zerogiven/gh-action-openwrt-sdk@main
         env:
           ARCH: ${{ matrix.arch }}
           PACKAGES: podman
