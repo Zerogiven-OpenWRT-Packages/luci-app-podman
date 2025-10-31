@@ -111,7 +111,7 @@ A modern LuCI web interface for managing Podman containers on OpenWrt.
 
 ### Option 1: From IPK Package
 
-Download the latest IPK from [Releases](https://github.com/yourusername/luci-app-podman/releases):
+Download the latest IPK from [Releases](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases):
 
 ```bash
 # Transfer to router
@@ -129,7 +129,7 @@ Requires OpenWrt ImageBuilder or SDK:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/luci-app-podman.git
+git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git
 cd luci-app-podman
 
 # Build package (in OpenWrt build environment)
@@ -148,7 +148,7 @@ Include this app in your custom firmware:
 cd openwrt
 
 # Add this feed to feeds.conf.default:
-# src-git podman https://github.com/yourusername/luci-app-podman.git
+# src-git podman https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git
 
 # Update feeds
 ./scripts/feeds update -a
@@ -363,6 +363,6 @@ Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- Issues: [GitHub Issues](https://github.com/yourusername/luci-app-podman/issues)
-- Documentation: [Wiki](https://github.com/yourusername/luci-app-podman/wiki)
+- Issues: [GitHub Issues](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/issues)
+- Documentation: [Wiki](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/wiki)
 - OpenWrt Forum: [LuCI Podman Thread](https://forum.openwrt.org/)
