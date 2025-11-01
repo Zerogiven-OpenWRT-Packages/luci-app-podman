@@ -5,6 +5,7 @@ PKG_VERSION       := 1.0.0
 PKG_RELEASE       := 1
 PKG_MAINTAINER    := Christopher Söllinger <christopher.soellinger@gmail.com>
 PKG_URL           := https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman
+PKG_LICENSE       := Apache License v2
 PKG_LICENSE_FILES := LICENSE
 
 LUCI_TITLE         := LuCI Support for Podman
