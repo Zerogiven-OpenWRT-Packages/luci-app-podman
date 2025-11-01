@@ -75,8 +75,8 @@ jobs:
 
       - name: Tests
         run: |
-          cat feeds.conf.default
-          cat ${{ github.workspace }}/feed/luci-app-podman/Makefile
+          cat feeds.conf.default || true
+          cat ${{ github.workspace }}/feed/luci-app-podman/Makefile || true
 
       - name: Create artifacts directory structure
         run: |
