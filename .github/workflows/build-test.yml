@@ -77,7 +77,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/artifacts
           
       - name: Build OpenWrt ${{ matrix.openwrt_version }} package
-        uses: openwrt/gh-action-sdk@v7
+        uses: openwrt/gh-action-sdk@v9
         env:
           ARCH: ${{ matrix.arch }}
           PACKAGES: luci-app-podman
