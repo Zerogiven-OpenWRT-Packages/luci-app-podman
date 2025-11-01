@@ -1,3 +1,5 @@
+# See /LICENSE for more information.
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME          := luci-app-podman
@@ -15,3 +17,5 @@ LUCI_EXTRA_DEPENDS := +podman
 LUCI_PKGARCH       := all
 
 include $(TOPDIR)/feeds/luci/luci.mk
+
+# call BuildPackage - OpenWrt buildroot signature

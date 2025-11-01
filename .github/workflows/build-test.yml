@@ -73,8 +73,9 @@ jobs:
           path: ${{ github.workspace }}/feed/luci-app-podman
           fetch-depth: 0
 
-      - name: Test Makefile
+      - name: Tests
         run: |
+          cat feeds.conf.default
           cat ${{ github.workspace }}/feed/luci-app-podman/Makefile
 
       - name: Create artifacts directory structure
