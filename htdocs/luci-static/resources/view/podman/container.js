@@ -361,24 +361,36 @@ return view.extend({
 			});
 
 			// Only display user-created networks with disconnect buttons
-			userNetworks.forEach((netName) => {
-				const net = networkSettings.Networks[netName];
-				networkRows.push(
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
-							netName),
-						E('td', { 'class': 'td' }, [
-							net.IPAddress || '-',
-							' ',
-							E('span', { 'style': 'margin-left: 10px;' }, [
-								new pui.Button(_('Disconnect'), () => this
-									.handleNetworkDisconnect(netName),
-									'remove').render()
-							])
+		userNetworks.forEach((netName) => {
+			const net = networkSettings.Networks[netName];
+			networkRows.push(
+				E('tr', { 'class': 'tr' }, [
+					E('td', {
+						'class': 'td',
+						'style': 'width: 33%; font-weight: bold; cursor: help;',
+						'title': (() => {
+							const parts = [];
+							if (net.IPAddress) parts.push(`IPv4: ${net.IPAddress}`);
+							if (net.GlobalIPv6Address) parts.push(`IPv6: ${net.GlobalIPv6Address}`);
+							else parts.push('IPv6: disabled');
+							if (net.Gateway) parts.push(`Gateway: ${net.Gateway}`);
+							if (net.MacAddress) parts.push(`MAC: ${net.MacAddress}`);
+							if (net.NetworkID) parts.push(`Network ID: ${net.NetworkID.substring(0, 12)}`);
+							return parts.join('\n');
+						})()
+					}, netName),
+					E('td', { 'class': 'td' }, [
+						net.IPAddress || '-',
+						' ',
+						E('span', { 'style': 'margin-left: 10px;' }, [
+							new pui.Button(_('Disconnect'), () => this
+								.handleNetworkDisconnect(netName),
+								'remove').render()
 						])
 					])
-				);
-			});
+				])
+			);
+		});
 		}
 
 		// Only show legacy IP Address row if no user networks are displayed
