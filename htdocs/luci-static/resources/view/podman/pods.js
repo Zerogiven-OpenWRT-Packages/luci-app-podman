@@ -27,10 +27,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.pod.list()
 			.then((pods) => {
-				return { pods: pods || [] };
+				return {
+					pods: pods || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load pods') };
+				return {
+					error: err.message || _('Failed to load pods')
+				};
 			});
 	},
 
@@ -39,7 +43,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Pods view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
@@ -62,7 +66,9 @@ return view.extend({
 
 		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
@@ -74,7 +80,9 @@ return view.extend({
 		o.cfgvalue = (sectionId) => {
 			const pod = this.map.data.data[sectionId];
 			const status = pod.Status || _('Unknown');
-			return E('span', { 'class': 'badge status-' + status.toLowerCase() }, status);
+			return E('span', {
+				'class': 'badge status-' + status.toLowerCase()
+			}, status);
 		};
 
 		// Containers column
@@ -147,7 +155,9 @@ return view.extend({
 		});
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
@@ -165,7 +175,7 @@ return view.extend({
 	 * Get selected pod objects from checkboxes
 	 * @returns {Array<Object>} Array of {id, name} objects for selected pods
 	 */
-	getSelectedPods: function() {
+	getSelectedPods: function () {
 		return this.listHelper.getSelected((pod) => ({
 			id: pod.Id,
 			name: pod.Name
@@ -175,7 +185,7 @@ return view.extend({
 	/**
 	 * Delete selected pods
 	 */
-	handleDeleteSelected: function() {
+	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
 			selected: this.getSelectedPods(),
 			deletePromiseFn: (pod) => podmanRPC.pod.remove(pod.name, true),
@@ -188,21 +198,21 @@ return view.extend({
 	 * Inspect a pod and show details in modal
 	 * @param {string} name - Pod name
 	 */
-	handleInspect: function(name) {
+	handleInspect: function (name) {
 		this.listHelper.showInspect(name);
 	},
 
 	/**
 	 * Refresh pod list
 	 */
-	handleRefresh: function(clearSelections) {
+	handleRefresh: function (clearSelections) {
 		this.listHelper.refreshTable(clearSelections)
 	},
 
 	/**
 	 * Show create pod dialog
 	 */
-	handleCreatePod: function() {
+	handleCreatePod: function () {
 		const form = new podmanForm.Pod();
 		form.submit = () => this.handleRefresh();
 		form.render();
@@ -211,7 +221,7 @@ return view.extend({
 	/**
 	 * Handle pod start action for selected pods
 	 */
-	handleStart: function() {
+	handleStart: function () {
 		const selected = this.getSelectedPods();
 
 		if (selected.length === 0) {
@@ -223,7 +233,10 @@ return view.extend({
 
 		const startPromises = selected.map((pod) => {
 			return podmanRPC.pod.start(pod.id).catch((err) => {
-				return { error: err.message, name: pod.name };
+				return {
+					error: err.message,
+					name: pod.name
+				};
 			});
 		});
 
@@ -244,7 +257,7 @@ return view.extend({
 	/**
 	 * Handle pod stop action for selected pods
 	 */
-	handleStop: function() {
+	handleStop: function () {
 		const selected = this.getSelectedPods();
 
 		if (selected.length === 0) {
@@ -256,7 +269,10 @@ return view.extend({
 
 		const stopPromises = selected.map((pod) => {
 			return podmanRPC.pod.stop(pod.id).catch((err) => {
-				return { error: err.message, name: pod.name };
+				return {
+					error: err.message,
+					name: pod.name
+				};
 			});
 		});
 

@@ -28,10 +28,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.network.list()
 			.then((networks) => {
-				return { networks: networks || [] };
+				return {
+					networks: networks || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load networks') };
+				return {
+					error: err.message || _('Failed to load networks')
+				};
 			});
 	},
 
@@ -40,7 +44,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Networks view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
@@ -64,7 +68,9 @@ return view.extend({
 
 		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'name', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		// Name column with integration alert icon
 		o = section.option(form.DummyValue, 'Name', _('Name'));
@@ -133,7 +139,9 @@ return view.extend({
 		});
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
@@ -152,13 +160,13 @@ return view.extend({
 	/**
 	 * Check OpenWrt integration status for all networks and update icons
 	 */
-	checkIntegrationStatus: function() {
+	checkIntegrationStatus: function () {
 		const networks = this.listHelper.getDataArray();
 		(networks || []).forEach((network) => {
 			const name = network.name || network.Name;
 			openwrtNetwork.isIntegrationComplete(name).then((result) => {
 				const iconEl = document.getElementById('integration-icon-' +
-				name);
+					name);
 				if (iconEl && !result.complete) {
 					// Show alert icon for incomplete integration
 					iconEl.innerHTML = '';
@@ -168,7 +176,7 @@ return view.extend({
 						'style': 'color: #f90; text-decoration: none; cursor: pointer;',
 						'title': _(
 							'OpenWrt integration incomplete. Click to setup. Missing: %s'
-							).format(result.missing.join(', ')),
+						).format(result.missing.join(', ')),
 						'click': (ev) => {
 							ev.preventDefault();
 							ev.stopPropagation();
@@ -187,14 +195,14 @@ return view.extend({
 	 * Get selected network names from checkboxes
 	 * @returns {Array<string>} Array of network names
 	 */
-	getSelectedNetworks: function() {
+	getSelectedNetworks: function () {
 		return this.listHelper.getSelected((network) => network.name || network.Name);
 	},
 
 	/**
 	 * Delete selected networks with OpenWrt integration cleanup
 	 */
-	handleDeleteSelected: function() {
+	handleDeleteSelected: function () {
 		const selected = this.getSelectedNetworks();
 
 		if (selected.length === 0) {
@@ -222,7 +230,7 @@ return view.extend({
 			if (withOpenwrt.length > 0) {
 				confirmMsg += '\n\n' + _(
 						'Note: %d network(s) have OpenWrt integration that will also be removed (bridge, firewall zone, and rules).'
-						)
+					)
 					.format(withOpenwrt.length);
 			}
 
@@ -239,24 +247,39 @@ return view.extend({
 				// Remove Podman network first
 				return podmanRPC.network.remove(name, false).then((result) => {
 					if (result && result.error) {
-						return { name: name, error: result.error };
+						return {
+							name: name,
+							error: result.error
+						};
 					}
 
 					// If OpenWrt integration exists, remove it
 					if (check && check.hasOpenwrt) {
 						return openwrtNetwork.removeIntegration(name,
 							bridgeName).then(() => {
-							return { name: name, success: true,
-								openwrtRemoved: true };
+							return {
+								name: name,
+								success: true,
+								openwrtRemoved: true
+							};
 						}).catch((err) => {
-							return { name: name, success: true,
-								openwrtError: err.message };
+							return {
+								name: name,
+								success: true,
+								openwrtError: err.message
+							};
 						});
 					}
 
-					return { name: name, success: true };
+					return {
+						name: name,
+						success: true
+					};
 				}).catch((err) => {
-					return { name: name, error: err.message };
+					return {
+						name: name,
+						error: err.message
+					};
 				});
 			});
 
@@ -272,7 +295,7 @@ return view.extend({
 				} else if (openwrtErrors.length > 0) {
 					podmanUI.warningNotification(_(
 						'Networks deleted but %d OpenWrt integration(s) failed to remove'
-						).format(openwrtErrors.length));
+					).format(openwrtErrors.length));
 				} else {
 					podmanUI.successTimeNotification(_(
 						'Successfully deleted %d network(s)').format(
@@ -291,7 +314,7 @@ return view.extend({
 	/**
 	 * Refresh network list
 	 */
-	handleRefresh: function(clearSelections) {
+	handleRefresh: function (clearSelections) {
 		this.listHelper.refreshTable(clearSelections).then(() => {
 			// Re-check integration status after table refresh
 			this.checkIntegrationStatus();
@@ -301,7 +324,7 @@ return view.extend({
 	/**
 	 * Show create network dialog
 	 */
-	handleCreateNetwork: function() {
+	handleCreateNetwork: function () {
 		const form = new podmanForm.Network();
 		form.submit = () => this.handleRefresh();
 		form.render();
@@ -311,7 +334,7 @@ return view.extend({
 	 * Show network details
 	 * @param {string} name - Network name
 	 */
-	handleInspect: function(name) {
+	handleInspect: function (name) {
 		this.listHelper.showInspect(name);
 	},
 
@@ -319,7 +342,7 @@ return view.extend({
 	 * Setup OpenWrt integration for a network that doesn't have it
 	 * @param {Object} network - Network object from Podman
 	 */
-	handleSetupIntegration: function(network) {
+	handleSetupIntegration: function (network) {
 		const name = network.name || network.Name;
 
 		// Extract subnet and gateway from Podman network data
@@ -340,7 +363,7 @@ return view.extend({
 		if (!subnet || !gateway) {
 			podmanUI.errorNotification(_(
 				'Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured'
-				).format(name));
+			).format(name));
 			return;
 		}
 
@@ -382,7 +405,7 @@ return view.extend({
 	 * @param {string} subnet - Network subnet
 	 * @param {string} gateway - Gateway IP
 	 */
-	executeSetupIntegration: function(name, bridgeName, subnet, gateway) {
+	executeSetupIntegration: function (name, bridgeName, subnet, gateway) {
 		podmanUI.showSpinningModal(_('Setting up Integration'), _(
 			'Creating OpenWrt integration for network "%s"...').format(name));
 

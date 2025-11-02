@@ -27,10 +27,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.secret.list()
 			.then((secrets) => {
-				return { secrets: secrets || [] };
+				return {
+					secrets: secrets || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load secrets') };
+				return {
+					error: err.message || _('Failed to load secrets')
+				};
 			});
 	},
 
@@ -39,7 +43,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Secrets view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
@@ -63,7 +67,9 @@ return view.extend({
 
 		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
@@ -94,7 +100,9 @@ return view.extend({
 		});
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
@@ -111,7 +119,7 @@ return view.extend({
 	 * Get selected secret names from checkboxes
 	 * @returns {Array<string>} Array of secret names
 	 */
-	getSelectedSecrets: function() {
+	getSelectedSecrets: function () {
 		return this.listHelper.getSelected((secret) => {
 			return secret.Spec && secret.Spec.Name ? secret.Spec.Name : secret.Name;
 		});
@@ -120,7 +128,7 @@ return view.extend({
 	/**
 	 * Delete selected secrets
 	 */
-	handleDeleteSelected: function() {
+	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
 			selected: this.getSelectedSecrets(),
 			deletePromiseFn: (name) => podmanRPC.secret.remove(name),
@@ -131,7 +139,7 @@ return view.extend({
 	/**
 	 * Refresh secret list
 	 */
-	handleRefresh: function(clearSelections) {
+	handleRefresh: function (clearSelections) {
 		clearSelections = clearSelections || false;
 		this.listHelper.refreshTable(clearSelections)
 	},
@@ -139,7 +147,7 @@ return view.extend({
 	/**
 	 * Show create secret dialog
 	 */
-	handleCreateSecret: function() {
+	handleCreateSecret: function () {
 		const form = new podmanForm.Secret();
 		form.submit = () => this.handleRefresh();
 		form.render();
@@ -149,7 +157,7 @@ return view.extend({
 	 * Show secret details
 	 * @param {string} name - Secret name
 	 */
-	handleInspect: function(name) {
+	handleInspect: function (name) {
 		this.listHelper.showInspect(name, ['SecretData']);
 	}
 });

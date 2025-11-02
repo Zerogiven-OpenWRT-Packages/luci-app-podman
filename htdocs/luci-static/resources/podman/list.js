@@ -6,7 +6,7 @@
 
 const ListUtil = baseclass.extend({
 	__name__: 'ListUtil',
-	__init__: function(options) {
+	__init__: function (options) {
 		this.itemName = options.itemName;
 		this.prefix = this.itemName + 's';
 		this.rpc = options.rpc;
@@ -28,7 +28,7 @@ const ListUtil = baseclass.extend({
 		}
 	},
 
-	getDataArray: function() {
+	getDataArray: function () {
 		if (!this.data) return [];
 
 		// If data is already an array, return it
@@ -44,11 +44,11 @@ const ListUtil = baseclass.extend({
 		return [];
 	},
 
-	setupSelectAll: function(rendered) {
+	setupSelectAll: function (rendered) {
 		utils.setupSelectAllCheckbox(rendered, this.prefix);
 	},
 
-	createToolbar: function(options) {
+	createToolbar: function (options) {
 		const buttons = [];
 
 		// Create button (first for prominence)
@@ -90,21 +90,23 @@ const ListUtil = baseclass.extend({
 			).render());
 		}
 
-		const container = E('div', { 'style': 'margin-bottom: 10px;' }, buttons);
+		const container = E('div', {
+			'style': 'margin-bottom: 10px;'
+		}, buttons);
 
 		return {
 			container: container,
 			buttons: buttons,
 			// Helper method to add buttons at the end of toolbar
-			addButton: function(button) {
+			addButton: function (button) {
 				container.appendChild(document.createTextNode(' '));
 				container.appendChild(button);
 			},
 			// Helper method to add buttons at the beginning of toolbar
-			prependButton: function(button) {
+			prependButton: function (button) {
 				if (container.firstChild) {
 					container.insertBefore(document.createTextNode(' '), container
-					.firstChild);
+						.firstChild);
 					container.insertBefore(button, container.firstChild);
 				} else {
 					container.appendChild(button);
@@ -113,11 +115,11 @@ const ListUtil = baseclass.extend({
 		};
 	},
 
-	getSelected: function(extractFn) {
+	getSelected: function (extractFn) {
 		return utils.getSelectedFromCheckboxes(this.prefix, this.getDataArray(), extractFn);
 	},
 
-	bulkDelete: function(options) {
+	bulkDelete: function (options) {
 		const selected = options.selected || this.getSelected();
 
 		if (selected.length === 0) {
@@ -173,7 +175,7 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
-	refreshTable: function(clearSelections) {
+	refreshTable: function (clearSelections) {
 		if (!this.view) {
 			console.error('ListViewHelper: view reference is required for refreshTable()');
 			return Promise.reject(new Error('view reference required'));
@@ -192,7 +194,7 @@ const ListUtil = baseclass.extend({
 
 			// Remove all existing sections
 			const existingSections = this.view.map.data.sections(config_name, this
-			.prefix);
+				.prefix);
 			existingSections.forEach((section) => {
 				this.view.map.data.remove(config_name, section['.name']);
 			});
@@ -229,7 +231,7 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
-	showInspect: function(identifier, hiddenFields, closeButtonFn) {
+	showInspect: function (identifier, hiddenFields, closeButtonFn) {
 		podmanUI.showSpinningModal(_('Fetching information...'), _('Loading %s Details').format(
 			this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)));
 
@@ -254,7 +256,7 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
-	showInspectModal: function(title, data, hiddenFields, closeButton) {
+	showInspectModal: function (title, data, hiddenFields, closeButton) {
 		// Clone data to avoid modifying original
 		const displayData = JSON.parse(JSON.stringify(data));
 
@@ -275,7 +277,9 @@ const ListUtil = baseclass.extend({
 
 		// Add security notice if fields were hidden
 		if (hiddenFields && hiddenFields.length > 0) {
-			content.unshift(E('p', { 'style': 'margin-bottom: 10px; color: #e74c3c;' }, [
+			content.unshift(E('p', {
+				'style': 'margin-bottom: 10px; color: #e74c3c;'
+			}, [
 				E('strong', {}, _('Security Notice:')),
 				' ',
 				_('Sensitive data is hidden for security reasons.')
@@ -286,7 +290,10 @@ const ListUtil = baseclass.extend({
 		if (closeButton && typeof closeButton === 'function') {
 			content.push(closeButton());
 		} else {
-			content.push(E('div', { 'class': 'right', 'style': 'margin-top: 10px;' }, [
+			content.push(E('div', {
+				'class': 'right',
+				'style': 'margin-top: 10px;'
+			}, [
 				E('button', {
 					'class': 'cbi-button',
 					'click': () => ui.hideModal()

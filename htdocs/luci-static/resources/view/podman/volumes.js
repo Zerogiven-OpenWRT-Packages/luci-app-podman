@@ -27,10 +27,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.volume.list()
 			.then((volumes) => {
-				return { volumes: volumes || [] };
+				return {
+					volumes: volumes || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load volumes') };
+				return {
+					error: err.message || _('Failed to load volumes')
+				};
 			});
 	},
 
@@ -39,7 +43,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Volumes view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
@@ -63,7 +67,9 @@ return view.extend({
 
 		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
@@ -93,7 +99,9 @@ return view.extend({
 		});
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
@@ -110,7 +118,7 @@ return view.extend({
 	/**
 	 * Delete selected volumes
 	 */
-	handleDeleteSelected: function() {
+	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
 			selected: this.listHelper.getSelected((volume) => volume.Name),
 			deletePromiseFn: (name) => podmanRPC.volume.remove(name, false),
@@ -121,7 +129,7 @@ return view.extend({
 	/**
 	 * Refresh volume list
 	 */
-	handleRefresh: function(clearSelections) {
+	handleRefresh: function (clearSelections) {
 		clearSelections = clearSelections || false;
 		this.listHelper.refreshTable(clearSelections);
 	},
@@ -129,7 +137,7 @@ return view.extend({
 	/**
 	 * Show create volume dialog
 	 */
-	handleCreateVolume: function() {
+	handleCreateVolume: function () {
 		const form = new podmanForm.Volume();
 		form.submit = () => this.handleRefresh();
 		form.render();
@@ -139,7 +147,7 @@ return view.extend({
 	 * Show volume details
 	 * @param {string} name - Volume name
 	 */
-	handleInspect: function(name) {
+	handleInspect: function (name) {
 		this.listHelper.showInspect(name);
 	}
 });

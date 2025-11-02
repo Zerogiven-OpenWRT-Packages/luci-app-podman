@@ -91,7 +91,7 @@ return L.Class.extend({
 	 *     console.error('Failed to create integration:', err);
 	 * });
 	 */
-	createIntegration: async function(networkName, options) {
+	createIntegration: async function (networkName, options) {
 		const bridgeName = options.bridgeName;
 		const gateway = options.gateway;
 		const netmask = cidrToNetmask(options.subnet);
@@ -204,7 +204,7 @@ return L.Class.extend({
 	 *     console.error('Failed to remove integration:', err);
 	 * });
 	 */
-	removeIntegration: function(networkName, bridgeName) {
+	removeIntegration: function (networkName, bridgeName) {
 		const ZONE_NAME = 'podman';
 
 		// Load required UCI configurations
@@ -296,7 +296,7 @@ return L.Class.extend({
 	 *     }
 	 * });
 	 */
-	hasIntegration: function(networkName) {
+	hasIntegration: function (networkName) {
 		return uci.load('network').then(() => {
 			const iface = uci.get('network', networkName);
 			return !!iface;
@@ -321,7 +321,7 @@ return L.Class.extend({
 	 *     }
 	 * });
 	 */
-	isIntegrationComplete: function(networkName) {
+	isIntegrationComplete: function (networkName) {
 		const ZONE_NAME = 'podman';
 		const missing = [];
 
@@ -333,7 +333,10 @@ return L.Class.extend({
 			const iface = uci.get('network', networkName);
 			if (!iface) {
 				missing.push('interface');
-				return { complete: false, missing: missing };
+				return {
+					complete: false,
+					missing: missing
+				};
 			}
 
 			// Get bridge name from interface
@@ -370,9 +373,15 @@ return L.Class.extend({
 				}
 			}
 
-			return { complete: missing.length === 0, missing: missing };
+			return {
+				complete: missing.length === 0,
+				missing: missing
+			};
 		}).catch(() => {
-			return { complete: false, missing: ['unknown'] };
+			return {
+				complete: false,
+				missing: ['unknown']
+			};
 		});
 	},
 
@@ -391,7 +400,7 @@ return L.Class.extend({
 	 *     }
 	 * });
 	 */
-	getIntegration: async function(networkName) {
+	getIntegration: async function (networkName) {
 		return uci.load('network').then(() => {
 			const iface = uci.get('network', networkName);
 			if (!iface) {
@@ -428,7 +437,7 @@ return L.Class.extend({
 	 *     }
 	 * });
 	 */
-	validateIntegration: async function(networkName, options) {
+	validateIntegration: async function (networkName, options) {
 		const errors = [];
 
 		// Check required fields
@@ -456,7 +465,10 @@ return L.Class.extend({
 		}
 
 		if (errors.length > 0) {
-			return Promise.resolve({ valid: false, errors: errors });
+			return Promise.resolve({
+				valid: false,
+				errors: errors
+			});
 		}
 
 		// Check for conflicts with existing configurations
@@ -489,10 +501,16 @@ return L.Class.extend({
 				));
 			}
 
-			return { valid: errors.length === 0, errors: errors };
+			return {
+				valid: errors.length === 0,
+				errors: errors
+			};
 		}).catch((err) => {
 			errors.push(_('Failed to validate: %s').format(err.message));
-			return { valid: false, errors: errors };
+			return {
+				valid: false,
+				errors: errors
+			};
 		});
 	}
 });

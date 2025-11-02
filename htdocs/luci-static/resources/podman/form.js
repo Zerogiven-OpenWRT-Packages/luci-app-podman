@@ -47,7 +47,7 @@ const FormContainer = baseclass.extend({
 		}
 	},
 
-	render: function() {
+	render: function () {
 		// Load both images and networks
 		Promise.all([
 			podmanRPC.image.list(),
@@ -61,7 +61,7 @@ const FormContainer = baseclass.extend({
 		});
 	},
 
-	showModal: function(images, networks) {
+	showModal: function (images, networks) {
 		this.map = new form.JSONMap(this.data, _('Create Container'), '');
 
 		const section = this.map.section(form.NamedSection, 'container', 'container');
@@ -134,7 +134,7 @@ const FormContainer = baseclass.extend({
 		}
 		field.description = _(
 			'Select network for the container. User-created networks provide better isolation and DNS resolution between containers.'
-			);
+		);
 
 		// Restart Policy
 		field = section.option(form.ListValue, 'restart', _('Restart Policy'));
@@ -159,7 +159,7 @@ const FormContainer = baseclass.extend({
 		field = section.option(form.Flag, 'autoupdate', _('Auto-Update'));
 		field.description = _(
 			'Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry'
-			);
+		);
 
 		// Start after creation
 		field = section.option(form.Flag, 'start', _('Start after creation'));
@@ -294,8 +294,10 @@ const FormContainer = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => { ui.hideModal();
-						this.map.reset(); }
+					onCancel: () => {
+						ui.hideModal();
+						this.map.reset();
+					}
 				}).render()
 			]);
 
@@ -306,10 +308,12 @@ const FormContainer = baseclass.extend({
 		});
 	},
 
-	handleCreate: function() {
+	handleCreate: function () {
 		this.map.save().then(() => {
 			const container = this.map.data.data.container;
-			const spec = { image: container.image };
+			const spec = {
+				image: container.image
+			};
 
 			if (container.name) spec.name = container.name;
 			if (container.command) {
@@ -374,9 +378,13 @@ const FormContainer = baseclass.extend({
 
 			// Network configuration
 			if (container.network === 'host') {
-				spec.netns = { nsmode: 'host' };
+				spec.netns = {
+					nsmode: 'host'
+				};
 			} else if (container.network === 'none') {
-				spec.netns = { nsmode: 'none' };
+				spec.netns = {
+					nsmode: 'none'
+				};
 			} else if (container.network && container.network !== 'bridge') {
 				// User-created network - add to networks array
 				spec.networks = {};
@@ -414,13 +422,17 @@ const FormContainer = baseclass.extend({
 			// Resource limits
 			if (container.cpus) {
 				spec.resource_limits = spec.resource_limits || {};
-				spec.resource_limits.cpu = { quota: parseFloat(container.cpus) * 100000 };
+				spec.resource_limits.cpu = {
+					quota: parseFloat(container.cpus) * 100000
+				};
 			}
 			if (container.memory) {
 				const memBytes = utils.parseMemory(container.memory);
 				if (memBytes > 0) {
 					spec.resource_limits = spec.resource_limits || {};
-					spec.resource_limits.memory = { limit: memBytes };
+					spec.resource_limits.memory = {
+						limit: memBytes
+					};
 				}
 			}
 
@@ -483,11 +495,11 @@ const FormContainer = baseclass.extend({
 						if (startResult && startResult.error) {
 							pui.warningNotification(_(
 								'Container created but failed to start: %s'
-								).format(startResult.error));
+							).format(startResult.error));
 						} else {
 							pui.successTimeNotification(_(
 								'Container created and started successfully'
-								));
+							));
 						}
 
 						this.submit();
@@ -495,7 +507,7 @@ const FormContainer = baseclass.extend({
 						ui.hideModal();
 						pui.errorNotification(_(
 							'Container created but failed to start: %s'
-							).format(err.message));
+						).format(err.message));
 						this.submit();
 					});
 				} else {
@@ -515,7 +527,7 @@ const FormContainer = baseclass.extend({
 	/**
 	 * Show import from run command modal
 	 */
-	showImportFromRunCommand: function() {
+	showImportFromRunCommand: function () {
 
 		const content = [
 			E('p', {}, _('Paste a docker or podman run command below:')),
@@ -562,7 +574,7 @@ const FormContainer = baseclass.extend({
 	 * Create container from a spec object
 	 * @param {Object} spec - Container specification
 	 */
-	createFromSpec: function(spec) {
+	createFromSpec: function (spec) {
 		pui.showSpinningModal(_('Creating Container'), _('Creating container from image %s...')
 			.format(spec.image));
 
@@ -581,7 +593,7 @@ const FormContainer = baseclass.extend({
 			if (shouldStart && result && result.Id) {
 				// Start the container
 				pui.showSpinningModal(_('Starting Container'), _(
-				'Starting container...'));
+					'Starting container...'));
 
 				podmanRPC.container.start(result.Id).then((startResult) => {
 					ui.hideModal();
@@ -609,7 +621,7 @@ const FormContainer = baseclass.extend({
 		}).catch((err) => {
 			ui.hideModal();
 			pui.errorNotification(_('Failed to create container: %s').format(err
-			.message));
+				.message));
 		});
 	},
 
@@ -628,7 +640,7 @@ const FormImage = baseclass.extend({
 		}
 	},
 
-	render: function() {
+	render: function () {
 		this.map = new form.JSONMap(this.data, _('Pull Image'), _(
 			'Fetch a container image using Podman.'));
 		const s = this.map.section(form.NamedSection, 'image', '');
@@ -667,7 +679,7 @@ const FormImage = baseclass.extend({
 	/**
 	 * Execute image pull with streaming progress
 	 */
-	handlePullExecute: function() {
+	handlePullExecute: function () {
 		this.map.save().then(() => {
 			const registry = this.map.data.data.image.registry;
 			const image = this.map.data.data.image.image;
@@ -681,7 +693,9 @@ const FormImage = baseclass.extend({
 			const imageName = registry ? registry + image : 'docker.io/library/' + image;
 
 			ui.showModal(_('Pulling Image'), [
-				E('p', { 'class': 'spinning' }, _('Starting image pull...')),
+				E('p', {
+					'class': 'spinning'
+				}, _('Starting image pull...')),
 				E('pre', {
 					'id': 'pull-output',
 					'style': 'max-height: 300px; overflow-y: auto; overflow-x: auto; background: #000; color: #0f0; padding: 10px; min-height: 100px; white-space: pre;'
@@ -709,7 +723,7 @@ const FormImage = baseclass.extend({
 	 * @param {string} output - Raw output string
 	 * @returns {string} Cleaned output
 	 */
-	parseJsonStream: function(output) {
+	parseJsonStream: function (output) {
 		let cleanOutput = '';
 		const lines = output.split('\n');
 
@@ -766,7 +780,7 @@ const FormImage = baseclass.extend({
 	 * Poll image pull status and update progress using poll.add()
 	 * @param {string} sessionId - Pull session ID
 	 */
-	pollPullStatus: function(sessionId) {
+	pollPullStatus: function (sessionId) {
 		const outputEl = document.getElementById('pull-output');
 		let offset = 0;
 
@@ -792,13 +806,18 @@ const FormImage = baseclass.extend({
 						const modalContent = document.querySelector('.modal');
 						if (modalContent) {
 							const closeBtn = modalContent.querySelector(
-							'.cbi-button');
+								'.cbi-button');
 							if (!closeBtn) {
 								const btnContainer = E(
-								'div', { 'class': 'right', 'style': 'margin-top: 10px;' },
+									'div', {
+										'class': 'right',
+										'style': 'margin-top: 10px;'
+									},
 									[
-										new pui.Button(_('Close'), () => { ui
-												.hideModal(); }).render()
+										new pui.Button(_('Close'), () => {
+											ui
+												.hideModal();
+										}).render()
 									]);
 								modalContent.appendChild(btnContainer);
 							}
@@ -818,10 +837,15 @@ const FormImage = baseclass.extend({
 						const closeBtn = modalContent.querySelector('.cbi-button');
 						if (!closeBtn) {
 							const btnContainer = E(
-							'div', { 'class': 'right', 'style': 'margin-top: 10px;' },
+								'div', {
+									'class': 'right',
+									'style': 'margin-top: 10px;'
+								},
 								[
-									new pui.Button(_('Close'), () => { ui
-											.hideModal(); }, 'positive').render()
+									new pui.Button(_('Close'), () => {
+										ui
+											.hideModal();
+									}, 'positive').render()
 								]);
 							modalContent.appendChild(btnContainer);
 						}
@@ -864,7 +888,7 @@ const FormNetwork = baseclass.extend({
 		}
 	},
 
-	render: function() {
+	render: function () {
 		this.map = new form.JSONMap(this.data, _('Create Network'), '');
 		const section = this.map.section(form.NamedSection, 'network', 'network');
 
@@ -917,7 +941,7 @@ const FormNetwork = baseclass.extend({
 		field = section.option(form.Flag, 'setup_openwrt', _('Setup OpenWrt Integration'));
 		field.description = _(
 			'Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt.'
-			);
+		);
 
 		// Bridge Name
 		field = section.option(form.Value, 'bridge_name', _('Bridge Interface Name'));
@@ -927,7 +951,7 @@ const FormNetwork = baseclass.extend({
 		field.depends('setup_openwrt', '1');
 		field.description = _(
 			'Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it.'
-			);
+		);
 
 		// Labels
 		field = section.option(form.TextValue, 'labels', _('Labels'));
@@ -942,8 +966,10 @@ const FormNetwork = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => { ui.hideModal();
-						this.map.reset(); }
+					onCancel: () => {
+						ui.hideModal();
+						this.map.reset();
+					}
 				}).render()
 			]);
 
@@ -954,7 +980,7 @@ const FormNetwork = baseclass.extend({
 		});
 	},
 
-	handleCreate: function() {
+	handleCreate: function () {
 		const ulaPrefix = uci.get('network', 'globals', 'ula_prefix');
 
 		this.map.save().then(() => {
@@ -984,10 +1010,14 @@ const FormNetwork = baseclass.extend({
 
 			// Build IPAM config if subnet provided
 			if (podnetwork.subnet) {
-				payload.subnets = [{ subnet: podnetwork.subnet }];
+				payload.subnets = [{
+					subnet: podnetwork.subnet
+				}];
 				if (podnetwork.gateway) payload.subnets[0].gateway = podnetwork.gateway;
-				if (podnetwork.ip_range) payload.subnets[0].lease_range = { start_ip: '',
-					end_ip: '' };
+				if (podnetwork.ip_range) payload.subnets[0].lease_range = {
+					start_ip: '',
+					end_ip: ''
+				};
 			}
 
 			payload.ipv6_enabled = false;
@@ -1000,7 +1030,9 @@ const FormNetwork = baseclass.extend({
 				payload.ipv6_enabled = true;
 
 				if (podnetwork.subnet) {
-					payload.subnets.push({ subnet: ipv6obj.ipv6subnet });
+					payload.subnets.push({
+						subnet: ipv6obj.ipv6subnet
+					});
 					if (podnetwork.gateway) payload.subnets[1].gateway = ipv6obj
 						.ipv6gateway;
 					// if (podnetwork.ip_range) payload.subnets[1].lease_range = { start_ip: '', end_ip: '' };
@@ -1065,8 +1097,10 @@ const FormNetwork = baseclass.extend({
 						ipv6subnet: podnetwork.ipv6subnet || null,
 						ipv6gateway: podnetwork.ipv6gateway || null,
 					}).then(() => {
-						return { podmanCreated: true,
-						openwrtCreated: true };
+						return {
+							podmanCreated: true,
+							openwrtCreated: true
+						};
 					}).catch((err) => {
 						// Podman network created, but OpenWrt integration failed
 						return {
@@ -1076,7 +1110,10 @@ const FormNetwork = baseclass.extend({
 						};
 					});
 				} else {
-					return { podmanCreated: true, openwrtCreated: false };
+					return {
+						podmanCreated: true,
+						openwrtCreated: false
+					};
 				}
 			}).then((status) => {
 				ui.hideModal();
@@ -1084,15 +1121,15 @@ const FormNetwork = baseclass.extend({
 				if (status.podmanCreated && status.openwrtCreated) {
 					pui.successTimeNotification(_(
 						'Network and OpenWrt integration created successfully'
-						));
+					));
 				} else if (status.podmanCreated && !status.openwrtCreated &&
 					status.openwrtError) {
 					pui.warningNotification(_(
 						'Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually.'
-						).format(status.openwrtError));
+					).format(status.openwrtError));
 				} else if (status.podmanCreated) {
 					pui.successTimeNotification(_(
-					'Network created successfully'));
+						'Network created successfully'));
 				}
 
 				this.submit();
@@ -1119,7 +1156,7 @@ const FormPod = baseclass.extend({
 			labels: null
 		}
 	},
-	render: function() {
+	render: function () {
 		this.map = new form.JSONMap(this.data, _('Create Pod'), '');
 		const section = this.map.section(form.NamedSection, 'pod', 'pod');
 		let field;
@@ -1157,8 +1194,10 @@ const FormPod = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => { ui.hideModal();
-						this.map.reset(); }
+					onCancel: () => {
+						ui.hideModal();
+						this.map.reset();
+					}
 				}).render()
 			]);
 
@@ -1169,10 +1208,12 @@ const FormPod = baseclass.extend({
 		});
 	},
 
-	handleCreate: function() {
+	handleCreate: function () {
 		this.map.save().then(() => {
 			const pod = this.map.data.data.pod;
-			const payload = { name: pod.name };
+			const payload = {
+				name: pod.name
+			};
 
 			if (pod.hostname) payload.hostname = pod.hostname;
 
@@ -1249,7 +1290,7 @@ const FormSecret = baseclass.extend({
 	/**
 	 * Render the secret creation modal
 	 */
-	render: function() {
+	render: function () {
 		let field;
 
 		this.map = new form.JSONMap(this.data, _('Create Secret'), '');
@@ -1263,7 +1304,7 @@ const FormSecret = baseclass.extend({
 			if (!/^[a-zA-Z0-9_\-]+$/.test(value)) {
 				return _(
 					'Secret name can only contain letters, numbers, underscores, and hyphens'
-					);
+				);
 			}
 			return true;
 		};
@@ -1282,22 +1323,28 @@ const FormSecret = baseclass.extend({
 				formElement,
 
 				// Security Notice
-				E('div', { 'class': 'cbi-section' }, [
-					E('div', { 'style': 'background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; border-radius: 4px; margin-top: 10px;' },
+				E('div', {
+					'class': 'cbi-section'
+				}, [
+					E('div', {
+							'style': 'background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; border-radius: 4px; margin-top: 10px;'
+						},
 						[
 							E('strong', {}, _('Security Notice:')),
-							E('ul', { 'style': 'margin: 10px 0 0 20px;' }, [
+							E('ul', {
+								'style': 'margin: 10px 0 0 20px;'
+							}, [
 								E('li', {}, _(
 									'Secret data is stored encrypted')),
 								E('li', {}, _(
 									'Once created, secret data cannot be viewed or retrieved'
-									)),
+								)),
 								E('li', {}, _(
 									'Secrets can only be used by containers, not displayed'
-									)),
+								)),
 								E('li', {}, _(
 									'To update a secret, delete and recreate it'
-									))
+								))
 							])
 						])
 				]),
@@ -1306,8 +1353,10 @@ const FormSecret = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => { ui.hideModal();
-						this.map.reset(); }
+					onCancel: () => {
+						ui.hideModal();
+						this.map.reset();
+					}
 				}).render()
 			];
 
@@ -1328,7 +1377,7 @@ const FormSecret = baseclass.extend({
 	/**
 	 * Handle secret creation
 	 */
-	handleCreate: function() {
+	handleCreate: function () {
 		// Parse and validate the form
 		this.map.save().then(() => {
 			// Get the form data
@@ -1408,7 +1457,7 @@ const FormVolume = baseclass.extend({
 		}
 	},
 
-	render: function() {
+	render: function () {
 		let field;
 
 		this.map = new form.JSONMap(this.data, _('Create Volume'), '');
@@ -1447,8 +1496,10 @@ const FormVolume = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => { ui.hideModal();
-						this.map.reset(); }
+					onCancel: () => {
+						ui.hideModal();
+						this.map.reset();
+					}
 				}).render()
 			]);
 
@@ -1459,10 +1510,12 @@ const FormVolume = baseclass.extend({
 		});
 	},
 
-	handleCreate: function() {
+	handleCreate: function () {
 		this.map.save().then(() => {
 			const volume = this.map.data.data.volume;
-			const payload = { Name: volume.name || '' };
+			const payload = {
+				Name: volume.name || ''
+			};
 
 			if (volume.driver) payload.Driver = volume.driver;
 
@@ -1536,7 +1589,7 @@ const FormResourceEditor = baseclass.extend({
 	 * @param {Object} containerData - Container inspect data
 	 * @returns {Promise<HTMLElement>} Rendered form element
 	 */
-	render: function(containerId, containerData) {
+	render: function (containerId, containerData) {
 		this.containerId = containerId;
 		const hostConfig = containerData.HostConfig || {};
 
@@ -1605,7 +1658,7 @@ const FormResourceEditor = baseclass.extend({
 		};
 		field.description = _(
 			'Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited.'
-			);
+		);
 
 		// Block IO Weight
 		field = section.option(form.Value, 'blkioWeight', _('Block IO Weight'));
@@ -1614,7 +1667,7 @@ const FormResourceEditor = baseclass.extend({
 		field.optional = true;
 		field.validate = (_section_id, value) => {
 			if (value && (parseInt(value) < 10 || parseInt(value) > 1000) && parseInt(
-				value) !== 0) {
+					value) !== 0) {
 				return _('Must be 0 or between 10 and 1000');
 			}
 			return true;
@@ -1633,7 +1686,7 @@ const FormResourceEditor = baseclass.extend({
 	/**
 	 * Handle resource update
 	 */
-	handleUpdate: function() {
+	handleUpdate: function () {
 		this.map.save().then(() => {
 			const resources = this.map.data.data.resources;
 
@@ -1662,7 +1715,7 @@ const FormResourceEditor = baseclass.extend({
 			if (resources.cpuLimit) {
 				const period = 100000;
 				updateData.cpu.quota = Math.floor(parseFloat(resources.cpuLimit) *
-				period);
+					period);
 				updateData.cpu.period = period;
 			} else {
 				updateData.cpu.quota = 0;
@@ -1731,7 +1784,7 @@ const FormNetworkConnect = baseclass.extend({
 	 * @param {Function} onSuccess - Success callback
 	 * @returns {Promise<HTMLElement>} Rendered form element
 	 */
-	render: function(containerId, networks, onSuccess) {
+	render: function (containerId, networks, onSuccess) {
 		this.containerId = containerId;
 		this.onSuccess = onSuccess;
 
@@ -1780,7 +1833,7 @@ const FormNetworkConnect = baseclass.extend({
 	/**
 	 * Handle network connection
 	 */
-	handleConnect: function() {
+	handleConnect: function () {
 		this.map.save().then(() => {
 			const networkData = this.map.data.data.network;
 
@@ -1793,7 +1846,9 @@ const FormNetworkConnect = baseclass.extend({
 				'Connecting container to network...'));
 
 			// Build params according to Podman API NetworkConnectOptions schema
-			const params = { container: this.containerId };
+			const params = {
+				container: this.containerId
+			};
 			if (networkData.ip) {
 				params.static_ips = [networkData.ip];
 			}
@@ -1847,7 +1902,7 @@ const FormEditableField = baseclass.extend({
 	 * @param {Array} [options.choices] - For select type: [{value, label}]
 	 * @returns {Promise<HTMLElement>} Rendered form element
 	 */
-	render: function(options) {
+	render: function (options) {
 		this.options = options;
 
 		const data = {
@@ -1894,7 +1949,7 @@ const FormEditableField = baseclass.extend({
 	/**
 	 * Handle field update
 	 */
-	handleUpdate: function() {
+	handleUpdate: function () {
 		this.map.save().then(() => {
 			const newValue = this.map.data.data.field.value;
 
@@ -1906,8 +1961,10 @@ const FormEditableField = baseclass.extend({
 });
 
 const FormSelectDummyValue = form.DummyValue.extend({
-	cfgvalue: function(sectionId) {
-		return new ui.Checkbox(0, { hiddenname: sectionId }).render();
+	cfgvalue: function (sectionId) {
+		return new ui.Checkbox(0, {
+			hiddenname: sectionId
+		}).render();
 	}
 });
 
@@ -1916,7 +1973,7 @@ const FormDataDummyValue = form.DummyValue.extend({
 	cfgdefault: _('Unknown'),
 	cfgtitle: null,
 	cfgformatter: (cfg) => cfg,
-	cfgvalue: function(sectionId) {
+	cfgvalue: function (sectionId) {
 		const property = this.containerProperty || this.option;
 		if (!property) return '';
 
@@ -1932,7 +1989,9 @@ const FormDataDummyValue = form.DummyValue.extend({
 			cfgtitle = this.cfgtitle(cfg);
 		}
 
-		return E('span', { title: cfgtitle }, this.cfgformatter(cfg));
+		return E('span', {
+			title: cfgtitle
+		}, this.cfgformatter(cfg));
 	}
 });
 
@@ -1940,7 +1999,7 @@ const FormLinkDataDummyValue = form.DummyValue.extend({
 	text: (_data) => '',
 	click: (_data) => null,
 	linktitle: (_data) => null,
-	cfgvalue: function(sectionId) {
+	cfgvalue: function (sectionId) {
 		const data = this.map.data.data[sectionId];
 		return E('a', {
 			href: '#',

@@ -14,7 +14,7 @@ return view.extend({
 	 * Load all system data on view initialization
 	 * @returns {Promise<Array>} Array containing version, info, and resource lists
 	 */
-	load: function() {
+	load: function () {
 		return Promise.all([
 			podmanRPC.system.version(),
 			podmanRPC.system.info(),
@@ -32,7 +32,7 @@ return view.extend({
 	 * @param {Array} data - Array of loaded data [version, info, containers, images, volumes, networks, pods]
 	 * @returns {Element} Overview view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		var version = data[0] || {};
 		var info = data[1] || {};
 		var containers = data[2] || [];
@@ -44,9 +44,13 @@ return view.extend({
 		var pods = data[6] || [];
 		var diskUsage = data[7] || {};
 
-		var runningContainers = containers.filter(function(c) { return c.State === 'running'; })
+		var runningContainers = containers.filter(function (c) {
+				return c.State === 'running';
+			})
 			.length;
-		var runningPods = pods.filter(function(p) { return p.Status === 'Running'; }).length;
+		var runningPods = pods.filter(function (p) {
+			return p.Status === 'Running';
+		}).length;
 
 		var container = E('div', {}, [
 			// System Actions Section (Auto-update, Prune)
@@ -59,8 +63,12 @@ return view.extend({
 			this.createDiskUsageSection(diskUsage),
 
 			// Resource Cards Section
-			E('div', { 'style': 'margin-top: 30px;' }, [
-				E('h3', { 'style': 'margin-bottom: 15px;' }, _('Resources')),
+			E('div', {
+				'style': 'margin-top: 30px;'
+			}, [
+				E('h3', {
+					'style': 'margin-bottom: 15px;'
+				}, _('Resources')),
 				this.createResourceCards(containers, pods, images, networks, volumes,
 					runningContainers, runningPods)
 			])
@@ -75,67 +83,135 @@ return view.extend({
 	 * @param {Object} info - System info
 	 * @returns {Element} Info section element
 	 */
-	createInfoSection: function(version, info) {
+	createInfoSection: function (version, info) {
 		var memTotal = (info.host && info.host.memTotal) ? (info.host.memTotal / 1024 / 1024 /
 			1024).toFixed(2) : '0';
 		var memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 / 1024)
 			.toFixed(2) : '0';
 
-		return E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('h3', { 'style': 'margin-bottom: 15px;' }, _('Information')),
-				E('table', { 'class': 'table' }, [
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 30%; font-weight: bold;' },
+		return E('div', {
+			'class': 'cbi-section'
+		}, [
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
+				E('h3', {
+					'style': 'margin-bottom: 15px;'
+				}, _('Information')),
+				E('table', {
+					'class': 'table'
+				}, [
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 30%; font-weight: bold;'
+							},
 							_('Podman Version')),
-						E('td', { 'class': 'td' }, version.Version || _(
+						E('td', {
+							'class': 'td'
+						}, version.Version || _(
 							'Unknown'))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('API Version')),
-						E('td', { 'class': 'td' }, version.ApiVersion || _(
+						E('td', {
+							'class': 'td'
+						}, version.ApiVersion || _(
 							'Unknown'))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('CPU')),
-						E('td', { 'class': 'td' }, (info.host && info.host
+						E('td', {
+							'class': 'td'
+						}, (info.host && info.host
 							.cpus) ? info.host.cpus.toString() : _(
 							'Unknown'))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('Memory')),
-						E('td', { 'class': 'td' }, memFree + ' GB / ' +
+						E('td', {
+								'class': 'td'
+							}, memFree + ' GB / ' +
 							memTotal + ' GB')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('Socket Path')),
-						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
+						E('td', {
+								'class': 'td',
+								'style': 'font-family: monospace; font-size: 0.9em;'
+							},
 							(info.host && info.host.remoteSocket && info.host
 								.remoteSocket.path) ||
 							'/run/podman/podman.sock')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('Graph Root')),
-						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
+						E('td', {
+								'class': 'td',
+								'style': 'font-family: monospace; font-size: 0.9em;'
+							},
 							(info.store && info.store.graphRoot) || _(
 								'Unknown'))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('Run Root')),
-						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
+						E('td', {
+								'class': 'td',
+								'style': 'font-family: monospace; font-size: 0.9em;'
+							},
 							(info.store && info.store.runRoot) || _('Unknown')
-							)
+						)
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'font-weight: bold;'
+							},
 							_('Registries')),
-						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
+						E('td', {
+								'class': 'td',
+								'style': 'font-family: monospace; font-size: 0.9em;'
+							},
 							this.getRegistries(info))
 					])
 				])
@@ -148,7 +224,7 @@ return view.extend({
 	 * @param {Object} info - System info
 	 * @returns {string} Comma-separated registries
 	 */
-	getRegistries: function(info) {
+	getRegistries: function (info) {
 		if (info.registries && info.registries.search) {
 			return info.registries.search.join(', ');
 		}
@@ -160,9 +236,9 @@ return view.extend({
 	 * @param {Object} diskUsage - Disk usage data
 	 * @returns {Element} Disk usage section element
 	 */
-	createDiskUsageSection: function(diskUsage) {
+	createDiskUsageSection: function (diskUsage) {
 		var imageSize = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Size) ||
-		0;
+			0;
 		var imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0]
 			.Reclaimable) || 0;
 		var imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) ||
@@ -182,42 +258,95 @@ return view.extend({
 		var volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Count) || 0;
 
-		return E('div', { 'class': 'cbi-section', 'style': 'margin-top: 20px;' }, [
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('h3', { 'style': 'margin-bottom: 15px;' }, _('Disk Usage')),
-				E('table', { 'class': 'table' }, [
-					E('tr', { 'class': 'tr' }, [
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+		return E('div', {
+			'class': 'cbi-section',
+			'style': 'margin-top: 20px;'
+		}, [
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
+				E('h3', {
+					'style': 'margin-bottom: 15px;'
+				}, _('Disk Usage')),
+				E('table', {
+					'class': 'table'
+				}, [
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('th', {
+								'class': 'th',
+								'style': 'font-weight: bold;'
+							},
 							_('Type')),
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+						E('th', {
+								'class': 'th',
+								'style': 'font-weight: bold;'
+							},
 							_('Count')),
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+						E('th', {
+								'class': 'th',
+								'style': 'font-weight: bold;'
+							},
 							_('Size')),
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+						E('th', {
+								'class': 'th',
+								'style': 'font-weight: bold;'
+							},
 							_('Reclaimable'))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td' }, _('Images')),
-						E('td', { 'class': 'td' }, String(imageCount)),
-						E('td', { 'class': 'td' }, utils.formatBytes(
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+							'class': 'td'
+						}, _('Images')),
+						E('td', {
+							'class': 'td'
+						}, String(imageCount)),
+						E('td', {
+							'class': 'td'
+						}, utils.formatBytes(
 							imageSize)),
-						E('td', { 'class': 'td' }, utils.formatBytes(
+						E('td', {
+							'class': 'td'
+						}, utils.formatBytes(
 							imageReclaimable))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td' }, _('Containers')),
-						E('td', { 'class': 'td' }, String(containerCount)),
-						E('td', { 'class': 'td' }, utils.formatBytes(
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+							'class': 'td'
+						}, _('Containers')),
+						E('td', {
+							'class': 'td'
+						}, String(containerCount)),
+						E('td', {
+							'class': 'td'
+						}, utils.formatBytes(
 							containerSize)),
-						E('td', { 'class': 'td' }, utils.formatBytes(
+						E('td', {
+							'class': 'td'
+						}, utils.formatBytes(
 							containerReclaimable))
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td' }, _('Volumes')),
-						E('td', { 'class': 'td' }, String(volumeCount)),
-						E('td', { 'class': 'td' }, utils.formatBytes(
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+							'class': 'td'
+						}, _('Volumes')),
+						E('td', {
+							'class': 'td'
+						}, String(volumeCount)),
+						E('td', {
+							'class': 'td'
+						}, utils.formatBytes(
 							volumeSize)),
-						E('td', { 'class': 'td' }, utils.formatBytes(
+						E('td', {
+							'class': 'td'
+						}, utils.formatBytes(
 							volumeReclaimable))
 					])
 				])
@@ -236,7 +365,7 @@ return view.extend({
 	 * @param {number} runningPods - Running pod count
 	 * @returns {Element} Cards container element
 	 */
-	createResourceCards: function(containers, pods, images, networks, volumes, runningContainers,
+	createResourceCards: function (containers, pods, images, networks, volumes, runningContainers,
 		runningPods) {
 		return E('div', {
 			'style': 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;'
@@ -263,7 +392,7 @@ return view.extend({
 	 * @param {string} color - Card accent color
 	 * @returns {Element} Card element
 	 */
-	createCard: function(title, total, running, url, color) {
+	createCard: function (title, total, running, url, color) {
 		var statsText = running !== null ? running + ' / ' + total : total.toString();
 
 		return E('a', {
@@ -276,19 +405,29 @@ return view.extend({
 					color +
 					'; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; margin: 0;'
 			}, [
-				E('div', { 'style': 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;' },
+				E('div', {
+						'style': 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;'
+					},
 					[
-						E('span', { 'style': 'font-size: 14px; opacity: 0.8;' }, _(
+						E('span', {
+							'style': 'font-size: 14px; opacity: 0.8;'
+						}, _(
 							title)),
 						this.getIcon(title, color)
 					]),
 				E('div', {}, [
-					E('div', { 'style': 'font-size: 32px; font-weight: bold; color: ' +
-							color + ';' }, statsText),
+					E('div', {
+						'style': 'font-size: 32px; font-weight: bold; color: ' +
+							color + ';'
+					}, statsText),
 					running !== null ?
-					E('div', { 'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;' },
+					E('div', {
+							'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;'
+						},
 						_('running') + ' / ' + _('total')) :
-					E('div', { 'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;' },
+					E('div', {
+							'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;'
+						},
 						_('total'))
 				])
 			])
@@ -301,38 +440,49 @@ return view.extend({
 	 * @param {string} color - Icon color
 	 * @returns {Element} Icon element
 	 */
-	getIcon: function(type, color) {
+	getIcon: function (type, color) {
 		var icon = '📦';
 		switch (type) {
-			case 'Containers':
-				icon = '🐳';
-				break;
-			case 'Pods':
-				icon = '🔗';
-				break;
-			case 'Images':
-				icon = '💿';
-				break;
-			case 'Networks':
-				icon = '🌐';
-				break;
-			case 'Volumes':
-				icon = '💾';
-				break;
+		case 'Containers':
+			icon = '🐳';
+			break;
+		case 'Pods':
+			icon = '🔗';
+			break;
+		case 'Images':
+			icon = '💿';
+			break;
+		case 'Networks':
+			icon = '🌐';
+			break;
+		case 'Volumes':
+			icon = '💾';
+			break;
 		}
 
-		return E('span', { 'style': 'font-size: 24px; opacity: 0.6;' }, icon);
+		return E('span', {
+			'style': 'font-size: 24px; opacity: 0.6;'
+		}, icon);
 	},
 
 	/**
 	 * Create system actions section with buttons for maintenance tasks
 	 * @returns {Element} System actions section
 	 */
-	createSystemActionsSection: function() {
-		return E('div', { 'class': 'cbi-section', 'style': 'margin-bottom: 20px;' }, [
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('h3', { 'style': 'margin-bottom: 15px;' }, _('System Maintenance')),
-				E('div', { 'style': 'display: flex; gap: 10px; flex-wrap: wrap;' }, [
+	createSystemActionsSection: function () {
+		return E('div', {
+			'class': 'cbi-section',
+			'style': 'margin-bottom: 20px;'
+		}, [
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
+				E('h3', {
+					'style': 'margin-bottom: 15px;'
+				}, _('System Maintenance')),
+				E('div', {
+					'style': 'display: flex; gap: 10px; flex-wrap: wrap;'
+				}, [
 					new pui.Button(_('Auto-Update Containers'), () => this
 						.handleAutoUpdate(), 'action').render(),
 					new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(),
@@ -345,29 +495,36 @@ return view.extend({
 	/**
 	 * Handle auto-update action
 	 */
-	handleAutoUpdate: function() {
+	handleAutoUpdate: function () {
 		var self = this;
 
 		// First do dry-run to show what would be updated
 		ui.showModal(_('Auto-Update Check'), [
 			E('p', {}, _('Checking for container updates...')),
-			E('div', { 'class': 'center' }, [
-				E('em', { 'class': 'spinning' }, _('Loading...'))
+			E('div', {
+				'class': 'center'
+			}, [
+				E('em', {
+					'class': 'spinning'
+				}, _('Loading...'))
 			])
 		]);
 
-		podmanRPC.system.autoUpdate(true).then(function(result) {
+		podmanRPC.system.autoUpdate(true).then(function (result) {
 			var updates = result.Updates || [];
 
 			if (updates.length === 0) {
 				ui.showModal(_('Auto-Update'), [
 					E('p', {}, _(
 						'No containers are configured for auto-update or all containers are up to date.'
-						)),
-					E('p', { 'style': 'margin-top: 10px; font-size: 0.9em; opacity: 0.8;' },
+					)),
+					E('p', {
+							'style': 'margin-top: 10px; font-size: 0.9em; opacity: 0.8;'
+						},
 						_(
-							'To enable auto-update, add label io.containers.autoupdate=registry to your containers.')
-						),
+							'To enable auto-update, add label io.containers.autoupdate=registry to your containers.'
+							)
+					),
 					new pui.ModalButtons({
 						confirmText: _('Close'),
 						onConfirm: ui.hideModal,
@@ -378,7 +535,7 @@ return view.extend({
 			}
 
 			// Show updates available
-			var updateList = updates.map(function(update) {
+			var updateList = updates.map(function (update) {
 				var status = update.Updated ? '✓ ' + _('Updated') : '○ ' + _(
 					'Available');
 				return E('li', {}, update.ContainerName + ' - ' + status);
@@ -386,7 +543,9 @@ return view.extend({
 
 			ui.showModal(_('Auto-Update Available'), [
 				E('p', {}, _('The following containers can be updated:')),
-				E('ul', { 'style': 'margin: 10px 0; padding-left: 20px;' },
+				E('ul', {
+						'style': 'margin: 10px 0; padding-left: 20px;'
+					},
 					updateList),
 				new pui.ModalButtons({
 					confirmText: _('Update Now'),
@@ -396,7 +555,7 @@ return view.extend({
 					}
 				}).render()
 			]);
-		}).catch(function(err) {
+		}).catch(function (err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Failed to check for updates: %s').format(err
 					.message)),
@@ -412,17 +571,23 @@ return view.extend({
 	/**
 	 * Perform actual auto-update
 	 */
-	performAutoUpdate: function() {
+	performAutoUpdate: function () {
 		ui.showModal(_('Updating Containers'), [
 			E('p', {}, _('Updating containers, please wait...')),
-			E('div', { 'class': 'center' }, [
-				E('em', { 'class': 'spinning' }, _('Loading...'))
+			E('div', {
+				'class': 'center'
+			}, [
+				E('em', {
+					'class': 'spinning'
+				}, _('Loading...'))
 			])
 		]);
 
-		podmanRPC.system.autoUpdate(false).then(function(result) {
+		podmanRPC.system.autoUpdate(false).then(function (result) {
 			var updates = result.Updates || [];
-			var successful = updates.filter(function(u) { return u.Updated; }).length;
+			var successful = updates.filter(function (u) {
+				return u.Updated;
+			}).length;
 
 			ui.showModal(_('Auto-Update Complete'), [
 				E('p', {}, _('Updated %d container(s) successfully.').format(
@@ -436,7 +601,7 @@ return view.extend({
 					onCancel: null
 				}).render()
 			]);
-		}).catch(function(err) {
+		}).catch(function (err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Auto-update failed: %s').format(err.message)),
 				new pui.ModalButtons({
@@ -451,32 +616,50 @@ return view.extend({
 	/**
 	 * Handle cleanup/prune action
 	 */
-	handlePrune: function() {
+	handlePrune: function () {
 		var self = this;
 
 		ui.showModal(_('Cleanup Unused Resources'), [
-			E('div', { 'class': 'cbi-section' }, [
+			E('div', {
+				'class': 'cbi-section'
+			}, [
 				E('p', {}, _('Select what to clean up:')),
-				E('div', { 'style': 'margin: 15px 0;' }, [
-					E('label', { 'style': 'display: block; margin: 8px 0;' }, [
+				E('div', {
+					'style': 'margin: 15px 0;'
+				}, [
+					E('label', {
+						'style': 'display: block; margin: 8px 0;'
+					}, [
 						E(
-				'input', { 'type': 'checkbox', 'id': 'prune-all-images', 'checked': '' }),
+							'input', {
+								'type': 'checkbox',
+								'id': 'prune-all-images',
+								'checked': ''
+							}),
 						' ',
 						_('Remove all unused images (not just dangling)')
 					]),
-					E('label', { 'style': 'display: block; margin: 8px 0;' }, [
+					E('label', {
+						'style': 'display: block; margin: 8px 0;'
+					}, [
 						E(
-					'input', { 'type': 'checkbox', 'id': 'prune-volumes' }),
+							'input', {
+								'type': 'checkbox',
+								'id': 'prune-volumes'
+							}),
 						' ',
 						_('Remove unused volumes')
 					])
 				]),
-				E('p', { 'style': 'margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;' },
+				E('p', {
+						'style': 'margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;'
+					},
 					[
 						E('strong', {}, _('Warning:')),
 						' ',
 						_(
-							'This will permanently delete unused containers, images, networks, and optionally volumes.')
+							'This will permanently delete unused containers, images, networks, and optionally volumes.'
+							)
 					])
 			]),
 			new pui.ModalButtons({
@@ -486,7 +669,7 @@ return view.extend({
 					var allImages = document.getElementById('prune-all-images')
 						.checked;
 					var volumes = document.getElementById('prune-volumes')
-					.checked;
+						.checked;
 					ui.hideModal();
 					self.performPrune(allImages, volumes);
 				}
@@ -497,20 +680,24 @@ return view.extend({
 	/**
 	 * Perform system prune
 	 */
-	performPrune: function(allImages, volumes) {
+	performPrune: function (allImages, volumes) {
 		ui.showModal(_('Cleaning Up'), [
 			E('p', {}, _('Removing unused resources, please wait...')),
-			E('div', { 'class': 'center' }, [
-				E('em', { 'class': 'spinning' }, _('Loading...'))
+			E('div', {
+				'class': 'center'
+			}, [
+				E('em', {
+					'class': 'spinning'
+				}, _('Loading...'))
 			])
 		]);
 
-		podmanRPC.system.prune(allImages, volumes).then(function(result) {
+		podmanRPC.system.prune(allImages, volumes).then(function (result) {
 			var freedSpace = 0;
 			var deletedItems = [];
 
 			if (result.ContainerPruneReports) {
-				result.ContainerPruneReports.forEach(function(r) {
+				result.ContainerPruneReports.forEach(function (r) {
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.ContainerPruneReports.length > 0) {
@@ -520,7 +707,7 @@ return view.extend({
 			}
 
 			if (result.ImagePruneReports) {
-				result.ImagePruneReports.forEach(function(r) {
+				result.ImagePruneReports.forEach(function (r) {
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.ImagePruneReports.length > 0) {
@@ -529,7 +716,7 @@ return view.extend({
 			}
 
 			if (result.VolumePruneReports) {
-				result.VolumePruneReports.forEach(function(r) {
+				result.VolumePruneReports.forEach(function (r) {
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.VolumePruneReports.length > 0) {
@@ -540,11 +727,17 @@ return view.extend({
 			ui.showModal(_('Cleanup Complete'), [
 				E('p', {}, _('Cleanup successful!')),
 				deletedItems.length > 0 ?
-				E('p', { 'style': 'margin-top: 10px;' }, _('Removed: %s').format(
+				E('p', {
+					'style': 'margin-top: 10px;'
+				}, _('Removed: %s').format(
 					deletedItems.join(', '))) :
-				E('p', { 'style': 'margin-top: 10px;' }, _(
+				E('p', {
+					'style': 'margin-top: 10px;'
+				}, _(
 					'No unused resources found')),
-				E('p', { 'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;' },
+				E('p', {
+						'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;'
+					},
 					_('Space freed: %s').format(utils.formatBytes(freedSpace))),
 				new pui.ModalButtons({
 					confirmText: _('Close'),
@@ -555,7 +748,7 @@ return view.extend({
 					onCancel: null
 				}).render()
 			]);
-		}).catch(function(err) {
+		}).catch(function (err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Cleanup failed: %s').format(err.message)),
 				new pui.ModalButtons({

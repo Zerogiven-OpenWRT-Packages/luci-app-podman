@@ -28,10 +28,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.container.list('all=true')
 			.then((containers) => {
-				return { containers: containers || [] };
+				return {
+					containers: containers || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load containers') };
+				return {
+					error: err.message || _('Failed to load containers')
+				};
 			});
 	},
 
@@ -40,7 +44,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Container view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
@@ -64,7 +68,9 @@ return view.extend({
 
 		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		// Name column
 		o = section.option(form.DummyValue, 'Names', _('Name'));
@@ -98,14 +104,18 @@ return view.extend({
 
 			// No health check configured - show em dash
 			if (!health) {
-				return E('span', { 'style': 'color: #999;' }, '—');
+				return E('span', {
+					'style': 'color: #999;'
+				}, '—');
 			}
 
 			// Health check configured but status not set yet or empty - treat as starting
 			const status = health.Status || 'starting';
 			const badgeClass = 'badge status-' + status.toLowerCase();
 
-			return E('span', { 'class': badgeClass }, status);
+			return E('span', {
+				'class': badgeClass
+			}, status);
 		};
 		o.rawhtml = true;
 		// Created column
@@ -145,7 +155,9 @@ return view.extend({
 		toolbar.prependButton(createButton);
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
@@ -162,7 +174,7 @@ return view.extend({
 	 * Refresh table data without full page reload
 	 * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
 	 */
-	refreshTable: function(clearSelections) {
+	refreshTable: function (clearSelections) {
 		return this.listHelper.refreshTable(clearSelections);
 	},
 
@@ -170,30 +182,30 @@ return view.extend({
 	 * Get selected container IDs from checkboxes
 	 * @returns {Array<string>} Array of selected container IDs
 	 */
-	getSelectedContainerIds: function() {
+	getSelectedContainerIds: function () {
 		return this.listHelper.getSelected((container) => container.Id);
 	},
 
-	handleCreateContainer: function() {
+	handleCreateContainer: function () {
 		const form = new podmanForm.Container();
 		form.submit = () => this.refreshTable(false);
 		form.render();
 	},
 
-	handleImportFromRunCommand: function() {
+	handleImportFromRunCommand: function () {
 		const form = new podmanForm.Container();
 		form.submit = () => this.refreshTable(false);
 		form.showImportFromRunCommand();
 	},
 
-	handleImportFromCompose: function() {
+	handleImportFromCompose: function () {
 		// Feature not yet implemented
 	},
 
 	/**
 	 * Handle container start action for selected containers
 	 */
-	handleStart: function() {
+	handleStart: function () {
 		const selected = this.getSelectedContainerIds();
 
 		ContainerUtil.startContainers(selected).then(() => {
@@ -204,7 +216,7 @@ return view.extend({
 	/**
 	 * Handle container stop action for selected containers
 	 */
-	handleStop: function() {
+	handleStop: function () {
 		const selected = this.getSelectedContainerIds();
 
 		ContainerUtil.stopContainers(selected).then(() => {
@@ -215,7 +227,7 @@ return view.extend({
 	/**
 	 * Handle container remove action for selected containers
 	 */
-	handleRemove: function() {
+	handleRemove: function () {
 		this.listHelper.bulkDelete({
 			selected: this.getSelectedContainerIds(),
 			deletePromiseFn: (id) => podmanRPC.container.remove(id, true, true),
@@ -226,7 +238,7 @@ return view.extend({
 	/**
 	 * Handle bulk health check action for selected containers
 	 */
-	handleBulkHealthCheck: function() {
+	handleBulkHealthCheck: function () {
 		const selected = this.getSelectedContainerIds();
 
 		if (selected.length === 0) {
@@ -252,7 +264,10 @@ return view.extend({
 
 		const healthCheckPromises = containersWithHealth.map((id) => {
 			return podmanRPC.container.healthcheck(id).catch((err) => {
-				return { error: err.message, id: id };
+				return {
+					error: err.message,
+					id: id
+				};
 			});
 		});
 

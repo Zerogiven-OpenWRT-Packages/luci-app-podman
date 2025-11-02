@@ -12,7 +12,7 @@ return L.Class.extend({
 	 * @param {string} message - Error message to display
 	 * @returns {Element} Error element
 	 */
-	renderError: function(message) {
+	renderError: function (message) {
 		return E('div', {
 			'class': 'alert-message error'
 		}, [_('RPC call failure: '), message]);
@@ -24,7 +24,7 @@ return L.Class.extend({
 	 * @param {number} [decimals=2] - Number of decimal places
 	 * @returns {string} Formatted size string
 	 */
-	formatBytes: function(bytes, decimals) {
+	formatBytes: function (bytes, decimals) {
 		if (!bytes || bytes === 0) return '0 B';
 
 		decimals = decimals !== undefined ? decimals : 2;
@@ -40,7 +40,7 @@ return L.Class.extend({
 	 * @param {number|string} timestamp - Unix timestamp (seconds) or ISO 8601 string
 	 * @returns {string} Formatted date string (DD.MM.YYYY, HH:MM:SS)
 	 */
-	formatDate: function(timestamp) {
+	formatDate: function (timestamp) {
 		if (!timestamp) {
 			return _('Never');
 		}
@@ -85,7 +85,7 @@ return L.Class.extend({
 	 * @param {number} maxLength - Maximum length
 	 * @returns {string} Truncated string
 	 */
-	truncate: function(str, maxLength) {
+	truncate: function (str, maxLength) {
 		if (!str || str.length <= maxLength) {
 			return str;
 		}
@@ -98,7 +98,7 @@ return L.Class.extend({
 	 * @param {HTMLElement} rendered - Rendered table container
 	 * @param {string} prefix - Checkbox name prefix (e.g., 'containers', 'images')
 	 */
-	setupSelectAllCheckbox: function(rendered, prefix) {
+	setupSelectAllCheckbox: function (rendered, prefix) {
 		requestAnimationFrame(() => {
 			const selectAllCheckbox = rendered.querySelector(
 				'input[type="hidden"][name="all"] ~ input[type=checkbox]');
@@ -148,7 +148,7 @@ return L.Class.extend({
 	 * @param {Function} extractFn - Function to extract the needed data from item (item, index) => value
 	 * @returns {Array} Array of selected items
 	 */
-	getSelectedFromCheckboxes: function(prefix, dataArray, extractFn) {
+	getSelectedFromCheckboxes: function (prefix, dataArray, extractFn) {
 		const selected = [];
 		const checkboxes = document.querySelectorAll('input[type="hidden"][name^="' + prefix +
 			'"] ~ input[type="checkbox"]:checked');
@@ -168,7 +168,7 @@ return L.Class.extend({
 	 * @param {boolean} [returnNullOnError=false] - If true, returns null on parse error; otherwise returns 0
 	 * @returns {number|null} Size in bytes, or 0/null if invalid
 	 */
-	parseMemory: function(memStr, returnNullOnError) {
+	parseMemory: function (memStr, returnNullOnError) {
 		if (!memStr) return returnNullOnError ? null : 0;
 
 		// Match number with optional unit (k, kb, m, mb, g, gb, t, tb, or b)
@@ -200,7 +200,7 @@ return L.Class.extend({
 	 * @param {string} duration - Duration string (e.g., "30s", "1m", "1h")
 	 * @returns {number} Duration in nanoseconds, or 0 if invalid
 	 */
-	parseDuration: function(duration) {
+	parseDuration: function (duration) {
 		if (!duration) return 0;
 
 		// Match number with unit (ns, us, ms, s, m, h)
@@ -228,16 +228,33 @@ return L.Class.extend({
 	 * @param {number} ns - Duration in nanoseconds
 	 * @returns {string} Formatted duration string (e.g., "30s", "1m", "1h")
 	 */
-	formatDuration: function(ns) {
+	formatDuration: function (ns) {
 		if (!ns || ns === 0) return '0s';
 
-		const units = [
-			{ name: 'h', value: 3600000000000 },
-			{ name: 'm', value: 60000000000 },
-			{ name: 's', value: 1000000000 },
-			{ name: 'ms', value: 1000000 },
-			{ name: 'us', value: 1000 },
-			{ name: 'ns', value: 1 }
+		const units = [{
+				name: 'h',
+				value: 3600000000000
+			},
+			{
+				name: 'm',
+				value: 60000000000
+			},
+			{
+				name: 's',
+				value: 1000000000
+			},
+			{
+				name: 'ms',
+				value: 1000000
+			},
+			{
+				name: 'us',
+				value: 1000
+			},
+			{
+				name: 'ns',
+				value: 1
+			}
 		];
 
 		for (let i = 0; i < units.length; i++) {
