@@ -124,6 +124,6 @@ jobs:
           echo "✅ **Release Created**: v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ls -la "${GITHUB_WORKSPACE}/release-assets/" >> $GITHUB_STEP_SUMMARY || true
+          ls -la "${GITHUB_WORKSPACE}/release-assets/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Release URL**: https://github.com/${{ github.repository }}/releases/tag/v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
