@@ -1,17 +1,7 @@
 {
   "indent_with_tabs": true,
-  "indent_size": 1,
-  "preserve_newlines": true,
-  "max_preserve_newlines": 2,
-  "wrap_line_length": 110,
-  "align_assignments": true,
-  "space_in_paren": false,
-  "space_in_empty_paren": false,
-  "end_with_newline": true,
-  "js": {
-    "brace_style": "collapse,preserve-inline",
-    "comma_first": false,
-    "space_before_conditional": true,
-    "unescape_strings": true
-  }
+  "editorconfig": true,
+  "space_after_anon_function": true,
+  "jslint_happy": true,
+  "wrap_line_length": 110
 }
