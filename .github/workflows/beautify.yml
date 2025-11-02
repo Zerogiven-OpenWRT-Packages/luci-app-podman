@@ -1,4 +1,4 @@
-name: Beautify JavaScript (changed files, with all option)
+name: Beautify JavaScript
 
 on:
   push:
