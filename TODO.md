@@ -1,15 +1,11 @@
 # Must do
 
 - Pods list should have action buttons like container list
-- Deleting a container from a POD shows success without deleting (cause of existing pod i think);
 
 # Should have
 
-- Managing health check for a container
-- Running health check for container(s)
 - Remove environment variables from container.js because there can be risky information
     - Another way would be to consore the values till the user click on it so the values are only shown after user action not just after loading the container details.
-- Logout if session expired: Failed to start container: Login session is expired at notifySessionExpiry (https://r4.lies47.net/luci-static/resources/luci.js?v=25.280.58391~b7e4a9c-1761133839:187:464) at async Promise.all (index 0)
 
 # Nice to have, features only.
 
