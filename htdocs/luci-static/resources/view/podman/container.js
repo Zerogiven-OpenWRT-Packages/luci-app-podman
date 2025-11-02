@@ -69,7 +69,8 @@ return view.extend({
 		this.networksData = data.networks;
 
 		// Create header with container name and status
-		const name = this.containerData.Name ? this.containerData.Name.replace(/^\//, '') : this.containerId.substring(0, 12);
+		const name = this.containerData.Name ? this.containerData.Name.replace(/^\//, '') : this
+			.containerId.substring(0, 12);
 		const state = this.containerData.State || {};
 		const status = state.Status || 'unknown';
 
@@ -205,19 +206,23 @@ return view.extend({
 		const buttons = [];
 
 		if (isRunning) {
-			buttons.push(new pui.Button(_('Stop'), () => this.handleStop(id), 'negative').render());
+			buttons.push(new pui.Button(_('Stop'), () => this.handleStop(id), 'negative')
+			.render());
 		} else {
-			buttons.push(new pui.Button(_('Start'), () => this.handleStart(id), 'positive').render());
+			buttons.push(new pui.Button(_('Start'), () => this.handleStart(id), 'positive')
+				.render());
 		}
 
 		buttons.push(' ');
 		buttons.push(new pui.Button(_('Restart'), () => this.handleRestart(id)).render());
 
 		buttons.push(' ');
-		buttons.push(new pui.Button(_('Remove'), () => this.handleRemove(id, name), 'remove').render());
+		buttons.push(new pui.Button(_('Remove'), () => this.handleRemove(id, name), 'remove')
+			.render());
 
 		buttons.push(' ');
-		buttons.push(new pui.Button(_('Back to List'), L.url('admin/podman/containers')).render());
+		buttons.push(new pui.Button(_('Back to List'), L.url('admin/podman/containers'))
+	.render());
 
 		return E('div', {}, buttons);
 	},
@@ -239,16 +244,20 @@ return view.extend({
 
 		// Basic Information
 		const basicRows = [
-			this.createEditableRow(_('Name'), data.Name ? data.Name.replace(/^\//, '') : '-', 'name'),
+			this.createEditableRow(_('Name'), data.Name ? data.Name.replace(/^\//, '') : '-',
+				'name'),
 			this.createInfoRow(_('ID'), data.Id ? data.Id.substring(0, 64) : '-'),
 			this.createInfoRow(_('Image'), config.Image || '-'),
 			this.createInfoRow(_('Status'), data.State ? data.State.Status : '-'),
-			this.createInfoRow(_('Created'), data.Created ? utils.formatDate(data.Created) : '-'),
-			this.createInfoRow(_('Started'), data.State && data.State.StartedAt ? utils.formatDate(data.State.StartedAt) : '-')
+			this.createInfoRow(_('Created'), data.Created ? utils.formatDate(data.Created) :
+				'-'),
+			this.createInfoRow(_('Started'), data.State && data.State.StartedAt ? utils
+				.formatDate(data.State.StartedAt) : '-')
 		];
 
 		// Add restart policy with edit
-		basicRows.push(this.createEditableRestartRow(hostConfig.RestartPolicy ? hostConfig.RestartPolicy.Name || 'no' : 'no'));
+		basicRows.push(this.createEditableRestartRow(hostConfig.RestartPolicy ? hostConfig
+			.RestartPolicy.Name || 'no' : 'no'));
 
 		// Add auto-update status from labels
 		const autoUpdateLabel = config.Labels && config.Labels['io.containers.autoupdate'];
@@ -289,12 +298,15 @@ return view.extend({
 			// Add manual health check button if container is running
 			if (status === 'running') {
 				healthDetails.push(' ');
-				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(), 'positive').render());
+				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(),
+					'positive').render());
 			}
 
 			basicRows.push(E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Health')),
-				E('td', { 'class': 'td', 'style': 'word-break: break-word;' }, healthDetails)
+				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					_('Health')),
+				E('td', { 'class': 'td', 'style': 'word-break: break-word;' },
+					healthDetails)
 			]));
 		}
 
@@ -310,9 +322,11 @@ return view.extend({
 			this.createInfoRow(_('Working Directory'), config.WorkingDir || '-'),
 			this.createInfoRow(_('User'), config.User || '-'),
 			this.createInfoRow(_('Hostname'), config.Hostname || '-'),
-			this.createInfoRow(_('Privileged'), hostConfig.Privileged ? _('Yes') : _('No')),
+			this.createInfoRow(_('Privileged'), hostConfig.Privileged ? _('Yes') : _(
+				'No')),
 			this.createInfoRow(_('TTY'), config.Tty ? _('Yes') : _('No')),
-			this.createInfoRow(_('Interactive'), config.OpenStdin ? _('Yes') : _('No'))
+			this.createInfoRow(_('Interactive'), config.OpenStdin ? _('Yes') : _(
+				'No'))
 		]));
 
 		// Network
@@ -336,12 +350,15 @@ return view.extend({
 				const net = networkSettings.Networks[netName];
 				networkRows.push(
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, netName),
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							netName),
 						E('td', { 'class': 'td' }, [
 							net.IPAddress || '-',
 							' ',
 							E('span', { 'style': 'margin-left: 10px;' }, [
-								new pui.Button(_('Disconnect'), () => this.handleNetworkDisconnect(netName), 'remove').render()
+								new pui.Button(_('Disconnect'), () => this
+									.handleNetworkDisconnect(netName),
+									'remove').render()
 							])
 						])
 					])
@@ -367,7 +384,8 @@ return view.extend({
 					bindings.forEach(function(binding) {
 						const hostIp = binding.HostIp || '0.0.0.0';
 						const hostPort = binding.HostPort || '-';
-						ports.push(hostIp + ':' + hostPort + ' → ' + containerPort);
+						ports.push(hostIp + ':' + hostPort + ' → ' +
+							containerPort);
 					});
 				}
 			});
@@ -396,8 +414,10 @@ return view.extend({
 			const envRows = config.Env.map(function(env) {
 				const parts = env.split('=');
 				return E('tr', { 'class': 'tr' }, [
-					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' }, parts[0]),
-					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' }, parts.slice(1).join('='))
+					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' },
+						parts[0]),
+					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' },
+						parts.slice(1).join('='))
 				]);
 			});
 
@@ -412,8 +432,10 @@ return view.extend({
 			const mountRows = data.Mounts.map(function(mount) {
 				return E('tr', { 'class': 'tr' }, [
 					E('td', { 'class': 'td' }, mount.Type || '-'),
-					E('td', { 'class': 'td', 'title': mount.Source || '-' }, utils.truncate(mount.Source || '-', 50)),
-					E('td', { 'class': 'td', 'title': mount.Destination || '-' }, utils.truncate(mount.Destination || '-', 50)),
+					E('td', { 'class': 'td', 'title': mount.Source || '-' }, utils
+						.truncate(mount.Source || '-', 50)),
+					E('td', { 'class': 'td', 'title': mount.Destination || '-' },
+						utils.truncate(mount.Destination || '-', 50)),
 					E('td', { 'class': 'td' }, mount.RW ? 'rw' : 'ro')
 				]);
 			});
@@ -453,7 +475,9 @@ return view.extend({
 
 		// Build form
 		const form = E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'cbi-section-descr' }, _('Configure resource limits for this container. Changes will be applied immediately.')),
+			E('div', { 'class': 'cbi-section-descr' }, _(
+				'Configure resource limits for this container. Changes will be applied immediately.'
+				)),
 			E('div', { 'class': 'cbi-section-node' }, [
 				// CPU Resources
 				E('div', { 'class': 'cbi-value' }, [
@@ -469,11 +493,14 @@ return view.extend({
 							'min': '0',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _('Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited.'))
+						E('span', { 'class': 'cbi-value-description' }, _(
+							'Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited.'
+							))
 					])
 				]),
 				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('CPU Shares Weight')),
+					E('label', { 'class': 'cbi-value-title' }, _(
+						'CPU Shares Weight')),
 					E('div', { 'class': 'cbi-value-field' }, [
 						E('input', {
 							'type': 'number',
@@ -485,7 +512,9 @@ return view.extend({
 							'max': '262144',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _('CPU shares (relative weight), default is 1024. 0 = use default.'))
+						E('span', { 'class': 'cbi-value-description' }, _(
+							'CPU shares (relative weight), default is 1024. 0 = use default.'
+							))
 					])
 				]),
 				// Memory Resources
@@ -496,30 +525,38 @@ return view.extend({
 							'type': 'text',
 							'id': 'resource-memory',
 							'class': 'cbi-input-text',
-							'value': memory > 0 ? utils.formatBytes(memory, 0) : '',
+							'value': memory > 0 ? utils.formatBytes(
+								memory, 0) : '',
 							'placeholder': '512m, 1g, 2g',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _('Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited.'))
+						E('span', { 'class': 'cbi-value-description' }, _(
+							'Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited.'
+							))
 					])
 				]),
 				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('Memory + Swap Limit')),
+					E('label', { 'class': 'cbi-value-title' }, _(
+						'Memory + Swap Limit')),
 					E('div', { 'class': 'cbi-value-field' }, [
 						E('input', {
 							'type': 'text',
 							'id': 'resource-memory-swap',
 							'class': 'cbi-input-text',
-							'value': memorySwap > 0 ? utils.formatBytes(memorySwap, 0) : '',
+							'value': memorySwap > 0 ? utils.formatBytes(
+								memorySwap, 0) : '',
 							'placeholder': '1g, 2g',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _('Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited.'))
+						E('span', { 'class': 'cbi-value-description' }, _(
+							'Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited.'
+							))
 					])
 				]),
 				// Block IO
 				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('Block IO Weight')),
+					E('label', { 'class': 'cbi-value-title' }, _(
+						'Block IO Weight')),
 					E('div', { 'class': 'cbi-value-field' }, [
 						E('input', {
 							'type': 'number',
@@ -531,14 +568,17 @@ return view.extend({
 							'max': '1000',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _('Block IO weight (relative weight), 10-1000. 0 = use default.'))
+						E('span', { 'class': 'cbi-value-description' }, _(
+							'Block IO weight (relative weight), 10-1000. 0 = use default.'
+							))
 					])
 				]),
 				// Update button
 				E('div', { 'class': 'cbi-value' }, [
 					E('label', { 'class': 'cbi-value-title' }, ' '),
 					E('div', { 'class': 'cbi-value-field' }, [
-						new pui.Button(_('Update Resources'), () => this.handleResourceUpdate(), 'save').render()
+						new pui.Button(_('Update Resources'), () => this
+							.handleResourceUpdate(), 'save').render()
 					])
 				])
 			])
@@ -564,31 +604,40 @@ return view.extend({
 			E('div', { 'class': 'cbi-section-node' }, [
 				E('table', { 'class': 'table', 'id': 'stats-table' }, [
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('CPU Usage')),
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('CPU Usage')),
 						E('td', { 'class': 'td', 'id': 'stat-cpu' }, '-')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Memory Usage')),
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('Memory Usage')),
 						E('td', { 'class': 'td', 'id': 'stat-memory' }, '-')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Memory Limit')),
-						E('td', { 'class': 'td', 'id': 'stat-memory-limit' }, '-')
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('Memory Limit')),
+						E('td', { 'class': 'td', 'id': 'stat-memory-limit' },
+							'-')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Memory %')),
-						E('td', { 'class': 'td', 'id': 'stat-memory-percent' }, '-')
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('Memory %')),
+						E('td', { 'class': 'td', 'id': 'stat-memory-percent' },
+							'-')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Network I/O')),
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('Network I/O')),
 						E('td', { 'class': 'td', 'id': 'stat-network' }, '-')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Block I/O')),
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('Block I/O')),
 						E('td', { 'class': 'td', 'id': 'stat-blockio' }, '-')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('PIDs')),
+						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+							_('PIDs')),
 						E('td', { 'class': 'td', 'id': 'stat-pids' }, '-')
 					])
 				])
@@ -643,7 +692,8 @@ return view.extend({
 		// Block I/O stats object
 		if (typeof blkio === 'object' && blkio !== null) {
 			// Try io_service_bytes_recursive first (most common)
-			if (blkio.io_service_bytes_recursive && Array.isArray(blkio.io_service_bytes_recursive) && blkio.io_service_bytes_recursive.length > 0) {
+			if (blkio.io_service_bytes_recursive && Array.isArray(blkio
+					.io_service_bytes_recursive) && blkio.io_service_bytes_recursive.length > 0) {
 				let read = 0;
 				let write = 0;
 				blkio.io_service_bytes_recursive.forEach((entry) => {
@@ -715,12 +765,14 @@ return view.extend({
 
 			// Memory Usage - try different field names
 			const memUsage = stats.MemUsage || stats.mem_usage ||
-			                 (stats.memory_stats && stats.memory_stats.usage ? utils.formatBytes(stats.memory_stats.usage) : '-');
+				(stats.memory_stats && stats.memory_stats.usage ? utils.formatBytes(stats
+					.memory_stats.usage) : '-');
 			document.getElementById('stat-memory').textContent = memUsage;
 
 			// Memory Limit - try different field names
 			const memLimit = stats.MemLimit || stats.mem_limit ||
-			                 (stats.memory_stats && stats.memory_stats.limit ? utils.formatBytes(stats.memory_stats.limit) : _('Unlimited'));
+				(stats.memory_stats && stats.memory_stats.limit ? utils.formatBytes(stats
+					.memory_stats.limit) : _('Unlimited'));
 			document.getElementById('stat-memory-limit').textContent = memLimit;
 
 			// Memory Percent - try different field names
@@ -728,12 +780,16 @@ return view.extend({
 			document.getElementById('stat-memory-percent').textContent = memPercent;
 
 			// Network I/O - format nicely
-			const netIO = stats.NetIO || stats.net_io || stats.network_io || stats.networks;
-			document.getElementById('stat-network').textContent = this.formatNetworkIO(netIO);
+			const netIO = stats.NetIO || stats.net_io || stats.network_io || stats
+				.networks;
+			document.getElementById('stat-network').textContent = this.formatNetworkIO(
+				netIO);
 
 			// Block I/O - format nicely
-			const blockIO = stats.BlockIO || stats.block_io || stats.blkio || stats.blkio_stats;
-			document.getElementById('stat-blockio').textContent = this.formatBlockIO(blockIO);
+			const blockIO = stats.BlockIO || stats.block_io || stats.blkio || stats
+				.blkio_stats;
+			document.getElementById('stat-blockio').textContent = this.formatBlockIO(
+				blockIO);
 
 			// PIDs - format nicely
 			const pids = stats.PIDs || stats.pids || stats.pids_stats;
@@ -785,7 +841,8 @@ return view.extend({
 					]),
 					new pui.Button(_('Clear'), () => this.clearLogs()).render(),
 					' ',
-					new pui.Button(_('Refresh'), () => this.refreshLogs()).render()
+					new pui.Button(_('Refresh'), () => this.refreshLogs())
+					.render()
 				]),
 				// Logs container
 				E('pre', {
@@ -826,9 +883,9 @@ return view.extend({
 
 			// Read frame size from bytes 4-7 (big-endian uint32)
 			const size = (text.charCodeAt(pos + 4) << 24) |
-			             (text.charCodeAt(pos + 5) << 16) |
-			             (text.charCodeAt(pos + 6) << 8) |
-			             text.charCodeAt(pos + 7);
+				(text.charCodeAt(pos + 5) << 16) |
+				(text.charCodeAt(pos + 6) << 8) |
+				text.charCodeAt(pos + 7);
 
 			// Skip 8-byte header
 			pos += 8;
@@ -856,7 +913,8 @@ return view.extend({
 		if (!text) return text;
 		// Remove ANSI escape sequences (colors, cursor movement, etc.)
 		// eslint-disable-line no-control-regex
-		return text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\x1B\[[\?]?[0-9;]*[a-zA-Z]/g, '');
+		return text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\x1B\[[\?]?[0-9;]*[a-zA-Z]/g,
+			'');
 	},
 
 	/**
@@ -998,7 +1056,7 @@ return view.extend({
 
 			// Store session ID and track byte offset in stream file (not displayed text length)
 			this.logStreamSessionId = result.session_id;
-			this.logStreamFileOffset = 0;  // Start reading from beginning of stream file
+			this.logStreamFileOffset = 0; // Start reading from beginning of stream file
 
 			// Start polling for logs
 			this.pollLogsStatus();
@@ -1057,7 +1115,8 @@ return view.extend({
 
 			// MUST return a Promise
 			// Read from current offset to get only NEW data
-			return podmanRPC.container.logsStatus(view.logStreamSessionId, view.logStreamFileOffset).then((status) => {
+			return podmanRPC.container.logsStatus(view.logStreamSessionId, view
+				.logStreamFileOffset).then((status) => {
 				// Check for output
 				if (status.output && status.output.length > 0 && outputEl) {
 					// Backend returns base64-encoded data - decode it first
@@ -1091,7 +1150,8 @@ return view.extend({
 					if (checkbox) checkbox.checked = false;
 
 					if (!status.success && outputEl) {
-						outputEl.textContent += '\n\n' + _('Log stream ended with error');
+						outputEl.textContent += '\n\n' + _(
+							'Log stream ended with error');
 					}
 				}
 			}).catch((err) => {
@@ -1099,7 +1159,8 @@ return view.extend({
 				view.stopLogStream();
 
 				if (outputEl) {
-					outputEl.textContent += '\n\n' + _('Error polling log stream: %s').format(err.message);
+					outputEl.textContent += '\n\n' + _('Error polling log stream: %s')
+						.format(err.message);
 				}
 
 				const checkbox = document.getElementById('log-stream-toggle');
@@ -1143,7 +1204,8 @@ return view.extend({
 
 		const statusRows = [
 			E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Status')),
+				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+					'Status')),
 				E('td', { 'class': 'td' }, [
 					E('span', {
 						'class': 'badge status-' + status.toLowerCase(),
@@ -1152,9 +1214,12 @@ return view.extend({
 				])
 			]),
 			E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Failing Streak')),
-				E('td', { 'class': 'td', 'style': failingStreak > 0 ? 'color: #ff6b6b; font-weight: bold;' : '' },
-					failingStreak > 0 ? _('%d consecutive failures').format(failingStreak) : _('No failures'))
+				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+					'Failing Streak')),
+				E('td', { 'class': 'td', 'style': failingStreak > 0 ?
+							'color: #ff6b6b; font-weight: bold;' : '' },
+					failingStreak > 0 ? _('%d consecutive failures').format(
+					failingStreak) : _('No failures'))
 			])
 		];
 
@@ -1170,19 +1235,23 @@ return view.extend({
 			}
 
 			if (healthConfig.Interval) {
-				configRows.push(this.createInfoRow(_('Interval'), utils.formatDuration(healthConfig.Interval)));
+				configRows.push(this.createInfoRow(_('Interval'), utils.formatDuration(
+					healthConfig.Interval)));
 			}
 
 			if (healthConfig.Timeout) {
-				configRows.push(this.createInfoRow(_('Timeout'), utils.formatDuration(healthConfig.Timeout)));
+				configRows.push(this.createInfoRow(_('Timeout'), utils.formatDuration(healthConfig
+					.Timeout)));
 			}
 
 			if (healthConfig.StartPeriod) {
-				configRows.push(this.createInfoRow(_('Start Period'), utils.formatDuration(healthConfig.StartPeriod)));
+				configRows.push(this.createInfoRow(_('Start Period'), utils.formatDuration(
+					healthConfig.StartPeriod)));
 			}
 
 			if (healthConfig.StartInterval) {
-				configRows.push(this.createInfoRow(_('Start Interval'), utils.formatDuration(healthConfig.StartInterval)));
+				configRows.push(this.createInfoRow(_('Start Interval'), utils.formatDuration(
+					healthConfig.StartInterval)));
 			}
 
 			if (healthConfig.Retries) {
@@ -1207,15 +1276,18 @@ return view.extend({
 				const outputCell = E('td', {
 					'class': 'td',
 					'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
-					'title': outputText  // Tooltip shows full output on hover
+					'title': outputText // Tooltip shows full output on hover
 				});
 				outputCell.textContent = outputText;
 
 				return E('tr', { 'class': 'tr' }, [
-					E('td', { 'class': 'td' }, entry.Start ? utils.formatDate(entry.Start) : '-'),
-					E('td', { 'class': 'td' }, entry.End ? utils.formatDate(entry.End) : '-'),
+					E('td', { 'class': 'td' }, entry.Start ? utils.formatDate(
+						entry.Start) : '-'),
+					E('td', { 'class': 'td' }, entry.End ? utils.formatDate(entry
+						.End) : '-'),
 					E('td', { 'class': 'td' }, [
-						E('span', { 'class': 'badge ' + exitClass }, exitStatus),
+						E('span', { 'class': 'badge ' + exitClass },
+							exitStatus),
 						' ',
 						E('small', {}, '(Exit: ' + exitCode + ')')
 					]),
@@ -1236,7 +1308,8 @@ return view.extend({
 
 		// Add manual health check button
 		container.appendChild(E('div', { 'style': 'margin-top: 20px;' }, [
-			new pui.Button(_('Run Health Check Now'), () => this.handleHealthCheck(), 'positive').render()
+			new pui.Button(_('Run Health Check Now'), () => this.handleHealthCheck(),
+				'positive').render()
 		]));
 	},
 
@@ -1288,8 +1361,8 @@ return view.extend({
 			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, label),
 			E('td', { 'class': 'td', 'style': 'word-break: break-word;' },
 				typeof value === 'string' && value.indexOf('<br>') !== -1 ?
-					E('span', { 'innerHTML': value }) :
-					value
+				E('span', { 'innerHTML': value }) :
+				value
 			)
 		]);
 	},
@@ -1313,7 +1386,8 @@ return view.extend({
 					'value': value,
 					'style': 'width: 60%; margin-right: 5px;'
 				}),
-				new pui.Button(_('Update'), () => this.handleUpdateName(document.getElementById(inputId).value), 'apply').render()
+				new pui.Button(_('Update'), () => this.handleUpdateName(document
+					.getElementById(inputId).value), 'apply').render()
 			])
 		]);
 	},
@@ -1341,14 +1415,16 @@ return view.extend({
 		});
 
 		return E('tr', { 'class': 'tr' }, [
-			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Restart Policy')),
+			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+				'Restart Policy')),
 			E('td', { 'class': 'td' }, [
 				E('select', {
 					'id': selectId,
 					'class': 'cbi-input-select',
 					'style': 'width: 60%; margin-right: 5px;'
 				}, options),
-				new pui.Button(_('Update'), () => this.handleUpdateRestartPolicy(document.getElementById(selectId).value), 'apply').render()
+				new pui.Button(_('Update'), () => this.handleUpdateRestartPolicy(
+					document.getElementById(selectId).value), 'apply').render()
 			])
 		]);
 	},
@@ -1373,7 +1449,8 @@ return view.extend({
 		}
 
 		return E('tr', { 'class': 'tr' }, [
-			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _('Connect to')),
+			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+				'Connect to')),
 			E('td', { 'class': 'td' }, [
 				E('select', {
 					'id': selectId,
@@ -1413,14 +1490,16 @@ return view.extend({
 		podmanRPC.container.rename(this.containerId, newName).then((result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to rename container: %s').format(result.error)), 'error');
+				ui.addNotification(null, E('p', _('Failed to rename container: %s')
+					.format(result.error)), 'error');
 			} else {
 				ui.addNotification(null, E('p', _('Container renamed successfully')));
 				window.location.reload();
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to rename container: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed to rename container: %s').format(err
+				.message)), 'error');
 		});
 	},
 
@@ -1441,17 +1520,21 @@ return view.extend({
 			updateData.RestartRetries = 5;
 		}
 
-		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((result) => {
+		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
+		result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to update restart policy: %s').format(result.error)), 'error');
+				ui.addNotification(null, E('p', _('Failed to update restart policy: %s')
+					.format(result.error)), 'error');
 			} else {
-				ui.addNotification(null, E('p', _('Restart policy updated successfully')));
+				ui.addNotification(null, E('p', _(
+				'Restart policy updated successfully')));
 				window.location.reload();
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to update restart policy: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed to update restart policy: %s')
+				.format(err.message)), 'error');
 		});
 	},
 
@@ -1461,25 +1544,28 @@ return view.extend({
 	 * @param {string} ip - Optional IP address
 	 */
 	handleNetworkConnect: function(networkName, ip) {
-		pui.showSpinningModal(_('Connecting to Network'), _('Connecting container to network...'));
+		pui.showSpinningModal(_('Connecting to Network'), _(
+		'Connecting container to network...'));
 
 		// Build params according to Podman API NetworkConnectOptions schema
 		const params = { container: this.containerId };
 		if (ip) {
-			params.static_ips = [ip];  // static_ips is an array
+			params.static_ips = [ip]; // static_ips is an array
 		}
 
 		podmanRPC.network.connect(networkName, JSON.stringify(params)).then((result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to connect to network: %s').format(result.error)), 'error');
+				ui.addNotification(null, E('p', _('Failed to connect to network: %s')
+					.format(result.error)), 'error');
 			} else {
 				ui.addNotification(null, E('p', _('Connected to network successfully')));
 				window.location.reload();
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to connect to network: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed to connect to network: %s').format(
+				err.message)), 'error');
 		});
 	},
 
@@ -1491,21 +1577,26 @@ return view.extend({
 		if (!confirm(_('Disconnect from network %s?').format(networkName)))
 			return;
 
-		pui.showSpinningModal(_('Disconnecting from Network'), _('Disconnecting container from network...'));
+		pui.showSpinningModal(_('Disconnecting from Network'), _(
+			'Disconnecting container from network...'));
 
 		// Build params according to Podman API DisconnectOptions schema (capital C for Container)
-		podmanRPC.network.disconnect(networkName, JSON.stringify({ Container: this.containerId })).then((result) => {
-			ui.hideModal();
-			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to disconnect from network: %s').format(result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', _('Disconnected from network successfully')));
-				window.location.reload();
-			}
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to disconnect from network: %s').format(err.message)), 'error');
-		});
+		podmanRPC.network.disconnect(networkName, JSON.stringify({ Container: this.containerId }))
+			.then((result) => {
+				ui.hideModal();
+				if (result && result.error) {
+					ui.addNotification(null, E('p', _('Failed to disconnect from network: %s')
+						.format(result.error)), 'error');
+				} else {
+					ui.addNotification(null, E('p', _(
+						'Disconnected from network successfully')));
+					window.location.reload();
+				}
+			}).catch((err) => {
+				ui.hideModal();
+				ui.addNotification(null, E('p', _('Failed to disconnect from network: %s')
+					.format(err.message)), 'error');
+			});
 	},
 
 	/**
@@ -1525,11 +1616,13 @@ return view.extend({
 
 		// Validate
 		if (memory === null && memoryStr) {
-			ui.addNotification(null, E('p', _('Invalid memory format. Use: 512m, 1g, etc.')), 'error');
+			ui.addNotification(null, E('p', _('Invalid memory format. Use: 512m, 1g, etc.')),
+				'error');
 			return;
 		}
 		if (memorySwap === null && memorySwapStr && memorySwapStr !== '-1') {
-			ui.addNotification(null, E('p', _('Invalid memory swap format. Use: 512m, 1g, -1, etc.')), 'error');
+			ui.addNotification(null, E('p', _(
+				'Invalid memory swap format. Use: 512m, 1g, -1, etc.')), 'error');
 			return;
 		}
 
@@ -1575,10 +1668,12 @@ return view.extend({
 		pui.showSpinningModal(_('Updating Resources'), _('Updating container resources...'));
 
 		// Call update RPC with body data
-		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((result) => {
+		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
+		result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to update resources: %s').format(result.error)), 'error');
+				ui.addNotification(null, E('p', _('Failed to update resources: %s')
+					.format(result.error)), 'error');
 			} else {
 				ui.addNotification(null, E('p', _('Resources updated successfully')));
 				// Store current tab before reload
@@ -1587,7 +1682,8 @@ return view.extend({
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to update resources: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed to update resources: %s').format(err
+				.message)), 'error');
 		});
 	},
 
@@ -1638,14 +1734,16 @@ return view.extend({
 		podmanRPC.container.remove(id, true).then((result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to remove container: %s').format(result.error)), 'error');
+				ui.addNotification(null, E('p', _('Failed to remove container: %s')
+					.format(result.error)), 'error');
 			} else {
 				ui.addNotification(null, E('p', _('Container removed successfully')));
 				window.location.href = L.url('admin/podman/containers');
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to remove container: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed to remove container: %s').format(err
+				.message)), 'error');
 		});
 	},
 
@@ -1659,7 +1757,8 @@ return view.extend({
 			ui.hideModal();
 
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Health check failed: %s').format(result.error)), 'error');
+				ui.addNotification(null, E('p', _('Health check failed: %s').format(result
+					.error)), 'error');
 				return;
 			}
 
@@ -1671,21 +1770,23 @@ return view.extend({
 			if (status === 'healthy') {
 				pui.successTimeNotification(_('Health check passed'));
 			} else if (status === 'unhealthy') {
-				pui.warningNotification(_('Health check failed (%d consecutive failures)').format(failingStreak));
+				pui.warningNotification(_('Health check failed (%d consecutive failures)')
+					.format(failingStreak));
 			} else {
 				pui.infoNotification(_('Health check status: %s').format(status));
 			}
 
-		// Re-fetch container data and update health tab
-		podmanRPC.container.inspect(this.containerId).then((containerData) => {
-			this.containerData = containerData;
-			this.renderHealthTab();
-		}).catch((err) => {
-			console.error('Failed to refresh container data:', err);
-		});
+			// Re-fetch container data and update health tab
+			podmanRPC.container.inspect(this.containerId).then((containerData) => {
+				this.containerData = containerData;
+				this.renderHealthTab();
+			}).catch((err) => {
+				console.error('Failed to refresh container data:', err);
+			});
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to run health check: %s').format(err.message)), 'error');
+			ui.addNotification(null, E('p', _('Failed to run health check: %s').format(err
+				.message)), 'error');
 		});
 	}
 });

@@ -13,10 +13,10 @@
  * @description Volume management view using proper LuCI form components
  */
 return view.extend({
-    handleSaveApply: null,
-    handleSave: null,
-    handleReset: null,
-	
+	handleSaveApply: null,
+	handleSave: null,
+	handleReset: null,
+
 	map: null,
 	listHelper: null,
 
@@ -39,7 +39,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Volumes view element
 	 */
-	render: function (data) {
+	render: function(data) {
 		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
@@ -54,19 +54,21 @@ return view.extend({
 		});
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Volumes'));
-		
-		const section = this.map.section(form.TableSection, 'volumes', '', _('Manage Podman volumes'));
+
+		const section = this.map.section(form.TableSection, 'volumes', '', _(
+			'Manage Podman volumes'));
 		section.anonymous = true;
 
 		let o;
 
 		// Checkbox column for selection
-		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(0, { hiddenname: 'all' }).render());
-		
+		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(
+		0, { hiddenname: 'all' }).render());
+
 		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
-        o.click = (volume) => this.handleInspect(volume.Name);
-        o.text = (volume) => utils.truncate(volume.Name || _('Unknown'), 20);
+		o.click = (volume) => this.handleInspect(volume.Name);
+		o.text = (volume) => utils.truncate(volume.Name || _('Unknown'), 20);
 		o.linktitle = (volume) => volume.Name || _('Unknown');
 
 		// Driver column
@@ -81,7 +83,7 @@ return view.extend({
 
 		// Created column
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
-        o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
+		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
 		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({
@@ -108,7 +110,7 @@ return view.extend({
 	/**
 	 * Delete selected volumes
 	 */
-	handleDeleteSelected: function () {
+	handleDeleteSelected: function() {
 		this.listHelper.bulkDelete({
 			selected: this.listHelper.getSelected((volume) => volume.Name),
 			deletePromiseFn: (name) => podmanRPC.volume.remove(name, false),
@@ -119,7 +121,7 @@ return view.extend({
 	/**
 	 * Refresh volume list
 	 */
-	handleRefresh: function (clearSelections) {
+	handleRefresh: function(clearSelections) {
 		clearSelections = clearSelections || false;
 		this.listHelper.refreshTable(clearSelections);
 	},
@@ -127,7 +129,7 @@ return view.extend({
 	/**
 	 * Show create volume dialog
 	 */
-	handleCreateVolume: function () {
+	handleCreateVolume: function() {
 		const form = new podmanForm.Volume();
 		form.submit = () => this.handleRefresh();
 		form.render();
@@ -137,7 +139,7 @@ return view.extend({
 	 * Show volume details
 	 * @param {string} name - Volume name
 	 */
-	handleInspect: function (name) {
+	handleInspect: function(name) {
 		this.listHelper.showInspect(name);
 	}
 });

@@ -44,7 +44,8 @@ return view.extend({
 		var pods = data[6] || [];
 		var diskUsage = data[7] || {};
 
-		var runningContainers = containers.filter(function(c) { return c.State === 'running'; }).length;
+		var runningContainers = containers.filter(function(c) { return c.State === 'running'; })
+			.length;
 		var runningPods = pods.filter(function(p) { return p.Status === 'Running'; }).length;
 
 		var container = E('div', {}, [
@@ -60,7 +61,8 @@ return view.extend({
 			// Resource Cards Section
 			E('div', { 'style': 'margin-top: 30px;' }, [
 				E('h3', { 'style': 'margin-bottom: 15px;' }, _('Resources')),
-				this.createResourceCards(containers, pods, images, networks, volumes, runningContainers, runningPods)
+				this.createResourceCards(containers, pods, images, networks, volumes,
+					runningContainers, runningPods)
 			])
 		]);
 
@@ -74,46 +76,65 @@ return view.extend({
 	 * @returns {Element} Info section element
 	 */
 	createInfoSection: function(version, info) {
-		var memTotal = (info.host && info.host.memTotal) ? (info.host.memTotal / 1024 / 1024 / 1024).toFixed(2) : '0';
-		var memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 / 1024).toFixed(2) : '0';
+		var memTotal = (info.host && info.host.memTotal) ? (info.host.memTotal / 1024 / 1024 /
+			1024).toFixed(2) : '0';
+		var memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 / 1024)
+			.toFixed(2) : '0';
 
 		return E('div', { 'class': 'cbi-section' }, [
 			E('div', { 'class': 'cbi-section-node' }, [
 				E('h3', { 'style': 'margin-bottom: 15px;' }, _('Information')),
 				E('table', { 'class': 'table' }, [
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 30%; font-weight: bold;' }, _('Podman Version')),
-						E('td', { 'class': 'td' }, version.Version || _('Unknown'))
+						E('td', { 'class': 'td', 'style': 'width: 30%; font-weight: bold;' },
+							_('Podman Version')),
+						E('td', { 'class': 'td' }, version.Version || _(
+							'Unknown'))
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('API Version')),
-						E('td', { 'class': 'td' }, version.ApiVersion || _('Unknown'))
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('API Version')),
+						E('td', { 'class': 'td' }, version.ApiVersion || _(
+							'Unknown'))
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('CPU')),
-						E('td', { 'class': 'td' }, (info.host && info.host.cpus) ? info.host.cpus.toString() : _('Unknown'))
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('CPU')),
+						E('td', { 'class': 'td' }, (info.host && info.host
+							.cpus) ? info.host.cpus.toString() : _(
+							'Unknown'))
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('Memory')),
-						E('td', { 'class': 'td' }, memFree + ' GB / ' + memTotal + ' GB')
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('Memory')),
+						E('td', { 'class': 'td' }, memFree + ' GB / ' +
+							memTotal + ' GB')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('Socket Path')),
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('Socket Path')),
 						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
-							(info.host && info.host.remoteSocket && info.host.remoteSocket.path) || '/run/podman/podman.sock')
+							(info.host && info.host.remoteSocket && info.host
+								.remoteSocket.path) ||
+							'/run/podman/podman.sock')
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('Graph Root')),
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('Graph Root')),
 						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
-							(info.store && info.store.graphRoot) || _('Unknown'))
+							(info.store && info.store.graphRoot) || _(
+								'Unknown'))
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('Run Root')),
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('Run Root')),
 						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
-							(info.store && info.store.runRoot) || _('Unknown'))
+							(info.store && info.store.runRoot) || _('Unknown')
+							)
 					]),
 					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'font-weight: bold;' }, _('Registries')),
+						E('td', { 'class': 'td', 'style': 'font-weight: bold;' },
+							_('Registries')),
 						E('td', { 'class': 'td', 'style': 'font-family: monospace; font-size: 0.9em;' },
 							this.getRegistries(info))
 					])
@@ -140,45 +161,64 @@ return view.extend({
 	 * @returns {Element} Disk usage section element
 	 */
 	createDiskUsageSection: function(diskUsage) {
-		var imageSize = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Size) || 0;
-		var imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Reclaimable) || 0;
-		var imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) || 0;
+		var imageSize = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Size) ||
+		0;
+		var imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0]
+			.Reclaimable) || 0;
+		var imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) ||
+			0;
 
-		var containerSize = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage.Containers[0].Size) || 0;
-		var containerReclaimable = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage.Containers[0].Reclaimable) || 0;
-		var containerCount = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage.Containers[0].Count) || 0;
+		var containerSize = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
+			.Containers[0].Size) || 0;
+		var containerReclaimable = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
+			.Containers[0].Reclaimable) || 0;
+		var containerCount = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
+			.Containers[0].Count) || 0;
 
-		var volumeSize = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0].Size) || 0;
-		var volumeReclaimable = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0].Reclaimable) || 0;
-		var volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0].Count) || 0;
+		var volumeSize = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+			.Size) || 0;
+		var volumeReclaimable = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+			.Reclaimable) || 0;
+		var volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+			.Count) || 0;
 
 		return E('div', { 'class': 'cbi-section', 'style': 'margin-top: 20px;' }, [
 			E('div', { 'class': 'cbi-section-node' }, [
 				E('h3', { 'style': 'margin-bottom: 15px;' }, _('Disk Usage')),
 				E('table', { 'class': 'table' }, [
 					E('tr', { 'class': 'tr' }, [
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' }, _('Type')),
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' }, _('Count')),
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' }, _('Size')),
-						E('th', { 'class': 'th', 'style': 'font-weight: bold;' }, _('Reclaimable'))
+						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+							_('Type')),
+						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+							_('Count')),
+						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+							_('Size')),
+						E('th', { 'class': 'th', 'style': 'font-weight: bold;' },
+							_('Reclaimable'))
 					]),
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td' }, _('Images')),
 						E('td', { 'class': 'td' }, String(imageCount)),
-						E('td', { 'class': 'td' }, utils.formatBytes(imageSize)),
-						E('td', { 'class': 'td' }, utils.formatBytes(imageReclaimable))
+						E('td', { 'class': 'td' }, utils.formatBytes(
+							imageSize)),
+						E('td', { 'class': 'td' }, utils.formatBytes(
+							imageReclaimable))
 					]),
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td' }, _('Containers')),
 						E('td', { 'class': 'td' }, String(containerCount)),
-						E('td', { 'class': 'td' }, utils.formatBytes(containerSize)),
-						E('td', { 'class': 'td' }, utils.formatBytes(containerReclaimable))
+						E('td', { 'class': 'td' }, utils.formatBytes(
+							containerSize)),
+						E('td', { 'class': 'td' }, utils.formatBytes(
+							containerReclaimable))
 					]),
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td' }, _('Volumes')),
 						E('td', { 'class': 'td' }, String(volumeCount)),
-						E('td', { 'class': 'td' }, utils.formatBytes(volumeSize)),
-						E('td', { 'class': 'td' }, utils.formatBytes(volumeReclaimable))
+						E('td', { 'class': 'td' }, utils.formatBytes(
+							volumeSize)),
+						E('td', { 'class': 'td' }, utils.formatBytes(
+							volumeReclaimable))
 					])
 				])
 			])
@@ -196,15 +236,21 @@ return view.extend({
 	 * @param {number} runningPods - Running pod count
 	 * @returns {Element} Cards container element
 	 */
-	createResourceCards: function(containers, pods, images, networks, volumes, runningContainers, runningPods) {
+	createResourceCards: function(containers, pods, images, networks, volumes, runningContainers,
+		runningPods) {
 		return E('div', {
 			'style': 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;'
 		}, [
-			this.createCard('Containers', containers.length, runningContainers, 'admin/podman/containers', '#3498db'),
-			this.createCard('Pods', pods.length, runningPods, 'admin/podman/pods', '#2ecc71'),
-			this.createCard('Images', images.length, null, 'admin/podman/images', '#9b59b6'),
-			this.createCard('Networks', networks.length, null, 'admin/podman/networks', '#e67e22'),
-			this.createCard('Volumes', volumes.length, null, 'admin/podman/volumes', '#34495e')
+			this.createCard('Containers', containers.length, runningContainers,
+				'admin/podman/containers', '#3498db'),
+			this.createCard('Pods', pods.length, runningPods, 'admin/podman/pods',
+				'#2ecc71'),
+			this.createCard('Images', images.length, null, 'admin/podman/images',
+				'#9b59b6'),
+			this.createCard('Networks', networks.length, null, 'admin/podman/networks',
+				'#e67e22'),
+			this.createCard('Volumes', volumes.length, null, 'admin/podman/volumes',
+				'#34495e')
 		]);
 	},
 
@@ -226,18 +272,24 @@ return view.extend({
 		}, [
 			E('div', {
 				'class': 'cbi-section',
-				'style': 'cursor: pointer; transition: all 0.2s; border-left: 4px solid ' + color + '; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; margin: 0;'
+				'style': 'cursor: pointer; transition: all 0.2s; border-left: 4px solid ' +
+					color +
+					'; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; margin: 0;'
 			}, [
-				E('div', { 'style': 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;' }, [
-					E('span', { 'style': 'font-size: 14px; opacity: 0.8;' }, _(title)),
-					this.getIcon(title, color)
-				]),
+				E('div', { 'style': 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;' },
+					[
+						E('span', { 'style': 'font-size: 14px; opacity: 0.8;' }, _(
+							title)),
+						this.getIcon(title, color)
+					]),
 				E('div', {}, [
-					E('div', { 'style': 'font-size: 32px; font-weight: bold; color: ' + color + ';' }, statsText),
+					E('div', { 'style': 'font-size: 32px; font-weight: bold; color: ' +
+							color + ';' }, statsText),
 					running !== null ?
-						E('div', { 'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;' },
-							_('running') + ' / ' + _('total')) :
-						E('div', { 'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;' }, _('total'))
+					E('div', { 'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;' },
+						_('running') + ' / ' + _('total')) :
+					E('div', { 'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;' },
+						_('total'))
 				])
 			])
 		]);
@@ -251,7 +303,7 @@ return view.extend({
 	 */
 	getIcon: function(type, color) {
 		var icon = '📦';
-		switch(type) {
+		switch (type) {
 			case 'Containers':
 				icon = '🐳';
 				break;
@@ -281,8 +333,10 @@ return view.extend({
 			E('div', { 'class': 'cbi-section-node' }, [
 				E('h3', { 'style': 'margin-bottom: 15px;' }, _('System Maintenance')),
 				E('div', { 'style': 'display: flex; gap: 10px; flex-wrap: wrap;' }, [
-					new pui.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(), 'action').render(),
-					new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove').render()
+					new pui.Button(_('Auto-Update Containers'), () => this
+						.handleAutoUpdate(), 'action').render(),
+					new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(),
+						'remove').render()
 				])
 			])
 		]);
@@ -307,9 +361,13 @@ return view.extend({
 
 			if (updates.length === 0) {
 				ui.showModal(_('Auto-Update'), [
-					E('p', {}, _('No containers are configured for auto-update or all containers are up to date.')),
+					E('p', {}, _(
+						'No containers are configured for auto-update or all containers are up to date.'
+						)),
 					E('p', { 'style': 'margin-top: 10px; font-size: 0.9em; opacity: 0.8;' },
-						_('To enable auto-update, add label io.containers.autoupdate=registry to your containers.')),
+						_(
+							'To enable auto-update, add label io.containers.autoupdate=registry to your containers.')
+						),
 					new pui.ModalButtons({
 						confirmText: _('Close'),
 						onConfirm: ui.hideModal,
@@ -321,13 +379,15 @@ return view.extend({
 
 			// Show updates available
 			var updateList = updates.map(function(update) {
-				var status = update.Updated ? '✓ ' + _('Updated') : '○ ' + _('Available');
+				var status = update.Updated ? '✓ ' + _('Updated') : '○ ' + _(
+					'Available');
 				return E('li', {}, update.ContainerName + ' - ' + status);
 			});
 
 			ui.showModal(_('Auto-Update Available'), [
 				E('p', {}, _('The following containers can be updated:')),
-				E('ul', { 'style': 'margin: 10px 0; padding-left: 20px;' }, updateList),
+				E('ul', { 'style': 'margin: 10px 0; padding-left: 20px;' },
+					updateList),
 				new pui.ModalButtons({
 					confirmText: _('Update Now'),
 					onConfirm: () => {
@@ -338,7 +398,8 @@ return view.extend({
 			]);
 		}).catch(function(err) {
 			ui.showModal(_('Error'), [
-				E('p', {}, _('Failed to check for updates: %s').format(err.message)),
+				E('p', {}, _('Failed to check for updates: %s').format(err
+					.message)),
 				new pui.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: ui.hideModal,
@@ -364,7 +425,8 @@ return view.extend({
 			var successful = updates.filter(function(u) { return u.Updated; }).length;
 
 			ui.showModal(_('Auto-Update Complete'), [
-				E('p', {}, _('Updated %d container(s) successfully.').format(successful)),
+				E('p', {}, _('Updated %d container(s) successfully.').format(
+					successful)),
 				new pui.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: () => {
@@ -397,28 +459,34 @@ return view.extend({
 				E('p', {}, _('Select what to clean up:')),
 				E('div', { 'style': 'margin: 15px 0;' }, [
 					E('label', { 'style': 'display: block; margin: 8px 0;' }, [
-						E('input', { 'type': 'checkbox', 'id': 'prune-all-images', 'checked': '' }),
+						E(
+				'input', { 'type': 'checkbox', 'id': 'prune-all-images', 'checked': '' }),
 						' ',
 						_('Remove all unused images (not just dangling)')
 					]),
 					E('label', { 'style': 'display: block; margin: 8px 0;' }, [
-						E('input', { 'type': 'checkbox', 'id': 'prune-volumes' }),
+						E(
+					'input', { 'type': 'checkbox', 'id': 'prune-volumes' }),
 						' ',
 						_('Remove unused volumes')
 					])
 				]),
-				E('p', { 'style': 'margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;' }, [
-					E('strong', {}, _('Warning:')),
-					' ',
-					_('This will permanently delete unused containers, images, networks, and optionally volumes.')
-				])
+				E('p', { 'style': 'margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;' },
+					[
+						E('strong', {}, _('Warning:')),
+						' ',
+						_(
+							'This will permanently delete unused containers, images, networks, and optionally volumes.')
+					])
 			]),
 			new pui.ModalButtons({
 				confirmText: _('Clean Up Now'),
 				confirmClass: 'remove',
 				onConfirm: () => {
-					var allImages = document.getElementById('prune-all-images').checked;
-					var volumes = document.getElementById('prune-volumes').checked;
+					var allImages = document.getElementById('prune-all-images')
+						.checked;
+					var volumes = document.getElementById('prune-volumes')
+					.checked;
 					ui.hideModal();
 					self.performPrune(allImages, volumes);
 				}
@@ -446,7 +514,8 @@ return view.extend({
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.ContainerPruneReports.length > 0) {
-					deletedItems.push(result.ContainerPruneReports.length + _(' containers'));
+					deletedItems.push(result.ContainerPruneReports.length + _(
+						' containers'));
 				}
 			}
 
@@ -471,8 +540,10 @@ return view.extend({
 			ui.showModal(_('Cleanup Complete'), [
 				E('p', {}, _('Cleanup successful!')),
 				deletedItems.length > 0 ?
-					E('p', { 'style': 'margin-top: 10px;' }, _('Removed: %s').format(deletedItems.join(', '))) :
-					E('p', { 'style': 'margin-top: 10px;' }, _('No unused resources found')),
+				E('p', { 'style': 'margin-top: 10px;' }, _('Removed: %s').format(
+					deletedItems.join(', '))) :
+				E('p', { 'style': 'margin-top: 10px;' }, _(
+					'No unused resources found')),
 				E('p', { 'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;' },
 					_('Space freed: %s').format(utils.formatBytes(freedSpace))),
 				new pui.ModalButtons({

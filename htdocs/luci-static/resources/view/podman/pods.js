@@ -61,12 +61,13 @@ return view.extend({
 		let o;
 
 		// Checkbox column for selection
-		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(0, { hiddenname: 'all' }).render());
+		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
+		0, { hiddenname: 'all' }).render());
 
 		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
-        o.click = (pod) => this.handleInspect(pod.Name);
-        o.text = (pod) => pod.Name || _('Unknown');
+		o.click = (pod) => this.handleInspect(pod.Name);
+		o.text = (pod) => pod.Name || _('Unknown');
 
 		// Status column
 		o = section.option(form.DummyValue, 'Status', _('Status'));
@@ -132,8 +133,7 @@ return view.extend({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
 			onCreate: () => this.handleCreatePod(),
-			customButtons: [
-				{
+			customButtons: [{
 					text: '&#9658;', // Play symbol
 					handler: () => this.handleStart(),
 					cssClass: 'positive'
@@ -232,7 +232,8 @@ return view.extend({
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
 				const errorMsg = errors.map((e) => `${e.name}: ${e.error}`).join(', ');
-				podmanUI.errorNotification(_('Failed to start some pods: %s').format(errorMsg));
+				podmanUI.errorNotification(_('Failed to start some pods: %s').format(
+					errorMsg));
 			} else {
 				podmanUI.successTimeNotification(_('Pods started successfully'));
 			}
@@ -264,7 +265,8 @@ return view.extend({
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
 				const errorMsg = errors.map((e) => `${e.name}: ${e.error}`).join(', ');
-				podmanUI.errorNotification(_('Failed to stop some pods: %s').format(errorMsg));
+				podmanUI.errorNotification(_('Failed to stop some pods: %s').format(
+					errorMsg));
 			} else {
 				podmanUI.successTimeNotification(_('Pods stopped successfully'));
 			}

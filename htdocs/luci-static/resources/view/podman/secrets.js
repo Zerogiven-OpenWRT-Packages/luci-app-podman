@@ -55,21 +55,25 @@ return view.extend({
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Secrets'));
 
-		const section = this.map.section(form.TableSection, 'secrets', '', _('Manage Podman secrets'));
+		const section = this.map.section(form.TableSection, 'secrets', '', _(
+			'Manage Podman secrets'));
 		section.anonymous = true;
 
 		let o;
 
 		// Checkbox column for selection
-		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(0, { hiddenname: 'all' }).render());
+		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
+		0, { hiddenname: 'all' }).render());
 
 		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
-        o.click = (secret) => {
-			const name = secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name || _('Unknown'));
+		o.click = (secret) => {
+			const name = secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name ||
+				_('Unknown'));
 			this.handleInspect(name);
 		};
-        o.text = (secret) => secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name || _('Unknown'));
+		o.text = (secret) => secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name ||
+			_('Unknown'));
 
 		// Driver column
 		o = section.option(form.DummyValue, 'Driver', _('Driver'));
@@ -80,7 +84,7 @@ return view.extend({
 		};
 
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
-        o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
+		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
 		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({

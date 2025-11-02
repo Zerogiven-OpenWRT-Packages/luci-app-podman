@@ -100,8 +100,10 @@ return L.Class.extend({
 	 */
 	setupSelectAllCheckbox: function(rendered, prefix) {
 		requestAnimationFrame(() => {
-			const selectAllCheckbox = rendered.querySelector('input[type="hidden"][name="all"] ~ input[type=checkbox]');
-			const checkboxes = rendered.querySelectorAll('input[type="hidden"][name^="' + prefix + '"] ~ input[type=checkbox]');
+			const selectAllCheckbox = rendered.querySelector(
+				'input[type="hidden"][name="all"] ~ input[type=checkbox]');
+			const checkboxes = rendered.querySelectorAll('input[type="hidden"][name^="' +
+				prefix + '"] ~ input[type=checkbox]');
 
 			// Track last clicked checkbox for shift-select
 			let lastClickedIndex = -1;
@@ -120,7 +122,8 @@ return L.Class.extend({
 			checkboxes.forEach((checkbox, index) => {
 				checkbox.addEventListener('click', (ev) => {
 					// Handle shift+click for range selection
-					if (ev.shiftKey && lastClickedIndex !== -1 && lastClickedIndex !== index) {
+					if (ev.shiftKey && lastClickedIndex !== -1 &&
+						lastClickedIndex !== index) {
 						const start = Math.min(lastClickedIndex, index);
 						const end = Math.max(lastClickedIndex, index);
 						const targetState = checkbox.checked;
@@ -147,7 +150,8 @@ return L.Class.extend({
 	 */
 	getSelectedFromCheckboxes: function(prefix, dataArray, extractFn) {
 		const selected = [];
-		const checkboxes = document.querySelectorAll('input[type="hidden"][name^="' + prefix + '"] ~ input[type="checkbox"]:checked');
+		const checkboxes = document.querySelectorAll('input[type="hidden"][name^="' + prefix +
+			'"] ~ input[type="checkbox"]:checked');
 		checkboxes.forEach((cb) => {
 			const sectionId = cb.previousSibling.name.replace(prefix, '');
 			if (sectionId && dataArray && dataArray[sectionId]) {
@@ -177,10 +181,14 @@ return L.Class.extend({
 		// Multipliers for common units
 		const multipliers = {
 			'b': 1,
-			'k': 1024, 'kb': 1024,
-			'm': 1024 * 1024, 'mb': 1024 * 1024,
-			'g': 1024 * 1024 * 1024, 'gb': 1024 * 1024 * 1024,
-			't': 1024 * 1024 * 1024 * 1024, 'tb': 1024 * 1024 * 1024 * 1024
+			'k': 1024,
+			'kb': 1024,
+			'm': 1024 * 1024,
+			'mb': 1024 * 1024,
+			'g': 1024 * 1024 * 1024,
+			'gb': 1024 * 1024 * 1024,
+			't': 1024 * 1024 * 1024 * 1024,
+			'tb': 1024 * 1024 * 1024 * 1024
 		};
 
 		return Math.floor(value * (multipliers[unit] || 1));

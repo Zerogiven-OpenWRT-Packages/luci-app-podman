@@ -127,7 +127,8 @@ return L.Class.extend({
 				uci.set('network', networkName, 'netmask', netmask);
 
 				if (options.ipv6subnet && options.ipv6gateway) {
-					uci.set('network', networkName, 'ip6addr', options.ipv6gateway + '/64');
+					uci.set('network', networkName, 'ip6addr', options.ipv6gateway +
+						'/64');
 				}
 			}
 
@@ -240,7 +241,8 @@ return L.Class.extend({
 
 					// Remove DNS rule
 					const dnsRule = uci.sections('firewall', 'rule').find((s) => {
-						return uci.get('firewall', s['.name'], 'name') === 'Allow-Podman-DNS';
+						return uci.get('firewall', s['.name'], 'name') ===
+							'Allow-Podman-DNS';
 					});
 					if (dnsRule) {
 						uci.remove('firewall', dnsRule['.name']);
@@ -257,7 +259,7 @@ return L.Class.extend({
 			// 3. Remove bridge device (only if not used by other interfaces)
 			const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
 				return uci.get('network', s['.name'], 'device') === bridgeName &&
-				       s['.name'] !== networkName;
+					s['.name'] !== networkName;
 			});
 
 			if (otherInterfaces.length === 0) {
@@ -468,14 +470,16 @@ return L.Class.extend({
 				const existingProto = uci.get('network', networkName, 'proto');
 				// Only warn if it's not already a static interface (might be existing integration)
 				if (existingProto !== 'static') {
-					errors.push(_('Network interface "%s" already exists with proto "%s"').format(networkName, existingProto));
+					errors.push(_('Network interface "%s" already exists with proto "%s"')
+						.format(networkName, existingProto));
 				}
 			}
 
 			// Check if bridge is already used by another interface
 			const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
-				return uci.get('network', s['.name'], 'device') === options.bridgeName &&
-				       s['.name'] !== networkName;
+				return uci.get('network', s['.name'], 'device') === options
+					.bridgeName &&
+					s['.name'] !== networkName;
 			});
 
 			if (otherInterfaces.length > 0) {
