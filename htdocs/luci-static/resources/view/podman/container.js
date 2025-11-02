@@ -155,6 +155,18 @@ return view.extend({
 			);
 		}
 
+		// Add Inspect tab
+		tabPanes.push(
+			E('div', {
+				'class': 'tab-pane',
+				'data-tab': 'inspect',
+				'data-tab-title': _('Inspect'),
+				'data-tab-active': savedTab === 'inspect' ? 'true' : null
+			}, [
+				E('div', { 'id': 'tab-inspect-content' })
+			])
+		);
+
 		// Add Console tab last
 		tabPanes.push(
 			E('div', {
@@ -190,6 +202,9 @@ return view.extend({
 			if (hasHealthCheck) {
 				this.renderHealthTab();
 			}
+
+			// Load Inspect tab
+			this.renderInspectTab();
 		});
 
 		return E('div', {}, [header, tabContainer]);
@@ -1339,6 +1354,30 @@ return view.extend({
 			new pui.Button(_('Run Health Check Now'), () => this.handleHealthCheck(),
 				'positive').render()
 		]));
+	},
+
+	/**
+	 * Render the Inspect tab content
+	 */
+	renderInspectTab: function() {
+		const container = document.getElementById('tab-inspect-content');
+		if (!container) return;
+
+		const data = this.containerData;
+
+		// Display full JSON inspect data
+		const jsonDisplay = E('div', { 'class': 'cbi-section' }, [
+			E('div', { 'class': 'cbi-section-descr' }, _(
+				'Full container inspect data in JSON format. This is the raw data returned from the Podman API.'
+			)),
+			E('div', { 'class': 'cbi-section-node' }, [
+				E('pre', {
+					'style': 'background: #f5f5f5; padding: 15px; overflow: auto; max-height: 800px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.5;'
+				}, JSON.stringify(data, null, 2))
+			])
+		]);
+
+		container.appendChild(jsonDisplay);
 	},
 
 	/**
