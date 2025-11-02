@@ -413,11 +413,39 @@ return view.extend({
 		if (config.Env && config.Env.length > 0) {
 			const envRows = config.Env.map(function(env) {
 				const parts = env.split('=');
+				const varName = parts[0];
+				const varValue = parts.slice(1).join('=');
+
+				// Create censored value display (bullet points)
+				const censoredValue = '••••••••';
+
+				// Create clickable element that toggles between censored and revealed
+				const valueCell = E('td', {
+					'class': 'td',
+					'style': 'font-family: monospace; word-break: break-all; cursor: pointer; user-select: none;',
+					'title': _('Click to reveal/hide value'),
+					'data-revealed': 'false',
+					'data-value': varValue
+				}, censoredValue);
+
+				// Toggle reveal/hide on click
+				valueCell.addEventListener('click', function() {
+					const isRevealed = this.getAttribute('data-revealed') === 'true';
+					if (isRevealed) {
+						// Hide value
+						this.textContent = censoredValue;
+						this.setAttribute('data-revealed', 'false');
+					} else {
+						// Reveal value
+						this.textContent = this.getAttribute('data-value');
+						this.setAttribute('data-revealed', 'true');
+					}
+				});
+
 				return E('tr', { 'class': 'tr' }, [
 					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' },
-						parts[0]),
-					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' },
-						parts.slice(1).join('='))
+						varName),
+					valueCell
 				]);
 			});
 
