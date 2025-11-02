@@ -70,10 +70,12 @@ return baseclass.extend({
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
 				podmanUI.errorNotification(textFailed.format(errors.length));
-			} else {
-				podmanUI.successTimeNotification(textSuccess.format(ids.length));
+				return;
 			}
 
+			podmanUI.successTimeNotification(textSuccess.format(ids.length));
+
+			// @todo we have to re add the refresh table function here. But be aware that non lists also use the callContainers functions
 			// this.refreshTable(false);
 		}).catch((err) => {
 			ui.hideModal();
