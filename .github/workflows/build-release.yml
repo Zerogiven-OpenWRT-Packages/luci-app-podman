@@ -4,7 +4,7 @@ name: Build OpenWRT package (release)
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags like v1.0.0, v1.0.1, etc.
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   build-packages:
@@ -13,26 +13,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - openwrt_version: '23.05'
-            arch: 'x86_64-23.05.0'
-            libgpiod_version: 'v1'
           - openwrt_version: '24.10'
-            arch: 'x86_64-24.10.0'
-            libgpiod_version: 'v2'
+            arch: 'x86_64-24.10.3'
       fail-fast: false
-    
+
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       tag_name: ${{ steps.get_version.outputs.tag_name }}
       package_path: ${{ steps.build_package.outputs.package_path }}
       package_name: ${{ steps.build_package.outputs.package_name }}
-    
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
+          path: ${{ github.workspace }}/feed/luci-app-podman
           fetch-depth: 0
-          path: ${{ github.workspace }}/feed/gpio-fan-rpm
 
       - name: Get version from tag
         id: get_version
@@ -40,7 +36,7 @@ jobs:
           # Extract version from tag (remove 'v' prefix)
           VERSION=${GITHUB_REF#refs/tags/v}
           TAG_NAME="v$VERSION"
-          
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION for OpenWrt ${{ matrix.openwrt_version }}"
@@ -51,11 +47,11 @@ jobs:
 
       - name: Build OpenWrt ${{ matrix.openwrt_version }} package
         id: build_package
-        uses: openwrt/gh-action-sdk@main
+        uses: openwrt/gh-action-sdk@v9
         env:
           ARCH: ${{ matrix.arch }}
-          PACKAGES: gpio-fan-rpm
-          V: s
+          PACKAGES: luci-app-podman
+          V: '0'
           FEED_DIR: ${{ github.workspace }}/feed
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
@@ -63,94 +59,92 @@ jobs:
         id: package_info
         run: |
           # Find the built package
-          PACKAGE_PATH=$(find ${{ github.workspace }}/artifacts/bin/ -name 'gpio-fan-rpm*.ipk' -type f | head -1)
-          
+          PACKAGE_PATH=$(find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | head -1)
+
           if [ -z "$PACKAGE_PATH" ]; then
             echo "❌ No package found for OpenWrt ${{ matrix.openwrt_version }}"
             exit 1
           fi
-          
+
           PACKAGE_NAME=$(basename "$PACKAGE_PATH")
-          
+
           echo "✅ Found package: $PACKAGE_NAME"
           echo "package_path=$PACKAGE_PATH" >> $GITHUB_OUTPUT
           echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
-          
+
           # Copy to a versioned directory for the release
           mkdir -p ${{ github.workspace }}/release-assets
-          cp "$PACKAGE_PATH" "${{ github.workspace }}/release-assets/gpio-fan-rpm-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk"
+          cp "$PACKAGE_PATH" "${{ github.workspace }}/release-assets/luci-app-podman-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk"
 
       - name: Upload package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: gpio-fan-rpm-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk
-          path: ${{ github.workspace }}/release-assets/gpio-fan-rpm-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk
+          name: luci-app-podman-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk
+          path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk
           retention-days: 30
 
   create-release:
     name: Create GitHub Release
     needs: build-packages
     runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    permissions:
+      contents: write
 
-      - name: Generate dynamic release notes
-        id: release_notes
-        run: |
-          # Make the script executable and run it
-          chmod +x scripts/generate-release-notes.sh
-          
-          # Generate release notes to a file
-          ./scripts/generate-release-notes.sh > release-notes.md
-          
-          # Read the file content for GitHub Actions output
-          RELEASE_BODY=$(cat release-notes.md)
-          
-          # Use GitHub Actions multiline output syntax
-          echo "release_body<<EOF" >> $GITHUB_OUTPUT
-          cat release-notes.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+    steps:
+      # - name: Checkout repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     fetch-depth: 0
 
       - name: Download all package artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: ${{ github.workspace }}/release-assets/
-          pattern: gpio-fan-rpm-*.ipk
+          pattern: luci-app-podman-*.ipk
           merge-multiple: true
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      # - name: Build changelog
+      #   id: build_changelog
+      #   uses: mikepenz/release-changelog-builder-action@v6
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # oder dein PAT falls nötig
+
+      # - name: Save changelog to file (for archive / debugging)
+      #   run: |
+      #     mkdir -p "${GITHUB_WORKSPACE}/release-assets"
+      #     echo "${{ steps.build_changelog.outputs.changelog }}" > "${GITHUB_WORKSPACE}/release-assets/CHANGELOG.md" || true
+      #     echo "---- changelog head ----"
+      #     head -n 40 "${GITHUB_WORKSPACE}/release-assets/CHANGELOG.md" || true
+
+      - name: Create GitHub Release & upload assets
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.build-packages.outputs.tag_name }}
-          # name: "Release ${{ needs.build-packages.outputs.version }}"
-          # body: ${{ steps.release_notes.outputs.release_body }}
-          files: ${{ github.workspace }}/release-assets/*.ipk
+          files: |
+            ${{ github.workspace }}/release-assets/*.ipk
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
+          # body: ${{ steps.build_changelog.outputs.changelog }}
           generate_release_notes: true
+          # generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
 
       - name: Release Summary
         run: |
-          CURRENT_VERSION=${GITHUB_REF#refs/tags/v}
+          # Use tag from build-packages (falls vorhanden), fallback to GITHUB_REF
+          TAG="${{ needs.build-packages.outputs.tag_name }}"
+          if [ -z "$TAG" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          CURRENT_VERSION="${TAG#v}"   # remove leading 'v' if present
           echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ **Release Created**: v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Packages Built**: " >> $GITHUB_STEP_SUMMARY
-          echo "- OpenWRT 23.05 (libgpiod v1)" >> $GITHUB_STEP_SUMMARY
-          echo "- OpenWRT 24.10 (libgpiod v2)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ls ${{ github.workspace }}/release-assets/ >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Architecture**: x86_64" >> $GITHUB_STEP_SUMMARY
+          ls -la "${GITHUB_WORKSPACE}/release-assets/" >> $GITHUB_STEP_SUMMARY || true
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Release URL**: https://github.com/${{ github.repository }}/releases/tag/v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
 
- 
