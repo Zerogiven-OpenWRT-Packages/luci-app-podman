@@ -30,8 +30,8 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install js-beautifier
-        run: npm install -g js-beautifier
+      - name: Install js-beautify
+        run: npm install -g js-beautify
 
       - name: Determine files to format
         id: determine
