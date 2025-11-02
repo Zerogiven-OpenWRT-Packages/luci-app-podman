@@ -1,0 +1,124 @@
+name: Beautify JavaScript
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 'Format all .js files (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  beautify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Node (for js-beautify)
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18'
+
+      - name: Install js-beautifier
+        run: npm install -g js-beautifier
+
+      - name: Determine files to format
+        id: determine
+        run: |
+          set -euo pipefail
+          rm -f changed_js_files.txt
+
+          # If the workflow was manually dispatched, the input is available as github.event.inputs.all
+          ALL_INPUT="${{ github.event.inputs.all || 'false' }}"
+          # Also allow runtime env override (when triggering via API you can set env ALL=true)
+          ALL_ENV="${ALL:-false}"
+
+          echo "workflow_dispatch input all: '$ALL_INPUT'"
+          echo "runtime env ALL: '$ALL_ENV'"
+
+          if [ "$ALL_INPUT" = "true" ] || [ "$ALL_ENV" = "true" ]; then
+            echo "Formatting entire repo (all=true)"
+            git ls-files '*.js' > changed_js_files.txt || true
+          else
+            echo "Determining changed .js files..."
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            else
+              BASE_SHA="${{ github.event.before }}"
+            fi
+
+            if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+              echo "Could not get reliable base SHA; falling back to origin/main diff"
+              git fetch origin main || true
+              git diff --name-only origin/main...HEAD | grep -E '\.js$' > changed_js_files.txt || true
+            else
+              git fetch --no-tags --no-recurse-submodules --depth=1 origin || true
+              git diff --name-only "$BASE_SHA" "${{ github.sha }}" | grep -E '\.js$' > changed_js_files.txt || true
+            fi
+          fi
+
+          if [ ! -s changed_js_files.txt ]; then
+            echo "No JS files to format."
+            # leave an empty file (or no file) — later steps check -s
+            exit 0
+          fi
+
+          echo "Files to format:"
+          sed -n '1,200p' changed_js_files.txt
+      - name: Format changed files with js-beautify
+        run: |
+          set -euo pipefail
+          if [ ! -s changed_js_files.txt ]; then
+            echo "No files to format. Skipping."
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            # skip deleted files
+            if [ -f "$file" ]; then
+              echo "Formatting: $file"
+              js-beautify -r "$file"
+            else
+              echo "Skipping missing/deleted file: $file"
+            fi
+          done < changed_js_files.txt
+      - name: Show git status
+        run: |
+          if [ ! -s changed_js_files.txt ]; then
+            echo "No formatting performed earlier."
+            exit 0
+          fi
+          git status --porcelain
+          git --no-pager diff --name-only || true
+
+      - name: Commit & push formatting changes
+        env:
+          GIT_COMMITTER_NAME: "github-actions"
+          GIT_COMMITTER_EMAIL: "github-actions@github.com"
+        run: |
+          set -euo pipefail
+          if [ ! -s changed_js_files.txt ]; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "${GIT_COMMITTER_NAME}"
+            git config user.email "${GIT_COMMITTER_EMAIL}"
+            git add -A
+            git commit -m "style: auto-format JavaScript (js-beautify) [skip ci]" || echo "Nothing to commit."
+            git push
+          else
+            echo "No formatting changes to commit."
+          fi
