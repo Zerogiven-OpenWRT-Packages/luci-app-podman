@@ -9,7 +9,7 @@ trim_trailing_whitespace = true
 # JavaScript
 [*.js]
 indent_style = tab
-indent_size = 1
+indent_size = 4
 max_line_length = 110
 
 # YAML
