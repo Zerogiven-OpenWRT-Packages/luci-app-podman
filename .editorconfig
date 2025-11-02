@@ -1,0 +1,42 @@
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# JavaScript
+[*.js]
+indent_style = tab
+indent_size = 1
+max_line_length = 110
+
+# YAML
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+max_line_length = 110
+
+# Markdown
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+max_line_length = 110
+
+# POT translation templates
+[*.pot]
+indent_style = space
+indent_size = 2
+
+# Makefile
+[Makefile]
+indent_style = tab
+
+# Shell scripts (.sh and .podman)
+[*.{sh,podman}]
+indent_style = tab
+indent_size = 1
+end_of_line = lf
+max_line_length = 110
