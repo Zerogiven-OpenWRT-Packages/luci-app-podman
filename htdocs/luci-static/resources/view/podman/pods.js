@@ -77,14 +77,33 @@ return view.extend({
 			return E('span', { 'class': 'badge status-' + status.toLowerCase() }, status);
 		};
 
-		// Containers column
-		o = section.option(form.DummyValue, 'Containers', _('Containers'));
-		o.cfgvalue = (sectionId) => {
-			const pod = this.map.data.data[sectionId];
-			const containerCount = pod.Containers ? pod.Containers.length : 0;
-			return containerCount.toString();
-		};
+	// Containers column - show IDs with links
+	o = section.option(form.DummyValue, 'Containers', _('Containers'));
+	o.cfgvalue = (sectionId) => {
+		const pod = this.map.data.data[sectionId];
+		const containers = pod.Containers || [];
 
+		if (containers.length === 0) {
+			return '0';
+		}
+
+		// Create links for each container ID
+		const containerLinks = containers.map((container) => {
+			const containerId = container.Id;
+			const shortId = utils.truncate(containerId, 12);
+			return E('a', {
+				'href': L.url('admin/podman/container', containerId),
+				'style': 'margin-right: 8px;'
+			}, shortId);
+		});
+
+		// Return count + links
+		return E('div', {}, [
+			E('span', { 'style': 'font-weight: bold; margin-right: 8px;' }, containers.length + ':'),
+			...containerLinks
+		]);
+	};
+	o.rawhtml = true;
 		// Infra ID column
 		o = section.option(form.DummyValue, 'InfraId', _('Infra ID'));
 		o.cfgvalue = (sectionId) => {
