@@ -114,6 +114,7 @@ jobs:
           fi
 
           if [ -n "$(git status --porcelain)" ]; then
+            rm changed_js_files.txt
             git config user.name "${GIT_COMMITTER_NAME}"
             git config user.email "${GIT_COMMITTER_EMAIL}"
             git add -A
