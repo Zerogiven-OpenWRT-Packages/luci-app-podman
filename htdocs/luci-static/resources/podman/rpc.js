@@ -453,6 +453,29 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'volume_create',
 			params: ['data']
+		}),
+
+		/**
+		 * Export a volume to tar archive
+		 * @param {string} name - Volume name
+		 * @returns {Promise<Object>} Export result with base64-encoded tar data
+		 */
+		exportVolume: rpc.declare({
+			object: 'luci.podman',
+			method: 'volume_export',
+			params: ['name']
+		}),
+
+		/**
+		 * Import volume data from tar archive
+		 * @param {string} name - Volume name
+		 * @param {string} data - Base64-encoded tar data
+		 * @returns {Promise<Object>} Import result
+		 */
+		importVolume: rpc.declare({
+			object: 'luci.podman',
+			method: 'volume_import',
+			params: ['name', 'data']
 		})
 	},
 

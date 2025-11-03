@@ -133,6 +133,8 @@ case "$1" in
 	"volume_inspect": { "name": "" },
 	"volume_remove": { "name": "", "force": false },
 	"volume_create": { "data": {} },
+	"volume_export": { "name": "" },
+	"volume_import": { "name": "", "data": "" },
 	"pods_list": {},
 	"pod_inspect": { "name": "" },
 	"pod_start": { "name": "" },
@@ -565,6 +567,62 @@ EOF
 			volume_create)
 				get_json_params data
 				curl_request "POST" "${API_BASE}/volumes/create" "$data"
+				;;
+			volume_export)
+				get_json_params name
+				require_param name
+				name_enc=$(urlencode "$name")
+
+				# Export returns binary tar file, save to temp file
+				temp_file="/tmp/podman_volume_export_$$_${RANDOM}.tar"
+				curl -s --unix-socket "$SOCKET" -X GET "http://localhost${API_BASE}/volumes/${name_enc}/export" > "$temp_file" 2>&1
+				exit_code=$?
+
+				if [ $exit_code -ne 0 ]; then
+					rm -f "$temp_file"
+					echo "{\"error\":\"Export failed\",\"details\":\"curl exit code $exit_code\"}"
+					exit 1
+				fi
+
+				# Base64 encode binary tar data for JSON transport (use openssl on OpenWrt)
+				encoded_data=$(openssl base64 -A < "$temp_file")
+				rm -f "$temp_file"
+
+				# Return as JSON with base64-encoded data
+				echo "{\"data\":\"${encoded_data}\"}"
+				;;
+			volume_import)
+				get_json_params name data
+				require_param name
+				require_param data
+				name_enc=$(urlencode "$name")
+
+				# Base64 decode the uploaded tar data to temp file
+				temp_file="/tmp/podman_volume_import_$$_${RANDOM}.tar"
+				echo "$data" | openssl base64 -d > "$temp_file" 2>&1
+				decode_exit=$?
+
+				if [ $decode_exit -ne 0 ]; then
+					rm -f "$temp_file"
+					echo "{\"error\":\"Failed to decode import data\"}"
+					exit 1
+				fi
+
+				# POST binary tar file to import endpoint
+				curl -s --unix-socket "$SOCKET" -X POST \
+					-H "Content-Type: application/x-tar" \
+					--data-binary "@${temp_file}" \
+					"http://localhost${API_BASE}/volumes/${name_enc}/import" > /tmp/import_result.txt 2>&1
+				exit_code=$?
+				rm -f "$temp_file"
+
+				if [ $exit_code -ne 0 ]; then
+					echo "{\"error\":\"Import failed\",\"details\":\"curl exit code $exit_code\"}"
+					exit 1
+				fi
+
+				# Import returns 204 No Content on success
+				echo "{\"success\":true}"
 				;;
 			pods_list)
 				read -r input
