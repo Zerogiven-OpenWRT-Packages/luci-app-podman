@@ -85,12 +85,25 @@ return view.extend({
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
 		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
-		// Create toolbar using helper
+		// Create toolbar using helper with custom buttons
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
-			onCreate: () => this.handleCreateVolume()
+			onCreate: undefined,  // Will add multi-button instead
+			customButtons: [{
+				text: _('Export'),
+				handler: () => this.handleExportSelected(),
+				cssClass: 'save',
+				tooltip: _('Export selected volumes')
+			}]
 		});
+
+		// Add create/import multi-button
+		const createButton = new podmanUI.MultiButton({}, 'add')
+			.addItem(_('Create Volume'), () => this.handleCreateVolume())
+			.addItem(_('Import Volume'), () => this.handleImportVolume())
+			.render();
+		toolbar.prependButton(createButton);
 
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
@@ -141,5 +154,156 @@ return view.extend({
 	 */
 	handleInspect: function(name) {
 		this.listHelper.showInspect(name);
+	},
+
+	/**
+	 * Export selected volumes
+	 */
+	handleExportSelected: function() {
+		const selected = this.listHelper.getSelected((volume) => volume.Name);
+
+		if (selected.length === 0) {
+			ui.addTimeLimitedNotification(null, E('p', _('No volumes selected')), 3000, 'warning');
+			return;
+		}
+
+		podmanUI.showSpinningModal(_('Exporting Volumes'), _('Exporting selected volumes...'));
+
+		// Export each volume sequentially (can't do parallel because we download files)
+		let exportIndex = 0;
+		const exportNext = () => {
+			if (exportIndex >= selected.length) {
+				ui.hideModal();
+				podmanUI.successTimeNotification(_('All volumes exported successfully'));
+				return;
+			}
+
+			const volumeName = selected[exportIndex];
+			exportIndex++;
+
+			podmanRPC.volume.exportVolume(volumeName).then((result) => {
+				if (result.error) {
+					ui.hideModal();
+					podmanUI.errorNotification(_('Failed to export volume %s: %s').format(volumeName, result.error));
+					return;
+				}
+
+				// Decode base64 data and trigger download
+				const binaryData = atob(result.data);
+				const bytes = new Uint8Array(binaryData.length);
+				for (let i = 0; i < binaryData.length; i++) {
+					bytes[i] = binaryData.charCodeAt(i);
+				}
+				const blob = new Blob([bytes], { type: 'application/x-tar' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `${volumeName}.tar`;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+
+				// Export next volume
+				exportNext();
+			}).catch((err) => {
+				ui.hideModal();
+				podmanUI.errorNotification(_('Failed to export volume %s: %s').format(volumeName, err.message));
+			});
+		};
+
+		exportNext();
+	},
+
+	/**
+	 * Show import volume dialog
+	 */
+	handleImportVolume: function() {
+		// Create file input
+		const fileInput = E('input', {
+			'type': 'file',
+			'accept': '.tar',
+			'style': 'display: none'
+		});
+
+		fileInput.addEventListener('change', (ev) => {
+			const file = ev.target.files[0];
+			if (!file) return;
+
+			// Extract volume name from filename (remove .tar extension)
+			const volumeName = file.name.replace(/\.tar$/, '');
+
+			ui.showModal(_('Import Volume'), [
+				E('p', {}, _('Import volume from tar file: %s').format(file.name)),
+				E('div', { 'class': 'cbi-value' }, [
+					E('label', { 'class': 'cbi-value-title' }, _('Volume Name')),
+					E('div', { 'class': 'cbi-value-field' }, [
+						E('input', {
+							'type': 'text',
+							'class': 'cbi-input-text',
+							'id': 'import-volume-name',
+							'value': volumeName,
+							'placeholder': _('Enter volume name')
+						})
+					])
+				]),
+				E('div', { 'class': 'right' }, [
+					E('button', {
+						'class': 'cbi-button cbi-button-neutral',
+						'click': ui.hideModal
+					}, _('Cancel')),
+					' ',
+					E('button', {
+						'class': 'cbi-button cbi-button-positive',
+						'click': () => {
+							const name = document.getElementById('import-volume-name').value.trim();
+							if (!name) {
+								podmanUI.errorNotification(_('Volume name is required'));
+								return;
+							}
+
+							ui.hideModal();
+							podmanUI.showSpinningModal(_('Importing Volume'), _('Importing volume...'));
+
+							// Read file and convert to base64
+							const reader = new FileReader();
+							reader.onload = (e) => {
+								const arrayBuffer = e.target.result;
+								const bytes = new Uint8Array(arrayBuffer);
+								let binary = '';
+								for (let i = 0; i < bytes.length; i++) {
+									binary += String.fromCharCode(bytes[i]);
+								}
+								const base64Data = btoa(binary);
+
+								// Call import RPC
+								podmanRPC.volume.importVolume(name, base64Data).then((result) => {
+									ui.hideModal();
+									if (result.error) {
+										podmanUI.errorNotification(_('Failed to import volume: %s').format(result.error));
+									} else {
+										podmanUI.successTimeNotification(_('Volume imported successfully'));
+										this.handleRefresh(false);
+									}
+								}).catch((err) => {
+									ui.hideModal();
+									podmanUI.errorNotification(_('Failed to import volume: %s').format(err.message));
+								});
+							};
+							reader.onerror = () => {
+								ui.hideModal();
+								podmanUI.errorNotification(_('Failed to read file'));
+							};
+							reader.readAsArrayBuffer(file);
+						}
+					}, _('Import'))
+				])
+			]);
+		});
+
+		// Trigger file selection
+		document.body.appendChild(fileInput);
+		fileInput.click();
+		document.body.removeChild(fileInput);
 	}
 });
