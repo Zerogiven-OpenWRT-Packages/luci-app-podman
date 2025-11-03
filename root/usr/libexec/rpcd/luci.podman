@@ -607,12 +607,24 @@ EOF
 					exit 1
 				fi
 
+				# Create the volume first (import requires volume to exist)
+				podman volume create "$name" 2>&1
+				create_exit=$?
+
+				if [ $create_exit -ne 0 ]; then
+					rm -f "$temp_file"
+					echo "{\"error\":\"Failed to create volume\",\"details\":\"podman exit code $create_exit\"}"
+					exit 1
+				fi
+
 				# Use podman CLI since REST API doesn't support import yet
 				podman volume import "$name" "$temp_file" 2>&1
 				exit_code=$?
 				rm -f "$temp_file"
 
 				if [ $exit_code -ne 0 ]; then
+					# Cleanup: remove the volume we just created if import fails
+					podman volume rm "$name" 2>/dev/null
 					echo "{\"error\":\"Import failed\",\"details\":\"podman exit code $exit_code\"}"
 					exit 1
 				fi
