@@ -33,10 +33,11 @@ indent_size = 2
 # Makefile
 [Makefile]
 indent_style = tab
+indent_size = 4
 
 # Shell scripts (.sh and .podman)
 [*.{sh,podman}]
 indent_style = tab
-indent_size = 1
+indent_size = 4
 end_of_line = lf
 max_line_length = 110
