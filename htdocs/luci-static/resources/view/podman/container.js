@@ -930,23 +930,41 @@ return view.extend({
 
 			// Build table headers from Titles
 			const headerRow = E('tr', { 'class': 'tr table-titles' },
-				titles.map((title) => E('th', { 'class': 'th' }, title))
+				titles.map((title) => E('th', {
+					'class': 'th',
+					'style': 'font-family: monospace; white-space: nowrap;'
+				}, title))
 			);
 
 			// Build table rows from Processes
 			const processRows = processes.map((proc) => {
 				return E('tr', { 'class': 'tr' },
-					proc.map((cell) => E('td', {
-						'class': 'td',
-						'style': 'font-family: monospace; font-size: 11px;'
-					}, cell || '-'))
+					proc.map((cell, index) => {
+						// Apply different styling based on column
+						let style = 'font-family: monospace; font-size: 11px; padding: 4px 8px;';
+
+						// Right-align numeric columns (PID, PPID, %CPU)
+						if (titles[index] === 'PID' || titles[index] === 'PPID' || titles[index] === '%CPU') {
+							style += ' text-align: right;';
+						}
+						// Truncate long COMMAND values
+						else if (titles[index] === 'COMMAND') {
+							style += ' max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+						}
+
+						return E('td', {
+							'class': 'td',
+							'style': style,
+							'title': cell || '-'  // Tooltip shows full value
+						}, cell || '-');
+					})
 				);
 			});
 
 			// Create process table
 			const processTable = E('table', {
 				'class': 'table',
-				'style': 'font-size: 11px;'
+				'style': 'font-size: 11px; width: 100%;'
 			}, [headerRow].concat(processRows));
 
 			container.appendChild(processTable);
