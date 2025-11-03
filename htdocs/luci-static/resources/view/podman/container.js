@@ -946,10 +946,20 @@ return view.extend({
 					const seconds = match[2];
 					// Round: if first digit of fractional part >= 5, round up
 					const fractional = match[3];
-					const roundedSeconds = fractional && fractional[0] >= '5'
-						? String(parseInt(seconds) + 1)
-						: seconds;
-					return `${minutes}${roundedSeconds}s`;
+					let roundedSeconds = fractional && fractional[0] >= '5'
+						? parseInt(seconds) + 1
+						: parseInt(seconds);
+
+					// Handle 60 second overflow (e.g., 59.9s -> 1m00s)
+					if (roundedSeconds >= 60 && minutes) {
+						const totalMinutes = parseInt(minutes) + 1;
+						roundedSeconds = 0;
+						return `${totalMinutes}m${String(roundedSeconds).padStart(2, '0')}s`;
+					}
+
+					// Add leading zero to single-digit seconds when minutes are present
+					const formattedSeconds = minutes ? String(roundedSeconds).padStart(2, '0') : String(roundedSeconds);
+					return `${minutes}${formattedSeconds}s`;
 				}
 				return timeStr;
 			};
