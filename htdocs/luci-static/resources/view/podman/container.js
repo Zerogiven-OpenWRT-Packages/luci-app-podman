@@ -236,8 +236,21 @@ return view.extend({
 			.render());
 
 		buttons.push(' ');
-		buttons.push(new pui.Button(_('Back to List'), L.url('admin/podman/containers'))
-	.render());
+
+		// Determine back button destination from query parameter
+		const urlParams = new URLSearchParams(window.location.search);
+		const from = urlParams.get('from');
+		let backUrl, backText;
+
+		if (from === 'pods') {
+			backUrl = L.url('admin/podman/pods');
+			backText = _('Back to Pods');
+		} else {
+			backUrl = L.url('admin/podman/containers');
+			backText = _('Back to Containers');
+		}
+
+		buttons.push(new pui.Button(backText, backUrl).render());
 
 		return E('div', {}, buttons);
 	},

@@ -92,7 +92,7 @@ return view.extend({
 			const containerId = container.Id;
 			const shortId = utils.truncate(containerId, 12);
 			return E('a', {
-				'href': L.url('admin/podman/container', containerId),
+				'href': L.url('admin/podman/container', containerId) + '?from=pods',
 				'style': 'margin-right: 8px;'
 			}, shortId);
 		});
