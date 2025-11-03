@@ -669,6 +669,7 @@ return view.extend({
 
 		// Create stats display
 		const statsDisplay = E('div', { 'class': 'cbi-section' }, [
+			E('h3', {}, _('Resource Usage')),
 			E('div', { 'class': 'cbi-section-node' }, [
 				E('table', { 'class': 'table', 'id': 'stats-table' }, [
 					E('tr', { 'class': 'tr' }, [
@@ -712,10 +713,36 @@ return view.extend({
 			])
 		]);
 
-		container.appendChild(statsDisplay);
+		// Create process list display
+		const processDisplay = E('div', { 'class': 'cbi-section', 'style': 'margin-top: 20px;' }, [
+			E('h3', {}, _('Running Processes')),
+			E('div', { 'class': 'cbi-section-node' }, [
+				E('div', { 'id': 'process-list-container' }, [
+					E('p', {}, _('Loading process list...'))
+				])
+			])
+		]);
 
-		// Load stats
+		container.appendChild(statsDisplay);
+		container.appendChild(processDisplay);
+
+		// Load stats and process list initially
 		this.updateStats();
+		this.updateProcessList();
+
+		// Setup auto-refresh using poll.add() - refresh every 3 seconds
+		const view = this;
+		this.statsPollFn = function() {
+			return Promise.all([
+				view.updateStats(),
+				view.updateProcessList()
+			]).catch((err) => {
+				console.error('Stats/Process poll error:', err);
+			});
+		};
+
+		// Add poll for auto-refresh
+		poll.add(this.statsPollFn, 3);
 	},
 
 	/**
@@ -809,7 +836,7 @@ return view.extend({
 	 * Update stats display
 	 */
 	updateStats: function() {
-		podmanRPC.container.stats(this.containerId).then((result) => {
+		return podmanRPC.container.stats(this.containerId).then((result) => {
 			// Podman stats API returns different formats:
 			// - With stream=false: Single stats object
 			// - CLI format: Wrapped in Stats array
@@ -829,43 +856,111 @@ return view.extend({
 
 			// CPU Usage - try different field names
 			const cpuPercent = stats.CPUPerc || stats.cpu_percent || stats.cpu || '0%';
-			document.getElementById('stat-cpu').textContent = cpuPercent;
+			const cpuEl = document.getElementById('stat-cpu');
+			if (cpuEl) cpuEl.textContent = cpuPercent;
 
 			// Memory Usage - try different field names
 			const memUsage = stats.MemUsage || stats.mem_usage ||
 				(stats.memory_stats && stats.memory_stats.usage ? utils.formatBytes(stats
 					.memory_stats.usage) : '-');
-			document.getElementById('stat-memory').textContent = memUsage;
+			const memEl = document.getElementById('stat-memory');
+			if (memEl) memEl.textContent = memUsage;
 
 			// Memory Limit - try different field names
 			const memLimit = stats.MemLimit || stats.mem_limit ||
 				(stats.memory_stats && stats.memory_stats.limit ? utils.formatBytes(stats
 					.memory_stats.limit) : _('Unlimited'));
-			document.getElementById('stat-memory-limit').textContent = memLimit;
+			const memLimitEl = document.getElementById('stat-memory-limit');
+			if (memLimitEl) memLimitEl.textContent = memLimit;
 
 			// Memory Percent - try different field names
 			const memPercent = stats.MemPerc || stats.mem_percent || stats.mem || '0%';
-			document.getElementById('stat-memory-percent').textContent = memPercent;
+			const memPercentEl = document.getElementById('stat-memory-percent');
+			if (memPercentEl) memPercentEl.textContent = memPercent;
 
 			// Network I/O - format nicely
 			const netIO = stats.NetIO || stats.net_io || stats.network_io || stats
 				.networks;
-			document.getElementById('stat-network').textContent = this.formatNetworkIO(
-				netIO);
+			const netEl = document.getElementById('stat-network');
+			if (netEl) netEl.textContent = this.formatNetworkIO(netIO);
 
 			// Block I/O - format nicely
 			const blockIO = stats.BlockIO || stats.block_io || stats.blkio || stats
 				.blkio_stats;
-			document.getElementById('stat-blockio').textContent = this.formatBlockIO(
-				blockIO);
+			const blockEl = document.getElementById('stat-blockio');
+			if (blockEl) blockEl.textContent = this.formatBlockIO(blockIO);
 
 			// PIDs - format nicely
 			const pids = stats.PIDs || stats.pids || stats.pids_stats;
-			document.getElementById('stat-pids').textContent = this.formatPIDs(pids);
+			const pidsEl = document.getElementById('stat-pids');
+			if (pidsEl) pidsEl.textContent = this.formatPIDs(pids);
 
 		}).catch((err) => {
 			console.error('Stats error:', err);
 			// Stats failed to load - show error only in console
+		});
+	},
+
+	/**
+	 * Update process list display
+	 */
+	updateProcessList: function() {
+		return podmanRPC.container.top(this.containerId, 'aux').then((result) => {
+			const container = document.getElementById('process-list-container');
+			if (!container) return;
+
+			// Clear existing content
+			while (container.firstChild) {
+				container.removeChild(container.firstChild);
+			}
+
+			// Check if we have valid process data
+			if (!result || !result.Titles || !result.Processes) {
+				container.appendChild(E('p', {}, _('No process data available')));
+				return;
+			}
+
+			const titles = result.Titles || [];
+			const processes = result.Processes || [];
+
+			if (titles.length === 0 || processes.length === 0) {
+				container.appendChild(E('p', {}, _('No running processes')));
+				return;
+			}
+
+			// Build table headers from Titles
+			const headerRow = E('tr', { 'class': 'tr table-titles' },
+				titles.map((title) => E('th', { 'class': 'th' }, title))
+			);
+
+			// Build table rows from Processes
+			const processRows = processes.map((proc) => {
+				return E('tr', { 'class': 'tr' },
+					proc.map((cell) => E('td', {
+						'class': 'td',
+						'style': 'font-family: monospace; font-size: 11px;'
+					}, cell || '-'))
+				);
+			});
+
+			// Create process table
+			const processTable = E('table', {
+				'class': 'table',
+				'style': 'font-size: 11px;'
+			}, [headerRow].concat(processRows));
+
+			container.appendChild(processTable);
+
+		}).catch((err) => {
+			console.error('Process list error:', err);
+			const container = document.getElementById('process-list-container');
+			if (container) {
+				while (container.firstChild) {
+					container.removeChild(container.firstChild);
+				}
+				container.appendChild(E('p', { 'style': 'color: #999;' },
+					_('Failed to load process list: %s').format(err.message || _('Unknown error'))));
+			}
 		});
 	},
 

@@ -116,6 +116,7 @@ case "$1" in
 	"container_rename": { "id": "", "name": "" },
 	"container_update": { "id": "", "data": {} },
 	"container_healthcheck_run": { "id": "" },
+	"container_top": { "id": "", "ps_args": "" },
 	"images_list": {},
 	"image_inspect": { "id": "" },
 	"image_remove": { "id": "", "force": false },
@@ -405,6 +406,14 @@ EOF
 				require_param id
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/healthcheck"
+				;;
+			container_top)
+				get_json_params id ps_args
+				require_param id
+				id_enc=$(urlencode "$id")
+				path="${API_BASE}/containers/${id_enc}/top"
+				[ -n "$ps_args" ] && path="${path}?ps_args=${ps_args}"
+				curl_request "GET" "$path"
 				;;
 			images_list)
 				read -r input

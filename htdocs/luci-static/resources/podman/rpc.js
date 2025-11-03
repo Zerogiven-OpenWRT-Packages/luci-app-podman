@@ -199,6 +199,18 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'container_healthcheck_run',
 			params: ['id']
+		}),
+
+		/**
+		 * Get container process list (top)
+		 * @param {string} id - Container ID
+		 * @param {string} ps_args - ps command arguments (optional, e.g., 'aux')
+		 * @returns {Promise<Object>} Process list with Titles and Processes arrays
+		 */
+		top: rpc.declare({
+			object: 'luci.podman',
+			method: 'container_top',
+			params: ['id', 'ps_args']
 		})
 	},
 
