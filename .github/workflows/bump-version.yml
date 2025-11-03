@@ -1,10 +1,10 @@
-name: Bump version
+name: Version bump
 
 on:
   workflow_dispatch:
     inputs:
       part:
-        description: "Which version to bump?"
+        description: "Welche Version soll erhöht werden?"
         required: true
         default: "patch"
         type: choice
@@ -13,71 +13,26 @@ on:
           - minor
           - patch
       branch:
-        description: "Branch to commit"
-        required: true
+        description: "Branch (default: main)"
+        required: false
         default: "main"
         type: string
+
+permissions:
+  contents: write
 
 jobs:
   bump:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+          persist-credentials: true
 
-      - name: Read current version from Makefile
-        id: read_version
+      - name: Run bump script
         run: |
-          CURRENT_VERSION=$(grep -E '^PKG_VERSION\s*:=' Makefile | awk '{print $3}')
-          echo "current=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Bump version
-        id: bump
-        run: |
-          IFS='.' read -r MAJOR MINOR PATCH <<< "${{ steps.read_version.outputs.current }}"
-          PART=${{ github.event.inputs.part }}
-
-          case "$PART" in
-            major)
-              ((MAJOR++))
-              MINOR=0
-              PATCH=0
-              ;;
-            minor)
-              ((MINOR++))
-              PATCH=0
-              ;;
-            patch)
-              ((PATCH++))
-              ;;
-          esac
-
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          echo "new=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-
-          # Update Makefile
-          sed -i -E "s/^(PKG_VERSION\s*:=\s*).*/\1${NEW_VERSION}/" Makefile
-
-      - name: Commit and push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add Makefile
-          git commit -m "Bump version to ${{ steps.bump.outputs.new }}"
-          git push origin ${{ github.event.inputs.branch }}
-
-      - name: Create Git tag
-        run: |
-          TAG="v${{ steps.bump.outputs.new }}"
-          git tag "$TAG"
-          git push origin "$TAG"
-
-      - name: Show result
-        run: echo "✅ Version bumped to v${{ steps.bump.outputs.new }}"
+          ./.github/bump-version.sh "${{ github.event.inputs.part }}" "${{ github.event.inputs.branch }}"
