@@ -936,16 +936,39 @@ return view.extend({
 				}, title))
 			);
 
+			// Helper function to format elapsed time (round nanoseconds)
+			const formatElapsedTime = (timeStr) => {
+				if (!timeStr) return '-';
+				// Match format like "19m24.426031127s" or "5.123456789s"
+				const match = timeStr.match(/^(\d+m)?(\d+)\.(\d+)s$/);
+				if (match) {
+					const minutes = match[1] || '';
+					const seconds = match[2];
+					// Round: if first digit of fractional part >= 5, round up
+					const fractional = match[3];
+					const roundedSeconds = fractional && fractional[0] >= '5'
+						? String(parseInt(seconds) + 1)
+						: seconds;
+					return `${minutes}${roundedSeconds}s`;
+				}
+				return timeStr;
+			};
+
 			// Build table rows from Processes
 			const processRows = processes.map((proc) => {
 				return E('tr', { 'class': 'tr' },
 					proc.map((cell, index) => {
 						// Apply different styling based on column
 						let style = 'font-family: monospace; font-size: 11px; padding: 4px 8px;';
+						let displayValue = cell || '-';
 
 						// Right-align numeric columns (PID, PPID, %CPU)
 						if (titles[index] === 'PID' || titles[index] === 'PPID' || titles[index] === '%CPU') {
 							style += ' text-align: right;';
+						}
+						// Format ELAPSED time (round to whole seconds)
+						else if (titles[index] === 'ELAPSED') {
+							displayValue = formatElapsedTime(cell);
 						}
 						// Truncate long COMMAND values
 						else if (titles[index] === 'COMMAND') {
@@ -955,8 +978,8 @@ return view.extend({
 						return E('td', {
 							'class': 'td',
 							'style': style,
-							'title': cell || '-'  // Tooltip shows full value
-						}, cell || '-');
+							'title': cell || '-'  // Tooltip shows full original value
+						}, displayValue);
 					})
 				);
 			});
