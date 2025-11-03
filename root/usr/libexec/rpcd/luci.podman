@@ -571,16 +571,16 @@ EOF
 			volume_export)
 				get_json_params name
 				require_param name
-				name_enc=$(urlencode "$name")
 
-				# Export returns binary tar file, save to temp file
+				# Use podman CLI since REST API doesn't support export yet
+				# Export to temp file
 				temp_file="/tmp/podman_volume_export_$$_${RANDOM}.tar"
-				curl -s --unix-socket "$SOCKET" -X GET "http://localhost${API_BASE}/volumes/${name_enc}/export" > "$temp_file" 2>&1
+				podman volume export "$name" --output "$temp_file" 2>&1
 				exit_code=$?
 
 				if [ $exit_code -ne 0 ]; then
 					rm -f "$temp_file"
-					echo "{\"error\":\"Export failed\",\"details\":\"curl exit code $exit_code\"}"
+					echo "{\"error\":\"Export failed\",\"details\":\"podman exit code $exit_code\"}"
 					exit 1
 				fi
 
@@ -595,7 +595,6 @@ EOF
 				get_json_params name data
 				require_param name
 				require_param data
-				name_enc=$(urlencode "$name")
 
 				# Base64 decode the uploaded tar data to temp file
 				temp_file="/tmp/podman_volume_import_$$_${RANDOM}.tar"
@@ -608,20 +607,17 @@ EOF
 					exit 1
 				fi
 
-				# POST binary tar file to import endpoint
-				curl -s --unix-socket "$SOCKET" -X POST \
-					-H "Content-Type: application/x-tar" \
-					--data-binary "@${temp_file}" \
-					"http://localhost${API_BASE}/volumes/${name_enc}/import" > /tmp/import_result.txt 2>&1
+				# Use podman CLI since REST API doesn't support import yet
+				podman volume import "$name" "$temp_file" 2>&1
 				exit_code=$?
 				rm -f "$temp_file"
 
 				if [ $exit_code -ne 0 ]; then
-					echo "{\"error\":\"Import failed\",\"details\":\"curl exit code $exit_code\"}"
+					echo "{\"error\":\"Import failed\",\"details\":\"podman exit code $exit_code\"}"
 					exit 1
 				fi
 
-				# Import returns 204 No Content on success
+				# Import success
 				echo "{\"success\":true}"
 				;;
 			pods_list)
