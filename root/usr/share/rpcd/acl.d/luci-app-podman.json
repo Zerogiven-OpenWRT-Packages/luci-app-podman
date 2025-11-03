@@ -10,6 +10,7 @@
 					"container_logs_stream",
 					"container_logs_status",
 					"container_stats",
+					"container_top",
 					"container_healthcheck_run",
 					"images_list",
 					"image_inspect",
