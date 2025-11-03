@@ -79,14 +79,15 @@ const Notification = new UINotifications();
  * @example new pui.Button(_('Start'), () => this.handleStart(id), 'positive').render()
  */
 const UIButton = baseclass.extend({
-	__init__: function(text, href, cssClass) {
+	__init__: function(text, href, cssClass, tooltip) {
 		this.text = text;
 		this.href = href;
 		this.cssClass = cssClass;
+		this.tooltip = tooltip;
 	},
 
 	render: function() {
-		return E('button', {
+		const attrs = {
 			'class': this.cssClass ? 'cbi-button cbi-button-' + this.cssClass :
 				'cbi-button',
 			'click': typeof this.href === 'function' ?
@@ -95,7 +96,14 @@ const UIButton = baseclass.extend({
 					ev.preventDefault();
 					window.location.href = this.href;
 				}
-		}, this.text || '');
+		};
+
+		// Add title attribute if tooltip is provided
+		if (this.tooltip) {
+			attrs.title = this.tooltip;
+		}
+
+		return E('button', attrs, this.text || '');
 	}
 });
 

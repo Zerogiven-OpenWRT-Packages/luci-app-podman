@@ -155,12 +155,14 @@ return view.extend({
 			customButtons: [{
 					text: '&#9658;', // Play symbol
 					handler: () => this.handleStart(),
-					cssClass: 'positive'
+					cssClass: 'positive',
+					tooltip: _('Start selected pods')
 				},
 				{
 					text: '&#9724;', // Stop symbol
 					handler: () => this.handleStop(),
-					cssClass: 'negative'
+					cssClass: 'negative',
+					tooltip: _('Stop selected pods')
 				}
 			]
 		});

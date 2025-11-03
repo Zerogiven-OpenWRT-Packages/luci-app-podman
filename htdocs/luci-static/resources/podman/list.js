@@ -75,7 +75,7 @@ const ListUtil = baseclass.extend({
 		// Custom buttons
 		if (options.customButtons) {
 			options.customButtons.forEach((btn) => {
-				buttons.push(new podmanUI.Button(btn.text, btn.handler, btn.cssClass)
+				buttons.push(new podmanUI.Button(btn.text, btn.handler, btn.cssClass, btn.tooltip)
 					.render());
 				buttons.push(' ');
 			});

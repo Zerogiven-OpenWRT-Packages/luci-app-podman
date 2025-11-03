@@ -120,17 +120,20 @@ return view.extend({
 			customButtons: [{
 					text: '&#9658;', // Play symbol
 					handler: () => this.handleStart(),
-					cssClass: 'positive'
+					cssClass: 'positive',
+					tooltip: _('Start selected containers')
 				},
 				{
 					text: '&#9724;', // Stop symbol
 					handler: () => this.handleStop(),
-					cssClass: 'negative'
+					cssClass: 'negative',
+					tooltip: _('Stop selected containers')
 				},
 				{
 					text: '&#10010;', // Heavy plus sign (health check symbol)
 					handler: () => this.handleBulkHealthCheck(),
-					cssClass: 'apply'
+					cssClass: 'apply',
+					tooltip: _('Run health checks on selected containers')
 				}
 			]
 		});
