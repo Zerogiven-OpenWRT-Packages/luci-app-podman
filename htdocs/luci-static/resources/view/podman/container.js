@@ -905,7 +905,7 @@ return view.extend({
 	 * Update process list display
 	 */
 	updateProcessList: function() {
-		return podmanRPC.container.top(this.containerId, 'aux').then((result) => {
+		return podmanRPC.container.top(this.containerId, '').then((result) => {
 			const container = document.getElementById('process-list-container');
 			if (!container) return;
 
