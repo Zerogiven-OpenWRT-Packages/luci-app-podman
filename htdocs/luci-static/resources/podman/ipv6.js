@@ -36,50 +36,26 @@ return baseclass.extend({
 	 * // Returns: { ipv6subnet: "0:0:0:1::/64", ipv6gateway: "0:0:0:1::1" }
 	 */
 	deriveUlaFromIpv4: function (ipv4, ula_prefix) {
-
-		// --- 1. Process IPv4 address ---
 		const ipv4Address = ipv4.split('/')[0];
-
-		// Convert to octets: [192, 168, 20, 0]
 		const octets = ipv4Address.split('.').map(Number);
-
-		const octet3 = octets[2]; // e.g., 20
-		const octet4 = octets[3]; // e.g., 0
-
-		// Example: (20 << 8) | 0 = 5120 → "1400"
+		const octet3 = octets[2];
+		const octet4 = octets[3];
 		const subnetIdHex = ((octet3 << 8) | octet4).toString(16).padStart(4, '0');
-
-		// --- 2. Process ULA prefix ---
-
-		// Examples: "fd52:425:78eb::" or "fd52:425::"
 		const ulaAddress = ula_prefix.split('/')[0];
-
-		// Split the ULA address at the "::"
-		// Examples:
-		//   "fd52:425:78eb::" → ["fd52:425:78eb", ""]
-		//   "fd52:425::"      → ["fd52:425", ""]
 		const ulaParts = ulaAddress.split('::');
 
-		// Take the part before "::" (e.g., "fd52:425:78eb" or "fd52:425")
 		let ulaBase = ulaParts[0];
-
-		// Split into hextets: ["fd52", "425", "78eb"] or ["fd52", "425"]
 		let hextets = ulaBase.split(':');
 
 		if (hextets.length === 1 && hextets[0] === "") {
 			hextets = [];
 		}
 
-		// This normalizes shorter prefixes like "fd52:425::" → ["fd52", "425", "0"]
 		while (hextets.length < 3) {
 			hextets.push('0');
 		}
 
 		const ulaNetworkBase = hextets.slice(0, 3).join(':');
-
-		// --- 3. Build subnet and gateway ---
-
-		// Append the new subnet ID (e.g., "fd52:425:0:1400::")
 		const ipv6SubnetAddress = `${ulaNetworkBase}:${subnetIdHex}::`;
 
 		return {
