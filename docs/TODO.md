@@ -1,0 +1,362 @@
+# LuCI Podman App - TODO List
+
+This document tracks planned features and enhancements for the LuCI Podman web interface.
+
+## 📑 Table of Contents
+
+- [Quick Wins (Low Complexity, High Value)](#-quick-wins-low-complexity-high-value)
+  - [Container Pause/Unpause UI](#1-container-pauseunpause-ui)
+- [Container Management](#-container-management)
+  - [Smart Container Stop with Kill Fallback](#1-smart-container-stop-with-kill-fallback)
+- [Pod Management](#-pod-management)
+  - [Pod Detail Page](#1-pod-detail-page)
+  - [Smart Pod Stop with Kill Fallback](#2-smart-pod-stop-with-kill-fallback)
+- [Image Management](#-image-management)
+  - [Image Search](#1-image-search)
+- [OpenWrt Integration](#-openwrt-integration)
+  - [Generate Procd Init Script](#1-generate-procd-init-script-openwrt-specific-)
+- [Feature Status Summary](#-feature-status-summary)
+- [Explicitly Excluded Features](#-explicitly-excluded-features)
+- [Implementation Notes](#-implementation-notes)
+
+---
+
+## ⚡ Quick Wins (Low Complexity, High Value)
+
+### 1. Container Pause/Unpause UI
+**Status:** Not Started
+**Complexity:** Low (1 hour)
+**Priority:** ⭐⭐⭐ High (Quick win - backend already exists)
+**Backend:** ✅ Already implemented (`container_pause`, `container_unpause`)
+
+**Implementation:**
+- Add Pause/Unpause buttons to container actions in list view
+- Add Pause/Unpause button to container detail view
+- Show pause state in container status badge
+- Use existing RPC methods (no backend changes needed)
+
+**UI Location:**
+- Containers list toolbar (bulk operations)
+- Container detail page (single container)
+
+**Why Priority:** Backend already complete, only UI changes needed, provides immediate value for testing/troubleshooting containers.
+
+---
+
+## 🐳 Container Management
+
+### 1. Smart Container Stop with Kill Fallback
+**Status:** Not Started
+**Complexity:** Medium (3 hours)
+**Priority:** ⭐⭐⭐ High (Safety feature - prevents stuck containers)
+**Backend:** Need to add `container_kill` RPC method
+
+**Implementation:**
+- When Stop fails, show modal: "Container failed to stop gracefully. Force kill?"
+- Options: "Cancel" or "Force Kill (SIGKILL)"
+- Add visual warning about data loss risk
+- Handle timeout scenarios
+
+**Backend RPC Method Needed:**
+```bash
+container_kill)
+    get_json_params id signal
+    require_param id
+    signal="${signal:-SIGKILL}"  # Default to SIGKILL
+    curl_request "POST" "${API_BASE}/containers/${id}/kill?signal=${signal}"
+    ;;
+```
+
+**UI Flow:**
+1. User clicks "Stop"
+2. Stop fails → Show modal with warning
+3. User confirms → Call kill endpoint
+4. Refresh view
+
+**Why Priority:** Prevents frustration when containers hang, provides safety mechanism without requiring CLI access.
+
+---
+
+## 📦 Pod Management
+
+### 1. Pod Detail Page
+**Status:** Not Started
+**Complexity:** Medium (6 hours)
+**Priority:** ⭐⭐ Medium (Improves pod management UX significantly)
+**Backend:** Need `pod_top` RPC method
+
+**Features:**
+- Dedicated detail page for pods (like containers have)
+- **Info Tab:** Pod metadata, status, created date
+- **Containers Tab:** List of containers in pod with links
+- **Processes Tab:** Show all processes running in pod containers (`pod_top`)
+- **Actions:** Start, Stop, Restart, Pause, Unpause, Kill, Remove
+
+**URL Pattern:** `/admin/podman/pod/{pod_name}`
+
+**Backend RPC Method Needed:**
+```bash
+pod_top)
+    get_json_params name ps_args
+    require_param name
+    curl_request "GET" "${API_BASE}/pods/${name}/top"
+    ;;
+```
+
+**UI Implementation:**
+- Create new `view/podman/pod.js` (similar to `container.js`)
+- Use tabbed interface (`ui.tabs`)
+- Link from pods list (make Name column clickable)
+- Show pod infra container details
+
+**Why Priority:** Provides consistent UX with container detail view, essential for users managing multi-container applications.
+
+---
+
+### 2. Smart Pod Stop with Kill Fallback
+**Status:** Not Started
+**Complexity:** Medium (1 hour - reuse container kill pattern)
+**Priority:** ⭐⭐ Medium (Same as container kill, but for pods)
+**Backend:** Need to add `pod_kill` RPC method
+
+**Implementation:**
+- Same pattern as container kill fallback
+- Handle pod-level stop failures
+- Show modal with warning for all containers in pod
+
+**Backend RPC Method Needed:**
+```bash
+pod_kill)
+    get_json_params name signal
+    require_param name
+    signal="${signal:-SIGKILL}"
+    curl_request "POST" "${API_BASE}/pods/${name}/kill?signal=${signal}"
+    ;;
+```
+
+**Why Priority:** Essential for pod management, should be implemented together with container kill for consistency.
+
+---
+
+## 🖼️ Image Management
+
+### 1. Image Search
+**Status:** Not Started
+**Complexity:** Medium (4 hours)
+**Priority:** ⭐⭐⭐ High (High user value - discover and pull images easily)
+**Backend:** Need `image_search` RPC method
+
+**Features:**
+- Search box in Images view with auto-search (debounced)
+- Search Docker Hub and configured registries
+- Show results in table: Name, Description, Stars, Official, Automated
+- "Pull" button for each result
+- Filter by official/automated
+
+**Backend RPC Method:**
+```bash
+image_search)
+    get_json_params term limit filters
+    require_param term
+    term_enc=$(urlencode "$term")
+    path="${API_BASE}/images/search?term=${term_enc}"
+    [ -n "$limit" ] && path="${path}&limit=${limit}"
+    curl_request "GET" "$path"
+    ;;
+```
+
+**UI Components:**
+- Search input with 500ms debounce
+- Results table with columns: Name, Description, Stars, Official, Pull button
+- Loading indicator during search
+- Empty state when no results
+
+**API Response Format:**
+```json
+{
+  "Name": "docker.io/library/nginx",
+  "Description": "Official build of Nginx.",
+  "Stars": 19000,
+  "Official": true,
+  "Automated": false
+}
+```
+
+**Why Priority:** Eliminates need to know exact image names, enables image discovery directly from UI, high user value for onboarding.
+
+---
+
+## 🔧 OpenWrt Integration
+
+### 1. Generate Procd Init Script (OpenWrt-Specific) ⭐⭐
+**Status:** Not Started
+**Complexity:** High (8-10 hours)
+**Priority:** ⭐⭐ Medium (OpenWrt-specific, high value for production deployments)
+**Backend:** New implementation (cannot use systemd endpoint directly)
+
+**Goal:** Generate OpenWrt procd init scripts for containers to start on boot
+
+**Why Priority:** Critical for production OpenWrt deployments where containers must survive reboots, unique value proposition for embedded systems.
+
+**Implementation Strategy:**
+
+#### Option A: Transform Systemd Output
+Use Podman's systemd generator as reference, transform to procd format:
+
+**Backend RPC Method:**
+```bash
+generate_procd_script)
+    get_json_params name
+    require_param name
+
+    # Get container inspect data
+    container_data=$(curl -s --unix-socket "$SOCKET" \
+        "http://localhost${API_BASE}/containers/${name}/json")
+
+    # Parse container data and generate procd script
+    # Extract: image, command, env vars, volumes, ports, restart policy
+
+    # Generate /etc/init.d/podman-${name} script
+    # Output as base64-encoded script
+    ;;
+```
+
+#### Option B: Custom Procd Generator (Recommended)
+Build procd script directly from container inspect data:
+
+**Procd Init Script Template:**
+```bash
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+START=99
+STOP=01
+
+CONTAINER_NAME="nginx"
+IMAGE="nginx:latest"
+RESTART_POLICY="always"
+
+start_service() {
+    procd_open_instance
+    procd_set_param command podman start "$CONTAINER_NAME"
+    procd_set_param respawn
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}
+
+stop_service() {
+    podman stop "$CONTAINER_NAME"
+}
+```
+
+**Features to Support:**
+- ✅ Container name
+- ✅ Image reference
+- ✅ Restart policy (always/unless-stopped/on-failure → procd respawn)
+- ✅ Environment variables
+- ✅ Port mappings
+- ✅ Volume mounts
+- ✅ Network configuration
+- ✅ Depends on other services
+
+**UI Components:**
+- "Generate Init Script" button in container detail view
+- Preview modal showing generated script
+- "Download" button to save as `/etc/init.d/podman-{name}`
+- Instructions for enabling: `service podman-nginx enable && service podman-nginx start`
+- Warning: Container must exist (created but not necessarily running)
+
+**Complexity Breakdown:**
+1. Parse container inspect JSON (2 hours)
+2. Build procd script template (3 hours)
+3. Handle all container options (ports, volumes, env, etc.) (3 hours)
+4. UI modal with preview and download (2 hours)
+
+**Reference Material:**
+- Podman systemd generator: `GET /libpod/generate/{name}/systemd`
+- OpenWrt procd documentation
+- Example procd scripts in `/etc/init.d/`
+
+---
+
+## 📋 Feature Status Summary
+
+| Category | Feature | Priority | Complexity | Time | Backend | Frontend | Status |
+|----------|---------|----------|------------|------|---------|----------|--------|
+| ⚡ Quick Wins | Container Pause/Unpause UI | ⭐⭐⭐ High | Low | 1h | ✅ Done | Needed | Not Started |
+| 🐳 Container | Smart Stop with Kill Fallback | ⭐⭐⭐ High | Medium | 3h | Needed | Needed | Not Started |
+| 🖼️ Image | Image Search | ⭐⭐⭐ High | Medium | 4h | Needed | Needed | Not Started |
+| 📦 Pod | Pod Detail Page | ⭐⭐ Medium | Medium | 6h | Needed | Needed | Not Started |
+| 📦 Pod | Smart Pod Stop with Kill Fallback | ⭐⭐ Medium | Medium | 1h | Needed | Needed | Not Started |
+| 🔧 OpenWrt | Generate Procd Init Script | ⭐⭐ Medium | High | 8-10h | Needed | Needed | Not Started |
+
+**Total Estimated Time:** 23-25 hours
+
+**Recommended Implementation Order (by priority/effectiveness):**
+1. **Container Pause/Unpause UI** (1h) - Quick win, backend exists
+2. **Smart Container Stop with Kill Fallback** (3h) - High safety value
+3. **Image Search** (4h) - High user value for discovery
+4. **Smart Pod Stop with Kill Fallback** (1h) - Consistency with containers
+5. **Pod Detail Page** (6h) - Complete pod management UX
+6. **Generate Procd Init Script** (8-10h) - Production deployment feature
+
+---
+
+## 🚫 Explicitly Excluded Features
+
+The following features were considered but explicitly excluded:
+
+### Prune Operations
+- ❌ Container Prune - Already available via System Prune in Overview
+- ❌ Image Prune - Already available via System Prune in Overview
+- ❌ Network Prune - Already available via System Prune in Overview
+- ❌ Volume Prune - Already available via System Prune in Overview
+- ❌ Pod Prune - Already available via System Prune in Overview
+
+**Reason:** Global system prune in overview.js handles all cleanup operations
+
+### Image Management
+- ❌ Image Tag - Not needed for typical use cases
+- ❌ Image History - Not needed for typical use cases
+
+**Reason:** Low value for typical OpenWrt/embedded use cases
+
+### Advanced Features
+- ❌ Container Exec - Too complex, SSH/CLI available
+- ❌ Container Archive (Copy Files) - Too complex UI
+- ❌ Container Checkpoint/Restore - May not work on OpenWrt (needs CRIU)
+- ❌ Image Build - Too complex, build elsewhere and pull
+- ❌ Generate Systemd Units - OpenWrt doesn't use systemd
+- ❌ Manifest Management - Too niche
+- ❌ System Events (Real-time Updates) - Events disabled on system (`events_logger = "none"`)
+
+---
+
+## 📝 Implementation Notes
+
+### Development Workflow
+1. **One task at a time** - Complete, commit, and test before moving to next
+2. **Backend first** - Add RPC methods and test with `ubus call`
+3. **Upload and restart** - `scp` files and restart rpcd
+4. **Manual testing** - User tests each feature before proceeding
+5. **Commit when working** - Git commit after successful test
+
+### Code Quality Standards
+- Follow existing patterns in codebase
+- Use LuCI form components (no custom HTML tables)
+- Use `podman.ui` components (pui.Button, pui.MultiButton)
+- Use `podman.list` helper for list views
+- Use arrow functions for callbacks, `function` for lifecycle methods
+- Add JSDoc comments for new functions
+- Update ACL permissions for new RPC methods
+
+### Testing Checklist
+- [ ] RPC method works via `ubus call`
+- [ ] UI renders correctly
+- [ ] Actions complete successfully
+- [ ] Error handling works (show proper error messages)
+- [ ] Success notifications appear
+- [ ] View refreshes after action
+- [ ] No console errors
+- [ ] Works on actual OpenWrt device (not just dev machine)
