@@ -17,7 +17,6 @@ return L.Class.extend({
 			throw new Error('Empty command');
 		}
 
-		// Remove leading docker/podman run
 		command = command.trim().replace(/^(docker|podman)\s+run\s+/, '');
 
 		const spec = {
@@ -40,24 +39,20 @@ return L.Class.extend({
 			healthconfig: {}
 		};
 
-		// Parse flags and options
 		const tokens = this.tokenize(command);
 		let i = 0;
 
 		while (i < tokens.length) {
 			const token = tokens[i];
 
-			// Image name (first non-flag token)
 			if (!token.startsWith('-') && !spec.image) {
 				spec.image = token;
-				// Everything after image is the command
 				if (i + 1 < tokens.length) {
 					spec.command = tokens.slice(i + 1);
 				}
 				break;
 			}
 
-			// Parse flags
 			if (token === '-p' || token === '--publish') {
 				i++;
 				const portMapping = this.parsePort(tokens[i]);
@@ -103,7 +98,6 @@ return L.Class.extend({
 			} else if (token === '--rm') {
 				spec.remove = true;
 			} else if (token === '-d' || token === '--detach') {
-				// Detach flag, we ignore this as we always create detached
 			} else if (token === '--cpus') {
 				i++;
 				const cpus = parseFloat(tokens[i]);
@@ -146,7 +140,6 @@ return L.Class.extend({
 			throw new Error('No image specified in command');
 		}
 
-		// Clean up empty objects/arrays
 		if (Object.keys(spec.env).length === 0) delete spec.env;
 		if (spec.portmappings.length === 0) delete spec.portmappings;
 		if (spec.mounts.length === 0) delete spec.mounts;
@@ -208,7 +201,6 @@ return L.Class.extend({
 	parsePort: function(portStr) {
 		if (!portStr) return null;
 
-		// Remove protocol suffix if present
 		const parts = portStr.split('/');
 		const protocol = parts[1] || 'tcp';
 		const portParts = parts[0].split(':');
@@ -216,12 +208,10 @@ return L.Class.extend({
 		let hostPort, containerPort, hostIP;
 
 		if (portParts.length === 3) {
-			// host:hostPort:containerPort
 			hostIP = portParts[0];
 			hostPort = parseInt(portParts[1], 10);
 			containerPort = parseInt(portParts[2], 10);
 		} else if (portParts.length === 2) {
-			// hostPort:containerPort
 			hostPort = parseInt(portParts[0], 10);
 			containerPort = parseInt(portParts[1], 10);
 		} else {
@@ -333,14 +323,12 @@ return L.Class.extend({
 	parseDuration: function(duration) {
 		if (!duration) return 0;
 
-		// Match number with unit (ns, us, ms, s, m, h)
 		const match = duration.match(/^(\d+(?:\.\d+)?)\s*(ns|us|ms|s|m|h)$/);
 		if (!match) return 0;
 
 		const value = parseFloat(match[1]);
 		const unit = match[2];
 
-		// Multipliers to convert to nanoseconds
 		const multipliers = {
 			'ns': 1,
 			'us': 1000,

@@ -41,12 +41,10 @@ return view.extend({
 	 * @returns {Element} Container view element
 	 */
 	render: function(data) {
-		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper with full data object
 		this.listHelper = new List.Util({
 			itemName: 'container',
 			rpc: podmanRPC.container,
@@ -62,11 +60,9 @@ return view.extend({
 
 		let o;
 
-		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
 		0, { hiddenname: 'all' }).render());
 
-		// Name column
 		o = section.option(form.DummyValue, 'Names', _('Name'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
@@ -77,7 +73,6 @@ return view.extend({
 			return utils.truncate(container.Id, 10);
 		};
 
-		// Id column
 		o = section.option(form.DummyValue, 'Id', _('Id'));
 		o.cfgvalue = (sectionId) => {
 			const containerId = this.map.data.data[sectionId].Id;
@@ -86,33 +81,26 @@ return view.extend({
 			}, utils.truncate(containerId, 10));
 		};
 
-		// Image column
 		o = section.option(podmanForm.field.DataDummyValue, 'Image', _('Image'));
-		// Status column
 		o = section.option(podmanForm.field.DataDummyValue, 'State', _('Status'));
-		// Health column
 		o = section.option(form.DummyValue, 'Health', _('Health'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
 			const health = container.State && container.State.Health;
 
-			// No health check configured - show em dash
 			if (!health) {
 				return E('span', { 'style': 'color: #999;' }, '—');
 			}
 
-			// Health check configured but status not set yet or empty - treat as starting
 			const status = health.Status || 'starting';
 			const badgeClass = 'badge status-' + status.toLowerCase();
 
 			return E('span', { 'class': badgeClass }, status);
 		};
 		o.rawhtml = true;
-		// Created column
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
 		o.cfgformatter = utils.formatDate;
 
-		// Create toolbar using helper with custom buttons
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleRemove(),
 			onRefresh: () => this.refreshTable(false),
@@ -138,7 +126,6 @@ return view.extend({
 			]
 		});
 
-		// Add create menu button at the beginning of the toolbar
 		const createButton = new podmanUI.MultiButton({}, 'add')
 			.addItem(_('Create Container'), () => this.handleCreateContainer())
 			.addItem(_('Import from Run Command'), () => this.handleImportFromRunCommand())
@@ -150,11 +137,8 @@ return view.extend({
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-			// Add map content
 			viewContainer.appendChild(mapRendered);
-			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;
@@ -190,7 +174,6 @@ return view.extend({
 	},
 
 	handleImportFromCompose: function() {
-		// Feature not yet implemented
 	},
 
 	/**
@@ -238,7 +221,6 @@ return view.extend({
 			return;
 		}
 
-		// Filter containers that have health checks configured
 		const containersWithHealth = selected.filter((id) => {
 			const container = this.listHelper.data.containers.find((c) => c.Id === id);
 			return container && container.State && container.State.Health;

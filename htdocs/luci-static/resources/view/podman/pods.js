@@ -40,12 +40,10 @@ return view.extend({
 	 * @returns {Element} Pods view element
 	 */
 	render: function(data) {
-		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper with full data object
 		this.listHelper = new List.Util({
 			itemName: 'pod',
 			rpc: podmanRPC.pod,
@@ -60,16 +58,13 @@ return view.extend({
 
 		let o;
 
-		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
 		0, { hiddenname: 'all' }).render());
 
-		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
 		o.click = (pod) => this.handleInspect(pod.Name);
 		o.text = (pod) => pod.Name || _('Unknown');
 
-		// Status column
 		o = section.option(form.DummyValue, 'Status', _('Status'));
 		o.cfgvalue = (sectionId) => {
 			const pod = this.map.data.data[sectionId];
@@ -77,7 +72,6 @@ return view.extend({
 			return E('span', { 'class': 'badge status-' + status.toLowerCase() }, status);
 		};
 
-	// Containers column - show IDs with links
 	o = section.option(form.DummyValue, 'Containers', _('Containers'));
 	o.cfgvalue = (sectionId) => {
 		const pod = this.map.data.data[sectionId];
@@ -87,7 +81,6 @@ return view.extend({
 			return '0';
 		}
 
-		// Create links for each container ID
 		const containerLinks = containers.map((container) => {
 			const containerId = container.Id;
 			const shortId = utils.truncate(containerId, 12);
@@ -104,50 +97,16 @@ return view.extend({
 		]);
 	};
 	o.rawhtml = true;
-		// Infra ID column
 		o = section.option(form.DummyValue, 'InfraId', _('Infra ID'));
 		o.cfgvalue = (sectionId) => {
 			const pod = this.map.data.data[sectionId];
 			return pod.InfraId ? utils.truncate(pod.InfraId, 12) : _('N/A');
 		};
 
-		// Created column
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
 		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
-		// // Actions column
-		// o = section.option(form.DummyValue, 'Actions', _('Actions'));
-		// o.cfgvalue = (sectionId) => {
-		// 	const pod = this.map.data.data[sectionId];
-		// 	const id = pod.Id;
-		// 	const name = pod.Name;
-		// 	const isRunning = pod.Status === 'Running';
-		// 	const isPaused = pod.Status === 'Paused';
 
-		// 	const startStopLabel = isRunning ? _('Stop') : _('Start');
-		// 	const startStopClass = isRunning ? 'negative' : 'positive';
-		// 	const startStopHandler = isRunning ?
-		// 		() => this.handleStop(id) :
-		// 		() => this.handleStart(id);
-
-		// 	const pauseLabel = isPaused ? _('Unpause') : _('Pause');
-		// 	const pauseHandler = isPaused ?
-		// 		() => this.handleUnpause(id) :
-		// 		() => this.handlePause(id);
-
-		// 	return E('div', {}, [
-		// 		new pui.Button(startStopLabel, startStopHandler, startStopClass).render(),
-		// 		' ',
-		// 		new pui.Button(_('Restart'), () => this.handleRestart(id)).render(),
-		// 		' ',
-		// 		new pui.Button(pauseLabel, pauseHandler).render(),
-		// 		' ',
-		// 		new pui.Button(_('Remove'), () => this.handleRemove(id, name), 'remove').render()
-		// 	]);
-		// };
-		// o.rawhtml = true;
-
-		// Create toolbar using helper with custom buttons
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
@@ -170,12 +129,9 @@ return view.extend({
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-			// Add map content
 			viewContainer.appendChild(mapRendered);
 
-			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;
@@ -295,91 +251,7 @@ return view.extend({
 		});
 	},
 
-	// /**
-	//  * Restart a pod
-	//  * @param {string} id - Pod ID
-	//  */
-	// handleRestart: function(id) {
-	// 	podmanUI.showSpinningModal(_('Restarting Pod'), _('Restarting pod...'));
 
-	// 	podmanRPC.pod.restart(id).then((result) => {
-	// 		ui.hideModal();
-	// 		if (result && result.error) {
-	// 			podmanUI.errorNotification(_('Failed to restart pod: %s').format(result.error));
-	// 		} else {
-	// 			podmanUI.successTimeNotification(_('Pod restarted successfully'));
-	// 			this.handleRefresh(false);
-	// 		}
-	// 	}).catch((err) => {
-	// 		ui.hideModal();
-	// 		podmanUI.errorNotification(_('Failed to restart pod: %s').format(err.message));
-	// 	});
-	// },
 
-	// /**
-	//  * Pause a pod
-	//  * @param {string} id - Pod ID
-	//  */
-	// handlePause: function(id) {
-	// 	podmanUI.showSpinningModal(_('Pausing Pod'), _('Pausing pod...'));
 
-	// 	podmanRPC.pod.pause(id).then((result) => {
-	// 		ui.hideModal();
-	// 		if (result && result.error) {
-	// 			podmanUI.errorNotification(_('Failed to pause pod: %s').format(result.error));
-	// 		} else {
-	// 			podmanUI.successTimeNotification(_('Pod paused successfully'));
-	// 			this.handleRefresh(false);
-	// 		}
-	// 	}).catch((err) => {
-	// 		ui.hideModal();
-	// 		podmanUI.errorNotification(_('Failed to pause pod: %s').format(err.message));
-	// 	});
-	// },
-
-	// /**
-	//  * Unpause a pod
-	//  * @param {string} id - Pod ID
-	//  */
-	// handleUnpause: function(id) {
-	// 	pui.showSpinningModal(_('Unpausing Pod'), _('Unpausing pod...'));
-
-	// 	podmanRPC.pod.unpause(id).then((result) => {
-	// 		ui.hideModal();
-	// 		if (result && result.error) {
-	// 			pui.errorNotification(_('Failed to unpause pod: %s').format(result.error));
-	// 		} else {
-	// 			pui.successTimeNotification(_('Pod unpaused successfully'));
-	// 			this.refreshTable(false);
-	// 		}
-	// 	}).catch((err) => {
-	// 		ui.hideModal();
-	// 		pui.errorNotification(_('Failed to unpause pod: %s').format(err.message));
-	// 	});
-	// },
-
-	// /**
-	//  * Remove a pod
-	//  * @param {string} id - Pod ID
-	//  * @param {string} name - Pod name
-	//  */
-	// handleRemove: function(id, name) {
-	// 	if (!confirm(_('Are you sure you want to remove pod %s?').format(name)))
-	// 		return;
-
-	// 	pui.showSpinningModal(_('Removing Pod'), _('Removing pod...'));
-
-	// 	podmanRPC.pod.remove(name, false).then((result) => {
-	// 		ui.hideModal();
-	// 		if (result && result.error) {
-	// 			pui.errorNotification(_('Failed to remove pod: %s').format(result.error));
-	// 		} else {
-	// 			pui.successTimeNotification(_('Pod removed successfully'));
-	// 			this.refreshTable(true);
-	// 		}
-	// 	}).catch((err) => {
-	// 		ui.hideModal();
-	// 		pui.errorNotification(_('Failed to remove pod: %s').format(err.message));
-	// 	});
-	// }
 });

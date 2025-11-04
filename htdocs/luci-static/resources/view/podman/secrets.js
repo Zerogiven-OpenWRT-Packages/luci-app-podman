@@ -40,12 +40,10 @@ return view.extend({
 	 * @returns {Element} Secrets view element
 	 */
 	render: function(data) {
-		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper with full data object
 		this.listHelper = new List.Util({
 			itemName: 'secret',
 			rpc: podmanRPC.secret,
@@ -61,11 +59,9 @@ return view.extend({
 
 		let o;
 
-		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
 		0, { hiddenname: 'all' }).render());
 
-		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
 		o.click = (secret) => {
 			const name = secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name ||
@@ -75,7 +71,6 @@ return view.extend({
 		o.text = (secret) => secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name ||
 			_('Unknown'));
 
-		// Driver column
 		o = section.option(form.DummyValue, 'Driver', _('Driver'));
 		o.cfgvalue = (sectionId) => {
 			const secret = this.map.data.data[sectionId];
@@ -86,7 +81,6 @@ return view.extend({
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
 		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
-		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
@@ -96,11 +90,8 @@ return view.extend({
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-			// Add map content
 			viewContainer.appendChild(mapRendered);
-			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;

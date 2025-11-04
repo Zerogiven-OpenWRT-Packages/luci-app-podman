@@ -27,12 +27,10 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.image.list()
 			.then((images) => {
-				// Expand images with multiple tags into separate records
 				const expandedImages = [];
 				(images || []).forEach((image) => {
 					const repoTags = image.RepoTags || ['<none>:<none>'];
 					repoTags.forEach((tag) => {
-						// Create a copy of the image for each tag
 						expandedImages.push({
 							...image,
 							_displayTag: tag,
@@ -53,12 +51,10 @@ return view.extend({
 	 * @returns {Element} Images view element
 	 */
 	render: function(data) {
-		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper with full data object
 		this.listHelper = new List.Util({
 			itemName: 'image',
 			rpc: podmanRPC.image,
@@ -74,11 +70,9 @@ return view.extend({
 
 		let o;
 
-		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
 		0, { hiddenname: 'all' }).render());
 
-		// Repository column
 		o = section.option(form.DummyValue, 'Repository', _('Repository'));
 		o.cfgvalue = (sectionId) => {
 			const image = this.map.data.data[sectionId];
@@ -87,7 +81,6 @@ return view.extend({
 			return E('strong', {}, parts[0] || '<none>');
 		};
 
-		// Tag column
 		o = section.option(form.DummyValue, 'Tag', _('Tag'));
 		o.cfgvalue = (sectionId) => {
 			const image = this.map.data.data[sectionId];
@@ -96,19 +89,15 @@ return view.extend({
 			return parts[1] || '<none>';
 		};
 
-		// Image ID column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'ImageId', _('Image ID'));
 		o.click = (image) => this.handleInspect(image.Id);
 		o.text = (image) => utils.truncate(image.Id ? image.Id.substring(7, 19) : '', 10);
 
-		// Size column
 		o = section.option(podmanForm.field.DataDummyValue, 'Size', _('Size'));
 		o.cfgformatter = utils.formatBytes;
-		// Created column
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
 		o.cfgformatter = utils.formatDate;
 
-		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
@@ -129,14 +118,10 @@ return view.extend({
 			const mapRendered = rendered[1];
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-			// Add pull section first
 			viewContainer.appendChild(formRendered);
-			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-			// Add map content
 			viewContainer.appendChild(mapRendered);
 
-			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;

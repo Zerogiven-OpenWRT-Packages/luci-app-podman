@@ -41,12 +41,10 @@ return view.extend({
 	 * @returns {Element} Networks view element
 	 */
 	render: function(data) {
-		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper with full data object
 		this.listHelper = new List.Util({
 			itemName: 'network',
 			rpc: podmanRPC.network,
@@ -62,11 +60,9 @@ return view.extend({
 
 		let o;
 
-		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'name', new ui.Checkbox(
 		0, { hiddenname: 'all' }).render());
 
-		// Name column with integration alert icon
 		o = section.option(form.DummyValue, 'Name', _('Name'));
 		o.cfgvalue = (sectionId) => {
 			const network = this.map.data.data[sectionId];
@@ -88,44 +84,35 @@ return view.extend({
 			]);
 		};
 
-		// Driver column
 		o = section.option(podmanForm.field.DataDummyValue, 'Driver', _('Driver'));
 
-		// Subnet column
 		o = section.option(form.DummyValue, 'Subnet', _('Subnet'));
 		o.cfgvalue = (sectionId) => {
 			const network = this.map.data.data[sectionId];
-			// Handle Podman API format (lowercase)
 			if (network.subnets && network.subnets.length > 0) {
 				return network.subnets[0].subnet || _('N/A');
 			}
-			// Handle Docker-compat format (uppercase)
 			else if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
 				return network.IPAM.Config[0].Subnet || _('N/A');
 			}
 			return _('N/A');
 		};
 
-		// Gateway column
 		o = section.option(form.DummyValue, 'Gateway', _('Gateway'));
 		o.cfgvalue = (sectionId) => {
 			const network = this.map.data.data[sectionId];
-			// Handle Podman API format (lowercase)
 			if (network.subnets && network.subnets.length > 0) {
 				return network.subnets[0].gateway || _('N/A');
 			}
-			// Handle Docker-compat format (uppercase)
 			else if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
 				return network.IPAM.Config[0].Gateway || _('N/A');
 			}
 			return _('N/A');
 		};
 
-		// Created column
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
 		o.cfgformatter = (created) => utils.formatDate(new Date(created).getTime() / 1000);
 
-		// Create toolbar using helper
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
@@ -135,14 +122,10 @@ return view.extend({
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-			// Add map content
 			viewContainer.appendChild(mapRendered);
-			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
-			// Check OpenWrt integration completeness for each network (async)
 			this.checkIntegrationStatus();
 
 			return viewContainer;
@@ -160,7 +143,6 @@ return view.extend({
 				const iconEl = document.getElementById('integration-icon-' +
 				name);
 				if (iconEl && !result.complete) {
-					// Show alert icon for incomplete integration
 					iconEl.innerHTML = '';
 					iconEl.appendChild(E('a', {
 						'href': '#',
@@ -202,7 +184,6 @@ return view.extend({
 			return;
 		}
 
-		// Check which networks have OpenWrt integration
 		const checkPromises = selected.map((name) =>
 			openwrtNetwork.hasIntegration(name).then((exists) => ({
 				name: name,
@@ -231,18 +212,15 @@ return view.extend({
 			podmanUI.showSpinningModal(_('Deleting Networks'), _(
 				'Deleting %d selected network(s)...').format(selected.length));
 
-			// Delete networks and their OpenWrt integrations
 			const deletePromises = selected.map((name) => {
 				const check = checks.find((c) => c.name === name);
 				const bridgeName = name + '0'; // Assume default bridge name
 
-				// Remove Podman network first
 				return podmanRPC.network.remove(name, false).then((result) => {
 					if (result && result.error) {
 						return { name: name, error: result.error };
 					}
 
-					// If OpenWrt integration exists, remove it
 					if (check && check.hasOpenwrt) {
 						return openwrtNetwork.removeIntegration(name,
 							bridgeName).then(() => {
@@ -293,7 +271,6 @@ return view.extend({
 	 */
 	handleRefresh: function(clearSelections) {
 		this.listHelper.refreshTable(clearSelections).then(() => {
-			// Re-check integration status after table refresh
 			this.checkIntegrationStatus();
 		});
 	},
@@ -322,7 +299,6 @@ return view.extend({
 	handleSetupIntegration: function(network) {
 		const name = network.name || network.Name;
 
-		// Extract subnet and gateway from Podman network data
 		let subnet, gateway;
 
 		// Try Podman API format (lowercase)
@@ -336,7 +312,6 @@ return view.extend({
 			gateway = network.IPAM.Config[0].Gateway;
 		}
 
-		// Validate we have the required data
 		if (!subnet || !gateway) {
 			podmanUI.errorNotification(_(
 				'Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured'
@@ -346,7 +321,6 @@ return view.extend({
 
 		const bridgeName = name + '0'; // Default bridge name
 
-		// Show confirmation modal
 		ui.showModal(_('Setup OpenWrt Integration'), [
 			E('p', {}, _('Setup OpenWrt integration for network "%s"?').format(name)),
 			E('p', {}, [
@@ -396,7 +370,6 @@ return view.extend({
 					'OpenWrt integration for network "%s" created successfully')
 				.format(name));
 
-			// Update icon in place - hide alert icon
 			const iconEl = document.getElementById('integration-icon-' + name);
 			if (iconEl) {
 				iconEl.style.display = 'none';

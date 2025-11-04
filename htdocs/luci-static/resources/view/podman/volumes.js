@@ -40,12 +40,10 @@ return view.extend({
 	 * @returns {Element} Volumes view element
 	 */
 	render: function(data) {
-		// Handle errors from load()
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
 
-		// Initialize list helper with full data object
 		this.listHelper = new List.Util({
 			itemName: 'volume',
 			rpc: podmanRPC.volume,
@@ -61,31 +59,25 @@ return view.extend({
 
 		let o;
 
-		// Checkbox column for selection
 		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(
 		0, { hiddenname: 'all' }).render());
 
-		// Name column
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
 		o.click = (volume) => this.handleInspect(volume.Name);
 		o.text = (volume) => utils.truncate(volume.Name || _('Unknown'), 20);
 		o.linktitle = (volume) => volume.Name || _('Unknown');
 
-		// Driver column
 		o = section.option(podmanForm.field.DataDummyValue, 'Driver', _('Driver'));
 		o.cfgdefault = _('local');
 
-		// Mountpoint column
 		o = section.option(podmanForm.field.DataDummyValue, 'Mountpoint', _('Mountpoint'));
 		o.cfgdefault = _('N/A');
 		o.cfgtitle = (cfg) => cfg;
 		o.cfgformatter = (cfg) => utils.truncate(cfg, 30);
 
-		// Created column
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
 		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
 
-		// Create toolbar using helper with custom buttons
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
@@ -98,7 +90,6 @@ return view.extend({
 			}]
 		});
 
-		// Add create/import multi-button
 		const createButton = new podmanUI.MultiButton({}, 'add')
 			.addItem(_('Create Volume'), () => this.handleCreateVolume())
 			.addItem(_('Import Volume'), () => this.handleImportVolume())
@@ -108,12 +99,9 @@ return view.extend({
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', { 'class': 'podman-view-container' });
 
-			// Add toolbar outside map (persists during refresh)
 			viewContainer.appendChild(toolbar.container);
-			// Add map content
 			viewContainer.appendChild(mapRendered);
 
-			// Setup "select all" checkbox using helper
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;
@@ -188,7 +176,6 @@ return view.extend({
 					return;
 				}
 
-				// Decode base64 data and trigger download
 				const binaryData = atob(result.data);
 				const bytes = new Uint8Array(binaryData.length);
 				for (let i = 0; i < binaryData.length; i++) {
@@ -204,7 +191,6 @@ return view.extend({
 				document.body.removeChild(a);
 				URL.revokeObjectURL(url);
 
-				// Export next volume
 				exportNext();
 			}).catch((err) => {
 				ui.hideModal();
@@ -219,7 +205,6 @@ return view.extend({
 	 * Show import volume dialog
 	 */
 	handleImportVolume: function() {
-		// Create file input
 		const fileInput = E('input', {
 			'type': 'file',
 			'accept': '.tar',
@@ -230,7 +215,6 @@ return view.extend({
 			const file = ev.target.files[0];
 			if (!file) return;
 
-			// Extract volume name from filename (remove .tar extension)
 			const volumeName = file.name.replace(/\.tar$/, '');
 
 			ui.showModal(_('Import Volume'), [
@@ -265,7 +249,6 @@ return view.extend({
 							ui.hideModal();
 							podmanUI.showSpinningModal(_('Importing Volume'), _('Importing volume...'));
 
-							// Read file and convert to base64
 							const reader = new FileReader();
 							reader.onload = (e) => {
 								const arrayBuffer = e.target.result;
@@ -276,7 +259,6 @@ return view.extend({
 								}
 								const base64Data = btoa(binary);
 
-								// Call import RPC
 								podmanRPC.volume.importVolume(name, base64Data).then((result) => {
 									ui.hideModal();
 									if (result.error) {
@@ -301,7 +283,6 @@ return view.extend({
 			]);
 		});
 
-		// Trigger file selection
 		document.body.appendChild(fileInput);
 		fileInput.click();
 		document.body.removeChild(fileInput);

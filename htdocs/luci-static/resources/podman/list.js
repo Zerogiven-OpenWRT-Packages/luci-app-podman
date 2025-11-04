@@ -13,13 +13,10 @@ const ListUtil = baseclass.extend({
 		this.data = options.data;
 		this.view = options.view;
 
-		// Determine the data key for accessing the array
-		// Try prefix first, fallback to first key in object
 		if (this.data && typeof this.data === 'object' && !Array.isArray(this.data)) {
 			if (this.data[this.prefix]) {
 				this.dataKey = this.prefix;
 			} else {
-				// Fallback: use first key
 				const keys = Object.keys(this.data);
 				if (keys.length > 0) {
 					this.dataKey = keys[0];
@@ -30,17 +27,8 @@ const ListUtil = baseclass.extend({
 
 	getDataArray: function() {
 		if (!this.data) return [];
-
-		// If data is already an array, return it
-		if (Array.isArray(this.data)) {
-			return this.data;
-		}
-
-		// If data is an object, extract array using dataKey
-		if (this.dataKey && this.data[this.dataKey]) {
-			return this.data[this.dataKey];
-		}
-
+		if (Array.isArray(this.data)) return this.data;
+		if (this.dataKey && this.data[this.dataKey]) return this.data[this.dataKey];
 		return [];
 	},
 
@@ -51,42 +39,26 @@ const ListUtil = baseclass.extend({
 	createToolbar: function(options) {
 		const buttons = [];
 
-		// Create button (first for prominence)
 		if (options.onCreate !== undefined) {
 			buttons.push(new podmanUI.Button(
-				_('Create %s').format(this.itemName.charAt(0).toUpperCase() + this
-					.itemName.slice(1)),
-				options.onCreate,
-				'add'
-			).render());
-			buttons.push(' ');
+				_('Create %s').format(this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)),
+				options.onCreate, 'add'
+			).render(), ' ');
 		}
 
-		// Delete button
 		if (options.onDelete !== undefined) {
-			buttons.push(new podmanUI.Button(
-				_('Delete Selected'),
-				options.onDelete,
-				'remove'
-			).render());
-			buttons.push(' ');
+			buttons.push(new podmanUI.Button(_('Delete Selected'), options.onDelete, 'remove').render(), ' ');
 		}
 
-		// Custom buttons
 		if (options.customButtons) {
 			options.customButtons.forEach((btn) => {
-				buttons.push(new podmanUI.Button(btn.text, btn.handler, btn.cssClass, btn.tooltip)
-					.render());
-				buttons.push(' ');
+				buttons.push(new podmanUI.Button(btn.text, btn.handler, btn.cssClass, btn.tooltip).render(), ' ');
 			});
 		}
 
-		// Refresh button (last)
 		if (options.onRefresh !== undefined) {
 			buttons.push(new podmanUI.Button(
-				_('Refresh'),
-				options.onRefresh || (() => window.location.reload()),
-				'apply'
+				_('Refresh'), options.onRefresh || (() => window.location.reload()), 'apply'
 			).render());
 		}
 
@@ -95,16 +67,13 @@ const ListUtil = baseclass.extend({
 		return {
 			container: container,
 			buttons: buttons,
-			// Helper method to add buttons at the end of toolbar
 			addButton: function(button) {
 				container.appendChild(document.createTextNode(' '));
 				container.appendChild(button);
 			},
-			// Helper method to add buttons at the beginning of toolbar
 			prependButton: function(button) {
 				if (container.firstChild) {
-					container.insertBefore(document.createTextNode(' '), container
-					.firstChild);
+					container.insertBefore(document.createTextNode(' '), container.firstChild);
 					container.insertBefore(button, container.firstChild);
 				} else {
 					container.appendChild(button);
@@ -125,9 +94,7 @@ const ListUtil = baseclass.extend({
 			return;
 		}
 
-		// Format item names for confirmation
-		const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item :
-			item.name || item.Name || item.id || item.Id);
+		const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item : item.name || item.Name || item.id || item.Id);
 		const itemNames = selected.map(formatFn).join(', ');
 
 		if (!confirm(_('Are you sure you want to remove %d %s?\n\n%s').format(
@@ -183,43 +150,28 @@ const ListUtil = baseclass.extend({
 		ui.showIndicator(indicatorId, _('Refreshing %s...').format(this.prefix));
 
 		return this.view.load().then((data) => {
-			// Update listHelper data reference - single source of truth
 			this.data = data;
-
-			// Get the data array
 			const itemsArray = this.getDataArray();
 			const config_name = this.view.map.config;
 
-			// Remove all existing sections
-			const existingSections = this.view.map.data.sections(config_name, this
-			.prefix);
+			const existingSections = this.view.map.data.sections(config_name, this.prefix);
 			existingSections.forEach((section) => {
 				this.view.map.data.remove(config_name, section['.name']);
 			});
 
 			(itemsArray || []).forEach((item, index) => {
-				this.view.map.data.add(config_name, this.prefix, this.prefix +
-					index);
-
-				const newData = Object.assign(this.view.map.data.data[this
-					.prefix + index], item);
+				this.view.map.data.add(config_name, this.prefix, this.prefix + index);
+				const newData = Object.assign(this.view.map.data.data[this.prefix + index], item);
 				this.view.map.data.data[this.prefix + index] = newData;
 			});
 
 			return this.view.map.save(null, true);
 		}).then(() => {
-			// Always setup checkboxes after refresh, optionally clear them
 			const container = document.querySelector('.podman-view-container');
 			if (container) {
 				this.setupSelectAll(container);
-
-				// Clear all checkboxes if requested
 				if (clearSelections) {
-					const checkboxes = container.querySelectorAll(
-						'input[type="checkbox"]');
-					checkboxes.forEach((cb) => {
-						cb.checked = false;
-					});
+					container.querySelectorAll('input[type="checkbox"]').forEach((cb) => cb.checked = false);
 				}
 			}
 			ui.hideIndicator(indicatorId);
@@ -255,10 +207,8 @@ const ListUtil = baseclass.extend({
 	},
 
 	showInspectModal: function(title, data, hiddenFields, closeButton) {
-		// Clone data to avoid modifying original
 		const displayData = JSON.parse(JSON.stringify(data));
 
-		// Hide sensitive fields
 		if (hiddenFields && hiddenFields.length > 0) {
 			hiddenFields.forEach((field) => {
 				if (displayData[field]) {
@@ -273,24 +223,17 @@ const ListUtil = baseclass.extend({
 			}, JSON.stringify(displayData, null, 2))
 		];
 
-		// Add security notice if fields were hidden
 		if (hiddenFields && hiddenFields.length > 0) {
 			content.unshift(E('p', { 'style': 'margin-bottom: 10px; color: #e74c3c;' }, [
-				E('strong', {}, _('Security Notice:')),
-				' ',
-				_('Sensitive data is hidden for security reasons.')
+				E('strong', {}, _('Security Notice:')), ' ', _('Sensitive data is hidden for security reasons.')
 			]));
 		}
 
-		// Add close button
 		if (closeButton && typeof closeButton === 'function') {
 			content.push(closeButton());
 		} else {
 			content.push(E('div', { 'class': 'right', 'style': 'margin-top: 10px;' }, [
-				E('button', {
-					'class': 'cbi-button',
-					'click': () => ui.hideModal()
-				}, _('Close'))
+				E('button', { 'class': 'cbi-button', 'click': () => ui.hideModal() }, _('Close'))
 			]));
 		}
 

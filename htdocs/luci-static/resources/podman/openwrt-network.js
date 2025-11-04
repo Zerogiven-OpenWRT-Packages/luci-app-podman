@@ -1,6 +1,5 @@
 'use strict';
 'require network';
-'require firewall as fwall';
 'require uci';
 
 /**
@@ -40,27 +39,22 @@
  */
 
 /**
- * Calculate netmask from CIDR notation
- * @param {string} cidr - CIDR notation (e.g., '10.129.0.0/24')
- * @returns {string} Netmask (e.g., '255.255.255.0')
- */
-function cidrToNetmask(cidr) {
-	const parts = cidr.split('/');
-	if (parts.length !== 2) {
-		return '255.255.255.0'; // Default fallback
-	}
-
-	const prefix = parseInt(parts[1]);
-	return network.prefixToMask(prefix);
-}
-
-/**
  * Extract IP address from CIDR notation
  * @param {string} cidr - CIDR notation (e.g., '10.129.0.0/24')
  * @returns {string} IP address without prefix
  */
 function cidrToIP(cidr) {
 	return cidr.split('/')[0];
+}
+
+/**
+ * Extract prefix length from CIDR notation
+ * @param {string} cidr - CIDR notation (e.g., '10.129.0.0/24')
+ * @returns {number} Prefix length (e.g., 24)
+ */
+function cidrToPrefix(cidr) {
+	const parts = cidr.split('/');
+	return parts.length === 2 ? parseInt(parts[1]) : 24;
 }
 
 return L.Class.extend({
@@ -94,10 +88,10 @@ return L.Class.extend({
 	createIntegration: async function(networkName, options) {
 		const bridgeName = options.bridgeName;
 		const gateway = options.gateway;
-		const netmask = cidrToNetmask(options.subnet);
+		const prefix = cidrToPrefix(options.subnet);
+		const netmask = network.prefixToMask(prefix);
 		const ZONE_NAME = 'podman';
 
-		// Load required UCI configurations
 		return Promise.all([
 			uci.load('network'),
 			uci.load('firewall')
@@ -138,7 +132,6 @@ return L.Class.extend({
 			});
 
 			if (!existingZone) {
-				// Create shared zone for first Podman network
 				const zoneId = uci.add('firewall', 'zone', 'podman_zone');
 				uci.set('firewall', zoneId, 'name', ZONE_NAME);
 				uci.set('firewall', zoneId, 'input', 'DROP');
@@ -146,7 +139,6 @@ return L.Class.extend({
 				uci.set('firewall', zoneId, 'forward', 'REJECT');
 				uci.set('firewall', zoneId, 'network', [networkName]);
 
-				// Create DNS rule for the zone (only once)
 				const ruleId = uci.add('firewall', 'rule', 'podman_dns');
 				uci.set('firewall', ruleId, 'name', 'Allow-Podman-DNS');
 				uci.set('firewall', ruleId, 'src', ZONE_NAME);
@@ -165,20 +157,17 @@ return L.Class.extend({
 					networkList = [currentNetworks];
 				}
 
-				// Add network if not already in list
 				if (!networkList.includes(networkName)) {
 					networkList.push(networkName);
 					uci.set('firewall', zoneSection, 'network', networkList);
 				}
 			}
 
-			// Save and apply changes
 			return uci.save();
 		}).then(() => {
 			// Apply with timeout (allows rollback if something goes wrong)
 			return uci.apply(90);
 		}).then(() => {
-			// Flush network cache to reload state
 			return network.flushCache();
 		});
 	},
@@ -207,7 +196,6 @@ return L.Class.extend({
 	removeIntegration: function(networkName, bridgeName) {
 		const ZONE_NAME = 'podman';
 
-		// Load required UCI configurations
 		return Promise.all([
 			uci.load('network'),
 			uci.load('firewall')
@@ -229,17 +217,14 @@ return L.Class.extend({
 					networkList = [currentNetworks];
 				}
 
-				// Remove this network from the list
 				networkList = networkList.filter((n) => n !== networkName);
 
 				if (networkList.length > 0) {
-					// Other networks still exist, update the list
 					uci.set('firewall', zoneSection, 'network', networkList);
 				} else {
 					// This was the last network, remove zone and DNS rule
 					uci.remove('firewall', zoneSection);
 
-					// Remove DNS rule
 					const dnsRule = uci.sections('firewall', 'rule').find((s) => {
 						return uci.get('firewall', s['.name'], 'name') ===
 							'Allow-Podman-DNS';
@@ -269,13 +254,10 @@ return L.Class.extend({
 				}
 			}
 
-			// Save and apply changes
 			return uci.save();
 		}).then(() => {
-			// Apply with timeout
 			return uci.apply(90);
 		}).then(() => {
-			// Flush network cache
 			return network.flushCache();
 		});
 	},
@@ -329,17 +311,14 @@ return L.Class.extend({
 			uci.load('network'),
 			uci.load('firewall')
 		]).then(() => {
-			// Check network interface
 			const iface = uci.get('network', networkName);
 			if (!iface) {
 				missing.push('interface');
 				return { complete: false, missing: missing };
 			}
 
-			// Get bridge name from interface
 			const bridgeName = uci.get('network', networkName, 'device');
 
-			// Check bridge device
 			if (bridgeName) {
 				const device = uci.get('network', bridgeName);
 				if (!device) {
@@ -349,7 +328,6 @@ return L.Class.extend({
 				missing.push('device');
 			}
 
-			// Check if network is in 'podman' zone
 			const zone = uci.sections('firewall', 'zone').find((s) => {
 				return uci.get('firewall', s['.name'], 'name') === ZONE_NAME;
 			});
@@ -431,7 +409,6 @@ return L.Class.extend({
 	validateIntegration: async function(networkName, options) {
 		const errors = [];
 
-		// Check required fields
 		if (!networkName || !networkName.trim()) {
 			errors.push(_('Network name is required'));
 		}
@@ -445,12 +422,10 @@ return L.Class.extend({
 			errors.push(_('Gateway is required'));
 		}
 
-		// Validate CIDR format
 		if (options.subnet && !options.subnet.match(/^\d+\.\d+\.\d+\.\d+\/\d+$/)) {
 			errors.push(_('Subnet must be in CIDR notation (e.g., 10.129.0.0/24)'));
 		}
 
-		// Validate IP address format
 		if (options.gateway && !options.gateway.match(/^\d+\.\d+\.\d+\.\d+$/)) {
 			errors.push(_('Gateway must be a valid IP address'));
 		}
@@ -459,12 +434,10 @@ return L.Class.extend({
 			return Promise.resolve({ valid: false, errors: errors });
 		}
 
-		// Check for conflicts with existing configurations
 		return Promise.all([
 			uci.load('network'),
 			uci.load('firewall')
 		]).then(() => {
-			// Check if network interface already exists
 			const existingInterface = uci.get('network', networkName);
 			if (existingInterface) {
 				const existingProto = uci.get('network', networkName, 'proto');
@@ -475,7 +448,6 @@ return L.Class.extend({
 				}
 			}
 
-			// Check if bridge is already used by another interface
 			const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
 				return uci.get('network', s['.name'], 'device') === options
 					.bridgeName &&

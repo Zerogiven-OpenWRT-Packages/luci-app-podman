@@ -1,33 +1,6 @@
 /**
+ * Custom UI components for LuCI Podman application
  * @module podman.ui
- * @description Custom UI components for LuCI Podman application.
- * Provides reusable button components and list view helpers to eliminate code duplication
- * and ensure consistent UX across all views.
- *
- * @exports {Object} PUI - Object containing all UI components
- * @property {UIButton} Button - Standard button component
- * @property {UIMultiButton} MultiButton - Dropdown combo button component
- * @property {UIListViewHelper} ListViewHelper - Comprehensive list view helper
- *
- * @usage
- * 'require podman.ui as pui';
- *
- * // Create button
- * new pui.Button(_('Start'), () => this.handleStart(), 'positive').render()
- *
- * // Create multi-button menu
- * new pui.MultiButton({}, 'add')
- *     .addItem(_('Option 1'), () => this.handler1())
- *     .addItem(_('Option 2'), () => this.handler2())
- *     .render()
- *
- * // Initialize list helper
- * this.listHelper = new pui.ListViewHelper({
- *     prefix: 'volumes',
- *     itemName: 'volume',
- *     rpc: podmanRPC.volume,
- *     data: data  // Pass full data object
- * });
  */
 'use strict';
 'require baseclass';
@@ -38,7 +11,6 @@
 const UINotifications = baseclass.extend({
 	__name__: 'Notifications',
 
-	// Static-like helper methods
 	showSpinningModal: function(title, text) {
 		ui.showModal(title, [E('p', { 'class': 'spinning' }, text)]);
 	},
@@ -76,7 +48,10 @@ const Notification = new UINotifications();
 
 /**
  * Standard LuCI button with consistent styling
- * @example new pui.Button(_('Start'), () => this.handleStart(id), 'positive').render()
+ * @param {string} text - Button text
+ * @param {string|Function} href - URL or click handler
+ * @param {string} [cssClass] - Button style (positive, negative, remove, save, apply, neutral)
+ * @param {string} [tooltip] - Tooltip text
  */
 const UIButton = baseclass.extend({
 	__init__: function(text, href, cssClass, tooltip) {
@@ -88,17 +63,13 @@ const UIButton = baseclass.extend({
 
 	render: function() {
 		const attrs = {
-			'class': this.cssClass ? 'cbi-button cbi-button-' + this.cssClass :
-				'cbi-button',
-			'click': typeof this.href === 'function' ?
-				this.href :
-				(ev) => {
-					ev.preventDefault();
-					window.location.href = this.href;
-				}
+			'class': this.cssClass ? 'cbi-button cbi-button-' + this.cssClass : 'cbi-button',
+			'click': typeof this.href === 'function' ? this.href : (ev) => {
+				ev.preventDefault();
+				window.location.href = this.href;
+			}
 		};
 
-		// Add title attribute if tooltip is provided
 		if (this.tooltip) {
 			attrs.title = this.tooltip;
 		}
@@ -108,8 +79,9 @@ const UIButton = baseclass.extend({
 });
 
 /**
- * Dropdown button menu using ComboButton. Useful for grouping 2+ related actions.
- * @example new pui.MultiButton({}, 'add').addItem(_('Create'), () => this.handleCreate()).render()
+ * Dropdown button menu using ComboButton
+ * @param {Array|Object} items - Initial items (optional)
+ * @param {string} [cssClass] - Button style
  */
 const UIMultiButton = baseclass.extend({
 	cssClass: '',
@@ -172,7 +144,7 @@ const UIMultiButton = baseclass.extend({
 
 /**
  * Standardized modal footer buttons (Cancel + Confirm)
- * @example new pui.ModalButtons({ onConfirm: () => this.handleSubmit() }).render()
+ * @param {Object} options - Button configuration
  */
 const UIModalButtons = baseclass.extend({
 	__init__: function(options) {
@@ -180,22 +152,9 @@ const UIModalButtons = baseclass.extend({
 	},
 
 	render: function() {
-		// Wrap onConfirm to check for validation errors first
 		const wrappedOnConfirm = (ev) => {
-			// Find the button that was clicked and traverse up to find its form
-			const button = ev.target;
-			const modal = button.closest('.modal');
-
-			if (modal) {
-				// Check for validation errors within this specific form only
-				const invalidFields = modal.querySelectorAll('.cbi-input-invalid');
-				if (invalidFields.length > 0) {
-					// Don't proceed - validation errors are already shown to user
-					return;
-				}
-			}
-
-			// No validation errors, proceed with original handler
+			const modal = ev.target.closest('.modal');
+			if (modal && modal.querySelectorAll('.cbi-input-invalid').length > 0) return;
 			if (this.options.onConfirm) {
 				this.options.onConfirm(ev);
 			}
