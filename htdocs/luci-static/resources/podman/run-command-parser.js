@@ -1,12 +1,11 @@
 'use strict';
 
-/**
- * @file Parser for docker/podman run commands
- * @module podman.run-command-parser
- * @description Converts docker/podman run commands into container creation specs
- */
+'require baseclass'
 
-return L.Class.extend({
+/**
+ * Converts docker/podman run commands into container creation specs
+ */
+return baseclass.extend({
 	/**
 	 * Parse a docker/podman run command into a container spec
 	 * @param {string} command - The full run command

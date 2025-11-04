@@ -1,4 +1,5 @@
 'use strict';
+
 'require view';
 'require poll';
 'require ui';
@@ -10,8 +11,7 @@
 'require podman.ui as pui';
 
 /**
- * @module view.podman.container
- * @description Container detail view with tabbed interface
+ * Container detail view with tabbed interface
  */
 return view.extend({
 	handleSaveApply: null,

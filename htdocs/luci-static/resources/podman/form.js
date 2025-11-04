@@ -1,4 +1,5 @@
 'use strict';
+
 'require baseclass';
 'require poll';
 'require ui';

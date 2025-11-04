@@ -1,3 +1,5 @@
+'use strict';
+
 'require baseclass';
 'require ui';
 'require podman.ui as podmanUI';

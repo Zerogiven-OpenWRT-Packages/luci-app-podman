@@ -1,4 +1,5 @@
 'use strict';
+
 'require view';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
@@ -6,8 +7,7 @@
 'require ui';
 
 /**
- * @module view.podman.overview
- * @description Overview dashboard for Podman LuCI application
+ * Overview dashboard for Podman LuCI application
  */
 return view.extend({
 	/**

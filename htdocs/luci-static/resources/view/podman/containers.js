@@ -1,4 +1,5 @@
 'use strict';
+
 'require view';
 'require form';
 'require podman.rpc as podmanRPC';
@@ -10,8 +11,7 @@
 'require ui';
 
 /**
- * @module view.podman.containers
- * @description Container management view using proper LuCI form components
+ * Container management view using proper LuCI form components
  */
 return view.extend({
 	handleSaveApply: null,

@@ -1,10 +1,6 @@
 'use strict';
-'require baseclass';
 
-/**
- * @module podman.constants
- * @description Global constants for the Podman LuCI application
- */
+'require baseclass';
 
 /**
  * Notification display duration for temporary notifications (milliseconds)

@@ -1,4 +1,5 @@
 'use strict';
+
 'require view';
 'require form';
 'require ui';
@@ -9,8 +10,7 @@
 'require podman.list as List';
 
 /**
- * @module view.podman.images
- * @description Image management view using proper LuCI form components
+ * Image management view using proper LuCI form components
  */
 return view.extend({
 	handleSaveApply: null,

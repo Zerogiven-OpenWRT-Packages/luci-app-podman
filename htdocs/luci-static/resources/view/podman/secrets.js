@@ -1,16 +1,16 @@
 'use strict';
+
 'require view';
 'require form';
 'require ui';
-'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
+'require podman.list as List';
+'require podman.rpc as podmanRPC';
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
-'require podman.list as List';
 
 /**
- * @module view.podman.secrets
- * @description Secret management view using proper LuCI form components
+ * Secret management view using proper LuCI form components
  */
 return view.extend({
 	handleSaveApply: null,
@@ -107,21 +107,13 @@ return view.extend({
 	},
 
 	/**
-	 * Get selected secret names from checkboxes
-	 * @returns {Array<string>} Array of secret names
-	 */
-	getSelectedSecrets: function () {
-		return this.listHelper.getSelected((secret) => {
-			return secret.Spec && secret.Spec.Name ? secret.Spec.Name : secret.Name;
-		});
-	},
-
-	/**
 	 * Delete selected secrets
 	 */
 	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
-			selected: this.getSelectedSecrets(),
+			selected: this.listHelper.getSelected((secret) => {
+				return secret.Spec && secret.Spec.Name ? secret.Spec.Name : secret.Name;
+			}),
 			deletePromiseFn: (name) => podmanRPC.secret.remove(name),
 			onSuccess: () => this.handleRefresh(true)
 		});
@@ -131,8 +123,7 @@ return view.extend({
 	 * Refresh secret list
 	 */
 	handleRefresh: function (clearSelections) {
-		clearSelections = clearSelections || false;
-		this.listHelper.refreshTable(clearSelections)
+		this.listHelper.refreshTable(clearSelections || false)
 	},
 
 	/**

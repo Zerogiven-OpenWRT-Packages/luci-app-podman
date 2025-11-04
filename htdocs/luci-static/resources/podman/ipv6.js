@@ -1,8 +1,5 @@
-/**
- * @module podman.ipv6
- * @description IPv6 utilities for Podman network configuration
- */
 'use strict';
+
 'require baseclass';
 
 /**

@@ -1,11 +1,11 @@
 'use strict';
 
-/**
- * @file Shared utility functions for Podman LuCI application
- * @module podman.utils
- */
+'require baseclass'
 
-return L.Class.extend({
+/**
+ * Shared utility functions for Podman LuCI application
+ */
+return baseclass.extend({
 
 	/**
 	 * Generic failure handler for rendering errors

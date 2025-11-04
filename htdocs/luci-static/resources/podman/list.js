@@ -1,7 +1,9 @@
+'use strict';
+
 'require baseclass';
 'require ui';
-'require podman.ui as podmanUI';
 'require podman.utils as utils';
+'require podman.ui as podmanUI';
 'require podman.rpc as podmanRPC';
 
 const ListUtil = baseclass.extend({

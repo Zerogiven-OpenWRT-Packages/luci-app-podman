@@ -1,4 +1,5 @@
 'use strict';
+
 'require view';
 'require form';
 'require ui';
@@ -10,8 +11,7 @@
 'require podman.openwrt-network as openwrtNetwork';
 
 /**
- * @module view.podman.networks
- * @description Network management view using proper LuCI form components
+ * Network management view using proper LuCI form components
  */
 return view.extend({
 	handleSaveApply: null,

@@ -1,8 +1,5 @@
-/**
- * Custom UI components for LuCI Podman application
- * @module podman.ui
- */
 'use strict';
+
 'require baseclass';
 'require ui';
 'require podman.utils as utils';

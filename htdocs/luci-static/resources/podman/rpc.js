@@ -1,11 +1,9 @@
 'use strict';
+
+'require baseclass';
 'require rpc';
 
 /**
- * @file Podman RPC API
- * @module podman.rpc
- * @description Shared RPC method declarations for the Podman LuCI application.
- *
  * This module provides a centralized interface to all Podman API operations
  * through the luci.podman RPC object. Import this module in views to access
  * Podman API methods.
@@ -21,8 +19,7 @@
  *     console.log('Image pulled:', result);
  * });
  */
-
-return L.Class.extend({
+return baseclass.extend({
 	/**
 	 * Container management methods
 	 * @namespace container
