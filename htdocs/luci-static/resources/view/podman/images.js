@@ -38,10 +38,14 @@ return view.extend({
 						});
 					});
 				});
-				return { images: expandedImages };
+				return {
+					images: expandedImages
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load images') };
+				return {
+					error: err.message || _('Failed to load images')
+				};
 			});
 	},
 
@@ -71,7 +75,9 @@ return view.extend({
 		let o;
 
 		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		o = section.option(form.DummyValue, 'Repository', _('Repository'));
 		o.cfgvalue = (sectionId) => {
@@ -101,10 +107,12 @@ return view.extend({
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
-			customButtons: [
-				{ text: _('Pull Latest'), handler: () => this
-						.handlePullLatestSelected(), cssClass: 'positive' }
-			]
+			customButtons: [{
+				text: _('Pull Latest'),
+				handler: () => this
+					.handlePullLatestSelected(),
+				cssClass: 'positive'
+			}]
 		});
 
 		const formImage = new podmanForm.Image();
@@ -116,7 +124,9 @@ return view.extend({
 		]).then((rendered) => {
 			const formRendered = rendered[0];
 			const mapRendered = rendered[1];
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			viewContainer.appendChild(formRendered);
 			viewContainer.appendChild(toolbar.container);
@@ -132,7 +142,7 @@ return view.extend({
 	 * Get selected image objects from checkboxes
 	 * @returns {Array<Object>} Array of {id, name} objects for selected images
 	 */
-	getSelectedImages: function() {
+	getSelectedImages: function () {
 		return this.listHelper.getSelected((image) => {
 			return {
 				id: image.Id,
@@ -144,7 +154,7 @@ return view.extend({
 	/**
 	 * Delete selected images
 	 */
-	handleDeleteSelected: function() {
+	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
 			selected: this.getSelectedImages(),
 			deletePromiseFn: (img) => podmanRPC.image.remove(img.name, false),
@@ -156,7 +166,7 @@ return view.extend({
 	/**
 	 * Pull latest version of selected images
 	 */
-	handlePullLatestSelected: function() {
+	handlePullLatestSelected: function () {
 		const selected = this.getSelectedImages();
 
 		if (selected.length === 0) {
@@ -195,7 +205,7 @@ return view.extend({
 	/**
 	 * Refresh image list
 	 */
-	handleRefresh: function(clearSelections) {
+	handleRefresh: function (clearSelections) {
 		clearSelections = clearSelections || false;
 		this.listHelper.refreshTable(clearSelections);
 	},
@@ -204,7 +214,7 @@ return view.extend({
 	 * Inspect an image and show details in modal
 	 * @param {string} id - Image ID
 	 */
-	handleInspect: function(id) {
+	handleInspect: function (id) {
 		this.listHelper.showInspect(id);
 	}
 });

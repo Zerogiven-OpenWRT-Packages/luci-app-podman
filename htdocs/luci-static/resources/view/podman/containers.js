@@ -28,10 +28,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.container.list('all=true')
 			.then((containers) => {
-				return { containers: containers || [] };
+				return {
+					containers: containers || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load containers') };
+				return {
+					error: err.message || _('Failed to load containers')
+				};
 			});
 	},
 
@@ -61,7 +65,9 @@ return view.extend({
 		let o;
 
 		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		o = section.option(form.DummyValue, 'Names', _('Name'));
 		o.cfgvalue = (sectionId) => {
@@ -89,13 +95,17 @@ return view.extend({
 			const health = container.State && container.State.Health;
 
 			if (!health) {
-				return E('span', { 'style': 'color: #999;' }, '—');
+				return E('span', {
+					'style': 'color: #999;'
+				}, '—');
 			}
 
 			const status = health.Status || 'starting';
 			const badgeClass = 'badge status-' + status.toLowerCase();
 
-			return E('span', { 'class': badgeClass }, status);
+			return E('span', {
+				'class': badgeClass
+			}, status);
 		};
 		o.rawhtml = true;
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
@@ -135,7 +145,9 @@ return view.extend({
 		toolbar.prependButton(createButton);
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			viewContainer.appendChild(toolbar.container);
 			viewContainer.appendChild(mapRendered);
@@ -149,7 +161,7 @@ return view.extend({
 	 * Refresh table data without full page reload
 	 * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
 	 */
-	refreshTable: function(clearSelections) {
+	refreshTable: function (clearSelections) {
 		return this.listHelper.refreshTable(clearSelections);
 	},
 
@@ -157,17 +169,17 @@ return view.extend({
 	 * Get selected container IDs from checkboxes
 	 * @returns {Array<string>} Array of selected container IDs
 	 */
-	getSelectedContainerIds: function() {
+	getSelectedContainerIds: function () {
 		return this.listHelper.getSelected((container) => container.Id);
 	},
 
-	handleCreateContainer: function() {
+	handleCreateContainer: function () {
 		const form = new podmanForm.Container();
 		form.submit = () => this.refreshTable(false);
 		form.render();
 	},
 
-	handleImportFromRunCommand: function() {
+	handleImportFromRunCommand: function () {
 		const form = new podmanForm.Container();
 		form.submit = () => this.refreshTable(false);
 		form.showImportFromRunCommand();
@@ -179,7 +191,7 @@ return view.extend({
 	/**
 	 * Handle container start action for selected containers
 	 */
-	handleStart: function() {
+	handleStart: function () {
 		const selected = this.getSelectedContainerIds();
 
 		ContainerUtil.startContainers(selected).then(() => {
@@ -190,7 +202,7 @@ return view.extend({
 	/**
 	 * Handle container stop action for selected containers
 	 */
-	handleStop: function() {
+	handleStop: function () {
 		const selected = this.getSelectedContainerIds();
 
 		ContainerUtil.stopContainers(selected).then(() => {
@@ -201,7 +213,7 @@ return view.extend({
 	/**
 	 * Handle container remove action for selected containers
 	 */
-	handleRemove: function() {
+	handleRemove: function () {
 		this.listHelper.bulkDelete({
 			selected: this.getSelectedContainerIds(),
 			deletePromiseFn: (id) => podmanRPC.container.remove(id, true, true),
@@ -212,7 +224,7 @@ return view.extend({
 	/**
 	 * Handle bulk health check action for selected containers
 	 */
-	handleBulkHealthCheck: function() {
+	handleBulkHealthCheck: function () {
 		const selected = this.getSelectedContainerIds();
 
 		if (selected.length === 0) {
@@ -237,7 +249,10 @@ return view.extend({
 
 		const healthCheckPromises = containersWithHealth.map((id) => {
 			return podmanRPC.container.healthcheck(id).catch((err) => {
-				return { error: err.message, id: id };
+				return {
+					error: err.message,
+					id: id
+				};
 			});
 		});
 

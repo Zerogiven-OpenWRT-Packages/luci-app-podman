@@ -15,31 +15,31 @@ const UINotifications = baseclass.extend({
 		ui.showModal(title, [E('p', { 'class': 'spinning' }, text)]);
 	},
 
-	simpleNotification: function(text, type) {
+	simpleNotification: function (text, type) {
 		ui.addNotification(null, E('p', text), type || '');
 	},
 
-	warningNotification: function(text) {
+	warningNotification: function (text) {
 		ui.addNotification(null, E('p', text), 'warning');
 	},
 
-	errorNotification: function(text) {
+	errorNotification: function (text) {
 		ui.addNotification(null, E('p', text), 'error');
 	},
 
-	simpleTimeNotification: function(text, type) {
+	simpleTimeNotification: function (text, type) {
 		ui.addTimeLimitedNotification(null, E('p', text), c.NOTIFICATION_TIMEOUT, type || '');
 	},
 
-	infoTimeNotification: function(text) {
+	infoTimeNotification: function (text) {
 		ui.addTimeLimitedNotification(null, E('p', text), c.NOTIFICATION_TIMEOUT, 'info');
 	},
 
-	warningTimeNotification: function(text) {
+	warningTimeNotification: function (text) {
 		ui.addTimeLimitedNotification(null, E('p', text), c.NOTIFICATION_TIMEOUT, 'warning');
 	},
 
-	successTimeNotification: function(text) {
+	successTimeNotification: function (text) {
 		ui.addTimeLimitedNotification(null, E('p', text), c.NOTIFICATION_TIMEOUT, 'success');
 	},
 });
@@ -87,7 +87,7 @@ const UIMultiButton = baseclass.extend({
 	cssClass: '',
 	items: [],
 
-	__init__: function(items, cssClass) {
+	__init__: function (items, cssClass) {
 		if (Array.isArray(items)) {
 			items.forEach((item) => {
 				this.addItem(item.text, item.href);
@@ -97,12 +97,15 @@ const UIMultiButton = baseclass.extend({
 		this.cssClass = cssClass;
 	},
 
-	addItem: function(text, href) {
-		this.items.push({ text, href });
+	addItem: function (text, href) {
+		this.items.push({
+			text,
+			href
+		});
 		return this;
 	},
 
-	render: function() {
+	render: function () {
 		if (this.items.length <= 0) {
 			return '';
 		}
@@ -122,7 +125,7 @@ const UIMultiButton = baseclass.extend({
 			texts.item0,
 			texts, {
 				classes,
-				click: function(ev, choice) {
+				click: function (ev, choice) {
 					if (!href[choice]) {
 						return;
 					}
@@ -147,7 +150,7 @@ const UIMultiButton = baseclass.extend({
  * @param {Object} options - Button configuration
  */
 const UIModalButtons = baseclass.extend({
-	__init__: function(options) {
+	__init__: function (options) {
 		this.options = options;
 	},
 
@@ -160,7 +163,10 @@ const UIModalButtons = baseclass.extend({
 			}
 		};
 
-		return E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
+		return E('div', {
+			'class': 'right',
+			'style': 'margin-top: 15px;'
+		}, [
 			new UIButton(
 				this.options.cancelText || _('Cancel'),
 				this.options.onCancel || ui.hideModal,

@@ -38,7 +38,7 @@ return baseclass.extend({
 	 * deriveUlaFromIpv4("172.16.0.1/16", "::/48")
 	 * // Returns: { ipv6subnet: "0:0:0:1::/64", ipv6gateway: "0:0:0:1::1" }
 	 */
-	deriveUlaFromIpv4: function(ipv4, ula_prefix) {
+	deriveUlaFromIpv4: function (ipv4, ula_prefix) {
 
 		// --- 1. Process IPv4 address ---
 		const ipv4Address = ipv4.split('/')[0];

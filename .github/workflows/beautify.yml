@@ -31,10 +31,19 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install js-beautifier
-        run: npm install -g js-beautifier
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-cache-${{ hashFiles('**/package-lock.json') || hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-cache-
 
-      # 1) all-mode: produce a newline-separated "files" output if invoked with all=true
+      # no global install, use npx js-beautify
+      - name: Ensure js-beautifier is available
+        run: npm install js-beautify
+
+      # all-mode: collect all JS files when manually triggered with all=true
       - name: Determine files to format (all-mode)
         id: all-files
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.all == 'true' }}
@@ -49,7 +58,7 @@ jobs:
             echo "EOF" >> "$GITHUB_OUTPUT"
           fi
 
-      # 2) changed-files action: collects changed JS files for push/PR
+      # changed-files for PR/push
       - name: Get changed .js files
         id: changed-files
         if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.all == 'true') }}
@@ -58,17 +67,14 @@ jobs:
           files: |
             **/*.js
 
-      # 3) Collect: choose either all-files or changed-files outputs and expose a single output 'files'
+      # combine the two file sources
       - name: Collect files (pick all-mode or changed-files)
         id: files
         run: |
           set -euo pipefail
-
-          # GH Actions expands these expressions before the script runs
           ALL_FILES='${{ steps.all-files.outputs.files }}'
           CHANGED_FILES='${{ steps.changed-files.outputs.all_changed_files }}'
 
-          # Prefer ALL_FILES when set, otherwise CHANGED_FILES
           if [ -n "$ALL_FILES" ]; then
             printf '%s\n' "$ALL_FILES" | sed -e 's/\r$//' | sed '/^\s*$/d' > /tmp/files_list || true
           else
@@ -84,20 +90,18 @@ jobs:
           cat /tmp/files_list >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-      # 4) Single formatting step: iterate the unified files output
+      # formatting
       - name: Format selected files with js-beautify
         if: ${{ steps.files.outputs.files != '' }}
         run: |
           set -euo pipefail
           echo "Files to format:"
           printf '%s\n' "${{ steps.files.outputs.files }}"
-
-          # feed the multiline output into the while-loop safely
           echo "${{ steps.files.outputs.files }}" | while IFS= read -r f; do
             [ -z "$f" ] && continue
             if [ -f "$f" ]; then
               echo "Formatting: $f"
-              js-beautify -r "$f"
+              npx js-beautify -r "$f"
             else
               echo "Skipping (not found): $f"
             fi

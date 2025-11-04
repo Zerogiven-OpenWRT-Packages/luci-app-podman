@@ -27,10 +27,14 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.volume.list()
 			.then((volumes) => {
-				return { volumes: volumes || [] };
+				return {
+					volumes: volumes || []
+				};
 			})
 			.catch((err) => {
-				return { error: err.message || _('Failed to load volumes') };
+				return {
+					error: err.message || _('Failed to load volumes')
+				};
 			});
 	},
 
@@ -60,7 +64,9 @@ return view.extend({
 		let o;
 
 		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(
-		0, { hiddenname: 'all' }).render());
+			0, {
+				hiddenname: 'all'
+			}).render());
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
 		o.click = (volume) => this.handleInspect(volume.Name);
@@ -97,7 +103,9 @@ return view.extend({
 		toolbar.prependButton(createButton);
 
 		return this.map.render().then((mapRendered) => {
-			const viewContainer = E('div', { 'class': 'podman-view-container' });
+			const viewContainer = E('div', {
+				'class': 'podman-view-container'
+			});
 
 			viewContainer.appendChild(toolbar.container);
 			viewContainer.appendChild(mapRendered);
@@ -111,7 +119,7 @@ return view.extend({
 	/**
 	 * Delete selected volumes
 	 */
-	handleDeleteSelected: function() {
+	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
 			selected: this.listHelper.getSelected((volume) => volume.Name),
 			deletePromiseFn: (name) => podmanRPC.volume.remove(name, false),
@@ -122,7 +130,7 @@ return view.extend({
 	/**
 	 * Refresh volume list
 	 */
-	handleRefresh: function(clearSelections) {
+	handleRefresh: function (clearSelections) {
 		clearSelections = clearSelections || false;
 		this.listHelper.refreshTable(clearSelections);
 	},
@@ -130,7 +138,7 @@ return view.extend({
 	/**
 	 * Show create volume dialog
 	 */
-	handleCreateVolume: function() {
+	handleCreateVolume: function () {
 		const form = new podmanForm.Volume();
 		form.submit = () => this.handleRefresh();
 		form.render();
@@ -140,7 +148,7 @@ return view.extend({
 	 * Show volume details
 	 * @param {string} name - Volume name
 	 */
-	handleInspect: function(name) {
+	handleInspect: function (name) {
 		this.listHelper.showInspect(name);
 	},
 

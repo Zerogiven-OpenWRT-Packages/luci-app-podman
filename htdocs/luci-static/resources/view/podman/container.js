@@ -22,7 +22,7 @@ return view.extend({
 	 * Load container data on view initialization
 	 * @returns {Promise<Object>} Container inspect data and networks
 	 */
-	load: async function() {
+	load: async function () {
 		// Extract container ID from URL path
 		// URL format: /cgi-bin/luci/admin/podman/container/<id>
 		const path = window.location.pathname;
@@ -57,7 +57,7 @@ return view.extend({
 	 * @param {Object} data - Container and network data from load()
 	 * @returns {Element} Container detail view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		// Handle errors from load()
 		if (data && data.error || !data.container) {
 			return utils.renderError(data.error || _('Container not found'));
@@ -74,7 +74,9 @@ return view.extend({
 		const state = this.containerData.State || {};
 		const status = state.Status || 'unknown';
 
-		const header = E('div', { 'style': 'margin-bottom: 20px;' }, [
+		const header = E('div', {
+			'style': 'margin-bottom: 20px;'
+		}, [
 			E('h2', {}, [
 				_('Container: %s').format(name),
 				' ',
@@ -83,7 +85,9 @@ return view.extend({
 					'style': 'font-size: 14px; vertical-align: middle;'
 				}, status)
 			]),
-			E('div', { 'style': 'margin-top: 10px;' }, [
+			E('div', {
+				'style': 'margin-top: 10px;'
+			}, [
 				this.createActionButtons(this.containerId, name, status === 'running')
 			])
 		]);
@@ -106,7 +110,9 @@ return view.extend({
 				'data-tab-title': _('Info'),
 				'data-tab-active': !savedTab || savedTab === 'info' ? 'true' : null
 			}, [
-				E('div', { 'id': 'tab-info-content' })
+				E('div', {
+					'id': 'tab-info-content'
+				})
 			]),
 			// Resources Tab
 			E('div', {
@@ -115,7 +121,9 @@ return view.extend({
 				'data-tab-title': _('Resources'),
 				'data-tab-active': savedTab === 'resources' ? 'true' : null
 			}, [
-				E('div', { 'id': 'tab-resources-content' })
+				E('div', {
+					'id': 'tab-resources-content'
+				})
 			]),
 			// Stats Tab
 			E('div', {
@@ -123,7 +131,9 @@ return view.extend({
 				'data-tab': 'stats',
 				'data-tab-title': _('Stats')
 			}, [
-				E('div', { 'id': 'tab-stats-content' }, [
+				E('div', {
+					'id': 'tab-stats-content'
+				}, [
 					E('p', {}, _('Loading stats...'))
 				])
 			]),
@@ -133,7 +143,9 @@ return view.extend({
 				'data-tab': 'logs',
 				'data-tab-title': _('Logs')
 			}, [
-				E('div', { 'id': 'tab-logs-content' }, [
+				E('div', {
+					'id': 'tab-logs-content'
+				}, [
 					E('p', {}, _('Loading logs...'))
 				])
 			])
@@ -148,7 +160,9 @@ return view.extend({
 					'data-tab-title': _('Health'),
 					'data-tab-active': savedTab === 'health' ? 'true' : null
 				}, [
-					E('div', { 'id': 'tab-health-content' }, [
+					E('div', {
+						'id': 'tab-health-content'
+					}, [
 						E('p', {}, _('Loading health check data...'))
 					])
 				])
@@ -174,16 +188,24 @@ return view.extend({
 				'data-tab': 'console',
 				'data-tab-title': _('Console')
 			}, [
-				E('div', { 'id': 'tab-console-content' }, [
+				E('div', {
+					'id': 'tab-console-content'
+				}, [
 					E('p', {}, _('Terminal access coming soon...'))
 				])
 			])
 		);
 
 		// Create tab container
-		const tabContainer = E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('div', { 'class': 'tab-panes' }, tabPanes)
+		const tabContainer = E('div', {
+			'class': 'cbi-section'
+		}, [
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
+				E('div', {
+					'class': 'tab-panes'
+				}, tabPanes)
 			])
 		]);
 
@@ -217,12 +239,12 @@ return view.extend({
 	 * @param {boolean} isRunning - Whether container is running
 	 * @returns {Element} Button group
 	 */
-	createActionButtons: function(id, name, isRunning) {
+	createActionButtons: function (id, name, isRunning) {
 		const buttons = [];
 
 		if (isRunning) {
 			buttons.push(new pui.Button(_('Stop'), () => this.handleStop(id), 'negative')
-			.render());
+				.render());
 		} else {
 			buttons.push(new pui.Button(_('Start'), () => this.handleStart(id), 'positive')
 				.render());
@@ -258,7 +280,7 @@ return view.extend({
 	/**
 	 * Render the Info tab content
 	 */
-	renderInfoTab: function() {
+	renderInfoTab: function () {
 		const container = document.getElementById('tab-info-content');
 		if (!container) return;
 
@@ -312,14 +334,18 @@ return view.extend({
 
 			// Add failing streak if unhealthy
 			if (healthStatus === 'unhealthy' && failingStreak > 0) {
-				healthDetails.push(E('span', { 'style': 'color: #ff6b6b;' },
+				healthDetails.push(E('span', {
+						'style': 'color: #ff6b6b;'
+					},
 					_(' (%d consecutive failures)').format(failingStreak)));
 			}
 
 			// Add last check time if available
 			if (lastCheck && lastCheck.End) {
 				healthDetails.push(E('br'));
-				healthDetails.push(E('small', { 'style': 'color: #666;' },
+				healthDetails.push(E('small', {
+						'style': 'color: #666;'
+					},
 					_('Last check: %s').format(utils.formatDate(lastCheck.End))));
 			}
 
@@ -330,10 +356,18 @@ return view.extend({
 					'positive').render());
 			}
 
-			basicRows.push(E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+			basicRows.push(E('tr', {
+				'class': 'tr'
+			}, [
+				E('td', {
+						'class': 'td',
+						'style': 'width: 33%; font-weight: bold;'
+					},
 					_('Health')),
-				E('td', { 'class': 'td', 'style': 'word-break: break-word;' },
+				E('td', {
+						'class': 'td',
+						'style': 'word-break: break-word;'
+					},
 					healthDetails)
 			]));
 		}
@@ -418,10 +452,10 @@ return view.extend({
 		// Ports - display as single row with line breaks
 		const ports = [];
 		if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
-			Object.keys(hostConfig.PortBindings).forEach(function(containerPort) {
+			Object.keys(hostConfig.PortBindings).forEach(function (containerPort) {
 				const bindings = hostConfig.PortBindings[containerPort];
 				if (bindings) {
-					bindings.forEach(function(binding) {
+					bindings.forEach(function (binding) {
 						const hostIp = binding.HostIp || '0.0.0.0';
 						const hostPort = binding.HostPort || '-';
 						ports.push(hostIp + ':' + hostPort + ' → ' +
@@ -438,7 +472,7 @@ return view.extend({
 		// Links - display as single row with line breaks
 		const links = [];
 		if (hostConfig.Links && hostConfig.Links.length > 0) {
-			hostConfig.Links.forEach(function(link) {
+			hostConfig.Links.forEach(function (link) {
 				links.push(link);
 			});
 		}
@@ -451,7 +485,7 @@ return view.extend({
 
 		// Environment Variables
 		if (config.Env && config.Env.length > 0) {
-			const envRows = config.Env.map(function(env) {
+			const envRows = config.Env.map(function (env) {
 				const parts = env.split('=');
 				const varName = parts[0];
 				const varValue = parts.slice(1).join('=');
@@ -497,14 +531,26 @@ return view.extend({
 
 		// Mounts
 		if (data.Mounts && data.Mounts.length > 0) {
-			const mountRows = data.Mounts.map(function(mount) {
-				return E('tr', { 'class': 'tr' }, [
-					E('td', { 'class': 'td' }, mount.Type || '-'),
-					E('td', { 'class': 'td', 'title': mount.Source || '-' }, utils
+			const mountRows = data.Mounts.map(function (mount) {
+				return E('tr', {
+					'class': 'tr'
+				}, [
+					E('td', {
+						'class': 'td'
+					}, mount.Type || '-'),
+					E('td', {
+							'class': 'td',
+							'title': mount.Source || '-'
+						}, utils
 						.truncate(mount.Source || '-', 50)),
-					E('td', { 'class': 'td', 'title': mount.Destination || '-' },
+					E('td', {
+							'class': 'td',
+							'title': mount.Destination || '-'
+						},
 						utils.truncate(mount.Destination || '-', 50)),
-					E('td', { 'class': 'td' }, mount.RW ? 'rw' : 'ro')
+					E('td', {
+						'class': 'td'
+					}, mount.RW ? 'rw' : 'ro')
 				]);
 			});
 
@@ -515,7 +561,7 @@ return view.extend({
 		}
 
 		// Append all sections
-		sections.forEach(function(section) {
+		sections.forEach(function (section) {
 			container.appendChild(section);
 		});
 	},
@@ -523,7 +569,7 @@ return view.extend({
 	/**
 	 * Render the Resources tab content
 	 */
-	renderResourcesTab: function() {
+	renderResourcesTab: function () {
 		const container = document.getElementById('tab-resources-content');
 		if (!container) return;
 
@@ -542,15 +588,27 @@ return view.extend({
 		const cpuLimit = cpuQuota > 0 ? (cpuQuota / cpuPeriod).toFixed(2) : '';
 
 		// Build form
-		const form = E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'cbi-section-descr' }, _(
+		const form = E('div', {
+			'class': 'cbi-section'
+		}, [
+			E('div', {
+				'class': 'cbi-section-descr'
+			}, _(
 				'Configure resource limits for this container. Changes will be applied immediately.'
-				)),
-			E('div', { 'class': 'cbi-section-node' }, [
+			)),
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
 				// CPU Resources
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('CPU Limit')),
-					E('div', { 'class': 'cbi-value-field' }, [
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, _('CPU Limit')),
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						E('input', {
 							'type': 'number',
 							'id': 'resource-cpu-limit',
@@ -561,15 +619,23 @@ return view.extend({
 							'min': '0',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _(
+						E('span', {
+							'class': 'cbi-value-description'
+						}, _(
 							'Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited.'
-							))
+						))
 					])
 				]),
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _(
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, _(
 						'CPU Shares Weight')),
-					E('div', { 'class': 'cbi-value-field' }, [
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						E('input', {
 							'type': 'number',
 							'id': 'resource-cpu-shares',
@@ -580,15 +646,23 @@ return view.extend({
 							'max': '262144',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _(
+						E('span', {
+							'class': 'cbi-value-description'
+						}, _(
 							'CPU shares (relative weight), default is 1024. 0 = use default.'
-							))
+						))
 					])
 				]),
 				// Memory Resources
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('Memory Limit')),
-					E('div', { 'class': 'cbi-value-field' }, [
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, _('Memory Limit')),
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						E('input', {
 							'type': 'text',
 							'id': 'resource-memory',
@@ -598,15 +672,23 @@ return view.extend({
 							'placeholder': '512m, 1g, 2g',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _(
+						E('span', {
+							'class': 'cbi-value-description'
+						}, _(
 							'Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited.'
-							))
+						))
 					])
 				]),
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _(
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, _(
 						'Memory + Swap Limit')),
-					E('div', { 'class': 'cbi-value-field' }, [
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						E('input', {
 							'type': 'text',
 							'id': 'resource-memory-swap',
@@ -616,16 +698,24 @@ return view.extend({
 							'placeholder': '1g, 2g',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _(
+						E('span', {
+							'class': 'cbi-value-description'
+						}, _(
 							'Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited.'
-							))
+						))
 					])
 				]),
 				// Block IO
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _(
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, _(
 						'Block IO Weight')),
-					E('div', { 'class': 'cbi-value-field' }, [
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						E('input', {
 							'type': 'number',
 							'id': 'resource-blkio-weight',
@@ -636,15 +726,23 @@ return view.extend({
 							'max': '1000',
 							'style': 'width: 200px; margin-right: 5px;'
 						}),
-						E('span', { 'class': 'cbi-value-description' }, _(
+						E('span', {
+							'class': 'cbi-value-description'
+						}, _(
 							'Block IO weight (relative weight), 10-1000. 0 = use default.'
-							))
+						))
 					])
 				]),
 				// Update button
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, ' '),
-					E('div', { 'class': 'cbi-value-field' }, [
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, ' '),
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						new pui.Button(_('Update Resources'), () => this
 							.handleResourceUpdate(), 'save').render()
 					])
@@ -658,7 +756,7 @@ return view.extend({
 	/**
 	 * Render the Stats tab content
 	 */
-	renderStatsTab: function() {
+	renderStatsTab: function () {
 		const container = document.getElementById('tab-stats-content');
 		if (!container) return;
 
@@ -675,39 +773,90 @@ return view.extend({
 					E('tr', { 'class': 'tr' }, [
 						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
 							_('CPU Usage')),
-						E('td', { 'class': 'td', 'id': 'stat-cpu' }, '-')
+						E('td', {
+							'class': 'td',
+							'id': 'stat-cpu'
+						}, '-')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 33%; font-weight: bold;'
+							},
 							_('Memory Usage')),
-						E('td', { 'class': 'td', 'id': 'stat-memory' }, '-')
+						E('td', {
+							'class': 'td',
+							'id': 'stat-memory'
+						}, '-')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 33%; font-weight: bold;'
+							},
 							_('Memory Limit')),
-						E('td', { 'class': 'td', 'id': 'stat-memory-limit' },
+						E('td', {
+								'class': 'td',
+								'id': 'stat-memory-limit'
+							},
 							'-')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 33%; font-weight: bold;'
+							},
 							_('Memory %')),
-						E('td', { 'class': 'td', 'id': 'stat-memory-percent' },
+						E('td', {
+								'class': 'td',
+								'id': 'stat-memory-percent'
+							},
 							'-')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 33%; font-weight: bold;'
+							},
 							_('Network I/O')),
-						E('td', { 'class': 'td', 'id': 'stat-network' }, '-')
+						E('td', {
+							'class': 'td',
+							'id': 'stat-network'
+						}, '-')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 33%; font-weight: bold;'
+							},
 							_('Block I/O')),
-						E('td', { 'class': 'td', 'id': 'stat-blockio' }, '-')
+						E('td', {
+							'class': 'td',
+							'id': 'stat-blockio'
+						}, '-')
 					]),
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
+					E('tr', {
+						'class': 'tr'
+					}, [
+						E('td', {
+								'class': 'td',
+								'style': 'width: 33%; font-weight: bold;'
+							},
 							_('PIDs')),
-						E('td', { 'class': 'td', 'id': 'stat-pids' }, '-')
+						E('td', {
+							'class': 'td',
+							'id': 'stat-pids'
+						}, '-')
 					])
 				])
 			])
@@ -750,7 +899,7 @@ return view.extend({
 	 * @param {Object} networks - Network stats object or pre-formatted string
 	 * @returns {string} Formatted network I/O string
 	 */
-	formatNetworkIO: function(networks) {
+	formatNetworkIO: function (networks) {
 		// Already formatted string (NetIO field)
 		if (typeof networks === 'string') {
 			return networks;
@@ -778,7 +927,7 @@ return view.extend({
 	 * @param {Object} blkio - Block I/O stats object or pre-formatted string
 	 * @returns {string} Formatted block I/O string
 	 */
-	formatBlockIO: function(blkio) {
+	formatBlockIO: function (blkio) {
 		// Already formatted string (BlockIO field)
 		if (typeof blkio === 'string') {
 			return blkio;
@@ -813,7 +962,7 @@ return view.extend({
 	 * @param {*} pids - PIDs stats (number, string, or object)
 	 * @returns {string} Formatted PIDs string
 	 */
-	formatPIDs: function(pids) {
+	formatPIDs: function (pids) {
 		// Direct number or string
 		if (typeof pids === 'number' || typeof pids === 'string') {
 			return String(pids);
@@ -1018,7 +1167,7 @@ return view.extend({
 	/**
 	 * Render the Logs tab content
 	 */
-	renderLogsTab: function() {
+	renderLogsTab: function () {
 		const container = document.getElementById('tab-logs-content');
 		if (!container) return;
 
@@ -1028,11 +1177,19 @@ return view.extend({
 		}
 
 		// Create logs display
-		const logsDisplay = E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'cbi-section-node' }, [
+		const logsDisplay = E('div', {
+			'class': 'cbi-section'
+		}, [
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
 				// Controls
-				E('div', { 'style': 'margin-bottom: 10px;' }, [
-					E('label', { 'style': 'margin-right: 15px;' }, [
+				E('div', {
+					'style': 'margin-bottom: 10px;'
+				}, [
+					E('label', {
+						'style': 'margin-right: 15px;'
+					}, [
 						E('input', {
 							'type': 'checkbox',
 							'id': 'log-stream-toggle',
@@ -1041,7 +1198,9 @@ return view.extend({
 						}),
 						_('Live Stream')
 					]),
-					E('label', { 'style': 'margin-right: 15px;' }, [
+					E('label', {
+						'style': 'margin-right: 15px;'
+					}, [
 						_('Lines: '),
 						E('input', {
 							'type': 'number',
@@ -1082,7 +1241,7 @@ return view.extend({
 	 * @param {string} text - Text with Docker stream headers
 	 * @returns {string} Text without headers
 	 */
-	stripDockerStreamHeaders: function(text) {
+	stripDockerStreamHeaders: function (text) {
 		if (!text || text.length === 0) return text;
 
 		let result = '';
@@ -1123,7 +1282,7 @@ return view.extend({
 	 * @param {string} text - Text with ANSI codes
 	 * @returns {string} Clean text
 	 */
-	stripAnsi: function(text) {
+	stripAnsi: function (text) {
 		if (!text) return text;
 		// Remove ANSI escape sequences (colors, cursor movement, etc.)
 		// eslint-disable-line no-control-regex
@@ -1134,7 +1293,7 @@ return view.extend({
 	/**
 	 * Refresh logs (non-streaming version for manual refresh)
 	 */
-	refreshLogs: function() {
+	refreshLogs: function () {
 		const output = document.getElementById('logs-output');
 		if (!output) return;
 
@@ -1192,7 +1351,7 @@ return view.extend({
 	/**
 	 * Clear logs display
 	 */
-	clearLogs: function() {
+	clearLogs: function () {
 		const output = document.getElementById('logs-output');
 		if (output) {
 			output.textContent = '';
@@ -1202,7 +1361,7 @@ return view.extend({
 	/**
 	 * Toggle log streaming
 	 */
-	toggleLogStream: function(ev) {
+	toggleLogStream: function (ev) {
 		const enabled = ev.target.checked;
 
 		if (enabled) {
@@ -1217,7 +1376,7 @@ return view.extend({
 	/**
 	 * Start log streaming session
 	 */
-	startLogStream: function() {
+	startLogStream: function () {
 		const output = document.getElementById('logs-output');
 		if (!output) return;
 
@@ -1285,7 +1444,7 @@ return view.extend({
 	/**
 	 * Stop log streaming session
 	 */
-	stopLogStream: function() {
+	stopLogStream: function () {
 		// Store session ID for cleanup before clearing
 		const sessionId = this.logStreamSessionId;
 
@@ -1315,12 +1474,12 @@ return view.extend({
 	 *
 	 * Uses byte offset tracking to only fetch new data from the stream file.
 	 */
-	pollLogsStatus: function() {
+	pollLogsStatus: function () {
 		const outputEl = document.getElementById('logs-output');
 		const view = this;
 
 		// Define poll function and store reference for later removal
-		this.logPollFn = function() {
+		this.logPollFn = function () {
 			// Check if session still exists (user may have stopped it)
 			if (!view.logStreamSessionId) {
 				view.stopLogStream();
@@ -1389,7 +1548,7 @@ return view.extend({
 	/**
 	 * Render the Health tab content
 	 */
-	renderHealthTab: function() {
+	renderHealthTab: function () {
 		const container = document.getElementById('tab-health-content');
 		if (!container) return;
 
@@ -1417,23 +1576,38 @@ return view.extend({
 		const failingStreak = health.FailingStreak || 0;
 
 		const statusRows = [
-			E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+			E('tr', {
+				'class': 'tr'
+			}, [
+				E('td', {
+					'class': 'td',
+					'style': 'width: 33%; font-weight: bold;'
+				}, _(
 					'Status')),
-				E('td', { 'class': 'td' }, [
+				E('td', {
+					'class': 'td'
+				}, [
 					E('span', {
 						'class': 'badge status-' + status.toLowerCase(),
 						'style': 'font-size: 16px;'
 					}, status)
 				])
 			]),
-			E('tr', { 'class': 'tr' }, [
-				E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+			E('tr', {
+				'class': 'tr'
+			}, [
+				E('td', {
+					'class': 'td',
+					'style': 'width: 33%; font-weight: bold;'
+				}, _(
 					'Failing Streak')),
-				E('td', { 'class': 'td', 'style': failingStreak > 0 ?
-							'color: #ff6b6b; font-weight: bold;' : '' },
+				E('td', {
+						'class': 'td',
+						'style': failingStreak > 0 ?
+							'color: #ff6b6b; font-weight: bold;' : ''
+					},
 					failingStreak > 0 ? _('%d consecutive failures').format(
-					failingStreak) : _('No failures'))
+						failingStreak) : _('No failures'))
 			])
 		];
 
@@ -1494,13 +1668,23 @@ return view.extend({
 				});
 				outputCell.textContent = outputText;
 
-				return E('tr', { 'class': 'tr' }, [
-					E('td', { 'class': 'td' }, entry.Start ? utils.formatDate(
+				return E('tr', {
+					'class': 'tr'
+				}, [
+					E('td', {
+						'class': 'td'
+					}, entry.Start ? utils.formatDate(
 						entry.Start) : '-'),
-					E('td', { 'class': 'td' }, entry.End ? utils.formatDate(entry
+					E('td', {
+						'class': 'td'
+					}, entry.End ? utils.formatDate(entry
 						.End) : '-'),
-					E('td', { 'class': 'td' }, [
-						E('span', { 'class': 'badge ' + exitClass },
+					E('td', {
+						'class': 'td'
+					}, [
+						E('span', {
+								'class': 'badge ' + exitClass
+							},
 							exitStatus),
 						' ',
 						E('small', {}, '(Exit: ' + exitCode + ')')
@@ -1521,7 +1705,9 @@ return view.extend({
 		});
 
 		// Add manual health check button
-		container.appendChild(E('div', { 'style': 'margin-top: 20px;' }, [
+		container.appendChild(E('div', {
+			'style': 'margin-top: 20px;'
+		}, [
 			new pui.Button(_('Run Health Check Now'), () => this.handleHealthCheck(),
 				'positive').render()
 		]));
@@ -1557,11 +1743,18 @@ return view.extend({
 	 * @param {Array} rows - Table rows (already created)
 	 * @returns {Element} Section element
 	 */
-	createSection: function(title, rows) {
-		return E('div', { 'class': 'cbi-section', 'style': 'margin-bottom: 20px;' }, [
+	createSection: function (title, rows) {
+		return E('div', {
+			'class': 'cbi-section',
+			'style': 'margin-bottom: 20px;'
+		}, [
 			E('h3', {}, title),
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('table', { 'class': 'table' }, rows)
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
+				E('table', {
+					'class': 'table'
+				}, rows)
 			])
 		]);
 	},
@@ -1573,17 +1766,28 @@ return view.extend({
 	 * @param {Array} rows - Table rows (already created)
 	 * @returns {Element} Section element
 	 */
-	createTableSection: function(title, headers, rows) {
-		const headerRow = E('tr', { 'class': 'tr table-titles' },
-			headers.map(function(header) {
-				return E('th', { 'class': 'th' }, header);
+	createTableSection: function (title, headers, rows) {
+		const headerRow = E('tr', {
+				'class': 'tr table-titles'
+			},
+			headers.map(function (header) {
+				return E('th', {
+					'class': 'th'
+				}, header);
 			})
 		);
 
-		return E('div', { 'class': 'cbi-section', 'style': 'margin-bottom: 20px;' }, [
+		return E('div', {
+			'class': 'cbi-section',
+			'style': 'margin-bottom: 20px;'
+		}, [
 			E('h3', {}, title),
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('table', { 'class': 'table' }, [headerRow].concat(rows))
+			E('div', {
+				'class': 'cbi-section-node'
+			}, [
+				E('table', {
+					'class': 'table'
+				}, [headerRow].concat(rows))
 			])
 		]);
 	},
@@ -1594,12 +1798,22 @@ return view.extend({
 	 * @param {string} value - Row value
 	 * @returns {Element} Table row
 	 */
-	createInfoRow: function(label, value) {
-		return E('tr', { 'class': 'tr' }, [
-			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, label),
-			E('td', { 'class': 'td', 'style': 'word-break: break-word;' },
+	createInfoRow: function (label, value) {
+		return E('tr', {
+			'class': 'tr'
+		}, [
+			E('td', {
+				'class': 'td',
+				'style': 'width: 33%; font-weight: bold;'
+			}, label),
+			E('td', {
+					'class': 'td',
+					'style': 'word-break: break-word;'
+				},
 				typeof value === 'string' && value.indexOf('<br>') !== -1 ?
-				E('span', { 'innerHTML': value }) :
+				E('span', {
+					'innerHTML': value
+				}) :
 				value
 			)
 		]);
@@ -1612,11 +1826,18 @@ return view.extend({
 	 * @param {string} field - Field name
 	 * @returns {Element} Table row
 	 */
-	createEditableRow: function(label, value, field) {
+	createEditableRow: function (label, value, field) {
 		const inputId = 'edit-' + field;
-		return E('tr', { 'class': 'tr' }, [
-			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, label),
-			E('td', { 'class': 'td' }, [
+		return E('tr', {
+			'class': 'tr'
+		}, [
+			E('td', {
+				'class': 'td',
+				'style': 'width: 33%; font-weight: bold;'
+			}, label),
+			E('td', {
+				'class': 'td'
+			}, [
 				E('input', {
 					'type': 'text',
 					'id': inputId,
@@ -1635,7 +1856,7 @@ return view.extend({
 	 * @param {string} currentPolicy - Current restart policy
 	 * @returns {Element} Table row
 	 */
-	createEditableRestartRow: function(currentPolicy) {
+	createEditableRestartRow: function (currentPolicy) {
 		const selectId = 'edit-restart-policy';
 		const policies = {
 			'no': _('No'),
@@ -1645,17 +1866,24 @@ return view.extend({
 		};
 
 		const options = [];
-		Object.keys(policies).forEach(function(key) {
+		Object.keys(policies).forEach(function (key) {
 			options.push(E('option', {
 				'value': key,
 				'selected': key === currentPolicy ? 'selected' : null
 			}, policies[key]));
 		});
 
-		return E('tr', { 'class': 'tr' }, [
-			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+		return E('tr', {
+			'class': 'tr'
+		}, [
+			E('td', {
+				'class': 'td',
+				'style': 'width: 33%; font-weight: bold;'
+			}, _(
 				'Restart Policy')),
-			E('td', { 'class': 'td' }, [
+			E('td', {
+				'class': 'td'
+			}, [
 				E('select', {
 					'id': selectId,
 					'class': 'cbi-input-select',
@@ -1671,25 +1899,36 @@ return view.extend({
 	 * Create network connect row
 	 * @returns {Element} Table row
 	 */
-	createNetworkConnectRow: function() {
+	createNetworkConnectRow: function () {
 		const selectId = 'connect-network-select';
 		const ipInputId = 'connect-network-ip';
 
-		const options = [E('option', { 'value': '' }, _('-- Select Network --'))];
+		const options = [E('option', {
+			'value': ''
+		}, _('-- Select Network --'))];
 
 		if (this.networksData && Array.isArray(this.networksData)) {
-			this.networksData.forEach(function(net) {
+			this.networksData.forEach(function (net) {
 				const name = net.Name || net.name;
 				if (name && name !== 'none' && name !== 'host') {
-					options.push(E('option', { 'value': name }, name));
+					options.push(E('option', {
+						'value': name
+					}, name));
 				}
 			});
 		}
 
-		return E('tr', { 'class': 'tr' }, [
-			E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' }, _(
+		return E('tr', {
+			'class': 'tr'
+		}, [
+			E('td', {
+				'class': 'td',
+				'style': 'width: 33%; font-weight: bold;'
+			}, _(
 				'Connect to')),
-			E('td', { 'class': 'td' }, [
+			E('td', {
+				'class': 'td'
+			}, [
 				E('select', {
 					'id': selectId,
 					'class': 'cbi-input-select',
@@ -1717,7 +1956,7 @@ return view.extend({
 	 * Handle name update
 	 * @param {string} newName - New container name
 	 */
-	handleUpdateName: function(newName) {
+	handleUpdateName: function (newName) {
 		if (!newName || newName === this.containerData.Name.replace(/^\//, '')) {
 			return;
 		}
@@ -1745,7 +1984,7 @@ return view.extend({
 	 * Handle restart policy update
 	 * @param {string} policy - New restart policy
 	 */
-	handleUpdateRestartPolicy: function(policy) {
+	handleUpdateRestartPolicy: function (policy) {
 		pui.showSpinningModal(_('Updating Container'), _('Updating restart policy...'));
 
 		// Podman libpod API uses query parameters for restart policy
@@ -1759,14 +1998,14 @@ return view.extend({
 		}
 
 		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
-		result) => {
+			result) => {
 			ui.hideModal();
 			if (result && result.error) {
 				ui.addNotification(null, E('p', _('Failed to update restart policy: %s')
 					.format(result.error)), 'error');
 			} else {
 				ui.addNotification(null, E('p', _(
-				'Restart policy updated successfully')));
+					'Restart policy updated successfully')));
 				window.location.reload();
 			}
 		}).catch((err) => {
@@ -1781,12 +2020,14 @@ return view.extend({
 	 * @param {string} networkName - Network name
 	 * @param {string} ip - Optional IP address
 	 */
-	handleNetworkConnect: function(networkName, ip) {
+	handleNetworkConnect: function (networkName, ip) {
 		pui.showSpinningModal(_('Connecting to Network'), _(
-		'Connecting container to network...'));
+			'Connecting container to network...'));
 
 		// Build params according to Podman API NetworkConnectOptions schema
-		const params = { container: this.containerId };
+		const params = {
+			container: this.containerId
+		};
 		if (ip) {
 			params.static_ips = [ip]; // static_ips is an array
 		}
@@ -1811,7 +2052,7 @@ return view.extend({
 	 * Handle network disconnect
 	 * @param {string} networkName - Network name
 	 */
-	handleNetworkDisconnect: function(networkName) {
+	handleNetworkDisconnect: function (networkName) {
 		if (!confirm(_('Disconnect from network %s?').format(networkName)))
 			return;
 
@@ -1819,7 +2060,9 @@ return view.extend({
 			'Disconnecting container from network...'));
 
 		// Build params according to Podman API DisconnectOptions schema (capital C for Container)
-		podmanRPC.network.disconnect(networkName, JSON.stringify({ Container: this.containerId }))
+		podmanRPC.network.disconnect(networkName, JSON.stringify({
+				Container: this.containerId
+			}))
 			.then((result) => {
 				ui.hideModal();
 				if (result && result.error) {
@@ -1840,7 +2083,7 @@ return view.extend({
 	/**
 	 * Handle resource update
 	 */
-	handleResourceUpdate: function() {
+	handleResourceUpdate: function () {
 		// Get values from form
 		const cpuLimit = document.getElementById('resource-cpu-limit').value;
 		const cpuShares = document.getElementById('resource-cpu-shares').value;
@@ -1907,7 +2150,7 @@ return view.extend({
 
 		// Call update RPC with body data
 		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
-		result) => {
+			result) => {
 			ui.hideModal();
 			if (result && result.error) {
 				ui.addNotification(null, E('p', _('Failed to update resources: %s')
@@ -1929,7 +2172,7 @@ return view.extend({
 	 * Handle container start action
 	 * @param {string} id - Container ID
 	 */
-	handleStart: function(id) {
+	handleStart: function (id) {
 		ContainerUtil.startContainers(id).then(() => {
 			// reload page only for now
 			window.location.reload();
@@ -1940,7 +2183,7 @@ return view.extend({
 	 * Handle container stop action
 	 * @param {string} id - Container ID
 	 */
-	handleStop: function(id) {
+	handleStop: function (id) {
 		ContainerUtil.stopContainers(id).then(() => {
 			// reload page only for now
 			window.location.reload();
@@ -1951,7 +2194,7 @@ return view.extend({
 	 * Handle container restart action
 	 * @param {string} id - Container ID
 	 */
-	handleRestart: function(id) {
+	handleRestart: function (id) {
 		ContainerUtil.restartContainers(id).then(() => {
 			// reload page only for now
 			window.location.reload();
@@ -1963,7 +2206,7 @@ return view.extend({
 	 * @param {string} id - Container ID
 	 * @param {string} name - Container name
 	 */
-	handleRemove: function(id, name) {
+	handleRemove: function (id, name) {
 		if (!confirm(_('Are you sure you want to remove container %s?').format(name)))
 			return;
 
@@ -1988,7 +2231,7 @@ return view.extend({
 	/**
 	 * Handle manual health check execution
 	 */
-	handleHealthCheck: function() {
+	handleHealthCheck: function () {
 		pui.showSpinningModal(_('Running Health Check'), _('Executing health check...'));
 
 		podmanRPC.container.healthcheck(this.containerId).then((result) => {

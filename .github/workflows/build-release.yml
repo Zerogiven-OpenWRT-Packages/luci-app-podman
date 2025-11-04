@@ -4,7 +4,7 @@ name: Build OpenWRT package (release)
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9].[0-9].[0-9]*"
 
 jobs:
   build-packages:
@@ -124,6 +124,6 @@ jobs:
           echo "✅ **Release Created**: v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ls -la "${GITHUB_WORKSPACE}/release-assets/" >> $GITHUB_STEP_SUMMARY || true
+          ls -la "${GITHUB_WORKSPACE}/release-assets/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Release URL**: https://github.com/${{ github.repository }}/releases/tag/v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY

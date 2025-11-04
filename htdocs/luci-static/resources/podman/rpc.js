@@ -37,7 +37,9 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'containers_list',
 			params: ['query'],
-			expect: { data: [] }
+			expect: {
+				data: []
+			}
 		}),
 
 		/**
@@ -227,7 +229,9 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'images_list',
 			params: [],
-			expect: { data: [] }
+			expect: {
+				data: []
+			}
 		}),
 
 		/**
@@ -301,7 +305,9 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'pods_list',
 			params: [],
-			expect: { data: [] }
+			expect: {
+				data: []
+			}
 		}),
 
 		/**
@@ -418,7 +424,9 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'volumes_list',
 			params: [],
-			expect: { data: [] }
+			expect: {
+				data: []
+			}
 		}),
 
 		/**
@@ -492,7 +500,9 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'networks_list',
 			params: [],
-			expect: { data: [] }
+			expect: {
+				data: []
+			}
 		}),
 
 		/**
@@ -567,7 +577,9 @@ return L.Class.extend({
 			object: 'luci.podman',
 			method: 'secrets_list',
 			params: [],
-			expect: { data: [] }
+			expect: {
+				data: []
+			}
 		}),
 
 		/**

@@ -4,7 +4,7 @@
 'require podman.rpc as podmanRPC';
 
 return baseclass.extend({
-	startContainers: async function(ids) {
+	startContainers: async function (ids) {
 		return this.callContainers(
 			ids,
 			podmanRPC.container.start,
@@ -17,7 +17,7 @@ return baseclass.extend({
 		);
 	},
 
-	stopContainers: async function(ids) {
+	stopContainers: async function (ids) {
 		return this.callContainers(
 			ids,
 			podmanRPC.container.stop,
@@ -30,7 +30,7 @@ return baseclass.extend({
 		);
 	},
 
-	restartContainers: async function(ids) {
+	restartContainers: async function (ids) {
 		return this.callContainers(
 			ids,
 			podmanRPC.container.stop,
@@ -43,7 +43,7 @@ return baseclass.extend({
 		);
 	},
 
-	callContainers: async function(ids, rpcCall, titleLoad, textLoad, textSuccess, textNoIds,
+	callContainers: async function (ids, rpcCall, titleLoad, textLoad, textSuccess, textNoIds,
 		textFailed, textFailedPromise) {
 		if (!Array.isArray(ids)) {
 			ids = [ids];
@@ -68,10 +68,13 @@ return baseclass.extend({
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
 				podmanUI.errorNotification(textFailed.format(errors.length));
-			} else {
-				podmanUI.successTimeNotification(textSuccess.format(ids.length));
+				return;
 			}
 
+			podmanUI.successTimeNotification(textSuccess.format(ids.length));
+
+			// @todo we have to re add the refresh table function here. But be aware that non lists also use the callContainers functions
+			// this.refreshTable(false);
 		}).catch((err) => {
 			ui.hideModal();
 			if (err && err.message && !err.message.match(/session|auth|login/i)) {

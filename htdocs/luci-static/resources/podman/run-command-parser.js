@@ -12,7 +12,7 @@ return L.Class.extend({
 	 * @param {string} command - The full run command
 	 * @returns {Object} Container specification object
 	 */
-	parse: function(command) {
+	parse: function (command) {
 		if (!command || !command.trim()) {
 			throw new Error('Empty command');
 		}
@@ -85,9 +85,13 @@ return L.Class.extend({
 				i++;
 				const network = tokens[i];
 				if (network === 'host') {
-					spec.netns = { nsmode: 'host' };
+					spec.netns = {
+						nsmode: 'host'
+					};
 				} else if (network === 'none') {
-					spec.netns = { nsmode: 'none' };
+					spec.netns = {
+						nsmode: 'none'
+					};
 				}
 			} else if (token === '--privileged') {
 				spec.privileged = true;
@@ -102,13 +106,17 @@ return L.Class.extend({
 				i++;
 				const cpus = parseFloat(tokens[i]);
 				if (!isNaN(cpus)) {
-					spec.resource_limits.cpu = { quota: cpus * 100000 };
+					spec.resource_limits.cpu = {
+						quota: cpus * 100000
+					};
 				}
 			} else if (token === '-m' || token === '--memory') {
 				i++;
 				const memBytes = this.parseMemory(tokens[i]);
 				if (memBytes > 0) {
-					spec.resource_limits.memory = { limit: memBytes };
+					spec.resource_limits.memory = {
+						limit: memBytes
+					};
 				}
 			} else if (token === '--health-cmd') {
 				i++;
@@ -161,7 +169,7 @@ return L.Class.extend({
 	 * @param {string} command - Command string
 	 * @returns {Array<string>} Array of tokens
 	 */
-	tokenize: function(command) {
+	tokenize: function (command) {
 		const tokens = [];
 		let current = '';
 		let inQuote = false;
@@ -198,7 +206,7 @@ return L.Class.extend({
 	 * @param {string} portStr - Port mapping string
 	 * @returns {Object|null} Port mapping object
 	 */
-	parsePort: function(portStr) {
+	parsePort: function (portStr) {
 		if (!portStr) return null;
 
 		const parts = portStr.split('/');
@@ -240,12 +248,15 @@ return L.Class.extend({
 	 * @param {string} envStr - Environment variable string
 	 * @returns {Object|null} {key, value} object
 	 */
-	parseEnv: function(envStr) {
+	parseEnv: function (envStr) {
 		if (!envStr) return null;
 
 		const idx = envStr.indexOf('=');
 		if (idx === -1) {
-			return { key: envStr, value: '' };
+			return {
+				key: envStr,
+				value: ''
+			};
 		}
 
 		return {
@@ -259,7 +270,7 @@ return L.Class.extend({
 	 * @param {string} volumeStr - Volume string
 	 * @returns {Object|null} Mount object
 	 */
-	parseVolume: function(volumeStr) {
+	parseVolume: function (volumeStr) {
 		if (!volumeStr) return null;
 
 		const parts = volumeStr.split(':');
@@ -277,12 +288,15 @@ return L.Class.extend({
 	 * @param {string} labelStr - Label string
 	 * @returns {Object|null} {key, value} object
 	 */
-	parseLabel: function(labelStr) {
+	parseLabel: function (labelStr) {
 		if (!labelStr) return null;
 
 		const idx = labelStr.indexOf('=');
 		if (idx === -1) {
-			return { key: labelStr, value: '' };
+			return {
+				key: labelStr,
+				value: ''
+			};
 		}
 
 		return {
@@ -296,7 +310,7 @@ return L.Class.extend({
 	 * @param {string} memStr - Memory string
 	 * @returns {number} Memory in bytes
 	 */
-	parseMemory: function(memStr) {
+	parseMemory: function (memStr) {
 		if (!memStr) return 0;
 
 		const match = memStr.match(/^(\d+(?:\.\d+)?)\s*([kmgKMG]?)$/);
@@ -320,7 +334,7 @@ return L.Class.extend({
 	 * @param {string} duration - Duration string (e.g., "30s", "1m", "1h")
 	 * @returns {number} Duration in nanoseconds, or 0 if invalid
 	 */
-	parseDuration: function(duration) {
+	parseDuration: function (duration) {
 		if (!duration) return 0;
 
 		const match = duration.match(/^(\d+(?:\.\d+)?)\s*(ns|us|ms|s|m|h)$/);

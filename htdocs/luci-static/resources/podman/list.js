@@ -6,7 +6,7 @@
 
 const ListUtil = baseclass.extend({
 	__name__: 'ListUtil',
-	__init__: function(options) {
+	__init__: function (options) {
 		this.itemName = options.itemName;
 		this.prefix = this.itemName + 's';
 		this.rpc = options.rpc;
@@ -25,18 +25,18 @@ const ListUtil = baseclass.extend({
 		}
 	},
 
-	getDataArray: function() {
+	getDataArray: function () {
 		if (!this.data) return [];
 		if (Array.isArray(this.data)) return this.data;
 		if (this.dataKey && this.data[this.dataKey]) return this.data[this.dataKey];
 		return [];
 	},
 
-	setupSelectAll: function(rendered) {
+	setupSelectAll: function (rendered) {
 		utils.setupSelectAllCheckbox(rendered, this.prefix);
 	},
 
-	createToolbar: function(options) {
+	createToolbar: function (options) {
 		const buttons = [];
 
 		if (options.onCreate !== undefined) {
@@ -62,7 +62,9 @@ const ListUtil = baseclass.extend({
 			).render());
 		}
 
-		const container = E('div', { 'style': 'margin-bottom: 10px;' }, buttons);
+		const container = E('div', {
+			'style': 'margin-bottom: 10px;'
+		}, buttons);
 
 		return {
 			container: container,
@@ -82,11 +84,11 @@ const ListUtil = baseclass.extend({
 		};
 	},
 
-	getSelected: function(extractFn) {
+	getSelected: function (extractFn) {
 		return utils.getSelectedFromCheckboxes(this.prefix, this.getDataArray(), extractFn);
 	},
 
-	bulkDelete: function(options) {
+	bulkDelete: function (options) {
 		const selected = options.selected || this.getSelected();
 
 		if (selected.length === 0) {
@@ -140,7 +142,7 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
-	refreshTable: function(clearSelections) {
+	refreshTable: function (clearSelections) {
 		if (!this.view) {
 			console.error('ListViewHelper: view reference is required for refreshTable()');
 			return Promise.reject(new Error('view reference required'));
@@ -181,7 +183,7 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
-	showInspect: function(identifier, hiddenFields, closeButtonFn) {
+	showInspect: function (identifier, hiddenFields, closeButtonFn) {
 		podmanUI.showSpinningModal(_('Fetching information...'), _('Loading %s Details').format(
 			this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)));
 
