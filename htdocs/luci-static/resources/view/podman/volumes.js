@@ -185,7 +185,7 @@ return view.extend({
 				const url = URL.createObjectURL(blob);
 				const a = document.createElement('a');
 				a.href = url;
-				a.download = `${volumeName}.tar`;
+				a.download = `${volumeName}.tar.gz`;
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
@@ -207,7 +207,7 @@ return view.extend({
 	handleImportVolume: function() {
 		const fileInput = E('input', {
 			'type': 'file',
-			'accept': '.tar',
+			'accept': '.tar.gz',
 			'style': 'display: none'
 		});
 
@@ -215,7 +215,7 @@ return view.extend({
 			const file = ev.target.files[0];
 			if (!file) return;
 
-			const volumeName = file.name.replace(/\.tar$/, '');
+			const volumeName = file.name.replace(/\.tar.gz$/, '');
 
 			ui.showModal(_('Import Volume'), [
 				E('p', {}, _('Import volume from tar file: %s').format(file.name)),

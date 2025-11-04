@@ -574,8 +574,8 @@ EOF
 
 				# Use podman CLI since REST API doesn't support export yet
 				# Export to temp file
-				temp_file="/tmp/podman_volume_export_$$_${RANDOM}.tar"
-				podman volume export "$name" --output "$temp_file" 2>&1
+				temp_file="/tmp/podman_volume_export_$$_${RANDOM}.tar.gz"
+				podman volume export "$name" | gzip > "$temp_file" 2>&1
 				exit_code=$?
 
 				if [ $exit_code -ne 0 ]; then
@@ -598,7 +598,7 @@ EOF
 
 				# Base64 decode the uploaded tar data to temp file
 				temp_file="/tmp/podman_volume_import_$$_${RANDOM}.tar"
-				echo "$data" | openssl base64 -d > "$temp_file" 2>&1
+				echo "$data" | openssl base64 -d | gunzip -c > "$temp_file"
 				decode_exit=$?
 
 				if [ $decode_exit -ne 0 ]; then
@@ -607,18 +607,23 @@ EOF
 					exit 1
 				fi
 
-				# Create the volume first (import requires volume to exist)
-				podman volume create "$name" 2>&1
-				create_exit=$?
+				podman volume exists "$name"
+				volume_exists=$?
 
-				if [ $create_exit -ne 0 ]; then
-					rm -f "$temp_file"
-					echo "{\"error\":\"Failed to create volume\",\"details\":\"podman exit code $create_exit\"}"
-					exit 1
+				if [ $volume_exists -ne 0 ]; then
+					# Create the volume first (import requires volume to exist)
+					podman volume create "$name" > /dev/null 2>&1
+					create_exit=$?
+
+					if [ $create_exit -ne 0 ]; then
+						rm -f "$temp_file"
+						echo "{\"error\":\"Failed to create volume\",\"details\":\"podman exit code $create_exit\"}"
+						exit 1
+					fi
 				fi
 
 				# Use podman CLI since REST API doesn't support import yet
-				podman volume import "$name" "$temp_file" 2>&1
+				podman volume import "$name" "$temp_file" > /dev/null 2>&1
 				exit_code=$?
 				rm -f "$temp_file"
 
