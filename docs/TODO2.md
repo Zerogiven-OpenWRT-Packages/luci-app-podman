@@ -1,0 +1,1 @@
+- Import volume from tar. At the moment it only supports tar.gz. Maybe with a checkbox chooseable for the user.
