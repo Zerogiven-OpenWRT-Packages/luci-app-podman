@@ -111,6 +111,59 @@ return view.extend({
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
 		o.cfgformatter = format.date;
 
+		o = section.option(form.DummyValue, 'InitScript', _('Auto-start'));
+		o.cfgvalue = (sectionId) => {
+			const container = this.map.data.data[sectionId];
+			const containerName = container.Names && container.Names[0] ? container.Names[0] : null;
+
+			if (!containerName) {
+				return E('span', { 'style': 'color: #999;' }, '—');
+			}
+
+			// Check init script status asynchronously
+			const statusCell = E('span', { 'style': 'color: #999;' }, '...');
+
+			podmanRPC.initScript.status(containerName).then((status) => {
+				const hasRestartPolicy = container.HostConfig && container.HostConfig.RestartPolicy &&
+					container.HostConfig.RestartPolicy.Name &&
+					container.HostConfig.RestartPolicy.Name !== '' &&
+					container.HostConfig.RestartPolicy.Name !== 'no';
+
+				if (status.exists && status.enabled) {
+					// Init script exists and enabled
+					statusCell.textContent = '✓';
+					statusCell.style.color = '#5cb85c';
+					statusCell.title = _('Init script enabled');
+				} else if (hasRestartPolicy && !status.exists) {
+					// Has restart policy but no init script - show warning
+					statusCell.innerHTML = '⚠️';
+					statusCell.style.color = '#f0ad4e';
+					statusCell.style.cursor = 'pointer';
+					statusCell.title = _('Restart policy set but no init script. Click to generate.');
+					statusCell.addEventListener('click', (ev) => {
+						ev.preventDefault();
+						this.handleGenerateInitScript(containerName);
+					});
+				} else if (status.exists && !status.enabled) {
+					// Init script exists but disabled
+					statusCell.textContent = '○';
+					statusCell.style.color = '#999';
+					statusCell.title = _('Init script disabled');
+				} else {
+					// No init script, no restart policy
+					statusCell.textContent = '—';
+					statusCell.style.color = '#999';
+					statusCell.title = _('No auto-start configured');
+				}
+			}).catch((err) => {
+				statusCell.textContent = '✗';
+				statusCell.style.color = '#d9534f';
+				statusCell.title = _('Error checking status: %s').format(err.message);
+			});
+
+			return statusCell;
+		};
+
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleRemove(),
 			onRefresh: () => this.refreshTable(false),
@@ -250,6 +303,36 @@ return view.extend({
 
 		ContainerUtil.healthCheckContainers(containersWithHealth).then(() => {
 			this.refreshTable(false);
+		});
+	},
+
+	/**
+	 * Generate init script for container with restart policy
+	 * @param {string} containerName - Container name
+	 */
+	handleGenerateInitScript: function (containerName) {
+		podmanUI.showSpinningModal(_('Generating init script...'),
+			_('Creating auto-start configuration for %s').format(containerName));
+
+		podmanRPC.initScript.generate(containerName).then((result) => {
+			if (result && result.success) {
+				return podmanRPC.initScript.setEnabled(containerName, true);
+			} else {
+				throw new Error(result.error || _('Failed to generate init script'));
+			}
+		}).then((result) => {
+			ui.hideModal();
+			if (result && result.success) {
+				podmanUI.successTimeNotification(
+					_('Init script created and enabled for %s').format(containerName));
+				this.refreshTable(false);
+			} else {
+				throw new Error(result.error || _('Failed to enable init script'));
+			}
+		}).catch((err) => {
+			ui.hideModal();
+			podmanUI.errorNotification(
+				_('Failed to setup auto-start: %s').format(err.message));
 		});
 	}
 });
