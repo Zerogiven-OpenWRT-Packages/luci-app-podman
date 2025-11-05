@@ -10,7 +10,7 @@
 'require podman.form as podmanForm';
 
 /**
- * Volume management view using proper LuCI form components
+ * Volume management view with create, import, export, and delete operations
  */
 return view.extend({
 	handleSaveApply: null,
@@ -21,8 +21,8 @@ return view.extend({
 	listHelper: null,
 
 	/**
-	 * Load volume data on view initialization
-	 * @returns {Promise<Object>} Volume data wrapped in object
+	 * Load volume data
+	 * @returns {Promise<Object>} Volume data or error
 	 */
 	load: async () => {
 		return podmanRPC.volume.list()
@@ -39,9 +39,9 @@ return view.extend({
 	},
 
 	/**
-	 * Render the volumes view using form components
+	 * Render volumes view
 	 * @param {Object} data - Data from load()
-	 * @returns {Element} Volumes view element
+	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
 		if (data && data.error) {
@@ -129,6 +129,7 @@ return view.extend({
 
 	/**
 	 * Refresh volume list
+	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	handleRefresh: function (clearSelections) {
 		clearSelections = clearSelections || false;
@@ -136,7 +137,7 @@ return view.extend({
 	},
 
 	/**
-	 * Show create volume dialog
+	 * Show create volume form
 	 */
 	handleCreateVolume: function () {
 		const form = new podmanForm.Volume();
@@ -145,7 +146,7 @@ return view.extend({
 	},
 
 	/**
-	 * Show volume details
+	 * Show volume inspect modal
 	 * @param {string} name - Volume name
 	 */
 	handleInspect: function (name) {
@@ -153,7 +154,7 @@ return view.extend({
 	},
 
 	/**
-	 * Export selected volumes
+	 * Export selected volumes as tar.gz files
 	 */
 	handleExportSelected: function() {
 		const selected = this.listHelper.getSelected((volume) => volume.Name);
@@ -165,7 +166,6 @@ return view.extend({
 
 		podmanUI.showSpinningModal(_('Exporting Volumes'), _('Exporting selected volumes...'));
 
-		// Export each volume sequentially (can't do parallel because we download files)
 		let exportIndex = 0;
 		const exportNext = () => {
 			if (exportIndex >= selected.length) {
@@ -184,6 +184,7 @@ return view.extend({
 					return;
 				}
 
+				// Decode base64 and trigger download
 				const binaryData = atob(result.data);
 				const bytes = new Uint8Array(binaryData.length);
 				for (let i = 0; i < binaryData.length; i++) {
@@ -210,7 +211,7 @@ return view.extend({
 	},
 
 	/**
-	 * Show import volume dialog
+	 * Show import volume dialog with file picker
 	 */
 	handleImportVolume: function() {
 		const fileInput = E('input', {
@@ -257,6 +258,7 @@ return view.extend({
 							ui.hideModal();
 							podmanUI.showSpinningModal(_('Importing Volume'), _('Importing volume...'));
 
+							// Read file and encode to base64
 							const reader = new FileReader();
 							reader.onload = (e) => {
 								const arrayBuffer = e.target.result;

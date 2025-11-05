@@ -10,7 +10,7 @@
 'require podman.form as podmanForm';
 
 /**
- * Pod management view using proper LuCI form components
+ * Pod management view with create, start, stop, inspect, and delete operations
  */
 return view.extend({
 	handleSaveApply: null,
@@ -21,8 +21,8 @@ return view.extend({
 	listHelper: null,
 
 	/**
-	 * Load pod data on view initialization
-	 * @returns {Promise<Object>} Pod data wrapped in object
+	 * Load pod data
+	 * @returns {Promise<Object>} Pod data or error
 	 */
 	load: async () => {
 		return podmanRPC.pod.list()
@@ -39,9 +39,9 @@ return view.extend({
 	},
 
 	/**
-	 * Render the pods view using form components
+	 * Render pods view
 	 * @param {Object} data - Data from load()
-	 * @returns {Element} Pods view element
+	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
 		if (data && data.error) {
@@ -98,7 +98,6 @@ return view.extend({
 			}, shortId);
 		});
 
-		// Return count + links
 		return E('div', {}, [
 			E('span', { 'style': 'font-weight: bold; margin-right: 8px;' }, containers.length + ':'),
 			...containerLinks
@@ -149,8 +148,8 @@ return view.extend({
 	},
 
 	/**
-	 * Get selected pod objects from checkboxes
-	 * @returns {Array<Object>} Array of {id, name} objects for selected pods
+	 * Get selected pods
+	 * @returns {Array<Object>} Array of {id, name} objects
 	 */
 	getSelectedPods: function () {
 		return this.listHelper.getSelected((pod) => ({
@@ -172,7 +171,7 @@ return view.extend({
 	},
 
 	/**
-	 * Inspect a pod and show details in modal
+	 * Show pod inspect modal
 	 * @param {string} name - Pod name
 	 */
 	handleInspect: function (name) {
@@ -181,13 +180,14 @@ return view.extend({
 
 	/**
 	 * Refresh pod list
+	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	handleRefresh: function (clearSelections) {
 		this.listHelper.refreshTable(clearSelections)
 	},
 
 	/**
-	 * Show create pod dialog
+	 * Show create pod form
 	 */
 	handleCreatePod: function () {
 		const form = new podmanForm.Pod();
@@ -196,7 +196,7 @@ return view.extend({
 	},
 
 	/**
-	 * Handle pod start action for selected pods
+	 * Start selected pods
 	 */
 	handleStart: function () {
 		const selected = this.getSelectedPods();
@@ -232,7 +232,7 @@ return view.extend({
 	},
 
 	/**
-	 * Handle pod stop action for selected pods
+	 * Stop selected pods
 	 */
 	handleStop: function () {
 		const selected = this.getSelectedPods();

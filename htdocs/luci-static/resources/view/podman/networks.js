@@ -11,7 +11,7 @@
 'require podman.openwrt-network as openwrtNetwork';
 
 /**
- * Network management view using proper LuCI form components
+ * Network management view with create, inspect, delete, and OpenWrt integration setup
  */
 return view.extend({
 	handleSaveApply: null,
@@ -22,8 +22,8 @@ return view.extend({
 	listHelper: null,
 
 	/**
-	 * Load network data on view initialization
-	 * @returns {Promise<Object>} Network data wrapped in object
+	 * Load network data
+	 * @returns {Promise<Object>} Network data or error
 	 */
 	load: async () => {
 		return podmanRPC.network.list()
@@ -40,9 +40,9 @@ return view.extend({
 	},
 
 	/**
-	 * Render the networks view using form components
+	 * Render networks view
 	 * @param {Object} data - Data from load()
-	 * @returns {Element} Networks view element
+	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
 		if (data && data.error) {
@@ -85,7 +85,7 @@ return view.extend({
 				' ',
 				E('span', {
 					'id': 'integration-icon-' + name,
-					'style': 'display: none;' // Hidden until status checked
+					'style': 'display: none;'
 				})
 			]);
 		};
@@ -141,7 +141,7 @@ return view.extend({
 	},
 
 	/**
-	 * Check OpenWrt integration status for all networks and update icons
+	 * Check OpenWrt integration status and display alert icons for incomplete setups
 	 */
 	checkIntegrationStatus: function () {
 		const networks = this.listHelper.getDataArray();
@@ -167,14 +167,12 @@ return view.extend({
 					}, '⚠'));
 					iconEl.style.display = 'inline';
 				}
-			}).catch(() => {
-				// Ignore errors (network might not have subnet/gateway configured)
-			});
+			}).catch(() => {});
 		});
 	},
 
 	/**
-	 * Get selected network names from checkboxes
+	 * Get selected networks
 	 * @returns {Array<string>} Array of network names
 	 */
 	getSelectedNetworks: function () {
@@ -182,7 +180,7 @@ return view.extend({
 	},
 
 	/**
-	 * Delete selected networks with OpenWrt integration cleanup
+	 * Delete selected networks and remove OpenWrt integration if present
 	 */
 	handleDeleteSelected: function () {
 		const selected = this.getSelectedNetworks();
@@ -222,7 +220,7 @@ return view.extend({
 
 			const deletePromises = selected.map((name) => {
 				const check = checks.find((c) => c.name === name);
-				const bridgeName = name + '0'; // Assume default bridge name
+				const bridgeName = name + '0';
 
 				return podmanRPC.network.remove(name, false).then((result) => {
 					if (result && result.error) {
@@ -290,7 +288,8 @@ return view.extend({
 	},
 
 	/**
-	 * Refresh network list
+	 * Refresh network list and recheck integration status
+	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	handleRefresh: function (clearSelections) {
 		this.listHelper.refreshTable(clearSelections).then(() => {
@@ -299,7 +298,7 @@ return view.extend({
 	},
 
 	/**
-	 * Show create network dialog
+	 * Show create network form
 	 */
 	handleCreateNetwork: function () {
 		const form = new podmanForm.Network();
@@ -308,7 +307,7 @@ return view.extend({
 	},
 
 	/**
-	 * Show network details
+	 * Show network inspect modal
 	 * @param {string} name - Network name
 	 */
 	handleInspect: function (name) {
@@ -316,20 +315,18 @@ return view.extend({
 	},
 
 	/**
-	 * Setup OpenWrt integration for a network that doesn't have it
-	 * @param {Object} network - Network object from Podman
+	 * Show setup dialog for OpenWrt integration
+	 * @param {Object} network - Network object
 	 */
 	handleSetupIntegration: function (network) {
 		const name = network.name || network.Name;
 
 		let subnet, gateway;
 
-		// Try Podman API format (lowercase)
 		if (network.subnets && network.subnets.length > 0) {
 			subnet = network.subnets[0].subnet;
 			gateway = network.subnets[0].gateway;
 		}
-		// Try Docker-compat format (uppercase)
 		else if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
 			subnet = network.IPAM.Config[0].Subnet;
 			gateway = network.IPAM.Config[0].Gateway;
@@ -342,7 +339,7 @@ return view.extend({
 			return;
 		}
 
-		const bridgeName = name + '0'; // Default bridge name
+		const bridgeName = name + '0';
 
 		ui.showModal(_('Setup OpenWrt Integration'), [
 			E('p', {}, _('Setup OpenWrt integration for network "%s"?').format(name)),
@@ -373,9 +370,9 @@ return view.extend({
 	},
 
 	/**
-	 * Execute OpenWrt integration setup
+	 * Execute OpenWrt integration creation
 	 * @param {string} name - Network name
-	 * @param {string} bridgeName - Bridge interface name
+	 * @param {string} bridgeName - Bridge name
 	 * @param {string} subnet - Network subnet
 	 * @param {string} gateway - Gateway IP
 	 */

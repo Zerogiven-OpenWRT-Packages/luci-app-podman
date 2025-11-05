@@ -10,7 +10,7 @@
 'require podman.form as podmanForm';
 
 /**
- * Secret management view using proper LuCI form components
+ * Secret management view with create, inspect, and delete operations
  */
 return view.extend({
 	handleSaveApply: null,
@@ -21,8 +21,8 @@ return view.extend({
 	listHelper: null,
 
 	/**
-	 * Load secret data on view initialization
-	 * @returns {Promise<Object>} Secret data wrapped in object
+	 * Load secret data
+	 * @returns {Promise<Object>} Secret data or error
 	 */
 	load: async () => {
 		return podmanRPC.secret.list()
@@ -39,9 +39,9 @@ return view.extend({
 	},
 
 	/**
-	 * Render the secrets view using form components
+	 * Render secrets view
 	 * @param {Object} data - Data from load()
-	 * @returns {Element} Secrets view element
+	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
 		if (data && data.error) {
@@ -121,13 +121,14 @@ return view.extend({
 
 	/**
 	 * Refresh secret list
+	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	handleRefresh: function (clearSelections) {
 		this.listHelper.refreshTable(clearSelections || false)
 	},
 
 	/**
-	 * Show create secret dialog
+	 * Show create secret form
 	 */
 	handleCreateSecret: function () {
 		const form = new podmanForm.Secret();
@@ -136,7 +137,7 @@ return view.extend({
 	},
 
 	/**
-	 * Show secret details
+	 * Show secret inspect modal (hides SecretData field)
 	 * @param {string} name - Secret name
 	 */
 	handleInspect: function (name) {

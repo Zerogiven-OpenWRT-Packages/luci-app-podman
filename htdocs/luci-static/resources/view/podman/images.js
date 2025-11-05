@@ -10,7 +10,7 @@
 'require podman.list as List';
 
 /**
- * Image management view using proper LuCI form components
+ * Image management view with pull, inspect, and delete operations
  */
 return view.extend({
 	handleSaveApply: null,
@@ -21,8 +21,8 @@ return view.extend({
 	listHelper: null,
 
 	/**
-	 * Load image data on view initialization
-	 * @returns {Promise<Object>} Image data wrapped in object
+	 * Load image data and expand multi-tag images
+	 * @returns {Promise<Object>} Image data or error
 	 */
 	load: async () => {
 		return podmanRPC.image.list()
@@ -50,9 +50,9 @@ return view.extend({
 	},
 
 	/**
-	 * Render the images view using form components
+	 * Render images view
 	 * @param {Object} data - Data from load()
-	 * @returns {Element} Images view element
+	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
 		if (data && data.error) {
@@ -139,8 +139,8 @@ return view.extend({
 	},
 
 	/**
-	 * Get selected image objects from checkboxes
-	 * @returns {Array<Object>} Array of {id, name} objects for selected images
+	 * Get selected images
+	 * @returns {Array<Object>} Array of {id, name} objects
 	 */
 	getSelectedImages: function () {
 		return this.listHelper.getSelected((image) => {
@@ -204,6 +204,7 @@ return view.extend({
 
 	/**
 	 * Refresh image list
+	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	handleRefresh: function (clearSelections) {
 		clearSelections = clearSelections || false;
@@ -211,7 +212,7 @@ return view.extend({
 	},
 
 	/**
-	 * Inspect an image and show details in modal
+	 * Show image inspect modal
 	 * @param {string} id - Image ID
 	 */
 	handleInspect: function (id) {

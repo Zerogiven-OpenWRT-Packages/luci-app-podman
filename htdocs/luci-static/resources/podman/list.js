@@ -6,8 +6,16 @@
 'require podman.ui as podmanUI';
 'require podman.rpc as podmanRPC';
 
+/**
+ * List view helper for common table operations
+ */
 const ListUtil = baseclass.extend({
 	__name__: 'ListUtil',
+
+	/**
+	 * Initialize list helper
+	 * @param {Object} options - Configuration options
+	 */
 	__init__: function (options) {
 		this.itemName = options.itemName;
 		this.prefix = this.itemName + 's';
@@ -27,6 +35,10 @@ const ListUtil = baseclass.extend({
 		}
 	},
 
+	/**
+	 * Get data as array
+	 * @returns {Array} Data array
+	 */
 	getDataArray: function () {
 		if (!this.data) return [];
 		if (Array.isArray(this.data)) return this.data;
@@ -34,10 +46,19 @@ const ListUtil = baseclass.extend({
 		return [];
 	},
 
+	/**
+	 * Setup "select all" checkbox functionality
+	 * @param {HTMLElement} rendered - Rendered table container
+	 */
 	setupSelectAll: function (rendered) {
 		utils.setupSelectAllCheckbox(rendered, this.prefix);
 	},
 
+	/**
+	 * Create toolbar with standard buttons
+	 * @param {Object} options - Toolbar configuration
+	 * @returns {Object} Toolbar object with container, buttons, addButton, and prependButton
+	 */
 	createToolbar: function (options) {
 		const buttons = [];
 
@@ -86,10 +107,19 @@ const ListUtil = baseclass.extend({
 		};
 	},
 
+	/**
+	 * Get selected items from checkboxes
+	 * @param {Function} extractFn - Function to extract data from each item
+	 * @returns {Array} Selected items
+	 */
 	getSelected: function (extractFn) {
 		return utils.getSelectedFromCheckboxes(this.prefix, this.getDataArray(), extractFn);
 	},
 
+	/**
+	 * Handle bulk delete with confirmation
+	 * @param {Object} options - Delete options
+	 */
 	bulkDelete: function (options) {
 		const selected = options.selected || this.getSelected();
 
@@ -144,6 +174,11 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
+	/**
+	 * Refresh table data
+	 * @param {boolean} clearSelections - Clear checkbox selections
+	 * @returns {Promise} Refresh promise
+	 */
 	refreshTable: function (clearSelections) {
 		if (!this.view) {
 			console.error('ListViewHelper: view reference is required for refreshTable()');
@@ -185,6 +220,12 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
+	/**
+	 * Show inspect modal for item
+	 * @param {string} identifier - Item identifier
+	 * @param {Array} [hiddenFields] - Fields to hide
+	 * @param {Function} [closeButtonFn] - Custom close button renderer
+	 */
 	showInspect: function (identifier, hiddenFields, closeButtonFn) {
 		podmanUI.showSpinningModal(_('Fetching information...'), _('Loading %s Details').format(
 			this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)));
@@ -210,6 +251,13 @@ const ListUtil = baseclass.extend({
 		});
 	},
 
+	/**
+	 * Show inspect modal with JSON data
+	 * @param {string} title - Modal title
+	 * @param {Object} data - Data to display
+	 * @param {Array} [hiddenFields] - Fields to hide
+	 * @param {Function} [closeButton] - Custom close button renderer
+	 */
 	showInspectModal: function(title, data, hiddenFields, closeButton) {
 		const displayData = JSON.parse(JSON.stringify(data));
 

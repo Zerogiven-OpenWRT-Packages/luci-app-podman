@@ -5,7 +5,15 @@
 'require podman.ui as podmanUI';
 'require podman.rpc as podmanRPC';
 
+/**
+ * Container utility functions for bulk operations
+ */
 return baseclass.extend({
+	/**
+	 * Start one or more containers
+	 * @param {string|Array<string>} ids - Container ID(s)
+	 * @returns {Promise} Operation result
+	 */
 	startContainers: async function (ids) {
 		return this.callContainers(
 			ids,
@@ -19,6 +27,11 @@ return baseclass.extend({
 		);
 	},
 
+	/**
+	 * Stop one or more containers
+	 * @param {string|Array<string>} ids - Container ID(s)
+	 * @returns {Promise} Operation result
+	 */
 	stopContainers: async function (ids) {
 		return this.callContainers(
 			ids,
@@ -32,6 +45,11 @@ return baseclass.extend({
 		);
 	},
 
+	/**
+	 * Restart one or more containers
+	 * @param {string|Array<string>} ids - Container ID(s)
+	 * @returns {Promise} Operation result
+	 */
 	restartContainers: async function (ids) {
 		return this.callContainers(
 			ids,
@@ -45,6 +63,18 @@ return baseclass.extend({
 		);
 	},
 
+	/**
+	 * Generic handler for bulk container operations
+	 * @param {string|Array<string>} ids - Container ID(s)
+	 * @param {Function} rpcCall - RPC function to call for each container
+	 * @param {string} titleLoad - Modal title during operation
+	 * @param {string} textLoad - Modal text during operation
+	 * @param {string} textSuccess - Success notification text
+	 * @param {string} textNoIds - Warning text when no IDs provided
+	 * @param {string} textFailed - Error text for partial failures
+	 * @param {string} textFailedPromise - Error text for promise rejection
+	 * @returns {Promise} Operation result
+	 */
 	callContainers: async function (ids, rpcCall, titleLoad, textLoad, textSuccess, textNoIds,
 		textFailed, textFailedPromise) {
 		if (!Array.isArray(ids)) {
@@ -74,9 +104,6 @@ return baseclass.extend({
 			}
 
 			podmanUI.successTimeNotification(textSuccess.format(ids.length));
-
-			// @todo we have to re add the refresh table function here. But be aware that non lists also use the callContainers functions
-			// this.refreshTable(false);
 		}).catch((err) => {
 			ui.hideModal();
 			if (err && err.message && !err.message.match(/session|auth|login/i)) {

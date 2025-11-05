@@ -278,7 +278,7 @@ return view.extend({
 	},
 
 	/**
-	 * Render the Info tab content
+	 * Render Info tab with container details and configuration
 	 */
 	renderInfoTab: function () {
 		const container = document.getElementById('tab-info-content');
@@ -485,7 +485,13 @@ return view.extend({
 
 		// Environment Variables
 		if (config.Env && config.Env.length > 0) {
-			const envRows = config.Env.map(function (env) {
+			const envTable = new pui.Table();
+			envTable
+				.addHeader(_('Variable'))
+				.addHeader(_('Value'));
+
+			// const envRows = config.Env.map(function (env) {
+			config.Env.forEach(function (env) {
 				const parts = env.split('=');
 				const varName = parts[0];
 				const varValue = parts.slice(1).join('=');
@@ -493,71 +499,60 @@ return view.extend({
 				// Create censored value display (bullet points)
 				const censoredValue = '••••••••';
 
-				// Create clickable element that toggles between censored and revealed
-				const valueCell = E('td', {
-					'class': 'td',
-					'style': 'font-family: monospace; word-break: break-all; cursor: pointer; user-select: none;',
-					'title': _('Click to reveal/hide value'),
-					'data-revealed': 'false',
-					'data-value': varValue
-				}, censoredValue);
+				envTable.addRow([
+					{ inner: varName, options: { 'style': 'font-family: monospace; word-break: break-all;' } },
+					{
+						inner: censoredValue,
+						options: {
+							'style': 'font-family: monospace; word-break: break-all; cursor: pointer; user-select: none;',
+							'title': _('Click to reveal/hide value'),
+							'data-revealed': 'false',
+							'data-value': varValue,
+							'click': function() {
+								const isRevealed = this.getAttribute('data-revealed') === 'true';
+								if (isRevealed) {
+									// Hide value
+									this.textContent = censoredValue;
+									this.setAttribute('data-revealed', 'false');
 
-				// Toggle reveal/hide on click
-				valueCell.addEventListener('click', function() {
-					const isRevealed = this.getAttribute('data-revealed') === 'true';
-					if (isRevealed) {
-						// Hide value
-						this.textContent = censoredValue;
-						this.setAttribute('data-revealed', 'false');
-					} else {
-						// Reveal value
-						this.textContent = this.getAttribute('data-value');
-						this.setAttribute('data-revealed', 'true');
-					}
-				});
+									return;
+								}
 
-				return E('tr', { 'class': 'tr' }, [
-					E('td', { 'class': 'td', 'style': 'font-family: monospace; word-break: break-all;' },
-						varName),
-					valueCell
+								// Reveal value
+								this.textContent = this.getAttribute('data-value');
+								this.setAttribute('data-revealed', 'true');
+							}
+						}
+					},
 				]);
 			});
 
-			sections.push(this.createTableSection(_('Environment Variables'),
-				[_('Variable'), _('Value')],
-				envRows
-			));
+			const envSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			envSection.addNode(_('Environment Variables'), envTable.render());
+
+			sections.push(envSection.render());
 		}
 
-		// Mounts
 		if (data.Mounts && data.Mounts.length > 0) {
-			const mountRows = data.Mounts.map(function (mount) {
-				return E('tr', {
-					'class': 'tr'
-				}, [
-					E('td', {
-						'class': 'td'
-					}, mount.Type || '-'),
-					E('td', {
-							'class': 'td',
-							'title': mount.Source || '-'
-						}, utils
-						.truncate(mount.Source || '-', 50)),
-					E('td', {
-							'class': 'td',
-							'title': mount.Destination || '-'
-						},
-						utils.truncate(mount.Destination || '-', 50)),
-					E('td', {
-						'class': 'td'
-					}, mount.RW ? 'rw' : 'ro')
+			const mountsTable = new pui.Table();
+			mountsTable
+				.addHeader(_('Type'))
+				.addHeader(_('Source'))
+				.addHeader(_('Destination'))
+				.addHeader(_('Mode'));
+
+			data.Mounts.forEach(function (mount) {
+				mountsTable.addRow([
+					{ inner: mount.Type || '-' },
+					{ inner: utils.truncate(mount.Source || '-', 50), options: { 'title': mount.Source || '-' } },
+					{ inner: utils.truncate(mount.Destination || '-', 50), options: { 'title': mount.Destination || '-' } },
+					{ inner: mount.RW ? 'rw' : 'ro' }
 				]);
 			});
 
-			sections.push(this.createTableSection(_('Mounts'),
-				[_('Type'), _('Source'), _('Destination'), _('Mode')],
-				mountRows
-			));
+			const mountsSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			mountsSection.addNode(_('Mounts'), mountsTable.render());
+			sections.push(mountsSection.render());
 		}
 
 		// Append all sections
@@ -567,7 +562,7 @@ return view.extend({
 	},
 
 	/**
-	 * Render the Resources tab content
+	 * Render Resources tab with CPU, memory, and I/O limit configuration
 	 */
 	renderResourcesTab: function () {
 		const container = document.getElementById('tab-resources-content');
@@ -754,132 +749,63 @@ return view.extend({
 	},
 
 	/**
-	 * Render the Stats tab content
+	 * Render Stats tab with resource usage metrics
 	 */
 	renderStatsTab: function () {
 		const container = document.getElementById('tab-stats-content');
 		if (!container) return;
 
-		// Clear existing content
 		while (container.firstChild) {
 			container.removeChild(container.firstChild);
 		}
 
-		// Create stats display
-		const statsDisplay = E('div', { 'class': 'cbi-section' }, [
-			E('h3', {}, _('Resource Usage')),
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('table', { 'class': 'table', 'id': 'stats-table' }, [
-					E('tr', { 'class': 'tr' }, [
-						E('td', { 'class': 'td', 'style': 'width: 33%; font-weight: bold;' },
-							_('CPU Usage')),
-						E('td', {
-							'class': 'td',
-							'id': 'stat-cpu'
-						}, '-')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 33%; font-weight: bold;'
-							},
-							_('Memory Usage')),
-						E('td', {
-							'class': 'td',
-							'id': 'stat-memory'
-						}, '-')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 33%; font-weight: bold;'
-							},
-							_('Memory Limit')),
-						E('td', {
-								'class': 'td',
-								'id': 'stat-memory-limit'
-							},
-							'-')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 33%; font-weight: bold;'
-							},
-							_('Memory %')),
-						E('td', {
-								'class': 'td',
-								'id': 'stat-memory-percent'
-							},
-							'-')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 33%; font-weight: bold;'
-							},
-							_('Network I/O')),
-						E('td', {
-							'class': 'td',
-							'id': 'stat-network'
-						}, '-')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 33%; font-weight: bold;'
-							},
-							_('Block I/O')),
-						E('td', {
-							'class': 'td',
-							'id': 'stat-blockio'
-						}, '-')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 33%; font-weight: bold;'
-							},
-							_('PIDs')),
-						E('td', {
-							'class': 'td',
-							'id': 'stat-pids'
-						}, '-')
-					])
-				])
+		const statsTable = new pui.Table();
+		statsTable
+			.addRow([
+				{ inner: _('CPU Usage'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-cpu' } }
 			])
-		]);
+			.addRow([
+				{ inner: _('Memory Usage'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-memory' } }
+			])
+			.addRow([
+				{ inner: _('Memory Limit'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-memory-limit' } }
+			])
+			.addRow([
+				{ inner: _('Memory %'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-memory-percent' } }
+			])
+			.addRow([
+				{ inner: _('Network I/O'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-network' } }
+			])
+			.addRow([
+				{ inner: _('Block I/O'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-blockio' } }
+			])
+			.addRow([
+				{ inner: _('PIDs'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: '-', options: { 'id': 'stat-pids' } }
+			]);
 
-		// Create process list display
-		const processDisplay = E('div', { 'class': 'cbi-section', 'style': 'margin-top: 20px;' }, [
-			E('h3', {}, _('Running Processes')),
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('div', { 'id': 'process-list-container' }, [
-					E('p', {}, _('Loading process list...'))
-				])
-			])
-		]);
+		const statsSection = new pui.Section();
+		statsSection.addNode(_('Resource Usage'), statsTable.render());
+
+		const statsDisplay = statsSection.render();
+
+		const processSection = new pui.Section({ 'style': 'margin-top: 20px;' });
+		processSection.addNode(_('Running Processes'), E('div', { 'id': 'process-list-container' }, [
+			E('p', {}, _('Loading process list...'))
+		]));
 
 		container.appendChild(statsDisplay);
-		container.appendChild(processDisplay);
+		container.appendChild(processSection.render());
 
-		// Load stats and process list initially
 		this.updateStats();
 		this.updateProcessList();
 
-		// Setup auto-refresh using poll.add() - refresh every 3 seconds
 		const view = this;
 		this.statsPollFn = function() {
 			return Promise.all([
@@ -890,7 +816,6 @@ return view.extend({
 			});
 		};
 
-		// Add poll for auto-refresh
 		poll.add(this.statsPollFn, 3);
 	},
 
@@ -982,7 +907,7 @@ return view.extend({
 	},
 
 	/**
-	 * Update stats display
+	 * Update stats display with current resource usage
 	 */
 	updateStats: function() {
 		return podmanRPC.container.stats(this.containerId).then((result) => {
@@ -1051,19 +976,17 @@ return view.extend({
 	},
 
 	/**
-	 * Update process list display
+	 * Update process list with running processes
 	 */
 	updateProcessList: function() {
 		return podmanRPC.container.top(this.containerId, '').then((result) => {
 			const container = document.getElementById('process-list-container');
 			if (!container) return;
 
-			// Clear existing content
 			while (container.firstChild) {
 				container.removeChild(container.firstChild);
 			}
 
-			// Check if we have valid process data
 			if (!result || !result.Titles || !result.Processes) {
 				container.appendChild(E('p', {}, _('No process data available')));
 				return;
@@ -1077,79 +1000,61 @@ return view.extend({
 				return;
 			}
 
-			// Build table headers from Titles
-			const headerRow = E('tr', { 'class': 'tr table-titles' },
-				titles.map((title) => E('th', {
-					'class': 'th',
-					'style': 'font-family: monospace; white-space: nowrap;'
-				}, title))
-			);
+			const processTable = new pui.Table({ 'style': 'font-size: 11px; width: 100%;' });
 
-			// Helper function to format elapsed time (round nanoseconds)
+			titles.forEach((title) => {
+				processTable.addHeader(title, { 'style': 'font-family: monospace; white-space: nowrap;' });
+			});
+
 			const formatElapsedTime = (timeStr) => {
 				if (!timeStr) return '-';
-				// Match format like "19m24.426031127s" or "5.123456789s"
 				const match = timeStr.match(/^(\d+m)?(\d+)\.(\d+)s$/);
 				if (match) {
 					const minutes = match[1] || '';
 					const seconds = match[2];
-					// Round: if first digit of fractional part >= 5, round up
 					const fractional = match[3];
 					let roundedSeconds = fractional && fractional[0] >= '5'
 						? parseInt(seconds) + 1
 						: parseInt(seconds);
 
-					// Handle 60 second overflow (e.g., 59.9s -> 1m00s)
 					if (roundedSeconds >= 60 && minutes) {
 						const totalMinutes = parseInt(minutes) + 1;
 						roundedSeconds = 0;
 						return `${totalMinutes}m${String(roundedSeconds).padStart(2, '0')}s`;
 					}
 
-					// Add leading zero to single-digit seconds when minutes are present
 					const formattedSeconds = minutes ? String(roundedSeconds).padStart(2, '0') : String(roundedSeconds);
 					return `${minutes}${formattedSeconds}s`;
 				}
 				return timeStr;
 			};
 
-			// Build table rows from Processes
-			const processRows = processes.map((proc) => {
-				return E('tr', { 'class': 'tr' },
-					proc.map((cell, index) => {
-						// Apply different styling based on column
-						let style = 'font-family: monospace; font-size: 11px; padding: 4px 8px;';
-						let displayValue = cell || '-';
+			processes.forEach((proc) => {
+				const cells = proc.map((cell, index) => {
+					let style = 'font-family: monospace; font-size: 11px; padding: 4px 8px;';
+					let displayValue = cell || '-';
 
-						// Right-align numeric columns (PID, PPID, %CPU)
-						if (titles[index] === 'PID' || titles[index] === 'PPID' || titles[index] === '%CPU') {
-							style += ' text-align: right;';
-						}
-						// Format ELAPSED time (round to whole seconds)
-						else if (titles[index] === 'ELAPSED') {
-							displayValue = formatElapsedTime(cell);
-						}
-						// Truncate long COMMAND values
-						else if (titles[index] === 'COMMAND') {
-							style += ' max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
-						}
+					if (titles[index] === 'PID' || titles[index] === 'PPID' || titles[index] === '%CPU') {
+						style += ' text-align: right;';
+					} else if (titles[index] === 'ELAPSED') {
+						displayValue = formatElapsedTime(cell);
+					} else if (titles[index] === 'COMMAND') {
+						style += ' max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+					}
 
-						return E('td', {
-							'class': 'td',
+					return {
+						inner: displayValue,
+						options: {
 							'style': style,
-							'title': cell || '-'  // Tooltip shows full original value
-						}, displayValue);
-					})
-				);
+							'title': cell || '-'
+						}
+					};
+				});
+
+				processTable.addRow(cells);
 			});
 
-			// Create process table
-			const processTable = E('table', {
-				'class': 'table',
-				'style': 'font-size: 11px; width: 100%;'
-			}, [headerRow].concat(processRows));
-
-			container.appendChild(processTable);
+			container.appendChild(processTable.render());
 
 		}).catch((err) => {
 			console.error('Process list error:', err);
@@ -1165,7 +1070,7 @@ return view.extend({
 	},
 
 	/**
-	 * Render the Logs tab content
+	 * Render Logs tab with streaming and non-streaming log viewer
 	 */
 	renderLogsTab: function () {
 		const container = document.getElementById('tab-logs-content');
@@ -1291,7 +1196,7 @@ return view.extend({
 	},
 
 	/**
-	 * Refresh logs (non-streaming version for manual refresh)
+	 * Refresh logs manually (non-streaming, fetch last N lines)
 	 */
 	refreshLogs: function () {
 		const output = document.getElementById('logs-output');
@@ -1359,7 +1264,8 @@ return view.extend({
 	},
 
 	/**
-	 * Toggle log streaming
+	 * Toggle log streaming on/off
+	 * @param {Event} ev - Change event from checkbox
 	 */
 	toggleLogStream: function (ev) {
 		const enabled = ev.target.checked;
@@ -1374,7 +1280,7 @@ return view.extend({
 	},
 
 	/**
-	 * Start log streaming session
+	 * Start log streaming session with backend
 	 */
 	startLogStream: function () {
 		const output = document.getElementById('logs-output');
@@ -1442,7 +1348,7 @@ return view.extend({
 	},
 
 	/**
-	 * Stop log streaming session
+	 * Stop log streaming and cleanup backend resources
 	 */
 	stopLogStream: function () {
 		// Store session ID for cleanup before clearing
@@ -1470,9 +1376,7 @@ return view.extend({
 	},
 
 	/**
-	 * Poll log stream status using poll.add()
-	 *
-	 * Uses byte offset tracking to only fetch new data from the stream file.
+	 * Poll log stream status and append new log data using byte offset tracking
 	 */
 	pollLogsStatus: function () {
 		const outputEl = document.getElementById('logs-output');
@@ -1546,7 +1450,7 @@ return view.extend({
 	},
 
 	/**
-	 * Render the Health tab content
+	 * Render Health tab with health check status and history
 	 */
 	renderHealthTab: function () {
 		const container = document.getElementById('tab-health-content');
@@ -1651,52 +1555,41 @@ return view.extend({
 			}
 		}
 
-		// Health Check History
 		const log = health.Log || [];
 		if (log.length > 0) {
-			const historyRows = log.slice(-10).reverse().map((entry) => {
+			const historyTable = new pui.Table();
+			historyTable
+				.addHeader(_('Started'))
+				.addHeader(_('Ended'))
+				.addHeader(_('Result'))
+				.addHeader(_('Output'));
+
+			log.slice(-10).reverse().forEach((entry) => {
 				const exitCode = entry.ExitCode !== undefined ? entry.ExitCode : '-';
 				const exitStatus = exitCode === 0 ? _('Success') : _('Failed');
 				const exitClass = exitCode === 0 ? 'status-healthy' : 'status-unhealthy';
-
-				// Create output cell with textContent to prevent HTML injection
 				const outputText = entry.Output ? entry.Output.trim() : '-';
-				const outputCell = E('td', {
-					'class': 'td',
-					'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
-					'title': outputText // Tooltip shows full output on hover
-				});
-				outputCell.textContent = outputText;
 
-				return E('tr', {
-					'class': 'tr'
-				}, [
-					E('td', {
-						'class': 'td'
-					}, entry.Start ? utils.formatDate(
-						entry.Start) : '-'),
-					E('td', {
-						'class': 'td'
-					}, entry.End ? utils.formatDate(entry
-						.End) : '-'),
-					E('td', {
-						'class': 'td'
-					}, [
-						E('span', {
-								'class': 'badge ' + exitClass
-							},
-							exitStatus),
-						' ',
-						E('small', {}, '(Exit: ' + exitCode + ')')
-					]),
-					outputCell
+				const resultBadge = E('span', {}, [
+					E('span', { 'class': 'badge ' + exitClass }, exitStatus),
+					' ',
+					E('small', {}, '(Exit: ' + exitCode + ')')
+				]);
+
+				historyTable.addRow([
+					{ inner: entry.Start ? utils.formatDate(entry.Start) : '-' },
+					{ inner: entry.End ? utils.formatDate(entry.End) : '-' },
+					{ inner: resultBadge },
+					{ inner: outputText, options: {
+						'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
+						'title': outputText
+					}}
 				]);
 			});
 
-			sections.push(this.createTableSection(_('Recent Checks (Last 10)'),
-				[_('Started'), _('Ended'), _('Result'), _('Output')],
-				historyRows
-			));
+			const historySection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			historySection.addNode(_('Recent Checks (Last 10)'), historyTable.render());
+			sections.push(historySection.render());
 		}
 
 		// Append all sections
@@ -1714,7 +1607,7 @@ return view.extend({
 	},
 
 	/**
-	 * Render the Inspect tab content
+	 * Render Inspect tab with full JSON container data
 	 */
 	renderInspectTab: function() {
 		const container = document.getElementById('tab-inspect-content');

@@ -11,7 +11,7 @@
 'require ui';
 
 /**
- * Container management view using proper LuCI form components
+ * Container management view with create, start, stop, health check, and delete operations
  */
 return view.extend({
 	handleSaveApply: null,
@@ -22,8 +22,8 @@ return view.extend({
 	listHelper: null,
 
 	/**
-	 * Load container data on view initialization
-	 * @returns {Promise<Object>} Container data wrapped in object
+	 * Load container data (all containers including stopped)
+	 * @returns {Promise<Object>} Container data or error
 	 */
 	load: async () => {
 		return podmanRPC.container.list('all=true')
@@ -40,9 +40,9 @@ return view.extend({
 	},
 
 	/**
-	 * Render the containers view using form components
+	 * Render containers view
 	 * @param {Object} data - Data from load()
-	 * @returns {Element} Container view element
+	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
 		if (data && data.error) {
@@ -114,21 +114,21 @@ return view.extend({
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleRemove(),
 			onRefresh: () => this.refreshTable(false),
-			onCreate: undefined, // Create handled by MultiButton below
+			onCreate: undefined,
 			customButtons: [{
-					text: '&#9658;', // Play symbol
+					text: '&#9658;',
 					handler: () => this.handleStart(),
 					cssClass: 'positive',
 					tooltip: _('Start selected containers')
 				},
 				{
-					text: '&#9724;', // Stop symbol
+					text: '&#9724;',
 					handler: () => this.handleStop(),
 					cssClass: 'negative',
 					tooltip: _('Stop selected containers')
 				},
 				{
-					text: '&#10010;', // Heavy plus sign (health check symbol)
+					text: '&#10010;',
 					handler: () => this.handleBulkHealthCheck(),
 					cssClass: 'apply',
 					tooltip: _('Run health checks on selected containers')
@@ -158,38 +158,47 @@ return view.extend({
 	},
 
 	/**
-	 * Refresh table data without full page reload
-	 * @param {boolean} clearSelections - Whether to clear checkbox selections after refresh
+	 * Refresh table data
+	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	refreshTable: function (clearSelections) {
 		return this.listHelper.refreshTable(clearSelections);
 	},
 
 	/**
-	 * Get selected container IDs from checkboxes
-	 * @returns {Array<string>} Array of selected container IDs
+	 * Get selected container IDs
+	 * @returns {Array<string>} Array of container IDs
 	 */
 	getSelectedContainerIds: function () {
 		return this.listHelper.getSelected((container) => container.Id);
 	},
 
+	/**
+	 * Show create container form
+	 */
 	handleCreateContainer: function () {
 		const form = new podmanForm.Container();
 		form.submit = () => this.refreshTable(false);
 		form.render();
 	},
 
+	/**
+	 * Show import from docker run command dialog
+	 */
 	handleImportFromRunCommand: function () {
 		const form = new podmanForm.Container();
 		form.submit = () => this.refreshTable(false);
 		form.showImportFromRunCommand();
 	},
 
+	/**
+	 * Show import from compose file dialog (not implemented)
+	 */
 	handleImportFromCompose: function() {
 	},
 
 	/**
-	 * Handle container start action for selected containers
+	 * Start selected containers
 	 */
 	handleStart: function () {
 		const selected = this.getSelectedContainerIds();
@@ -200,7 +209,7 @@ return view.extend({
 	},
 
 	/**
-	 * Handle container stop action for selected containers
+	 * Stop selected containers
 	 */
 	handleStop: function () {
 		const selected = this.getSelectedContainerIds();
@@ -211,7 +220,7 @@ return view.extend({
 	},
 
 	/**
-	 * Handle container remove action for selected containers
+	 * Remove selected containers
 	 */
 	handleRemove: function () {
 		this.listHelper.bulkDelete({
@@ -222,7 +231,7 @@ return view.extend({
 	},
 
 	/**
-	 * Handle bulk health check action for selected containers
+	 * Run health checks on selected containers
 	 */
 	handleBulkHealthCheck: function () {
 		const selected = this.getSelectedContainerIds();
