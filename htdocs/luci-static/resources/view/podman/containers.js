@@ -4,6 +4,7 @@
 'require form';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
+'require podman.format as format';
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
 'require podman.list as List';
@@ -107,9 +108,8 @@ return view.extend({
 				'class': badgeClass
 			}, status);
 		};
-		o.rawhtml = true;
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
-		o.cfgformatter = utils.formatDate;
+		o.cfgformatter = format.date;
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleRemove(),
@@ -223,10 +223,10 @@ return view.extend({
 	 * Remove selected containers
 	 */
 	handleRemove: function () {
-		this.listHelper.bulkDelete({
-			selected: this.getSelectedContainerIds(),
-			deletePromiseFn: (id) => podmanRPC.container.remove(id, true, true),
-			onSuccess: () => this.refreshTable(true)
+		const selected = this.getSelectedContainerIds();
+
+		ContainerUtil.removeContainers(selected).then(() => {
+			this.refreshTable(true);
 		});
 	},
 
@@ -236,48 +236,19 @@ return view.extend({
 	handleBulkHealthCheck: function () {
 		const selected = this.getSelectedContainerIds();
 
-		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No containers selected')), 3000,
-				'warning');
-			return;
-		}
-
+		// Filter to only containers with health checks configured
 		const containersWithHealth = selected.filter((id) => {
 			const container = this.listHelper.data.containers.find((c) => c.Id === id);
 			return container && container.State && container.State.Health;
 		});
 
 		if (containersWithHealth.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _(
-				'No selected containers have health checks configured')), 3000, 'warning');
+			podmanUI.warningTimeNotification(_(
+				'No selected containers have health checks configured'));
 			return;
 		}
 
-		podmanUI.showSpinningModal(_('Running Health Checks'), _(
-			'Running health checks on selected containers...'));
-
-		const healthCheckPromises = containersWithHealth.map((id) => {
-			return podmanRPC.container.healthcheck(id).catch((err) => {
-				return {
-					error: err.message,
-					id: id
-				};
-			});
-		});
-
-		Promise.all(healthCheckPromises).then((results) => {
-			ui.hideModal();
-			const errors = results.filter((r) => r && r.error);
-			if (errors.length > 0) {
-				const errorMsg = errors.map((e) => `${e.id.substring(0, 12)}: ${e.error}`)
-					.join(', ');
-				podmanUI.errorNotification(_(
-					'Failed to run health checks on some containers: %s').format(
-					errorMsg));
-			} else {
-				podmanUI.successTimeNotification(_(
-					'Health checks completed successfully'));
-			}
+		ContainerUtil.healthCheckContainers(containersWithHealth).then(() => {
 			this.refreshTable(false);
 		});
 	}

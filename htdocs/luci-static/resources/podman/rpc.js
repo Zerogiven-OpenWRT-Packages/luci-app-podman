@@ -4,31 +4,18 @@
 'require rpc';
 
 /**
- * This module provides a centralized interface to all Podman API operations
- * through the luci.podman RPC object. Import this module in views to access
- * Podman API methods.
- *
- * @example
- * 'require podman.rpc as podmanRPC';
- *
- * podmanRPC.container.list('all=true').then(function(containers) {
- *     console.log(containers);
- * });
- *
- * podmanRPC.image.pull('nginx:latest').then(function(result) {
- *     console.log('Image pulled:', result);
- * });
+ * Centralized interface to Podman API operations via luci.podman RPC.
+ * Provides methods for containers, images, pods, volumes, networks, secrets, and system.
  */
 return baseclass.extend({
 	/**
-	 * Container management methods
-	 * @namespace container
+	 * Container management methods.
 	 */
 	container: {
 		/**
-		 * List containers
-		 * @param {string} query - Query parameters (e.g., 'all=true')
-		 * @returns {Promise<Array>} List of container objects
+		 * List containers.
+		 * @param {string} query - Query params (e.g., 'all=true')
+		 * @returns {Promise<Array>} Container list
 		 */
 		list: rpc.declare({
 			object: 'luci.podman',
@@ -40,7 +27,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Inspect a container
+		 * Inspect container.
 		 * @param {string} id - Container ID
 		 * @returns {Promise<Object>} Container details
 		 */
@@ -51,9 +38,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Start a container
+		 * Start container.
 		 * @param {string} id - Container ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		start: rpc.declare({
 			object: 'luci.podman',
@@ -62,9 +49,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Stop a container
+		 * Stop container.
 		 * @param {string} id - Container ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		stop: rpc.declare({
 			object: 'luci.podman',
@@ -73,9 +60,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Restart a container
+		 * Restart container.
 		 * @param {string} id - Container ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		restart: rpc.declare({
 			object: 'luci.podman',
@@ -84,11 +71,11 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Remove a container
+		 * Remove container.
 		 * @param {string} id - Container ID
 		 * @param {boolean} force - Force removal
-		 * @param {boolean} depend - Remove container and its dependencies (e.g., when part of a pod)
-		 * @returns {Promise<Object>} Operation result
+		 * @param {boolean} depend - Remove dependencies (e.g., pod containers)
+		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
 			object: 'luci.podman',
@@ -97,9 +84,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get container logs
+		 * Get logs
 		 * @param {string} id - Container ID
-		 * @param {string} params - Log parameters (e.g., 'stdout=true&stderr=true&tail=100')
+		 * @param {string} params - Log params (e.g., 'stdout=true&stderr=true&tail=100')
 		 * @returns {Promise<string>} Container logs (plain text)
 		 */
 		logs: rpc.declare({
@@ -109,9 +96,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Start streaming container logs
+		 * Start log stream
 		 * @param {string} id - Container ID
-		 * @param {string} params - Log parameters (must include follow=true for streaming)
+		 * @param {string} params - Log params (must include follow=true for streaming)
 		 * @returns {Promise<Object>} Session object with session_id
 		 */
 		logsStream: rpc.declare({
@@ -121,7 +108,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get container logs stream status
+		 * Get logs stream status
 		 * @param {string} session_id - Logs session ID
 		 * @param {number} offset - Output offset for streaming
 		 * @returns {Promise<Object>} Status object with output, complete, and success flags
@@ -133,7 +120,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Stop container logs stream and cleanup resources
+		 * Stop log stream
 		 * @param {string} session_id - Logs session ID
 		 * @returns {Promise<Object>} Success result
 		 */
@@ -144,7 +131,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get container statistics
+		 * Get statistics
 		 * @param {string} id - Container ID
 		 * @returns {Promise<Object>} Container stats
 		 */
@@ -155,9 +142,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Create a container
+		 * Create container
 		 * @param {string} data - Container specification JSON (SpecGenerator)
-		 * @returns {Promise<Object>} Creation result
+		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
 			object: 'luci.podman',
@@ -166,10 +153,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Rename a container
+		 * Rename container
 		 * @param {string} id - Container ID
 		 * @param {string} name - New container name
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		rename: rpc.declare({
 			object: 'luci.podman',
@@ -178,10 +165,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Update a container
+		 * Update container
 		 * @param {string} id - Container ID
 		 * @param {string} data - Update specification JSON
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		update: rpc.declare({
 			object: 'luci.podman',
@@ -190,7 +177,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Run container health check
+		 * Run health check
 		 * @param {string} id - Container ID
 		 * @returns {Promise<Object>} Health check result with Status, FailingStreak, and Log
 		 */
@@ -201,7 +188,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get container process list (top)
+		 * Get process list
 		 * @param {string} id - Container ID
 		 * @param {string} ps_args - ps command arguments (optional, e.g., 'aux')
 		 * @returns {Promise<Object>} Process list with Titles and Processes arrays
@@ -214,12 +201,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Image management methods
-	 * @namespace image
+	 * Image management methods.
+	 
 	 */
 	image: {
 		/**
-		 * List images
+		 * List images.
 		 * @returns {Promise<Array>} List of image objects
 		 */
 		list: rpc.declare({
@@ -232,7 +219,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Inspect an image
+		 * Inspect image.
 		 * @param {string} id - Image ID
 		 * @returns {Promise<Object>} Image details
 		 */
@@ -243,10 +230,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Remove an image
+		 * Remove image.
 		 * @param {string} id - Image ID
 		 * @param {boolean} force - Force removal
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
 			object: 'luci.podman',
@@ -255,7 +242,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Pull an image (blocking)
+		 * Pull image (blocking).
 		 * @param {string} image - Image name (e.g., 'nginx:latest')
 		 * @returns {Promise<Object>} Pull result
 		 */
@@ -266,7 +253,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Start streaming image pull
+		 * Start image pull stream.
 		 * @param {string} image - Image name (e.g., 'nginx:latest')
 		 * @returns {Promise<Object>} Session object with session_id
 		 */
@@ -277,7 +264,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get image pull status
+		 * Get pull stream status.
 		 * @param {string} session_id - Pull session ID
 		 * @param {number} offset - Output offset for streaming
 		 * @returns {Promise<Object>} Status object with output, complete, and success flags
@@ -290,12 +277,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Pod management methods
-	 * @namespace pod
+	 * Pod management methods.
+	 
 	 */
 	pod: {
 		/**
-		 * List pods
+		 * List pods.
 		 * @returns {Promise<Array>} List of pod objects
 		 */
 		list: rpc.declare({
@@ -308,7 +295,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Inspect a pod
+		 * Inspect pod.
 		 * @param {string} name - Pod name
 		 * @returns {Promise<Object>} Pod details
 		 */
@@ -319,9 +306,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Start a pod
+		 * Start pod.
 		 * @param {string} id - Pod ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		start: rpc.declare({
 			object: 'luci.podman',
@@ -330,9 +317,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Stop a pod
+		 * Stop pod.
 		 * @param {string} id - Pod ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		stop: rpc.declare({
 			object: 'luci.podman',
@@ -341,9 +328,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Restart a pod
+		 * Restart pod.
 		 * @param {string} id - Pod ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		restart: rpc.declare({
 			object: 'luci.podman',
@@ -352,9 +339,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Pause a pod
+		 * Pause pod.
 		 * @param {string} id - Pod ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		pause: rpc.declare({
 			object: 'luci.podman',
@@ -363,9 +350,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Unpause a pod
+		 * Unpause pod.
 		 * @param {string} id - Pod ID
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		unpause: rpc.declare({
 			object: 'luci.podman',
@@ -374,10 +361,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Remove a pod
+		 * Remove pod.
 		 * @param {string} name - Pod name
 		 * @param {boolean} force - Force removal
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
 			object: 'luci.podman',
@@ -386,9 +373,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Create a pod
+		 * Create pod.
 		 * @param {string} data - Pod configuration JSON
-		 * @returns {Promise<Object>} Creation result
+		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
 			object: 'luci.podman',
@@ -397,7 +384,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get pod statistics
+		 * Get statistics.
 		 * @param {string} name - Pod name
 		 * @returns {Promise<Object>} Pod stats
 		 */
@@ -409,12 +396,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Volume management methods
-	 * @namespace volume
+	 * Volume management methods.
+	 
 	 */
 	volume: {
 		/**
-		 * List volumes
+		 * List volumes.
 		 * @returns {Promise<Array>} List of volume objects
 		 */
 		list: rpc.declare({
@@ -427,7 +414,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Inspect a volume
+		 * Inspect volume.
 		 * @param {string} name - Volume name
 		 * @returns {Promise<Object>} Volume details
 		 */
@@ -438,10 +425,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Remove a volume
+		 * Remove volume.
 		 * @param {string} name - Volume name
 		 * @param {boolean} force - Force removal
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
 			object: 'luci.podman',
@@ -450,9 +437,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Create a volume
+		 * Create volume.
 		 * @param {string} data - Volume configuration JSON
-		 * @returns {Promise<Object>} Creation result
+		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
 			object: 'luci.podman',
@@ -461,7 +448,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Export a volume to tar archive
+		 * Export volume to tar.
 		 * @param {string} name - Volume name
 		 * @returns {Promise<Object>} Export result with base64-encoded tar data
 		 */
@@ -472,7 +459,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Import volume data from tar archive
+		 * Import volume from tar.
 		 * @param {string} name - Volume name
 		 * @param {string} data - Base64-encoded tar data
 		 * @returns {Promise<Object>} Import result
@@ -485,12 +472,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Network management methods
-	 * @namespace network
+	 * Network management methods.
+	 
 	 */
 	network: {
 		/**
-		 * List networks
+		 * List networks.
 		 * @returns {Promise<Array>} List of network objects
 		 */
 		list: rpc.declare({
@@ -503,7 +490,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Inspect a network
+		 * Inspect network.
 		 * @param {string} name - Network name
 		 * @returns {Promise<Object>} Network details
 		 */
@@ -514,10 +501,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Remove a network
+		 * Remove network.
 		 * @param {string} name - Network name
 		 * @param {boolean} force - Force removal
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
 			object: 'luci.podman',
@@ -526,9 +513,9 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Create a network
+		 * Create network.
 		 * @param {string} data - Network configuration JSON
-		 * @returns {Promise<Object>} Creation result
+		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
 			object: 'luci.podman',
@@ -537,10 +524,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Connect a container to a network
+		 * Connect container to network.
 		 * @param {string} name - Network name
 		 * @param {string} data - Connection parameters JSON
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		connect: rpc.declare({
 			object: 'luci.podman',
@@ -549,10 +536,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Disconnect a container from a network
+		 * Disconnect container from network.
 		 * @param {string} name - Network name
 		 * @param {string} data - Disconnection parameters JSON
-		 * @returns {Promise<Object>} Operation result
+		 * @returns {Promise<Object>} Result
 		 */
 		disconnect: rpc.declare({
 			object: 'luci.podman',
@@ -562,12 +549,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Secret management methods
-	 * @namespace secret
+	 * Secret management methods.
+	 
 	 */
 	secret: {
 		/**
-		 * List secrets
+		 * List secrets.
 		 * @returns {Promise<Array>} List of secret objects
 		 */
 		list: rpc.declare({
@@ -580,7 +567,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Inspect a secret (metadata only, not the actual secret data)
+		 * Inspect secret (metadata only).
 		 * @param {string} name - Secret name
 		 * @returns {Promise<Object>} Secret metadata
 		 */
@@ -591,10 +578,10 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Create a secret
+		 * Create secret.
 		 * @param {string} name - Secret name
 		 * @param {string} data - Secret data (will be base64 encoded by backend)
-		 * @returns {Promise<Object>} Creation result
+		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
 			object: 'luci.podman',
@@ -603,7 +590,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Remove a secret
+		 * Remove secret.
 		 * @param {string} name - Secret name
 		 * @returns {Promise<Object>} Removal result
 		 */
@@ -615,12 +602,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * System information methods
-	 * @namespace system
+	 * System information methods.
+	 
 	 */
 	system: {
 		/**
-		 * Get Podman version information
+		 * Get version information.
 		 * @returns {Promise<Object>} Version object with Version, ApiVersion, GoVersion, Os, Arch
 		 */
 		version: rpc.declare({
@@ -630,7 +617,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get system information
+		 * Get system information.
 		 * @returns {Promise<Object>} System info object with host details
 		 */
 		info: rpc.declare({
@@ -640,7 +627,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get disk usage information
+		 * Get disk usage.
 		 * @returns {Promise<Object>} Disk usage data for images, containers, volumes
 		 */
 		df: rpc.declare({
@@ -650,7 +637,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Prune unused resources
+		 * Prune unused resources.
 		 * @param {boolean} all - Remove all unused images, not just dangling ones
 		 * @param {boolean} volumes - Prune volumes
 		 * @returns {Promise<Object>} Prune results
@@ -662,7 +649,7 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Run auto-update on containers with autoupdate labels
+		 * Run auto-update.
 		 * @param {boolean} dry_run - Only check for updates, don't apply
 		 * @returns {Promise<Object>} Auto-update results
 		 */

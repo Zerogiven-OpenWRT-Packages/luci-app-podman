@@ -5,6 +5,7 @@
 'require ui';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
+'require podman.format as format';
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
 'require podman.list as List';
@@ -100,9 +101,9 @@ return view.extend({
 		o.text = (image) => utils.truncate(image.Id ? image.Id.substring(7, 19) : '', 10);
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Size', _('Size'));
-		o.cfgformatter = utils.formatBytes;
+		o.cfgformatter = format.bytes;
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
-		o.cfgformatter = utils.formatDate;
+		o.cfgformatter = format.date;
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),

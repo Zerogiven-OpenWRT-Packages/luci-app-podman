@@ -9,6 +9,8 @@
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.ui as pui';
+'require podman.form as pform';
+'require podman.format as format';
 
 /**
  * Container detail view with tabbed interface
@@ -101,120 +103,37 @@ return view.extend({
 		// Check if container has health check configured
 		const hasHealthCheck = this.containerData.State && this.containerData.State.Health;
 
-		// Build tab panes array dynamically
-		const tabPanes = [
-			// Info Tab (active by default unless savedTab exists)
-			E('div', {
-				'class': 'tab-pane',
-				'data-tab': 'info',
-				'data-tab-title': _('Info'),
-				'data-tab-active': !savedTab || savedTab === 'info' ? 'true' : null
-			}, [
-				E('div', {
-					'id': 'tab-info-content'
-				})
-			]),
-			// Resources Tab
-			E('div', {
-				'class': 'tab-pane',
-				'data-tab': 'resources',
-				'data-tab-title': _('Resources'),
-				'data-tab-active': savedTab === 'resources' ? 'true' : null
-			}, [
-				E('div', {
-					'id': 'tab-resources-content'
-				})
-			]),
-			// Stats Tab
-			E('div', {
-				'class': 'tab-pane',
-				'data-tab': 'stats',
-				'data-tab-title': _('Stats')
-			}, [
-				E('div', {
-					'id': 'tab-stats-content'
-				}, [
-					E('p', {}, _('Loading stats...'))
-				])
-			]),
-			// Logs Tab
-			E('div', {
-				'class': 'tab-pane',
-				'data-tab': 'logs',
-				'data-tab-title': _('Logs')
-			}, [
-				E('div', {
-					'id': 'tab-logs-content'
-				}, [
-					E('p', {}, _('Loading logs...'))
-				])
-			])
-		];
+		// Build tabs using pui.Tabs helper
+		const tabs = new pui.Tabs(savedTab || 'info');
+		tabs
+			.addTab('info', _('Info'), 'tab-info-content')
+			.addTab('resources', _('Resources'), 'tab-resources-content')
+			.addTab('stats', _('Stats'), E('div', { 'id': 'tab-stats-content' }, [
+				E('p', {}, _('Loading stats...'))
+			]))
+			.addTab('logs', _('Logs'), E('div', { 'id': 'tab-logs-content' }, [
+				E('p', {}, _('Loading logs...'))
+			]));
 
 		// Conditionally add Health tab if health check is configured
 		if (hasHealthCheck) {
-			tabPanes.push(
-				E('div', {
-					'class': 'tab-pane',
-					'data-tab': 'health',
-					'data-tab-title': _('Health'),
-					'data-tab-active': savedTab === 'health' ? 'true' : null
-				}, [
-					E('div', {
-						'id': 'tab-health-content'
-					}, [
-						E('p', {}, _('Loading health check data...'))
-					])
-				])
-			);
+			tabs.addTab('health', _('Health'), E('div', { 'id': 'tab-health-content' }, [
+				E('p', {}, _('Loading health check data...'))
+			]));
 		}
 
-		// Add Inspect tab
-		tabPanes.push(
-			E('div', {
-				'class': 'tab-pane',
-				'data-tab': 'inspect',
-				'data-tab-title': _('Inspect'),
-				'data-tab-active': savedTab === 'inspect' ? 'true' : null
-			}, [
-				E('div', { 'id': 'tab-inspect-content' })
-			])
-		);
+		// Add Inspect and Console tabs
+		tabs
+			.addTab('inspect', _('Inspect'), 'tab-inspect-content')
+			.addTab('console', _('Console'), E('div', { 'id': 'tab-console-content' }, [
+				E('p', {}, _('Terminal access coming soon...'))
+			]));
 
-		// Add Console tab last
-		tabPanes.push(
-			E('div', {
-				'class': 'tab-pane',
-				'data-tab': 'console',
-				'data-tab-title': _('Console')
-			}, [
-				E('div', {
-					'id': 'tab-console-content'
-				}, [
-					E('p', {}, _('Terminal access coming soon...'))
-				])
-			])
-		);
+		// Render tab container (includes automatic tab initialization)
+		const tabContainer = tabs.render();
 
-		// Create tab container
-		const tabContainer = E('div', {
-			'class': 'cbi-section'
-		}, [
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				E('div', {
-					'class': 'tab-panes'
-				}, tabPanes)
-			])
-		]);
-
-		// Initialize tabs after DOM is ready
+		// Load tab contents after DOM is ready
 		requestAnimationFrame(() => {
-			const panes = tabContainer.querySelectorAll('.tab-pane');
-			ui.tabs.initTabGroup(panes);
-
-			// Load tab contents
 			this.renderInfoTab();
 			this.renderResourcesTab();
 			this.renderStatsTab();
@@ -291,33 +210,86 @@ return view.extend({
 
 		// Build info sections
 		const sections = [];
+		const status = data.State ? data.State.Status : 'unknown';
 
-		// Basic Information
-		const basicRows = [
-			this.createEditableRow(_('Name'), data.Name ? data.Name.replace(/^\//, '') : '-',
-				'name'),
-			this.createInfoRow(_('ID'), data.Id ? data.Id.substring(0, 64) : '-'),
-			this.createInfoRow(_('Image'), config.Image || '-'),
-			this.createInfoRow(_('Status'), data.State ? data.State.Status : '-'),
-			this.createInfoRow(_('Created'), data.Created ? utils.formatDate(data.Created) :
-				'-'),
-			this.createInfoRow(_('Started'), data.State && data.State.StartedAt ? utils
-				.formatDate(data.State.StartedAt) : '-')
-		];
+		// Basic Information - using pui.Table
+		const basicTable = new pui.Table();
 
-		// Add restart policy with edit
-		basicRows.push(this.createEditableRestartRow(hostConfig.RestartPolicy ? hostConfig
-			.RestartPolicy.Name || 'no' : 'no'));
+		// Name (editable)
+		const inputId = 'edit-name';
+		basicTable.addRow([
+			{ inner: _('Name'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{ inner: [
+				E('input', {
+					'type': 'text',
+					'id': inputId,
+					'class': 'cbi-input-text',
+					'value': data.Name ? data.Name.replace(/^\//, '') : '-',
+					'style': 'width: 60%; margin-right: 5px;'
+				}),
+				new pui.Button(_('Update'), () => this.handleUpdateName(document.getElementById(inputId).value), 'apply').render()
+			]}
+		]);
 
-		// Add auto-update status from labels
+		// Standard info rows
+		basicTable
+			.addRow([
+				{ inner: _('ID'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: data.Id ? data.Id.substring(0, 64) : '-' }
+			])
+			.addRow([
+				{ inner: _('Image'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: config.Image || '-' }
+			])
+			.addRow([
+				{ inner: _('Status'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: data.State ? data.State.Status : '-' }
+			])
+			.addRow([
+				{ inner: _('Created'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: data.Created ? format.date(data.Created) : '-' }
+			])
+			.addRow([
+				{ inner: _('Started'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: data.State && data.State.StartedAt ? format.date(data.State.StartedAt) : '-' }
+			]);
+
+		// Restart policy (editable)
+		const selectId = 'edit-restart-policy';
+		const policies = {
+			'no': _('No'),
+			'always': _('Always'),
+			'on-failure': _('On Failure'),
+			'unless-stopped': _('Unless Stopped')
+		};
+		const currentPolicy = hostConfig.RestartPolicy ? hostConfig.RestartPolicy.Name || 'no' : 'no';
+		const policyOptions = Object.keys(policies).map((key) => {
+			return E('option', {
+				'value': key,
+				'selected': key === currentPolicy ? 'selected' : null
+			}, policies[key]);
+		});
+
+		basicTable.addRow([
+			{ inner: _('Restart Policy'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{ inner: [
+				E('select', {
+					'id': selectId,
+					'class': 'cbi-input-select',
+					'style': 'width: 60%; margin-right: 5px;'
+				}, policyOptions),
+				new pui.Button(_('Update'), () => this.handleUpdateRestartPolicy(document.getElementById(selectId).value), 'apply').render()
+			]}
+		]);
+
+		// Auto-update status
 		const autoUpdateLabel = config.Labels && config.Labels['io.containers.autoupdate'];
-		if (autoUpdateLabel) {
-			basicRows.push(this.createInfoRow(_('Auto-Update'), autoUpdateLabel));
-		} else {
-			basicRows.push(this.createInfoRow(_('Auto-Update'), _('Disabled')));
-		}
+		basicTable.addRow([
+			{ inner: _('Auto-Update'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{ inner: autoUpdateLabel || _('Disabled') }
+		]);
 
-		// Add health status if exists
+		// Health status if exists
 		if (data.State && data.State.Health) {
 			const healthStatus = data.State.Health.Status || 'none';
 			const failingStreak = data.State.Health.FailingStreak || 0;
@@ -335,66 +307,82 @@ return view.extend({
 			// Add failing streak if unhealthy
 			if (healthStatus === 'unhealthy' && failingStreak > 0) {
 				healthDetails.push(E('span', {
-						'style': 'color: #ff6b6b;'
-					},
-					_(' (%d consecutive failures)').format(failingStreak)));
+					'style': 'color: #ff6b6b;'
+				}, _(' (%d consecutive failures)').format(failingStreak)));
 			}
 
 			// Add last check time if available
 			if (lastCheck && lastCheck.End) {
 				healthDetails.push(E('br'));
 				healthDetails.push(E('small', {
-						'style': 'color: #666;'
-					},
-					_('Last check: %s').format(utils.formatDate(lastCheck.End))));
+					'style': 'color: #666;'
+				}, _('Last check: %s').format(format.date(lastCheck.End))));
 			}
 
 			// Add manual health check button if container is running
 			if (status === 'running') {
 				healthDetails.push(' ');
-				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(),
-					'positive').render());
+				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(), 'positive').render());
 			}
 
-			basicRows.push(E('tr', {
-				'class': 'tr'
-			}, [
-				E('td', {
-						'class': 'td',
-						'style': 'width: 33%; font-weight: bold;'
-					},
-					_('Health')),
-				E('td', {
-						'class': 'td',
-						'style': 'word-break: break-word;'
-					},
-					healthDetails)
-			]));
+			basicTable.addRow([
+				{ inner: _('Health'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: healthDetails, options: { 'style': 'word-break: break-word;' } }
+			]);
 		}
 
-		sections.push(this.createSection(_('Basic Information'), basicRows));
+		const basicSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		basicSection.addNode(_('Basic Information'), '', basicTable.render());
+		sections.push(basicSection.render());
 
-		// Configuration
+		// Configuration - using pui.Table
 		const cmd = config.Cmd ? config.Cmd.join(' ') : '-';
 		const entrypoint = config.Entrypoint ? config.Entrypoint.join(' ') : '-';
 
-		sections.push(this.createSection(_('Configuration'), [
-			this.createInfoRow(_('Command'), cmd),
-			this.createInfoRow(_('Entrypoint'), entrypoint),
-			this.createInfoRow(_('Working Directory'), config.WorkingDir || '-'),
-			this.createInfoRow(_('User'), config.User || '-'),
-			this.createInfoRow(_('Hostname'), config.Hostname || '-'),
-			this.createInfoRow(_('Privileged'), hostConfig.Privileged ? _('Yes') : _(
-				'No')),
-			this.createInfoRow(_('TTY'), config.Tty ? _('Yes') : _('No')),
-			this.createInfoRow(_('Interactive'), config.OpenStdin ? _('Yes') : _(
-				'No'))
-		]));
+		const configTable = new pui.Table();
+		configTable
+			.addRow([
+				{ inner: _('Command'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: cmd, options: { 'style': 'word-break: break-word;' } }
+			])
+			.addRow([
+				{ inner: _('Entrypoint'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: entrypoint, options: { 'style': 'word-break: break-word;' } }
+			])
+			.addRow([
+				{ inner: _('Working Directory'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: config.WorkingDir || '-' }
+			])
+			.addRow([
+				{ inner: _('User'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: config.User || '-' }
+			])
+			.addRow([
+				{ inner: _('Hostname'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: config.Hostname || '-' }
+			])
+			.addRow([
+				{ inner: _('Privileged'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: hostConfig.Privileged ? _('Yes') : _('No') }
+			])
+			.addRow([
+				{ inner: _('TTY'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: config.Tty ? _('Yes') : _('No') }
+			])
+			.addRow([
+				{ inner: _('Interactive'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: config.OpenStdin ? _('Yes') : _('No') }
+			]);
 
-		// Network
-		const networkRows = [
-			this.createInfoRow(_('Network Mode'), hostConfig.NetworkMode || 'default')
-		];
+		const configSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		configSection.addNode(_('Configuration'), '', configTable.render());
+		sections.push(configSection.render());
+
+		// Network - using pui.Table
+		const networkTable = new pui.Table();
+
+		// Network mode
+		networkTable.addInfoRow(_('Network Mode'), hostConfig.NetworkMode || 'default');
 
 		// Add network connections
 		// System networks that cannot be disconnected (default Podman networks)
@@ -410,44 +398,87 @@ return view.extend({
 			// Only display user-created networks with disconnect buttons
 		userNetworks.forEach((netName) => {
 			const net = networkSettings.Networks[netName];
-			networkRows.push(
-				E('tr', { 'class': 'tr' }, [
-					E('td', {
-						'class': 'td',
+			const tooltip = (() => {
+				const parts = [];
+				if (net.IPAddress) parts.push(`IPv4: ${net.IPAddress}`);
+				if (net.GlobalIPv6Address) parts.push(`IPv6: ${net.GlobalIPv6Address}`);
+				else parts.push('IPv6: disabled');
+				if (net.Gateway) parts.push(`Gateway: ${net.Gateway}`);
+				if (net.MacAddress) parts.push(`MAC: ${net.MacAddress}`);
+				if (net.NetworkID) parts.push(`Network ID: ${net.NetworkID.substring(0, 12)}`);
+				return parts.join('\n');
+			})();
+
+			networkTable.addRow([
+				{
+					inner: netName,
+					options: {
 						'style': 'width: 33%; font-weight: bold; cursor: help;',
-						'title': (() => {
-							const parts = [];
-							if (net.IPAddress) parts.push(`IPv4: ${net.IPAddress}`);
-							if (net.GlobalIPv6Address) parts.push(`IPv6: ${net.GlobalIPv6Address}`);
-							else parts.push('IPv6: disabled');
-							if (net.Gateway) parts.push(`Gateway: ${net.Gateway}`);
-							if (net.MacAddress) parts.push(`MAC: ${net.MacAddress}`);
-							if (net.NetworkID) parts.push(`Network ID: ${net.NetworkID.substring(0, 12)}`);
-							return parts.join('\n');
-						})()
-					}, netName),
-					E('td', { 'class': 'td' }, [
+						'title': tooltip
+					}
+				},
+				{
+					inner: [
 						net.IPAddress || '-',
 						' ',
 						E('span', { 'style': 'margin-left: 10px;' }, [
-							new pui.Button(_('Disconnect'), () => this
-								.handleNetworkDisconnect(netName),
-								'remove').render()
+							new pui.Button(_('Disconnect'), () => this.handleNetworkDisconnect(netName), 'remove').render()
 						])
-					])
-				])
-			);
+					]
+				}
+			]);
 		});
 		}
 
 		// Only show legacy IP Address row if no user networks are displayed
 		// (avoids duplicate IP display when networks are shown with their IPs)
 		if (networkSettings.IPAddress && userNetworks.length === 0) {
-			networkRows.push(this.createInfoRow(_('IP Address'), networkSettings.IPAddress));
+			networkTable.addInfoRow(_('IP Address'), networkSettings.IPAddress);
 		}
 
-		// Add connect to network option
-		networkRows.push(this.createNetworkConnectRow());
+		// Add connect to network option (inline instead of helper method)
+		const networkSelectId = 'connect-network-select';
+		const ipInputId = 'connect-network-ip';
+
+		const networkOptions = [E('option', {
+			'value': ''
+		}, _('-- Select Network --'))];
+
+		if (this.networksData && Array.isArray(this.networksData)) {
+			this.networksData.forEach(function (net) {
+				const name = net.Name || net.name;
+				if (name && name !== 'none' && name !== 'host') {
+					networkOptions.push(E('option', {
+						'value': name
+					}, name));
+				}
+			});
+		}
+
+		networkTable.addRow([
+			{ inner: _('Connect to'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{ inner: [
+				E('select', {
+					'id': networkSelectId,
+					'class': 'cbi-input-select',
+					'style': 'width: 40%; margin-right: 5px;'
+				}, networkOptions),
+				E('input', {
+					'type': 'text',
+					'id': ipInputId,
+					'class': 'cbi-input-text',
+					'placeholder': _('IP (optional)'),
+					'style': 'width: 30%; margin-right: 5px;'
+				}),
+				new pui.Button(_('Connect'), () => {
+					const netName = document.getElementById(networkSelectId).value;
+					const ip = document.getElementById(ipInputId).value;
+					if (netName) {
+						this.handleNetworkConnect(netName, ip);
+					}
+				}, 'positive').render()
+			]}
+		]);
 
 		// Ports - display as single row with line breaks
 		const ports = [];
@@ -466,7 +497,7 @@ return view.extend({
 		}
 
 		if (ports.length > 0) {
-			networkRows.push(this.createInfoRow(_('Port Mappings'), ports.join('<br>')));
+			networkTable.addInfoRow(_('Port Mappings'), ports.join('<br>'));
 		}
 
 		// Links - display as single row with line breaks
@@ -478,10 +509,13 @@ return view.extend({
 		}
 
 		if (links.length > 0) {
-			networkRows.push(this.createInfoRow(_('Links'), links.join('<br>')));
+			networkTable.addInfoRow(_('Links'), links.join('<br>'));
 		}
 
-		sections.push(this.createSection(_('Network'), networkRows));
+		// Render Network section using pui.Section
+		const networkSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		networkSection.addNode(_('Network'), '', networkTable.render());
+		sections.push(networkSection.render());
 
 		// Environment Variables
 		if (config.Env && config.Env.length > 0) {
@@ -528,7 +562,7 @@ return view.extend({
 			});
 
 			const envSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
-			envSection.addNode(_('Environment Variables'), envTable.render());
+			envSection.addNode(_('Environment Variables'), '', envTable.render());
 
 			sections.push(envSection.render());
 		}
@@ -551,7 +585,7 @@ return view.extend({
 			});
 
 			const mountsSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
-			mountsSection.addNode(_('Mounts'), mountsTable.render());
+			mountsSection.addNode(_('Mounts'), '', mountsTable.render());
 			sections.push(mountsSection.render());
 		}
 
@@ -568,184 +602,18 @@ return view.extend({
 		const container = document.getElementById('tab-resources-content');
 		if (!container) return;
 
-		const data = this.containerData;
-		const hostConfig = data.HostConfig || {};
-
-		// Get current resource values
-		const cpuShares = hostConfig.CpuShares || 0;
-		const cpuQuota = hostConfig.CpuQuota || 0;
-		const cpuPeriod = hostConfig.CpuPeriod || 100000;
-		const memory = hostConfig.Memory || 0;
-		const memorySwap = hostConfig.MemorySwap || 0;
-		const blkioWeight = hostConfig.BlkioWeight || 0;
-
-		// Calculate CPU limit from quota/period (CPUs = quota / period)
-		const cpuLimit = cpuQuota > 0 ? (cpuQuota / cpuPeriod).toFixed(2) : '';
-
-		// Build form
-		const form = E('div', {
-			'class': 'cbi-section'
-		}, [
-			E('div', {
-				'class': 'cbi-section-descr'
-			}, _(
-				'Configure resource limits for this container. Changes will be applied immediately.'
-			)),
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				// CPU Resources
-				E('div', {
-					'class': 'cbi-value'
-				}, [
-					E('label', {
-						'class': 'cbi-value-title'
-					}, _('CPU Limit')),
-					E('div', {
-						'class': 'cbi-value-field'
-					}, [
-						E('input', {
-							'type': 'number',
-							'id': 'resource-cpu-limit',
-							'class': 'cbi-input-text',
-							'value': cpuLimit,
-							'placeholder': '0.5, 1.0, 2.0',
-							'step': '0.1',
-							'min': '0',
-							'style': 'width: 200px; margin-right: 5px;'
-						}),
-						E('span', {
-							'class': 'cbi-value-description'
-						}, _(
-							'Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited.'
-						))
-					])
-				]),
-				E('div', {
-					'class': 'cbi-value'
-				}, [
-					E('label', {
-						'class': 'cbi-value-title'
-					}, _(
-						'CPU Shares Weight')),
-					E('div', {
-						'class': 'cbi-value-field'
-					}, [
-						E('input', {
-							'type': 'number',
-							'id': 'resource-cpu-shares',
-							'class': 'cbi-input-text',
-							'value': cpuShares || '',
-							'placeholder': '1024',
-							'min': '0',
-							'max': '262144',
-							'style': 'width: 200px; margin-right: 5px;'
-						}),
-						E('span', {
-							'class': 'cbi-value-description'
-						}, _(
-							'CPU shares (relative weight), default is 1024. 0 = use default.'
-						))
-					])
-				]),
-				// Memory Resources
-				E('div', {
-					'class': 'cbi-value'
-				}, [
-					E('label', {
-						'class': 'cbi-value-title'
-					}, _('Memory Limit')),
-					E('div', {
-						'class': 'cbi-value-field'
-					}, [
-						E('input', {
-							'type': 'text',
-							'id': 'resource-memory',
-							'class': 'cbi-input-text',
-							'value': memory > 0 ? utils.formatBytes(
-								memory, 0) : '',
-							'placeholder': '512m, 1g, 2g',
-							'style': 'width: 200px; margin-right: 5px;'
-						}),
-						E('span', {
-							'class': 'cbi-value-description'
-						}, _(
-							'Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited.'
-						))
-					])
-				]),
-				E('div', {
-					'class': 'cbi-value'
-				}, [
-					E('label', {
-						'class': 'cbi-value-title'
-					}, _(
-						'Memory + Swap Limit')),
-					E('div', {
-						'class': 'cbi-value-field'
-					}, [
-						E('input', {
-							'type': 'text',
-							'id': 'resource-memory-swap',
-							'class': 'cbi-input-text',
-							'value': memorySwap > 0 ? utils.formatBytes(
-								memorySwap, 0) : '',
-							'placeholder': '1g, 2g',
-							'style': 'width: 200px; margin-right: 5px;'
-						}),
-						E('span', {
-							'class': 'cbi-value-description'
-						}, _(
-							'Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited.'
-						))
-					])
-				]),
-				// Block IO
-				E('div', {
-					'class': 'cbi-value'
-				}, [
-					E('label', {
-						'class': 'cbi-value-title'
-					}, _(
-						'Block IO Weight')),
-					E('div', {
-						'class': 'cbi-value-field'
-					}, [
-						E('input', {
-							'type': 'number',
-							'id': 'resource-blkio-weight',
-							'class': 'cbi-input-text',
-							'value': blkioWeight || '',
-							'placeholder': '500',
-							'min': '10',
-							'max': '1000',
-							'style': 'width: 200px; margin-right: 5px;'
-						}),
-						E('span', {
-							'class': 'cbi-value-description'
-						}, _(
-							'Block IO weight (relative weight), 10-1000. 0 = use default.'
-						))
-					])
-				]),
-				// Update button
-				E('div', {
-					'class': 'cbi-value'
-				}, [
-					E('label', {
-						'class': 'cbi-value-title'
-					}, ' '),
-					E('div', {
-						'class': 'cbi-value-field'
-					}, [
-						new pui.Button(_('Update Resources'), () => this
-							.handleResourceUpdate(), 'save').render()
-					])
-				])
-			])
-		]);
-
-		container.appendChild(form);
+		// Use FormResourceEditor from form.js instead of manual form building
+		const editor = new pform.ResourceEditor();
+		editor.render(this.containerId, this.containerData).then((renderedForm) => {
+			// Add description above the form
+			const wrapper = E('div', { 'class': 'cbi-section' }, [
+				E('div', { 'class': 'cbi-section-descr' }, _(
+					'Configure resource limits for this container. Changes will be applied immediately.'
+				)),
+				renderedForm
+			]);
+			container.appendChild(wrapper);
+		});
 	},
 
 	/**
@@ -791,12 +659,12 @@ return view.extend({
 			]);
 
 		const statsSection = new pui.Section();
-		statsSection.addNode(_('Resource Usage'), statsTable.render());
+		statsSection.addNode(_('Resource Usage'), '', statsTable.render());
 
 		const statsDisplay = statsSection.render();
 
 		const processSection = new pui.Section({ 'style': 'margin-top: 20px;' });
-		processSection.addNode(_('Running Processes'), E('div', { 'id': 'process-list-container' }, [
+		processSection.addNode(_('Running Processes'), '', E('div', { 'id': 'process-list-container' }, [
 			E('p', {}, _('Loading process list...'))
 		]));
 
@@ -817,93 +685,6 @@ return view.extend({
 		};
 
 		poll.add(this.statsPollFn, 3);
-	},
-
-	/**
-	 * Format network I/O stats for display
-	 * @param {Object} networks - Network stats object or pre-formatted string
-	 * @returns {string} Formatted network I/O string
-	 */
-	formatNetworkIO: function (networks) {
-		// Already formatted string (NetIO field)
-		if (typeof networks === 'string') {
-			return networks;
-		}
-
-		// Networks object format: { eth0: { rx_bytes: 123, tx_bytes: 456, ... }, ... }
-		if (typeof networks === 'object' && networks !== null) {
-			const parts = [];
-			Object.keys(networks).forEach((iface) => {
-				const net = networks[iface];
-				if (net && typeof net === 'object') {
-					const rx = net.rx_bytes ? utils.formatBytes(net.rx_bytes) : '0B';
-					const tx = net.tx_bytes ? utils.formatBytes(net.tx_bytes) : '0B';
-					parts.push(`${iface}: ↓ ${rx} / ↑ ${tx}`);
-				}
-			});
-			return parts.length > 0 ? parts.join(', ') : '-';
-		}
-
-		return '-';
-	},
-
-	/**
-	 * Format block I/O stats for display
-	 * @param {Object} blkio - Block I/O stats object or pre-formatted string
-	 * @returns {string} Formatted block I/O string
-	 */
-	formatBlockIO: function (blkio) {
-		// Already formatted string (BlockIO field)
-		if (typeof blkio === 'string') {
-			return blkio;
-		}
-
-		// Block I/O stats object
-		if (typeof blkio === 'object' && blkio !== null) {
-			// Try io_service_bytes_recursive first (most common)
-			if (blkio.io_service_bytes_recursive && Array.isArray(blkio
-					.io_service_bytes_recursive) && blkio.io_service_bytes_recursive.length > 0) {
-				let read = 0;
-				let write = 0;
-				blkio.io_service_bytes_recursive.forEach((entry) => {
-					if (entry.op === 'read' || entry.op === 'Read') {
-						read += entry.value || 0;
-					} else if (entry.op === 'write' || entry.op === 'Write') {
-						write += entry.value || 0;
-					}
-				});
-				return `Read: ${utils.formatBytes(read)} / Write: ${utils.formatBytes(write)}`;
-			}
-
-			// No data available
-			return _('No I/O');
-		}
-
-		return '-';
-	},
-
-	/**
-	 * Format PIDs stats for display
-	 * @param {*} pids - PIDs stats (number, string, or object)
-	 * @returns {string} Formatted PIDs string
-	 */
-	formatPIDs: function (pids) {
-		// Direct number or string
-		if (typeof pids === 'number' || typeof pids === 'string') {
-			return String(pids);
-		}
-
-		// Object format { current: X, limit: Y }
-		if (typeof pids === 'object' && pids !== null) {
-			const current = pids.current || pids.Current || 0;
-			const limit = pids.limit || pids.Limit;
-			if (limit && limit > 0) {
-				return `${current} / ${limit}`;
-			}
-			return String(current);
-		}
-
-		return '0';
 	},
 
 	/**
@@ -935,14 +716,14 @@ return view.extend({
 
 			// Memory Usage - try different field names
 			const memUsage = stats.MemUsage || stats.mem_usage ||
-				(stats.memory_stats && stats.memory_stats.usage ? utils.formatBytes(stats
+				(stats.memory_stats && stats.memory_stats.usage ? format.bytes(stats
 					.memory_stats.usage) : '-');
 			const memEl = document.getElementById('stat-memory');
 			if (memEl) memEl.textContent = memUsage;
 
 			// Memory Limit - try different field names
 			const memLimit = stats.MemLimit || stats.mem_limit ||
-				(stats.memory_stats && stats.memory_stats.limit ? utils.formatBytes(stats
+				(stats.memory_stats && stats.memory_stats.limit ? format.bytes(stats
 					.memory_stats.limit) : _('Unlimited'));
 			const memLimitEl = document.getElementById('stat-memory-limit');
 			if (memLimitEl) memLimitEl.textContent = memLimit;
@@ -956,18 +737,18 @@ return view.extend({
 			const netIO = stats.NetIO || stats.net_io || stats.network_io || stats
 				.networks;
 			const netEl = document.getElementById('stat-network');
-			if (netEl) netEl.textContent = this.formatNetworkIO(netIO);
+			if (netEl) netEl.textContent = format.networkIO(netIO);
 
 			// Block I/O - format nicely
 			const blockIO = stats.BlockIO || stats.block_io || stats.blkio || stats
 				.blkio_stats;
 			const blockEl = document.getElementById('stat-blockio');
-			if (blockEl) blockEl.textContent = this.formatBlockIO(blockIO);
+			if (blockEl) blockEl.textContent = format.blockIO(blockIO);
 
 			// PIDs - format nicely
 			const pids = stats.PIDs || stats.pids || stats.pids_stats;
 			const pidsEl = document.getElementById('stat-pids');
-			if (pidsEl) pidsEl.textContent = this.formatPIDs(pids);
+			if (pidsEl) pidsEl.textContent = format.pids(pids);
 
 		}).catch((err) => {
 			console.error('Stats error:', err);
@@ -1006,28 +787,6 @@ return view.extend({
 				processTable.addHeader(title, { 'style': 'font-family: monospace; white-space: nowrap;' });
 			});
 
-			const formatElapsedTime = (timeStr) => {
-				if (!timeStr) return '-';
-				const match = timeStr.match(/^(\d+m)?(\d+)\.(\d+)s$/);
-				if (match) {
-					const minutes = match[1] || '';
-					const seconds = match[2];
-					const fractional = match[3];
-					let roundedSeconds = fractional && fractional[0] >= '5'
-						? parseInt(seconds) + 1
-						: parseInt(seconds);
-
-					if (roundedSeconds >= 60 && minutes) {
-						const totalMinutes = parseInt(minutes) + 1;
-						roundedSeconds = 0;
-						return `${totalMinutes}m${String(roundedSeconds).padStart(2, '0')}s`;
-					}
-
-					const formattedSeconds = minutes ? String(roundedSeconds).padStart(2, '0') : String(roundedSeconds);
-					return `${minutes}${formattedSeconds}s`;
-				}
-				return timeStr;
-			};
 
 			processes.forEach((proc) => {
 				const cells = proc.map((cell, index) => {
@@ -1037,7 +796,7 @@ return view.extend({
 					if (titles[index] === 'PID' || titles[index] === 'PPID' || titles[index] === '%CPU') {
 						style += ' text-align: right;';
 					} else if (titles[index] === 'ELAPSED') {
-						displayValue = formatElapsedTime(cell);
+						displayValue = format.elapsedTime(cell);
 					} else if (titles[index] === 'COMMAND') {
 						style += ' max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 					}
@@ -1475,83 +1234,73 @@ return view.extend({
 		// Build health check information
 		const sections = [];
 
-		// Current Status Section
+		// Current Status Section - using pui.Table
 		const status = health.Status || 'none';
 		const failingStreak = health.FailingStreak || 0;
 
-		const statusRows = [
-			E('tr', {
-				'class': 'tr'
-			}, [
-				E('td', {
-					'class': 'td',
-					'style': 'width: 33%; font-weight: bold;'
-				}, _(
-					'Status')),
-				E('td', {
-					'class': 'td'
-				}, [
-					E('span', {
-						'class': 'badge status-' + status.toLowerCase(),
-						'style': 'font-size: 16px;'
-					}, status)
-				])
-			]),
-			E('tr', {
-				'class': 'tr'
-			}, [
-				E('td', {
-					'class': 'td',
-					'style': 'width: 33%; font-weight: bold;'
-				}, _(
-					'Failing Streak')),
-				E('td', {
-						'class': 'td',
-						'style': failingStreak > 0 ?
-							'color: #ff6b6b; font-weight: bold;' : ''
-					},
-					failingStreak > 0 ? _('%d consecutive failures').format(
-						failingStreak) : _('No failures'))
-			])
-		];
+		const statusTable = new pui.Table();
+		statusTable.addRow([
+			{ inner: _('Status'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{ inner: E('span', {
+				'class': 'badge status-' + status.toLowerCase(),
+				'style': 'font-size: 16px;'
+			}, status) }
+		]);
 
-		sections.push(this.createSection(_('Health Status'), statusRows));
+		statusTable.addRow([
+			{ inner: _('Failing Streak'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{
+				inner: failingStreak > 0 ? _('%d consecutive failures').format(failingStreak) : _('No failures'),
+				options: {
+					'style': failingStreak > 0 ? 'color: #ff6b6b; font-weight: bold;' : ''
+				}
+			}
+		]);
 
-		// Configuration Section
+		const statusSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		statusSection.addNode(_('Health Status'), '', statusTable.render());
+		sections.push(statusSection.render());
+
+		// Configuration Section - using pui.Table
 		if (healthConfig) {
-			const configRows = [];
+			const configTable = new pui.Table();
+			let hasConfig = false;
 
 			if (healthConfig.Test && healthConfig.Test.length > 0) {
 				const testCmd = healthConfig.Test.join(' ');
-				configRows.push(this.createInfoRow(_('Test Command'), testCmd));
+				configTable.addInfoRow(_('Test Command'), testCmd);
+				hasConfig = true;
 			}
 
 			if (healthConfig.Interval) {
-				configRows.push(this.createInfoRow(_('Interval'), utils.formatDuration(
-					healthConfig.Interval)));
+				configTable.addInfoRow(_('Interval'), format.duration(healthConfig.Interval));
+				hasConfig = true;
 			}
 
 			if (healthConfig.Timeout) {
-				configRows.push(this.createInfoRow(_('Timeout'), utils.formatDuration(healthConfig
-					.Timeout)));
+				configTable.addInfoRow(_('Timeout'), format.duration(healthConfig.Timeout));
+				hasConfig = true;
 			}
 
 			if (healthConfig.StartPeriod) {
-				configRows.push(this.createInfoRow(_('Start Period'), utils.formatDuration(
-					healthConfig.StartPeriod)));
+				configTable.addInfoRow(_('Start Period'), format.duration(healthConfig.StartPeriod));
+				hasConfig = true;
 			}
 
 			if (healthConfig.StartInterval) {
-				configRows.push(this.createInfoRow(_('Start Interval'), utils.formatDuration(
-					healthConfig.StartInterval)));
+				configTable.addInfoRow(_('Start Interval'), format.duration(healthConfig.StartInterval));
+				hasConfig = true;
 			}
 
 			if (healthConfig.Retries) {
-				configRows.push(this.createInfoRow(_('Retries'), String(healthConfig.Retries)));
+				configTable.addInfoRow(_('Retries'), String(healthConfig.Retries));
+				hasConfig = true;
 			}
 
-			if (configRows.length > 0) {
-				sections.push(this.createSection(_('Configuration'), configRows));
+			if (hasConfig) {
+				const configSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+				configSection.addNode(_('Configuration'), '', configTable.render());
+				sections.push(configSection.render());
 			}
 		}
 
@@ -1577,8 +1326,8 @@ return view.extend({
 				]);
 
 				historyTable.addRow([
-					{ inner: entry.Start ? utils.formatDate(entry.Start) : '-' },
-					{ inner: entry.End ? utils.formatDate(entry.End) : '-' },
+					{ inner: entry.Start ? format.date(entry.Start) : '-' },
+					{ inner: entry.End ? format.date(entry.End) : '-' },
 					{ inner: resultBadge },
 					{ inner: outputText, options: {
 						'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
@@ -1588,7 +1337,7 @@ return view.extend({
 			});
 
 			const historySection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
-			historySection.addNode(_('Recent Checks (Last 10)'), historyTable.render());
+			historySection.addNode(_('Recent Checks (Last 10)'), '', historyTable.render());
 			sections.push(historySection.render());
 		}
 
@@ -1615,234 +1364,16 @@ return view.extend({
 
 		const data = this.containerData;
 
-		// Display full JSON inspect data
-		const jsonDisplay = E('div', { 'class': 'cbi-section' }, [
-			E('div', { 'class': 'cbi-section-descr' }, _(
-				'Full container inspect data in JSON format. This is the raw data returned from the Podman API.'
-			)),
-			E('div', { 'class': 'cbi-section-node' }, [
-				E('pre', {
-					'style': 'background: #f5f5f5; padding: 15px; overflow: auto; max-height: 800px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.5;'
-				}, JSON.stringify(data, null, 2))
-			])
-		]);
-
-		container.appendChild(jsonDisplay);
-	},
-
-	/**
-	 * Create an info section with key-value pairs
-	 * @param {string} title - Section title
-	 * @param {Array} rows - Table rows (already created)
-	 * @returns {Element} Section element
-	 */
-	createSection: function (title, rows) {
-		return E('div', {
-			'class': 'cbi-section',
-			'style': 'margin-bottom: 20px;'
-		}, [
-			E('h3', {}, title),
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				E('table', {
-					'class': 'table'
-				}, rows)
-			])
-		]);
-	},
-
-	/**
-	 * Create a table section
-	 * @param {string} title - Section title
-	 * @param {Array<string>} headers - Table headers
-	 * @param {Array} rows - Table rows (already created)
-	 * @returns {Element} Section element
-	 */
-	createTableSection: function (title, headers, rows) {
-		const headerRow = E('tr', {
-				'class': 'tr table-titles'
-			},
-			headers.map(function (header) {
-				return E('th', {
-					'class': 'th'
-				}, header);
-			})
+		const jsonSection = new pui.Section();
+		jsonSection.addNode(
+			'',
+			_('Full container inspect data in JSON format. This is the raw data returned from the Podman API.'),
+			E('pre', {
+				'style': 'background: #f5f5f5; padding: 15px; overflow: auto; max-height: 800px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.5;'
+			}, JSON.stringify(data, null, 2))
 		);
 
-		return E('div', {
-			'class': 'cbi-section',
-			'style': 'margin-bottom: 20px;'
-		}, [
-			E('h3', {}, title),
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				E('table', {
-					'class': 'table'
-				}, [headerRow].concat(rows))
-			])
-		]);
-	},
-
-	/**
-	 * Create an info row
-	 * @param {string} label - Row label
-	 * @param {string} value - Row value
-	 * @returns {Element} Table row
-	 */
-	createInfoRow: function (label, value) {
-		return E('tr', {
-			'class': 'tr'
-		}, [
-			E('td', {
-				'class': 'td',
-				'style': 'width: 33%; font-weight: bold;'
-			}, label),
-			E('td', {
-					'class': 'td',
-					'style': 'word-break: break-word;'
-				},
-				typeof value === 'string' && value.indexOf('<br>') !== -1 ?
-				E('span', {
-					'innerHTML': value
-				}) :
-				value
-			)
-		]);
-	},
-
-	/**
-	 * Create an editable name row
-	 * @param {string} label - Row label
-	 * @param {string} value - Current value
-	 * @param {string} field - Field name
-	 * @returns {Element} Table row
-	 */
-	createEditableRow: function (label, value, field) {
-		const inputId = 'edit-' + field;
-		return E('tr', {
-			'class': 'tr'
-		}, [
-			E('td', {
-				'class': 'td',
-				'style': 'width: 33%; font-weight: bold;'
-			}, label),
-			E('td', {
-				'class': 'td'
-			}, [
-				E('input', {
-					'type': 'text',
-					'id': inputId,
-					'class': 'cbi-input-text',
-					'value': value,
-					'style': 'width: 60%; margin-right: 5px;'
-				}),
-				new pui.Button(_('Update'), () => this.handleUpdateName(document
-					.getElementById(inputId).value), 'apply').render()
-			])
-		]);
-	},
-
-	/**
-	 * Create an editable restart policy row
-	 * @param {string} currentPolicy - Current restart policy
-	 * @returns {Element} Table row
-	 */
-	createEditableRestartRow: function (currentPolicy) {
-		const selectId = 'edit-restart-policy';
-		const policies = {
-			'no': _('No'),
-			'always': _('Always'),
-			'on-failure': _('On Failure'),
-			'unless-stopped': _('Unless Stopped')
-		};
-
-		const options = [];
-		Object.keys(policies).forEach(function (key) {
-			options.push(E('option', {
-				'value': key,
-				'selected': key === currentPolicy ? 'selected' : null
-			}, policies[key]));
-		});
-
-		return E('tr', {
-			'class': 'tr'
-		}, [
-			E('td', {
-				'class': 'td',
-				'style': 'width: 33%; font-weight: bold;'
-			}, _(
-				'Restart Policy')),
-			E('td', {
-				'class': 'td'
-			}, [
-				E('select', {
-					'id': selectId,
-					'class': 'cbi-input-select',
-					'style': 'width: 60%; margin-right: 5px;'
-				}, options),
-				new pui.Button(_('Update'), () => this.handleUpdateRestartPolicy(
-					document.getElementById(selectId).value), 'apply').render()
-			])
-		]);
-	},
-
-	/**
-	 * Create network connect row
-	 * @returns {Element} Table row
-	 */
-	createNetworkConnectRow: function () {
-		const selectId = 'connect-network-select';
-		const ipInputId = 'connect-network-ip';
-
-		const options = [E('option', {
-			'value': ''
-		}, _('-- Select Network --'))];
-
-		if (this.networksData && Array.isArray(this.networksData)) {
-			this.networksData.forEach(function (net) {
-				const name = net.Name || net.name;
-				if (name && name !== 'none' && name !== 'host') {
-					options.push(E('option', {
-						'value': name
-					}, name));
-				}
-			});
-		}
-
-		return E('tr', {
-			'class': 'tr'
-		}, [
-			E('td', {
-				'class': 'td',
-				'style': 'width: 33%; font-weight: bold;'
-			}, _(
-				'Connect to')),
-			E('td', {
-				'class': 'td'
-			}, [
-				E('select', {
-					'id': selectId,
-					'class': 'cbi-input-select',
-					'style': 'width: 40%; margin-right: 5px;'
-				}, options),
-				E('input', {
-					'type': 'text',
-					'id': ipInputId,
-					'class': 'cbi-input-text',
-					'placeholder': _('IP (optional)'),
-					'style': 'width: 30%; margin-right: 5px;'
-				}),
-				new pui.Button(_('Connect'), () => {
-					const netName = document.getElementById(selectId).value;
-					const ip = document.getElementById(ipInputId).value;
-					if (netName) {
-						this.handleNetworkConnect(netName, ip);
-					}
-				}, 'positive').render()
-			])
-		]);
+		container.appendChild(jsonSection.render());
 	},
 
 	/**
@@ -1974,94 +1505,6 @@ return view.extend({
 	},
 
 	/**
-	 * Handle resource update
-	 */
-	handleResourceUpdate: function () {
-		// Get values from form
-		const cpuLimit = document.getElementById('resource-cpu-limit').value;
-		const cpuShares = document.getElementById('resource-cpu-shares').value;
-		const memoryStr = document.getElementById('resource-memory').value;
-		const memorySwapStr = document.getElementById('resource-memory-swap').value;
-		const blkioWeight = document.getElementById('resource-blkio-weight').value;
-
-		// Parse memory values (convert from human readable to bytes)
-		const memory = utils.parseMemory(memoryStr, true);
-		const memorySwap = memorySwapStr === '-1' ? -1 : utils.parseMemory(memorySwapStr, true);
-
-		// Validate
-		if (memory === null && memoryStr) {
-			ui.addNotification(null, E('p', _('Invalid memory format. Use: 512m, 1g, etc.')),
-				'error');
-			return;
-		}
-		if (memorySwap === null && memorySwapStr && memorySwapStr !== '-1') {
-			ui.addNotification(null, E('p', _(
-				'Invalid memory swap format. Use: 512m, 1g, -1, etc.')), 'error');
-			return;
-		}
-
-		// Build update data according to UpdateEntities schema
-		const updateData = {};
-
-		// CPU configuration - always include to allow resetting limits
-		updateData.cpu = {};
-
-		// CPU Limit: Convert CPUs to quota (quota = CPUs * period)
-		// 0 or empty = unlimited (removes limit)
-		if (cpuLimit) {
-			const period = 100000; // Default period in microseconds
-			updateData.cpu.quota = Math.floor(parseFloat(cpuLimit) * period);
-			updateData.cpu.period = period;
-		} else {
-			// Send 0 to remove CPU limit
-			updateData.cpu.quota = 0;
-			updateData.cpu.period = 0;
-		}
-
-		// CPU Shares - 0 = use default
-		updateData.cpu.shares = parseInt(cpuShares) || 0;
-
-		// Memory configuration - always include to allow resetting limits
-		updateData.memory = {};
-
-		// Memory limit - 0 = unlimited (removes limit)
-		updateData.memory.limit = memory > 0 ? memory : 0;
-
-		// Memory swap - 0 = default, -1 = unlimited swap
-		if (memorySwap !== 0) {
-			updateData.memory.swap = memorySwap;
-		} else {
-			updateData.memory.swap = 0;
-		}
-
-		// Block IO configuration - 0 = use default
-		updateData.blockIO = {
-			weight: parseInt(blkioWeight) || 0
-		};
-
-		pui.showSpinningModal(_('Updating Resources'), _('Updating container resources...'));
-
-		// Call update RPC with body data
-		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
-			result) => {
-			ui.hideModal();
-			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to update resources: %s')
-					.format(result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', _('Resources updated successfully')));
-				// Store current tab before reload
-				session.setLocalData('podman_active_tab', 'resources');
-				window.location.reload();
-			}
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to update resources: %s').format(err
-				.message)), 'error');
-		});
-	},
-
-	/**
 	 * Handle container start action
 	 * @param {string} id - Container ID
 	 */
@@ -2103,21 +1546,8 @@ return view.extend({
 		if (!confirm(_('Are you sure you want to remove container %s?').format(name)))
 			return;
 
-		pui.showSpinningModal(_('Removing Container'), _('Removing container...'));
-
-		podmanRPC.container.remove(id, true).then((result) => {
-			ui.hideModal();
-			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to remove container: %s')
-					.format(result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', _('Container removed successfully')));
-				window.location.href = L.url('admin/podman/containers');
-			}
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to remove container: %s').format(err
-				.message)), 'error');
+		ContainerUtil.removeContainers(id).then(() => {
+			window.location.href = L.url('admin/podman/containers');
 		});
 	},
 
@@ -2125,31 +1555,7 @@ return view.extend({
 	 * Handle manual health check execution
 	 */
 	handleHealthCheck: function () {
-		pui.showSpinningModal(_('Running Health Check'), _('Executing health check...'));
-
-		podmanRPC.container.healthcheck(this.containerId).then((result) => {
-			ui.hideModal();
-
-			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Health check failed: %s').format(result
-					.error)), 'error');
-				return;
-			}
-
-			// Check health check result
-			const status = result.Status || 'unknown';
-			const failingStreak = result.FailingStreak || 0;
-
-			// Show result notification
-			if (status === 'healthy') {
-				pui.successTimeNotification(_('Health check passed'));
-			} else if (status === 'unhealthy') {
-				pui.warningNotification(_('Health check failed (%d consecutive failures)')
-					.format(failingStreak));
-			} else {
-				pui.infoNotification(_('Health check status: %s').format(status));
-			}
-
+		ContainerUtil.healthCheckContainers(this.containerId).then(() => {
 			// Re-fetch container data and update health tab
 			podmanRPC.container.inspect(this.containerId).then((containerData) => {
 				this.containerData = containerData;
@@ -2157,10 +1563,6 @@ return view.extend({
 			}).catch((err) => {
 				console.error('Failed to refresh container data:', err);
 			});
-		}).catch((err) => {
-			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to run health check: %s').format(err
-				.message)), 'error');
 		});
 	}
 });

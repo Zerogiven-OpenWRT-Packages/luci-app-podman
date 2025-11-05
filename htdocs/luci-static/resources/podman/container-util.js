@@ -64,6 +64,48 @@ return baseclass.extend({
 	},
 
 	/**
+	 * Run health checks on one or more containers
+	 * @param {string|Array<string>} ids - Container ID(s)
+	 * @returns {Promise} Operation result
+	 */
+	healthCheckContainers: async function (ids) {
+		return this.callContainers(
+			ids,
+			podmanRPC.container.healthcheck,
+			_('Running Health Checks'),
+			_('Running health checks on %d container(s)...'),
+			_('Health checks completed successfully'),
+			_('No containers selected'),
+			_('Failed to run health checks on %d container(s)'),
+			_('Failed to run health checks: %s'),
+		);
+	},
+
+	/**
+	 * Remove one or more containers
+	 * @param {string|Array<string>} ids - Container ID(s)
+	 * @param {boolean} [force] - Force removal (default: true)
+	 * @param {boolean} [volumes] - Remove volumes (default: true)
+	 * @returns {Promise} Operation result
+	 */
+	removeContainers: async function (ids, force, volumes) {
+		// Default to force=true and volumes=true
+		const forceRemove = force !== undefined ? force : true;
+		const removeVolumes = volumes !== undefined ? volumes : true;
+
+		return this.callContainers(
+			ids,
+			(id) => podmanRPC.container.remove(id, forceRemove, removeVolumes),
+			_('Removing Containers'),
+			_('Removing %d container(s)...'),
+			_('Removed %d container(s) successfully'),
+			_('No containers selected'),
+			_('Failed to remove %d container(s)'),
+			_('Failed to remove containers: %s'),
+		);
+	},
+
+	/**
 	 * Generic handler for bulk container operations
 	 * @param {string|Array<string>} ids - Container ID(s)
 	 * @param {Function} rpcCall - RPC function to call for each container

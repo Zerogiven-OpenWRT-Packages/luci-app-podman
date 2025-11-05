@@ -4,54 +4,30 @@
 'require uci';
 
 /**
- * @file OpenWrt Network Integration Helper
- * @module podman.openwrt-network
- * @description Provides integration between Podman networks and OpenWrt network/firewall configuration.
+ * OpenWrt network/firewall integration for Podman networks.
  *
- * When Podman creates a network, it needs matching OpenWrt configuration:
- * 1. Bridge device in /etc/config/network
- * 2. Network interface with static IP
- * 3. Firewall zone for the network
- * 4. Firewall rules (e.g., DNS access)
+ * Automates OpenWrt configuration when Podman creates networks:
+ * - Bridge device (/etc/config/network)
+ * - Network interface with static IP
+ * - Shared 'podman' firewall zone with DNS access rule
  *
- * This module automates the creation/deletion of these OpenWrt configurations.
- *
- * @usage
- * 'require podman.openwrt-network as openwrtNetwork';
- *
- * // Create OpenWrt integration for a Podman network
- * openwrtNetwork.createIntegration('mynetwork', {
- *     bridgeName: 'podman0',
- *     subnet: '10.129.0.0/24',
- *     gateway: '10.129.0.1'
- * }).then(() => {
- *     console.log('OpenWrt integration created');
- * });
- *
- * // Remove OpenWrt integration
- * openwrtNetwork.removeIntegration('mynetwork', 'podman0').then(() => {
- *     console.log('OpenWrt integration removed');
- * });
- *
- * // Check if integration exists
- * openwrtNetwork.hasIntegration('mynetwork').then((exists) => {
- *     console.log('Integration exists:', exists);
- * });
+ * All Podman networks share a single firewall zone for simplified management.
+ * Layer 2 isolation is provided by separate bridge devices.
  */
 
 /**
- * Extract IP address from CIDR notation
- * @param {string} cidr - CIDR notation (e.g., '10.129.0.0/24')
- * @returns {string} IP address without prefix
+ * Extract IP from CIDR notation.
+ * @param {string} cidr - CIDR (e.g., '10.129.0.0/24')
+ * @returns {string} IP address
  */
 function cidrToIP(cidr) {
 	return cidr.split('/')[0];
 }
 
 /**
- * Extract prefix length from CIDR notation
- * @param {string} cidr - CIDR notation (e.g., '10.129.0.0/24')
- * @returns {number} Prefix length (e.g., 24)
+ * Extract prefix from CIDR notation.
+ * @param {string} cidr - CIDR (e.g., '10.129.0.0/24')
+ * @returns {number} Prefix length
  */
 function cidrToPrefix(cidr) {
 	const parts = cidr.split('/');
@@ -60,31 +36,20 @@ function cidrToPrefix(cidr) {
 
 return L.Class.extend({
 	/**
-	 * Create OpenWrt network integration for a Podman network.
-	 * Uses a shared 'podman' firewall zone for all Podman networks.
-	 * This creates:
-	 * - Bridge device
-	 * - Network interface with static IP
-	 * - Adds interface to shared 'podman' firewall zone
-	 * - Creates zone + DNS rule if this is the first Podman network
+	 * Create OpenWrt integration for Podman network.
 	 *
-	 * @param {string} networkName - Name of the Podman network
-	 * @param {Object} options - Network configuration options
-	 * @param {string} options.bridgeName - Name of the bridge interface (e.g., 'podman0')
-	 * @param {string} options.subnet - Network subnet in CIDR notation (e.g., '10.129.0.0/24')
-	 * @param {string} options.gateway - Gateway IP address (e.g., '10.129.0.1')
-	 * @returns {Promise<void>} Resolves when integration is created
+	 * Creates bridge device, network interface with static IP, and adds to shared
+	 * 'podman' firewall zone. If this is the first Podman network, creates the zone
+	 * and DNS access rule.
 	 *
-	 * @example
-	 * createIntegration('mynetwork', {
-	 *     bridgeName: 'podman0',
-	 *     subnet: '10.129.0.0/24',
-	 *     gateway: '10.129.0.1'
-	 * }).then(() => {
-	 *     console.log('Integration created successfully');
-	 * }).catch((err) => {
-	 *     console.error('Failed to create integration:', err);
-	 * });
+	 * @param {string} networkName - Podman network name
+	 * @param {Object} options - Network configuration
+	 * @param {string} options.bridgeName - Bridge name (e.g., 'podman0')
+	 * @param {string} options.subnet - Subnet CIDR (e.g., '10.129.0.0/24')
+	 * @param {string} options.gateway - Gateway IP (e.g., '10.129.0.1')
+	 * @param {string} [options.ipv6subnet] - Optional IPv6 subnet
+	 * @param {string} [options.ipv6gateway] - Optional IPv6 gateway
+	 * @returns {Promise<void>} Resolves when complete
 	 */
 	createIntegration: async function (networkName, options) {
 		const bridgeName = options.bridgeName;
@@ -97,7 +62,7 @@ return L.Class.extend({
 			uci.load('network'),
 			uci.load('firewall')
 		]).then(() => {
-			// 1. Create bridge device
+			// Create bridge device if not exists
 			const existingDevice = uci.get('network', bridgeName);
 			if (!existingDevice) {
 				uci.add('network', 'device', bridgeName);
@@ -112,7 +77,7 @@ return L.Class.extend({
 				}
 			}
 
-			// 2. Create network interface
+			// Create network interface if not exists
 			const existingInterface = uci.get('network', networkName);
 			if (!existingInterface) {
 				uci.add('network', 'interface', networkName);
@@ -127,12 +92,13 @@ return L.Class.extend({
 				}
 			}
 
-			// 3. Check if shared 'podman' zone exists
+			// Create or update shared 'podman' firewall zone
 			const existingZone = uci.sections('firewall', 'zone').find((s) => {
 				return uci.get('firewall', s['.name'], 'name') === ZONE_NAME;
 			});
 
 			if (!existingZone) {
+				// First Podman network: create zone and DNS rule
 				const zoneId = uci.add('firewall', 'zone', 'podman_zone');
 				uci.set('firewall', zoneId, 'name', ZONE_NAME);
 				uci.set('firewall', zoneId, 'input', 'DROP');
@@ -146,11 +112,10 @@ return L.Class.extend({
 				uci.set('firewall', ruleId, 'dest_port', '53');
 				uci.set('firewall', ruleId, 'target', 'ACCEPT');
 			} else {
-				// Zone exists, add this network to the zone's network list
+				// Zone exists: add network to zone's network list
 				const zoneSection = existingZone['.name'];
 				const currentNetworks = uci.get('firewall', zoneSection, 'network');
 
-				// Convert to array if it's a string
 				let networkList = [];
 				if (Array.isArray(currentNetworks)) {
 					networkList = currentNetworks;
@@ -166,7 +131,6 @@ return L.Class.extend({
 
 			return uci.save();
 		}).then(() => {
-			// Apply with timeout (allows rollback if something goes wrong)
 			return uci.apply(90);
 		}).then(() => {
 			return network.flushCache();
@@ -174,25 +138,14 @@ return L.Class.extend({
 	},
 
 	/**
-	 * Remove OpenWrt network integration for a Podman network.
-	 * Removes the network from the shared 'podman' zone.
-	 * If this is the last network in the zone, removes the zone and DNS rule.
-	 * This removes:
-	 * - Network from firewall zone's network list
-	 * - Firewall zone + DNS rule (if last network)
-	 * - Network interface
-	 * - Bridge device (if not used by other interfaces)
+	 * Remove OpenWrt integration for Podman network.
 	 *
-	 * @param {string} networkName - Name of the Podman network
-	 * @param {string} bridgeName - Name of the bridge interface
-	 * @returns {Promise<void>} Resolves when integration is removed
+	 * Removes network from shared zone. If last network in zone, removes zone and
+	 * DNS rule. Removes network interface and bridge device (if unused).
 	 *
-	 * @example
-	 * removeIntegration('mynetwork', 'podman0').then(() => {
-	 *     console.log('Integration removed successfully');
-	 * }).catch((err) => {
-	 *     console.error('Failed to remove integration:', err);
-	 * });
+	 * @param {string} networkName - Podman network name
+	 * @param {string} bridgeName - Bridge name
+	 * @returns {Promise<void>} Resolves when complete
 	 */
 	removeIntegration: function (networkName, bridgeName) {
 		const ZONE_NAME = 'podman';
@@ -201,7 +154,7 @@ return L.Class.extend({
 			uci.load('network'),
 			uci.load('firewall')
 		]).then(() => {
-			// 1. Find the shared 'podman' zone
+			// Remove network from shared 'podman' zone
 			const zone = uci.sections('firewall', 'zone').find((s) => {
 				return uci.get('firewall', s['.name'], 'name') === ZONE_NAME;
 			});
@@ -210,7 +163,6 @@ return L.Class.extend({
 				const zoneSection = zone['.name'];
 				const currentNetworks = uci.get('firewall', zoneSection, 'network');
 
-				// Convert to array if it's a string
 				let networkList = [];
 				if (Array.isArray(currentNetworks)) {
 					networkList = currentNetworks;
@@ -223,7 +175,7 @@ return L.Class.extend({
 				if (networkList.length > 0) {
 					uci.set('firewall', zoneSection, 'network', networkList);
 				} else {
-					// This was the last network, remove zone and DNS rule
+					// Last network: remove zone and DNS rule
 					uci.remove('firewall', zoneSection);
 
 					const dnsRule = uci.sections('firewall', 'rule').find((s) => {
@@ -236,13 +188,13 @@ return L.Class.extend({
 				}
 			}
 
-			// 2. Remove network interface
+			// Remove network interface
 			const iface = uci.get('network', networkName);
 			if (iface) {
 				uci.remove('network', networkName);
 			}
 
-			// 3. Remove bridge device (only if not used by other interfaces)
+			// Remove bridge device if not used by other interfaces
 			const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
 				return uci.get('network', s['.name'], 'device') === bridgeName &&
 					s['.name'] !== networkName;
@@ -264,20 +216,10 @@ return L.Class.extend({
 	},
 
 	/**
-	 * Check if OpenWrt integration exists for a network.
-	 * Checks for network interface existence.
+	 * Check if integration exists for network.
 	 *
-	 * @param {string} networkName - Name of the Podman network
-	 * @returns {Promise<boolean>} Resolves to true if integration exists
-	 *
-	 * @example
-	 * hasIntegration('mynetwork').then((exists) => {
-	 *     if (exists) {
-	 *         console.log('OpenWrt integration is active');
-	 *     } else {
-	 *         console.log('No OpenWrt integration');
-	 *     }
-	 * });
+	 * @param {string} networkName - Podman network name
+	 * @returns {Promise<boolean>} True if interface exists
 	 */
 	hasIntegration: function (networkName) {
 		return uci.load('network').then(() => {
@@ -289,20 +231,12 @@ return L.Class.extend({
 	},
 
 	/**
-	 * Check if OpenWrt integration is complete (all components exist).
-	 * Verifies: device, interface, and firewall zone membership.
+	 * Check if integration is complete (all components exist).
 	 *
-	 * @param {string} networkName - Name of the Podman network
-	 * @returns {Promise<Object>} Resolves to {complete: boolean, missing: Array<string>}
+	 * Verifies device, interface, and zone membership.
 	 *
-	 * @example
-	 * isIntegrationComplete('mynetwork').then((result) => {
-	 *     if (result.complete) {
-	 *         console.log('Integration is complete');
-	 *     } else {
-	 *         console.log('Missing components:', result.missing);
-	 *     }
-	 * });
+	 * @param {string} networkName - Podman network name
+	 * @returns {Promise<Object>} {complete: boolean, missing: string[]}
 	 */
 	isIntegrationComplete: function (networkName) {
 		const ZONE_NAME = 'podman';
@@ -365,19 +299,10 @@ return L.Class.extend({
 	},
 
 	/**
-	 * Get integration details for a network.
+	 * Get integration details for network.
 	 *
-	 * @param {string} networkName - Name of the Podman network
-	 * @returns {Promise<Object|null>} Integration details or null if not found
-	 *
-	 * @example
-	 * getIntegration('mynetwork').then((details) => {
-	 *     if (details) {
-	 *         console.log('Bridge:', details.bridgeName);
-	 *         console.log('Gateway:', details.gateway);
-	 *         console.log('Netmask:', details.netmask);
-	 *     }
-	 * });
+	 * @param {string} networkName - Podman network name
+	 * @returns {Promise<Object|null>} {networkName, bridgeName, gateway, netmask, proto} or null
 	 */
 	getIntegration: async function (networkName) {
 		return uci.load('network').then(() => {
@@ -401,20 +326,11 @@ return L.Class.extend({
 	/**
 	 * Validate network configuration before creating integration.
 	 *
-	 * @param {string} networkName - Name of the network
-	 * @param {Object} options - Network options
-	 * @returns {Promise<Object>} Validation result {valid: boolean, errors: Array<string>}
+	 * Checks required fields, CIDR/IP format, and conflicts with existing interfaces.
 	 *
-	 * @example
-	 * validateIntegration('mynetwork', {
-	 *     bridgeName: 'podman0',
-	 *     subnet: '10.129.0.0/24',
-	 *     gateway: '10.129.0.1'
-	 * }).then((result) => {
-	 *     if (!result.valid) {
-	 *         console.error('Validation errors:', result.errors);
-	 *     }
-	 * });
+	 * @param {string} networkName - Network name
+	 * @param {Object} options - Network configuration
+	 * @returns {Promise<Object>} {valid: boolean, errors: string[]}
 	 */
 	validateIntegration: async function (networkName, options) {
 		const errors = [];

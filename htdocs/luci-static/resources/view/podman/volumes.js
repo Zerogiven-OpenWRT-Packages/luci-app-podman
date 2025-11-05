@@ -4,6 +4,7 @@
 'require form';
 'require ui';
 'require podman.utils as utils';
+'require podman.format as format';
 'require podman.list as List';
 'require podman.rpc as podmanRPC';
 'require podman.ui as podmanUI';
@@ -82,7 +83,7 @@ return view.extend({
 		o.cfgformatter = (cfg) => utils.truncate(cfg, 30);
 
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
-		o.cfgformatter = (cfg) => utils.formatDate(Date.parse(cfg) / 1000);
+		o.cfgformatter = (cfg) => format.date(Date.parse(cfg) / 1000);
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),

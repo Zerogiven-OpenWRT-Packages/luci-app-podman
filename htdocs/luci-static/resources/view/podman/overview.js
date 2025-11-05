@@ -3,16 +3,26 @@
 'require view';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
+'require podman.format as format';
 'require podman.ui as pui';
 'require ui';
 
 /**
- * Overview dashboard for Podman LuCI application
+ * Podman Overview Dashboard View
  */
 return view.extend({
 	/**
 	 * Load all system data on view initialization
-	 * @returns {Promise<Array>} Array containing version, info, and resource lists
+	 *
+	 * @returns {Promise<Array>} Promise resolving to array of:
+	 *   [0] version - Podman version information
+	 *   [1] info - System info (CPU, memory, paths, registries)
+	 *   [2] containers - All containers (including stopped)
+	 *   [3] images - All images
+	 *   [4] volumes - All volumes
+	 *   [5] networks - All networks
+	 *   [6] pods - All pods
+	 *   [7] diskUsage - Disk usage statistics by resource type
 	 */
 	load: function () {
 		return Promise.all([
@@ -29,30 +39,31 @@ return view.extend({
 
 	/**
 	 * Render the overview dashboard
-	 * @param {Array} data - Array of loaded data [version, info, containers, images, volumes, networks, pods]
-	 * @returns {Element} Overview view element
+	 *
+	 * @param {Array} data - Array from load()
+	 * @returns {Element} Complete dashboard view element
 	 */
 	render: function (data) {
-		var version = data[0] || {};
-		var info = data[1] || {};
-		var containers = data[2] || [];
-		var images = data[3] || [];
+		const version = data[0] || {};
+		const info = data[1] || {};
+		const containers = data[2] || [];
+		const images = data[3] || [];
 		// Handle volumes - can be wrapped in Volumes property or data array
-		var volumeData = data[4] || [];
-		var volumes = Array.isArray(volumeData) ? volumeData : (volumeData.Volumes || []);
-		var networks = data[5] || [];
-		var pods = data[6] || [];
-		var diskUsage = data[7] || {};
+		const volumeData = data[4] || [];
+		const volumes = Array.isArray(volumeData) ? volumeData : (volumeData.Volumes || []);
+		const networks = data[5] || [];
+		const pods = data[6] || [];
+		const diskUsage = data[7] || {};
 
-		var runningContainers = containers.filter(function (c) {
+		const runningContainers = containers.filter(function (c) {
 				return c.State === 'running';
 			})
 			.length;
-		var runningPods = pods.filter(function (p) {
+		const runningPods = pods.filter(function (p) {
 			return p.Status === 'Running';
 		}).length;
 
-		var container = E('div', {}, [
+		const container = E('div', {}, [
 			// System Actions Section (Auto-update, Prune)
 			this.createSystemActionsSection(),
 
@@ -79,150 +90,49 @@ return view.extend({
 
 	/**
 	 * Create system information section
-	 * @param {Object} version - Version information
-	 * @param {Object} info - System info
-	 * @returns {Element} Info section element
+	 *
+	 * @param {Object} version - Podman version information (Version, ApiVersion)
+	 * @param {Object} info - System information object containing:
+	 *   - host: {cpus, memTotal, memFree, remoteSocket}
+	 *   - store: {graphRoot, runRoot}
+	 *   - registries: {search}
+	 * @returns {Element} System information section element
 	 */
 	createInfoSection: function (version, info) {
-		var memTotal = (info.host && info.host.memTotal) ? (info.host.memTotal / 1024 / 1024 /
+		const memTotal = (info.host && info.host.memTotal) ? (info.host.memTotal / 1024 / 1024 /
 			1024).toFixed(2) : '0';
-		var memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 / 1024)
+		const memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 / 1024)
 			.toFixed(2) : '0';
 
-		return E('div', {
-			'class': 'cbi-section'
-		}, [
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				E('h3', {
-					'style': 'margin-bottom: 15px;'
-				}, _('Information')),
-				E('table', {
-					'class': 'table'
-				}, [
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'width: 30%; font-weight: bold;'
-							},
-							_('Podman Version')),
-						E('td', {
-							'class': 'td'
-						}, version.Version || _(
-							'Unknown'))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('API Version')),
-						E('td', {
-							'class': 'td'
-						}, version.ApiVersion || _(
-							'Unknown'))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('CPU')),
-						E('td', {
-							'class': 'td'
-						}, (info.host && info.host
-							.cpus) ? info.host.cpus.toString() : _(
-							'Unknown'))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('Memory')),
-						E('td', {
-								'class': 'td'
-							}, memFree + ' GB / ' +
-							memTotal + ' GB')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('Socket Path')),
-						E('td', {
-								'class': 'td',
-								'style': 'font-family: monospace; font-size: 0.9em;'
-							},
-							(info.host && info.host.remoteSocket && info.host
-								.remoteSocket.path) ||
-							'/run/podman/podman.sock')
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('Graph Root')),
-						E('td', {
-								'class': 'td',
-								'style': 'font-family: monospace; font-size: 0.9em;'
-							},
-							(info.store && info.store.graphRoot) || _(
-								'Unknown'))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('Run Root')),
-						E('td', {
-								'class': 'td',
-								'style': 'font-family: monospace; font-size: 0.9em;'
-							},
-							(info.store && info.store.runRoot) || _('Unknown')
-						)
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-								'class': 'td',
-								'style': 'font-weight: bold;'
-							},
-							_('Registries')),
-						E('td', {
-								'class': 'td',
-								'style': 'font-family: monospace; font-size: 0.9em;'
-							},
-							this.getRegistries(info))
-					])
-				])
-			])
-		]);
+		const table = new pui.Table()
+			.addInfoRow(_('Podman Version'), version.Version || _('Unknown'))
+			.addInfoRow(_('API Version'), version.ApiVersion || _('Unknown'))
+			.addInfoRow(_('CPU'), (info.host && info.host.cpus) ? info.host.cpus.toString() : _('Unknown'))
+			.addInfoRow(_('Memory'), memFree + ' GB / ' + memTotal + ' GB')
+			.addInfoRow(_('Socket Path'),
+				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+					(info.host && info.host.remoteSocket && info.host.remoteSocket.path) ||
+					'/run/podman/podman.sock'))
+			.addInfoRow(_('Graph Root'),
+				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+					(info.store && info.store.graphRoot) || _('Unknown')))
+			.addInfoRow(_('Run Root'),
+				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+					(info.store && info.store.runRoot) || _('Unknown')))
+			.addInfoRow(_('Registries'),
+				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+					this.getRegistries(info)));
+
+		const section = new pui.Section();
+		section.addNode(_('Information'), '', table.render());
+		return section.render();
 	},
 
 	/**
-	 * Get registries from info
-	 * @param {Object} info - System info
-	 * @returns {string} Comma-separated registries
+	 * Get configured container image registries
+	 *
+	 * @param {Object} info - System info object with registries.search array
+	 * @returns {string} Comma-separated list of registry URLs
 	 */
 	getRegistries: function (info) {
 		if (info.registries && info.registries.search) {
@@ -233,137 +143,75 @@ return view.extend({
 
 	/**
 	 * Create disk usage section
-	 * @param {Object} diskUsage - Disk usage data
-	 * @returns {Element} Disk usage section element
+	 *
+	 * @param {Object} diskUsage - Disk usage data object containing:
+	 *   - Images: [{Size, Reclaimable, Count}]
+	 *   - Containers: [{Size, Reclaimable, Count}]
+	 *   - Volumes: [{Size, Reclaimable, Count}]
+	 * @returns {Element} Disk usage section element with statistics table
 	 */
 	createDiskUsageSection: function (diskUsage) {
-		var imageSize = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Size) ||
+		const imageSize = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Size) ||
 			0;
-		var imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0]
+		const imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0]
 			.Reclaimable) || 0;
-		var imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) ||
+		const imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) ||
 			0;
 
-		var containerSize = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
+		const containerSize = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
 			.Containers[0].Size) || 0;
-		var containerReclaimable = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
+		const containerReclaimable = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
 			.Containers[0].Reclaimable) || 0;
-		var containerCount = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
+		const containerCount = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
 			.Containers[0].Count) || 0;
 
-		var volumeSize = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+		const volumeSize = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Size) || 0;
-		var volumeReclaimable = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+		const volumeReclaimable = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Reclaimable) || 0;
-		var volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+		const volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Count) || 0;
 
-		return E('div', {
-			'class': 'cbi-section',
-			'style': 'margin-top: 20px;'
-		}, [
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				E('h3', {
-					'style': 'margin-bottom: 15px;'
-				}, _('Disk Usage')),
-				E('table', {
-					'class': 'table'
-				}, [
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('th', {
-								'class': 'th',
-								'style': 'font-weight: bold;'
-							},
-							_('Type')),
-						E('th', {
-								'class': 'th',
-								'style': 'font-weight: bold;'
-							},
-							_('Count')),
-						E('th', {
-								'class': 'th',
-								'style': 'font-weight: bold;'
-							},
-							_('Size')),
-						E('th', {
-								'class': 'th',
-								'style': 'font-weight: bold;'
-							},
-							_('Reclaimable'))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-							'class': 'td'
-						}, _('Images')),
-						E('td', {
-							'class': 'td'
-						}, String(imageCount)),
-						E('td', {
-							'class': 'td'
-						}, utils.formatBytes(
-							imageSize)),
-						E('td', {
-							'class': 'td'
-						}, utils.formatBytes(
-							imageReclaimable))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-							'class': 'td'
-						}, _('Containers')),
-						E('td', {
-							'class': 'td'
-						}, String(containerCount)),
-						E('td', {
-							'class': 'td'
-						}, utils.formatBytes(
-							containerSize)),
-						E('td', {
-							'class': 'td'
-						}, utils.formatBytes(
-							containerReclaimable))
-					]),
-					E('tr', {
-						'class': 'tr'
-					}, [
-						E('td', {
-							'class': 'td'
-						}, _('Volumes')),
-						E('td', {
-							'class': 'td'
-						}, String(volumeCount)),
-						E('td', {
-							'class': 'td'
-						}, utils.formatBytes(
-							volumeSize)),
-						E('td', {
-							'class': 'td'
-						}, utils.formatBytes(
-							volumeReclaimable))
-					])
-				])
+		const table = new pui.Table()
+			.addHeader(_('Type'))
+			.addHeader(_('Count'))
+			.addHeader(_('Size'))
+			.addHeader(_('Reclaimable'))
+			.addRow([
+				{ inner: _('Images') },
+				{ inner: String(imageCount) },
+				{ inner: format.bytes(imageSize) },
+				{ inner: format.bytes(imageReclaimable) }
 			])
-		]);
+			.addRow([
+				{ inner: _('Containers') },
+				{ inner: String(containerCount) },
+				{ inner: format.bytes(containerSize) },
+				{ inner: format.bytes(containerReclaimable) }
+			])
+			.addRow([
+				{ inner: _('Volumes') },
+				{ inner: String(volumeCount) },
+				{ inner: format.bytes(volumeSize) },
+				{ inner: format.bytes(volumeReclaimable) }
+			]);
+
+		const section = new pui.Section({ 'style': 'margin-top: 20px;' });
+		section.addNode(_('Disk Usage'), '', table.render());
+		return section.render();
 	},
 
 	/**
 	 * Create resource cards section
-	 * @param {Array} containers - Container list
-	 * @param {Array} pods - Pod list
-	 * @param {Array} images - Image list
-	 * @param {Array} networks - Network list
-	 * @param {Array} volumes - Volume list
-	 * @param {number} runningContainers - Running container count
-	 * @param {number} runningPods - Running pod count
-	 * @returns {Element} Cards container element
+	 *
+	 * @param {Array} containers - All containers
+	 * @param {Array} pods - All pods
+	 * @param {Array} images - All images
+	 * @param {Array} networks - All networks
+	 * @param {Array} volumes - All volumes
+	 * @param {number} runningContainers - Count of running containers
+	 * @param {number} runningPods - Count of running pods
+	 * @returns {Element} Responsive grid container with resource cards
 	 */
 	createResourceCards: function (containers, pods, images, networks, volumes, runningContainers,
 		runningPods) {
@@ -384,16 +232,17 @@ return view.extend({
 	},
 
 	/**
-	 * Create a resource card
-	 * @param {string} title - Card title
-	 * @param {number} total - Total count
-	 * @param {number|null} running - Running count (null if not applicable)
-	 * @param {string} url - Link URL
-	 * @param {string} color - Card accent color
-	 * @returns {Element} Card element
+	 * Create a single resource card
+	 *
+	 * @param {string} title - Card title (e.g., 'Containers', 'Images')
+	 * @param {number} total - Total resource count
+	 * @param {number|null} running - Running count (null for non-runnable resources)
+	 * @param {string} url - Relative URL path to resource management page
+	 * @param {string} color - CSS color for card border and statistics
+	 * @returns {Element} Styled card element with hover effects
 	 */
 	createCard: function (title, total, running, url, color) {
-		var statsText = running !== null ? running + ' / ' + total : total.toString();
+		const statsText = running !== null ? running + ' / ' + total : total.toString();
 
 		return E('a', {
 			'href': L.url(url),
@@ -435,13 +284,14 @@ return view.extend({
 	},
 
 	/**
-	 * Get icon for resource type
-	 * @param {string} type - Resource type
-	 * @param {string} color - Icon color
-	 * @returns {Element} Icon element
+	 * Get emoji icon for resource type
+	 *
+	 * @param {string} type - Resource type ('Containers', 'Pods', 'Images', 'Networks', 'Volumes')
+	 * @param {string} color - Icon color (currently unused, for future styling)
+	 * @returns {Element} Span element containing emoji icon
 	 */
 	getIcon: function (type, color) {
-		var icon = '📦';
+		let icon = '📦';
 		switch (type) {
 		case 'Containers':
 			icon = '🐳';
@@ -470,33 +320,23 @@ return view.extend({
 	 * @returns {Element} System actions section
 	 */
 	createSystemActionsSection: function () {
-		return E('div', {
-			'class': 'cbi-section',
-			'style': 'margin-bottom: 20px;'
+		const buttons = E('div', {
+			'style': 'display: flex; gap: 10px; flex-wrap: wrap;'
 		}, [
-			E('div', {
-				'class': 'cbi-section-node'
-			}, [
-				E('h3', {
-					'style': 'margin-bottom: 15px;'
-				}, _('System Maintenance')),
-				E('div', {
-					'style': 'display: flex; gap: 10px; flex-wrap: wrap;'
-				}, [
-					new pui.Button(_('Auto-Update Containers'), () => this
-						.handleAutoUpdate(), 'action').render(),
-					new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(),
-						'remove').render()
-				])
-			])
+			new pui.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(), 'action').render(),
+			new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove').render()
 		]);
+
+		const section = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		section.addNode(_('System Maintenance'), '', buttons);
+		return section.render();
 	},
 
 	/**
-	 * Handle auto-update action
+	 * Handle container auto-update action
 	 */
 	handleAutoUpdate: function () {
-		var self = this;
+		const self = this;
 
 		// First do dry-run to show what would be updated
 		ui.showModal(_('Auto-Update Check'), [
@@ -569,7 +409,7 @@ return view.extend({
 	},
 
 	/**
-	 * Perform actual auto-update
+	 * Perform actual container auto-update
 	 */
 	performAutoUpdate: function () {
 		ui.showModal(_('Updating Containers'), [
@@ -614,10 +454,10 @@ return view.extend({
 	},
 
 	/**
-	 * Handle cleanup/prune action
+	 * Handle system cleanup/prune action
 	 */
 	handlePrune: function () {
-		var self = this;
+		const self = this;
 
 		ui.showModal(_('Cleanup Unused Resources'), [
 			E('div', {
@@ -666,9 +506,9 @@ return view.extend({
 				confirmText: _('Clean Up Now'),
 				confirmClass: 'remove',
 				onConfirm: () => {
-					var allImages = document.getElementById('prune-all-images')
+					const allImages = document.getElementById('prune-all-images')
 						.checked;
-					var volumes = document.getElementById('prune-volumes')
+					const volumes = document.getElementById('prune-volumes')
 						.checked;
 					ui.hideModal();
 					self.performPrune(allImages, volumes);
@@ -678,7 +518,10 @@ return view.extend({
 	},
 
 	/**
-	 * Perform system prune
+	 * Perform system prune operation
+	 *
+	 * @param {boolean} allImages - If true, remove all unused images; if false, only dangling
+	 * @param {boolean} volumes - If true, also remove unused volumes
 	 */
 	performPrune: function (allImages, volumes) {
 		ui.showModal(_('Cleaning Up'), [
@@ -693,8 +536,8 @@ return view.extend({
 		]);
 
 		podmanRPC.system.prune(allImages, volumes).then(function (result) {
-			var freedSpace = 0;
-			var deletedItems = [];
+			let freedSpace = 0;
+			const deletedItems = [];
 
 			if (result.ContainerPruneReports) {
 				result.ContainerPruneReports.forEach(function (r) {
@@ -738,7 +581,7 @@ return view.extend({
 				E('p', {
 						'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;'
 					},
-					_('Space freed: %s').format(utils.formatBytes(freedSpace))),
+					_('Space freed: %s').format(format.bytes(freedSpace))),
 				new pui.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: () => {

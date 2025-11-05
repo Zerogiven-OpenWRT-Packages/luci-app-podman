@@ -9,6 +9,7 @@
 'require session';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
+'require podman.format as format';
 'require podman.ui as pui';
 'require podman.run-command-parser as RunCommandParser';
 'require podman.openwrt-network as openwrtNetwork';
@@ -376,7 +377,7 @@ const FormContainer = baseclass.extend({
 				};
 			}
 			if (container.memory) {
-				const memBytes = utils.parseMemory(container.memory);
+				const memBytes = format.parseMemory(container.memory);
 				if (memBytes > 0) {
 					spec.resource_limits = spec.resource_limits || {};
 					spec.resource_limits.memory = {
@@ -389,19 +390,19 @@ const FormContainer = baseclass.extend({
 					Test: [container.healthcheck_type, container.healthcheck_command]
 				};
 				if (container.healthcheck_interval) {
-					healthConfig.Interval = utils.parseDuration(container
+					healthConfig.Interval = format.parseDuration(container
 						.healthcheck_interval);
 				}
 				if (container.healthcheck_timeout) {
-					healthConfig.Timeout = utils.parseDuration(container
+					healthConfig.Timeout = format.parseDuration(container
 						.healthcheck_timeout);
 				}
 				if (container.healthcheck_start_period) {
-					healthConfig.StartPeriod = utils.parseDuration(container
+					healthConfig.StartPeriod = format.parseDuration(container
 						.healthcheck_start_period);
 				}
 				if (container.healthcheck_start_interval) {
-					healthConfig.StartInterval = utils.parseDuration(container
+					healthConfig.StartInterval = format.parseDuration(container
 						.healthcheck_start_interval);
 				}
 				if (container.healthcheck_retries) {
@@ -1487,8 +1488,8 @@ const FormResourceEditor = baseclass.extend({
 				cpuLimit: hostConfig.CpuQuota > 0 ? (hostConfig.CpuQuota / 100000).toFixed(
 					2) : '',
 				cpuShares: hostConfig.CpuShares || '',
-				memory: hostConfig.Memory > 0 ? utils.formatBytes(hostConfig.Memory, 0) : '',
-				memorySwap: hostConfig.MemorySwap > 0 ? utils.formatBytes(hostConfig
+				memory: hostConfig.Memory > 0 ? format.bytes(hostConfig.Memory, 0) : '',
+				memorySwap: hostConfig.MemorySwap > 0 ? format.bytes(hostConfig
 					.MemorySwap, 0) : '',
 				blkioWeight: hostConfig.BlkioWeight || ''
 			}
@@ -1572,8 +1573,8 @@ const FormResourceEditor = baseclass.extend({
 		this.map.save().then(() => {
 			const resources = this.map.data.data.resources;
 
-			const memory = utils.parseMemory(resources.memory, true);
-			const memorySwap = resources.memorySwap === '-1' ? -1 : utils.parseMemory(
+			const memory = format.parseMemory(resources.memory, true);
+			const memorySwap = resources.memorySwap === '-1' ? -1 : format.parseMemory(
 				resources.memorySwap, true);
 
 			if (memory === null && resources.memory) {
