@@ -658,5 +658,66 @@ return baseclass.extend({
 			method: 'auto_update',
 			params: ['dry_run']
 		})
+	},
+
+	/**
+	 * Init script management methods for container auto-start on boot.
+	 */
+	initScript: {
+		/**
+		 * Generate init script for container.
+		 * @param {string} name - Container name
+		 * @returns {Promise<Object>} Result with path
+		 */
+		generate: rpc.declare({
+			object: 'luci.podman',
+			method: 'init_script_generate',
+			params: ['name']
+		}),
+
+		/**
+		 * Show init script content.
+		 * @param {string} name - Container name
+		 * @returns {Promise<Object>} Result with content
+		 */
+		show: rpc.declare({
+			object: 'luci.podman',
+			method: 'init_script_show',
+			params: ['name']
+		}),
+
+		/**
+		 * Get init script status.
+		 * @param {string} name - Container name
+		 * @returns {Promise<Object>} Status with exists and enabled flags
+		 */
+		status: rpc.declare({
+			object: 'luci.podman',
+			method: 'init_script_status',
+			params: ['name']
+		}),
+
+		/**
+		 * Enable or disable init script.
+		 * @param {string} name - Container name
+		 * @param {boolean} enabled - Enable (true) or disable (false)
+		 * @returns {Promise<Object>} Result
+		 */
+		setEnabled: rpc.declare({
+			object: 'luci.podman',
+			method: 'init_script_set_enabled',
+			params: ['name', 'enabled']
+		}),
+
+		/**
+		 * Remove init script.
+		 * @param {string} name - Container name
+		 * @returns {Promise<Object>} Result
+		 */
+		remove: rpc.declare({
+			object: 'luci.podman',
+			method: 'init_script_remove',
+			params: ['name']
+		})
 	}
 });
