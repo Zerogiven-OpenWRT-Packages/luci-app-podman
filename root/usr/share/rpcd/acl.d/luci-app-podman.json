@@ -27,7 +27,9 @@
 					"secret_inspect",
 					"system_df",
 					"version",
-					"info"
+					"info",
+					"init_script_status",
+					"init_script_show"
 				]
 			},
 			"uci": ["podman"]
@@ -64,7 +66,10 @@
 					"secret_create",
 					"secret_remove",
 					"system_prune",
-					"auto_update"
+					"auto_update",
+					"init_script_generate",
+					"init_script_set_enabled",
+					"init_script_remove"
 				]
 			},
 			"uci": ["podman"]
