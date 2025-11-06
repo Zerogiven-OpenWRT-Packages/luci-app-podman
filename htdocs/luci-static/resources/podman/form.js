@@ -428,37 +428,72 @@ const FormContainer = baseclass.extend({
 
 				const shouldStart = container.start === '1' || container.start ===
 					true || container.start === 1;
+				const hasRestartPolicy = container.restart && container.restart !== 'no';
+				const containerName = result.Id ? (container.name || result.Id.substring(0, 12)) : null;
+
+				// Chain: Start (if requested) → Generate init script (if has restart policy)
+				let promise = Promise.resolve();
 
 				if (shouldStart && result && result.Id) {
 					pui.showSpinningModal(_('Starting Container'), _(
 						'Starting container...'));
 
-					podmanRPC.container.start(result.Id).then((startResult) => {
-						ui.hideModal();
+					promise = podmanRPC.container.start(result.Id).then((startResult) => {
 						if (startResult && startResult.error) {
 							pui.warningNotification(_(
 								'Container created but failed to start: %s'
 							).format(startResult.error));
-						} else {
-							pui.successTimeNotification(_(
-								'Container created and started successfully'
-							));
 						}
-
-						this.submit();
+						return Promise.resolve();
 					}).catch((err) => {
-						ui.hideModal();
-						pui.errorNotification(_(
+						pui.warningNotification(_(
 							'Container created but failed to start: %s'
 						).format(err.message));
-						this.submit();
+						return Promise.resolve();
 					});
-				} else {
-					ui.hideModal();
-					pui.successTimeNotification(_(
-						'Container created successfully'));
-					this.submit();
 				}
+
+				// Auto-generate init script if restart policy is set
+				if (hasRestartPolicy && containerName) {
+					promise = promise.then(() => {
+						pui.showSpinningModal(_('Setting up auto-start'), _(
+							'Generating init script...'));
+
+						return podmanRPC.initScript.generate(containerName)
+							.then((genResult) => {
+								if (genResult && genResult.success) {
+									return podmanRPC.initScript.setEnabled(containerName, true);
+								}
+								// Generation failed - just log warning, don't fail container creation
+								console.warn('Failed to auto-generate init script:', genResult.error);
+								return Promise.resolve();
+							})
+							.catch((err) => {
+								// Auto-generation failed - just log warning, don't fail container creation
+								console.warn('Failed to auto-generate init script:', err.message);
+								return Promise.resolve();
+							});
+					});
+				}
+
+				// Final notification and cleanup
+				promise.then(() => {
+					ui.hideModal();
+					if (shouldStart && hasRestartPolicy) {
+						pui.successTimeNotification(_(
+							'Container created, started, and auto-start configured'));
+					} else if (shouldStart) {
+						pui.successTimeNotification(_(
+							'Container created and started successfully'));
+					} else if (hasRestartPolicy) {
+						pui.successTimeNotification(_(
+							'Container created and auto-start configured'));
+					} else {
+						pui.successTimeNotification(_(
+							'Container created successfully'));
+					}
+					this.submit();
+				});
 			}).catch((err) => {
 				ui.hideModal();
 				pui.errorNotification(_('Failed to create container: %s').format(

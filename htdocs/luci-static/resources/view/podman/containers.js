@@ -24,13 +24,35 @@ return view.extend({
 
 	/**
 	 * Load container data (all containers including stopped)
+	 * Enriches list data with full inspect data to access HostConfig.RestartPolicy
 	 * @returns {Promise<Object>} Container data or error
 	 */
 	load: async () => {
 		return podmanRPC.container.list('all=true')
-			.then((containers) => {
+			.then(async (containers) => {
+				if (!containers || containers.length === 0) {
+					return { containers: [] };
+				}
+
+				// Fetch full inspect data for each container to get RestartPolicy
+				const inspectPromises = containers.map((container) =>
+					podmanRPC.container.inspect(container.Id)
+						.then((inspectData) => {
+							// Merge inspect data (especially HostConfig) into list data
+							return Object.assign({}, container, {
+								HostConfig: inspectData.HostConfig
+							});
+						})
+						.catch(() => {
+							// If inspect fails, return original list data
+							return container;
+						})
+				);
+
+				const enrichedContainers = await Promise.all(inspectPromises);
+
 				return {
-					containers: containers || []
+					containers: enrichedContainers
 				};
 			})
 			.catch((err) => {

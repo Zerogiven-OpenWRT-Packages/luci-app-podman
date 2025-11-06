@@ -8,6 +8,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 ## Features
 
 - **Container Management**: Start, stop, restart, create, remove with live logs and stats
+- **Auto-start Support**: Automatic init script generation for containers with restart policies
 - **Image Management**: Pull, remove, inspect images with streaming progress
 - **Volume Management**: Create, delete, export/import volumes with tar backups
 - **Network Management**: Bridge, macvlan, ipvlan with optional OpenWrt firewall integration
@@ -131,6 +132,7 @@ root/usr/libexec/rpcd/luci.podman  # RPC backend
 Inspired by:
 - [openwrt-podman](https://github.com/breeze303/openwrt-podman/) - Podman on OpenWrt
 - [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman) - Docker LuCI design patterns
+- [OpenWrt Podman Guide](https://openwrt.org/docs/guide-user/virtualization/podman) - Official documentation
 
 ## Contributing
 
@@ -143,4 +145,3 @@ Apache License 2.0 - see [LICENSE](LICENSE) file.
 ## Support
 
 - [Issues](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/issues)
-- [Documentation](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/wiki)

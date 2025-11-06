@@ -289,6 +289,79 @@ return view.extend({
 			{ inner: autoUpdateLabel || _('Disabled') }
 		]);
 
+		// Init Script status (loaded asynchronously)
+		const initScriptCell = E('span', { 'style': 'color: #999;' }, '...');
+		const containerName = data.Name ? data.Name.replace(/^\//, '') : null;
+
+		// Check if container has a restart policy set
+		const hasRestartPolicy = hostConfig.RestartPolicy &&
+			hostConfig.RestartPolicy.Name &&
+			hostConfig.RestartPolicy.Name !== '' &&
+			hostConfig.RestartPolicy.Name !== 'no';
+
+		if (containerName) {
+			podmanRPC.initScript.status(containerName).then((status) => {
+				const buttons = [];
+
+				if (status.exists && status.enabled) {
+					// Init script exists and enabled
+					initScriptCell.innerHTML = '';
+					initScriptCell.appendChild(E('span', {
+						'style': 'color: #5cb85c; margin-right: 10px;'
+					}, '✓ ' + _('Enabled')));
+
+					buttons.push(new pui.Button(_('Show'), () => this.handleShowInitScript(containerName), 'neutral').render());
+					buttons.push(' ');
+					buttons.push(new pui.Button(_('Disable'), () => this.handleToggleInitScript(containerName, false), 'negative').render());
+				} else if (status.exists && !status.enabled) {
+					// Init script exists but disabled
+					initScriptCell.innerHTML = '';
+					initScriptCell.appendChild(E('span', {
+						'style': 'color: #999; margin-right: 10px;'
+					}, '○ ' + _('Disabled')));
+
+					buttons.push(new pui.Button(_('Show'), () => this.handleShowInitScript(containerName), 'neutral').render());
+					buttons.push(' ');
+					buttons.push(new pui.Button(_('Enable'), () => this.handleToggleInitScript(containerName, true), 'positive').render());
+				} else if (hasRestartPolicy) {
+					// No init script but has restart policy - show warning with Generate button
+					initScriptCell.innerHTML = '';
+					initScriptCell.appendChild(E('span', {
+						'style': 'color: #f0ad4e; margin-right: 10px;',
+						'title': _('Restart policy set but no init script')
+					}, '⚠️ ' + _('Not configured')));
+
+					buttons.push(new pui.Button(_('Generate'), () => this.handleGenerateInitScript(containerName), 'positive').render());
+				} else {
+					// No init script and no restart policy - show helper text
+					initScriptCell.innerHTML = '';
+					initScriptCell.appendChild(E('span', {
+						'style': 'color: #999;',
+						'title': _('Set a restart policy to enable auto-start')
+					}, '— ' + _('Not available (no restart policy)')));
+				}
+
+				buttons.forEach((btn) => {
+					if (typeof btn === 'string') {
+						initScriptCell.appendChild(document.createTextNode(btn));
+					} else {
+						initScriptCell.appendChild(btn);
+					}
+				});
+			}).catch((err) => {
+				initScriptCell.textContent = '✗ ' + _('Error');
+				initScriptCell.style.color = '#d9534f';
+				initScriptCell.title = err.message;
+			});
+		} else {
+			initScriptCell.textContent = '—';
+		}
+
+		basicTable.addRow([
+			{ inner: _('Init Script'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+			{ inner: initScriptCell }
+		]);
+
 		// Health status if exists
 		if (data.State && data.State.Health) {
 			const healthStatus = data.State.Health.Status || 'none';
@@ -1405,11 +1478,14 @@ return view.extend({
 	},
 
 	/**
-	 * Handle restart policy update
+	 * Handle restart policy update with init script auto-sync
 	 * @param {string} policy - New restart policy
 	 */
 	handleUpdateRestartPolicy: function (policy) {
 		pui.showSpinningModal(_('Updating Container'), _('Updating restart policy...'));
+
+		const containerName = this.containerData.Name ? this.containerData.Name.replace(/^\//, '') : null;
+		const hasRestartPolicy = policy && policy !== '' && policy !== 'no';
 
 		// Podman libpod API uses query parameters for restart policy
 		const updateData = {
@@ -1421,21 +1497,58 @@ return view.extend({
 			updateData.RestartRetries = 5;
 		}
 
+		// Step 1: Update restart policy
 		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
 			result) => {
-			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to update restart policy: %s')
-					.format(result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', _(
-					'Restart policy updated successfully')));
-				window.location.reload();
+				throw new Error(result.error);
 			}
+
+			// Step 2: Auto-sync init script based on restart policy
+			if (!containerName) {
+				// No container name, skip init script sync
+				return Promise.resolve();
+			}
+
+			// Check current init script status
+			return podmanRPC.initScript.status(containerName).then((status) => {
+				if (hasRestartPolicy && !status.exists) {
+					// Restart policy set but no init script → Generate and enable
+					return podmanRPC.initScript.generate(containerName)
+						.then((genResult) => {
+							if (genResult && genResult.success) {
+								return podmanRPC.initScript.setEnabled(containerName, true);
+							}
+							// Generation failed, but policy update succeeded - just log warning
+							console.warn('Failed to auto-generate init script:', genResult.error);
+							return Promise.resolve();
+						})
+						.catch((err) => {
+							// Auto-generation failed, but policy update succeeded - just log warning
+							console.warn('Failed to auto-generate init script:', err.message);
+							return Promise.resolve();
+						});
+				} else if (!hasRestartPolicy && status.exists) {
+					// Restart policy removed and init script exists → Remove it
+					return podmanRPC.initScript.remove(containerName)
+						.catch((err) => {
+							// Auto-removal failed, but policy update succeeded - just log warning
+							console.warn('Failed to auto-remove init script:', err.message);
+							return Promise.resolve();
+						});
+				}
+
+				// No action needed
+				return Promise.resolve();
+			});
+		}).then(() => {
+			ui.hideModal();
+			pui.successTimeNotification(_('Restart policy updated successfully'));
+			window.location.reload();
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to update restart policy: %s')
-				.format(err.message)), 'error');
+			pui.errorNotification(_('Failed to update restart policy: %s')
+				.format(err.message));
 		});
 	},
 
@@ -1563,6 +1676,99 @@ return view.extend({
 			}).catch((err) => {
 				console.error('Failed to refresh container data:', err);
 			});
+		});
+	},
+
+	/**
+	 * Handle generate init script for container
+	 * @param {string} containerName - Container name
+	 */
+	handleGenerateInitScript: function (containerName) {
+		pui.showSpinningModal(_('Generating Init Script'),
+			_('Creating auto-start configuration for %s').format(containerName));
+
+		podmanRPC.initScript.generate(containerName).then((result) => {
+			if (result && result.success) {
+				return podmanRPC.initScript.setEnabled(containerName, true);
+			} else {
+				throw new Error(result.error || _('Failed to generate init script'));
+			}
+		}).then((result) => {
+			ui.hideModal();
+			if (result && result.success) {
+				pui.successTimeNotification(
+					_('Init script created and enabled for %s').format(containerName));
+				// Refresh the info tab to show updated status
+				this.renderInfoTab();
+			} else {
+				throw new Error(result.error || _('Failed to enable init script'));
+			}
+		}).catch((err) => {
+			ui.hideModal();
+			pui.errorNotification(
+				_('Failed to setup auto-start: %s').format(err.message));
+		});
+	},
+
+	/**
+	 * Handle show init script content
+	 * @param {string} containerName - Container name
+	 */
+	handleShowInitScript: function (containerName) {
+		pui.showSpinningModal(_('Loading Init Script'),
+			_('Fetching script for %s').format(containerName));
+
+		podmanRPC.initScript.show(containerName).then((result) => {
+			ui.hideModal();
+			if (result && result.content) {
+				// Show script content in a modal
+				const content = E('div', {}, [
+					E('h3', {}, _('Init Script: %s').format(containerName)),
+					E('pre', {
+						'style': 'background: #f5f5f5; padding: 15px; overflow: auto; max-height: 600px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.5;'
+					}, result.content.replace(/\\n/g, '\n'))
+				]);
+
+				ui.showModal(_('Init Script'), [
+					content,
+					E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
+						new pui.Button(_('Close'), ui.hideModal, 'neutral').render()
+					])
+				]);
+			} else {
+				throw new Error(result.error || _('Failed to load init script'));
+			}
+		}).catch((err) => {
+			ui.hideModal();
+			pui.errorNotification(_('Failed to load init script: %s').format(err.message));
+		});
+	},
+
+	/**
+	 * Handle enable/disable init script
+	 * @param {string} containerName - Container name
+	 * @param {boolean} enabled - Enable or disable
+	 */
+	handleToggleInitScript: function (containerName, enabled) {
+		const action = enabled ? _('Enabling') : _('Disabling');
+		pui.showSpinningModal(_('Updating Init Script'),
+			_('%s auto-start for %s').format(action, containerName));
+
+		podmanRPC.initScript.setEnabled(containerName, enabled).then((result) => {
+			ui.hideModal();
+			if (result && result.success) {
+				const msg = enabled ?
+					_('Init script enabled for %s').format(containerName) :
+					_('Init script disabled for %s').format(containerName);
+				pui.successTimeNotification(msg);
+				// Refresh the info tab to show updated status
+				this.renderInfoTab();
+			} else {
+				throw new Error(result.error || _('Failed to update init script'));
+			}
+		}).catch((err) => {
+			ui.hideModal();
+			pui.errorNotification(_('Failed to update init script: %s').format(err.message));
 		});
 	}
 });

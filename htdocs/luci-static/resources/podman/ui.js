@@ -260,6 +260,8 @@ const UITable = baseclass.extend({
 	 * @param {Object} [options] - Table options
 	 */
 	__init__: function (options) {
+		this.headers = [];
+		this.rows = [];
 		this.options = Object.assign(this.options, options || {});
 	},
 
@@ -378,6 +380,7 @@ const UISection = baseclass.extend({
 	 * @param {Object} [options] - Section options
 	 */
 	__init__: function (options) {
+		this.nodes = [];
 		this.options = Object.assign(this.options, options || {});
 	},
 
