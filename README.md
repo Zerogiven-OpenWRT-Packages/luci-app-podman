@@ -13,9 +13,6 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
   - [From IPK Package](#from-ipk-package)
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
-- [Configuration](#configuration)
-  - [Podman](#podman-etccontainerscontainersconf)
-  - [UCI](#uci-etcconfigpodman)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
   - [Architecture](#architecture)
@@ -55,7 +52,8 @@ opkg update && opkg install /tmp/luci-app-podman_*.ipk
 ### From Source
 
 ```bash
-git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git
+# Clone openwrt repository and prepare build environment. Next:
+git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git package/luci-app-podma
 cd luci-app-podman
 # In OpenWrt build environment:
 make package/luci-app-podman/compile V=s
@@ -63,7 +61,7 @@ make package/luci-app-podman/compile V=s
 
 ## Getting Started
 
-Access via **System → Podman** in LuCI, or directly at:
+Access via **Podman** in LuCI, or directly at:
 ```
 http://your-router-ip/cgi-bin/luci/admin/podman
 ```
@@ -74,33 +72,7 @@ If encountering socket errors:
 /etc/init.d/podman enable
 ```
 
-## Configuration
-
-### Podman (`/etc/containers/containers.conf`)
-
-```ini
-[network]
-network_backend = "netavark"
-firewall_driver = "none"
-network_config_dir = "/etc/containers/networks/"
-default_network = "podman"
-default_subnet = "10.129.0.0/24"
-```
-
-### UCI (`/etc/config/podman`)
-
-```
-config podman 'globals'
-	option socket_path '/run/podman/podman.sock'
-```
-
 ## Troubleshooting
-
-**Socket not found:**
-```bash
-ls -l /run/podman/podman.sock
-/etc/init.d/podman-socket restart
-```
 
 **Access denied:**
 ```bash
@@ -113,16 +85,6 @@ cat /usr/share/rpcd/acl.d/luci-app-podman.json
 ubus call luci.podman containers_list '{"query":"all=true"}'
 logread | grep -i podman
 ```
-
-## Development
-
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for development guidelines.
-
-### Architecture
-
-- **Frontend**: Modern ES6+ JavaScript using LuCI framework
-- **Backend**: Shell script RPC handler communicating with Podman REST API
-- **Integration**: Direct UCI/network API manipulation for OpenWrt
 
 ### Key Files
 
