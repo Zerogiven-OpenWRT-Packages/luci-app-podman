@@ -15,11 +15,9 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
 - [Troubleshooting](#troubleshooting)
-- [Development](#development)
-  - [Architecture](#architecture)
-  - [Key Files](#key-files)
 - [Credits](#credits)
 - [Contributing](#contributing)
+  - [Key Files](#key-files)
 - [License](#license)
 - [Support](#support)
 
@@ -101,6 +99,17 @@ ubus call luci.podman containers_list '{"query":"all=true"}'
 logread | grep -i podman
 ```
 
+## Credits
+
+Inspired by:
+- [openwrt-podman](https://github.com/breeze303/openwrt-podman/) - Podman on OpenWrt
+- [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman) - Docker LuCI design patterns
+- [OpenWrt Podman Guide](https://openwrt.org/docs/guide-user/virtualization/podman) - Official documentation
+
+## Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
 ### Key Files
 
 ```
@@ -123,17 +132,6 @@ htdocs/luci-static/resources/
 
 root/usr/libexec/rpcd/luci.podman  # RPC backend
 ```
-
-## Credits
-
-Inspired by:
-- [openwrt-podman](https://github.com/breeze303/openwrt-podman/) - Podman on OpenWrt
-- [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman) - Docker LuCI design patterns
-- [OpenWrt Podman Guide](https://openwrt.org/docs/guide-user/virtualization/podman) - Official documentation
-
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
 
