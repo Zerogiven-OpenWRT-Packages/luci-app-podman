@@ -8,6 +8,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 ## Table of Contents
 
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Installation](#installation)
   - [From IPK Package](#from-ipk-package)
@@ -32,6 +33,20 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - **Pod Management**: Multi-container pods with shared networking
 - **Secret Management**: Encrypted storage for sensitive data
 - **System Overview**: Resource usage, disk space, system-wide cleanup
+
+## Screenshots
+
+### Container List View
+![Container List](docs/screenshots/containers.png)
+*Manage multiple containers with bulk operations, auto-start indicators, and health status*
+
+### Container Detail View
+![Container Detail](docs/screenshots/container-detail.png)
+*Comprehensive container information with tabbed interface for logs, stats, and configuration*
+
+### Network Creation
+![Network Creation](docs/screenshots/network-create.png)
+*Create Podman networks with optional OpenWrt firewall integration*
 
 ## Requirements
 
