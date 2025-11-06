@@ -5,6 +5,26 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![OpenWrt](https://img.shields.io/badge/OpenWrt-24.10.x-green.svg)](https://openwrt.org/)
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [From IPK Package](#from-ipk-package)
+  - [From Source](#from-source)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+  - [Podman](#podman-etccontainerscontainersconf)
+  - [UCI](#uci-etcconfigpodman)
+- [Troubleshooting](#troubleshooting)
+- [Development](#development)
+  - [Architecture](#architecture)
+  - [Key Files](#key-files)
+- [Credits](#credits)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
+
 ## Features
 
 - **Container Management**: Start, stop, restart, create, remove with live logs and stats
