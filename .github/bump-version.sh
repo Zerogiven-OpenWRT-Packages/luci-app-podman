@@ -98,16 +98,18 @@ echo "Bumping PKG_VERSION: ${CURRENT_VERSION} -> ${NEW_VERSION} (branch: ${BRANC
 # --- Update PKG_VERSION (only first match) ---
 # keep original spacing before := by replacing the whole line with a standard spacing
 # use portable sed_inplace helper
-sed_inplace "0,/^[[:space:]]*PKG_VERSION[[:space:]]*:=[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+/s//PKG_VERSION       := ${NEW_VERSION}/" "$MAKEFILE_PATH"
+sed_inplace "/^([[:space:]]*PKG_VERSION[[:space:]]*:=[[:space:]]*)[0-9]+\.[0-9]+\.[0-9]+/s//\1${NEW_VERSION}/" "$MAKEFILE_PATH"
 echo "Updated PKG_VERSION in $MAKEFILE_PATH"
 
 # --- Reset PKG_RELEASE if needed ---
 if [ "${RESET_RELEASE:-0}" -eq 1 ]; then
   if awk '/^[[:space:]]*PKG_RELEASE[[:space:]]*:=[[:space:]]*/ { exit 0 } END { exit 1 }' "$MAKEFILE_PATH"; then
-    sed_inplace "s/^[[:space:]]*PKG_RELEASE[[:space:]]*:[=][[:space:]]*[0-9]+/PKG_RELEASE       := 1/" "$MAKEFILE_PATH"
+    sed_inplace "/^([[:space:]]*PKG_RELEASE[[:space:]]*:[=][[:space:]])*[0-9]+/\1 1/" "$MAKEFILE_PATH"
     echo "PKG_RELEASE reset to 1"
   fi
 fi
+
+exit
 
 # --- Git commit, tag, push ---
 git add "$MAKEFILE_PATH"
