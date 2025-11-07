@@ -95,9 +95,6 @@ esac
 NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 echo "Bumping PKG_VERSION: ${CURRENT_VERSION} -> ${NEW_VERSION} (branch: ${BRANCH})"
 
-# --- Update PKG_VERSION (only first match) ---
-# keep original spacing before := by replacing the whole line with a standard spacing
-# use portable sed_inplace helper
 sed_inplace "/^([[:space:]]*PKG_VERSION[[:space:]]*:=[[:space:]]*)[0-9]+\.[0-9]+\.[0-9]+/s//\1${NEW_VERSION}/" "$MAKEFILE_PATH"
 echo "Updated PKG_VERSION in $MAKEFILE_PATH"
 
@@ -115,8 +112,13 @@ exit
 # --- Git commit, tag, push ---
 git add "$MAKEFILE_PATH"
 
-git config user.name "github-actions[bot]" >/dev/null 2>&1 || true
-git config user.email "github-actions[bot]@users.noreply.github.com" >/dev/null 2>&1 || true
+if ! git config user.name >/dev/null 2>&1; then
+  git config user.name "github-actions[bot]" || true
+fi
+
+if ! git config user.email >/dev/null 2>&1; then
+  git config user.email "github-actions[bot]@users.noreply.github.com" || true
+fi
 
 # commit only if something changed
 if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
