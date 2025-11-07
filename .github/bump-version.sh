@@ -107,6 +107,6 @@ if git ls-remote --tags origin | awk '{print $2}' | grep -x "refs/tags/${TAG}" >
 fi
 
 git tag -a "${TAG}" -m "Release ${TAG}"
-git push origin "${TAG}"
+# git push origin "${TAG}"
 
 echo "✅ Version updated, committed, and tagged ${TAG}"
