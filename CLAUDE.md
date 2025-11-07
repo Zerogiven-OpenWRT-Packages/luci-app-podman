@@ -1070,3 +1070,313 @@ Network List:
 **Tooltip:** "OpenWrt integration incomplete. Click to setup. Missing: device, zone_membership"
 
 This provides a seamless way to fix networks that were created before the integration feature was added or where integration failed partially.
+
+## Init Script Auto-start Implementation
+
+### Overview
+
+The auto-start feature generates OpenWrt procd init scripts for containers with restart policies. These scripts ensure containers start automatically on system boot.
+
+**Key Design Decision**: Init scripts are **"boot-time starters" only**, NOT supervisors. Podman's restart policy handles runtime restarts to avoid conflicts.
+
+### Architecture
+
+**File**: `root/usr/libexec/rpcd/luci.podman` (lines 761-826)  
+**RPC Methods**:
+- `init_script_generate` - Create `/etc/init.d/container-{name}` script
+- `init_script_status` - Check if script exists and is enabled
+- `init_script_set_enabled` - Enable/disable script
+- `init_script_remove` - Remove script
+- `init_script_show` - Display script content
+
+### Init Script Template
+
+The generated init script is deliberately simple and safe:
+
+```sh
+#!/bin/sh /etc/rc.common
+
+START=100
+STOP=10
+
+start() {
+	# Check if Podman socket is available
+	if [ ! -S /run/podman/podman.sock ]; then
+		logger -t container-{name} "Podman socket not available"
+		return 1
+	fi
+
+	# Check if container exists
+	if ! /usr/bin/podman container exists {name} 2>/dev/null; then
+		logger -t container-{name} "Container does not exist"
+		return 1
+	fi
+
+	# Check if already running
+	if /usr/bin/podman container inspect {name} --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
+		logger -t container-{name} "Container is already running"
+		return 0
+	fi
+
+	# Start container without -a (non-blocking)
+	# Podman's restart policy will handle runtime restarts
+	logger -t container-{name} "Starting container {name}"
+	/usr/bin/podman start {name}
+}
+
+stop() {
+	# Check if container exists
+	if ! /usr/bin/podman container exists {name} 2>/dev/null; then
+		logger -t container-{name} "Container does not exist"
+		return 0
+	fi
+
+	# Check if running
+	if ! /usr/bin/podman container inspect {name} --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
+		logger -t container-{name} "Container is not running"
+		return 0
+	fi
+
+	logger -t container-{name} "Stopping container {name}"
+	/usr/bin/podman stop -t 10 {name}
+}
+```
+
+### Key Design Features
+
+#### 1. No Procd Respawn
+
+**Previous (DANGEROUS)**:
+```sh
+start_service() {
+	procd_open_instance
+	procd_set_param command /usr/bin/podman start -a ${name}
+	procd_set_param respawn  # ❌ INFINITE RESTARTS
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+}
+```
+
+**Current (SAFE)**:
+```sh
+start() {
+	# Just start the container once
+	/usr/bin/podman start {name}
+}
+```
+
+**Why**: Procd's `respawn` would restart the container indefinitely on ANY exit, conflicting with Podman's restart policy and manual stops.
+
+#### 2. State Checks Before Start
+
+- **Socket check**: Ensures Podman daemon is running
+- **Existence check**: Prevents errors if container was removed
+- **Running check**: Idempotent - won't fail if already running
+
+#### 3. Non-blocking Start
+
+Uses `podman start` WITHOUT `-a` (attach) flag:
+- Doesn't block procd initialization
+- Allows parallel container starts on boot
+- Podman manages the container lifecycle, not procd
+
+#### 4. Graceful Stop
+
+- Checks if container exists and is running
+- Uses 10-second graceful shutdown timeout
+- Returns success if container doesn't exist (idempotent)
+
+### Behavior in Different Scenarios
+
+#### Scenario 1: System Boot
+1. Init script runs at START=100 (after Podman service at START=99)
+2. Checks Podman socket is available
+3. Starts container if it exists and is stopped
+4. Podman's restart policy takes over runtime management
+
+✅ **Result**: Container starts on boot, Podman manages restarts
+
+**Note**: Container init scripts use START=100 to ensure they run AFTER the Podman service (START=99), guaranteeing the Podman socket is available.
+
+#### Scenario 2: Manual Container Stop
+```bash
+podman stop mycontainer
+```
+1. User stops container manually
+2. Init script does NOT restart it (no respawn)
+3. Podman restart policy does NOT restart (user action)
+
+✅ **Result**: Container stays stopped until user starts service or reboots
+
+#### Scenario 3: Container Crashes
+1. Container process exits
+2. Init script does NOT restart (no respawn)
+3. **Podman restart policy** restarts if configured (e.g., `restart=always`)
+
+✅ **Result**: Podman handles crash recovery, not init script
+
+#### Scenario 4: Podman Service Restart
+```bash
+/etc/init.d/podman restart
+```
+1. Podman daemon restarts
+2. Init script does NOT auto-restart containers
+3. Containers with restart policies auto-start via Podman
+
+✅ **Result**: Podman manages container recovery
+
+#### Scenario 5: Container Doesn't Exist
+```bash
+podman rm mycontainer
+# but init script still enabled
+```
+1. Boot runs init script
+2. Script detects container doesn't exist
+3. Logs error and returns gracefully
+4. System boot continues normally
+
+✅ **Result**: Boot not blocked, error logged for debugging
+
+#### Scenario 6: Podman Socket Not Available
+```bash
+# Podman service stopped
+/etc/init.d/podman stop
+reboot
+```
+1. Init script checks socket
+2. Socket not available
+3. Logs warning and returns immediately
+
+✅ **Result**: Boot not blocked, container skipped
+
+### Auto-generation Workflows
+
+#### On Container Creation (form.js)
+
+```javascript
+// Container created with restart policy
+podmanRPC.container.create(spec).then((result) => {
+    const hasRestartPolicy = container.restart && container.restart !== 'no';
+    
+    if (hasRestartPolicy && containerName) {
+        return podmanRPC.initScript.generate(containerName)
+            .then(() => podmanRPC.initScript.setEnabled(containerName, true))
+            .catch((err) => {
+                // Log but don't fail container creation
+                console.warn('Failed to auto-generate init script:', err.message);
+            });
+    }
+});
+```
+
+#### On Restart Policy Update (container.js)
+
+```javascript
+// User changes restart policy
+podmanRPC.container.update(id, updateData).then(() => {
+    if (newPolicy !== 'no') {
+        // Generate and enable init script
+        return podmanRPC.initScript.generate(containerName)
+            .then(() => podmanRPC.initScript.setEnabled(containerName, true));
+    } else {
+        // Remove init script
+        return podmanRPC.initScript.remove(containerName);
+    }
+});
+```
+
+### UI Indicators (containers.js)
+
+The container list view shows auto-start status in the "Auto-start" column:
+
+- `✓` (green) - Init script exists and is enabled
+- `⚠️` (warning) - Has restart policy but no init script (click to generate)
+- `○` (gray) - Init script exists but disabled
+- `—` (dash) - No restart policy, no init script
+- `✗` (red) - Error checking status
+
+**Click-to-generate**: Clicking the `⚠️` icon auto-generates and enables the init script.
+
+### Problems Avoided
+
+#### Problem 1: Double Restart Mechanism
+**Scenario**: Container has `restart=always` AND procd respawn  
+**Issue**: Both Podman and procd try to restart → race conditions, multiple instances  
+**Solution**: Only Podman handles restarts via restart policy
+
+#### Problem 2: Manual Stop Override
+**Scenario**: User manually stops container, procd immediately restarts it  
+**Issue**: User has no control without disabling service  
+**Solution**: No respawn - manual stop is respected
+
+#### Problem 3: Infinite Restart Loop
+**Scenario**: Container fails immediately on start (config error)  
+**Issue**: Procd respawn creates infinite restart loop, floods logs  
+**Solution**: Container starts once on boot only, Podman restart policy has built-in backoff
+
+#### Problem 4: Blocking System Boot
+**Scenario**: Podman socket not available during boot  
+**Issue**: Init script blocks waiting for socket  
+**Solution**: Socket check returns immediately, boot continues
+
+#### Problem 5: Container Removed but Service Enabled
+**Scenario**: Container deleted, init script still enabled  
+**Issue**: Boot fails or throws errors  
+**Solution**: Existence check logs warning and returns gracefully
+
+### Manual Operations
+
+Users can still manually manage init scripts:
+
+```bash
+# Enable auto-start
+/etc/init.d/container-mycontainer enable
+
+# Disable auto-start
+/etc/init.d/container-mycontainer disable
+
+# Start container now
+/etc/init.d/container-mycontainer start
+
+# Stop container now
+/etc/init.d/container-mycontainer stop
+
+# Check status
+/etc/init.d/container-mycontainer enabled && echo "Enabled" || echo "Disabled"
+
+# View script
+cat /etc/init.d/container-mycontainer
+
+# Remove script
+rm /etc/init.d/container-mycontainer
+```
+
+### Testing Required
+
+Before deploying to production, test these scenarios:
+
+1. **Boot with running container** - Should not try to restart
+2. **Boot with stopped container** - Should start successfully
+3. **Manual stop** - Should stay stopped (no respawn)
+4. **Container crash** - Let Podman restart policy handle it
+5. **Podman service down** - Should fail gracefully
+6. **Container removed** - Should log error but not block boot
+7. **Multiple containers** - Should start in parallel
+8. **Restart policy change** - Init script should sync
+
+### Future Improvements
+
+Potential enhancements (carefully considered):
+
+- [ ] Add dependency tracking (container depends on another)
+- [ ] Support for pod auto-start (pods contain multiple containers)
+- [ ] Health check integration (only enable if healthy)
+- [ ] Startup timeout configuration
+- [ ] Pre-start hooks (e.g., ensure volume is mounted)
+- [ ] Integration with OpenWrt hotplug events
+
+### References
+
+- OpenWrt procd: https://openwrt.org/docs/guide-developer/procd-init-scripts
+- Podman restart policies: https://docs.podman.io/en/latest/markdown/podman-run.1.html#restart
