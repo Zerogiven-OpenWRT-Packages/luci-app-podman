@@ -98,6 +98,12 @@ jobs:
           pattern: luci-app-podman-*.ipk
           merge-multiple: true
 
+      - name: Generate changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.6.2
+        with:
+          mytoken: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
+
       - name: Create GitHub Release & upload assets
         uses: softprops/action-gh-release@v2
         with:
@@ -107,6 +113,7 @@ jobs:
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
+          body: ${{ steps.changelog.outputs.changelog }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
