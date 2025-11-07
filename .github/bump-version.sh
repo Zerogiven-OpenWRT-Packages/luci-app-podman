@@ -107,8 +107,6 @@ if [ "${RESET_RELEASE:-0}" -eq 1 ]; then
   fi
 fi
 
-exit
-
 # --- Git commit, tag, push ---
 git add "$MAKEFILE_PATH"
 
