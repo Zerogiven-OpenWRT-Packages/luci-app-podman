@@ -103,6 +103,7 @@ echo "Updated PKG_VERSION in $MAKEFILE_PATH"
 
 # --- Reset PKG_RELEASE if needed ---
 if [ "${RESET_RELEASE:-0}" -eq 1 ]; then
+  echo "--${RESET_RELEASE}"
   if awk '/^[[:space:]]*PKG_RELEASE[[:space:]]*:=[[:space:]]*/ { exit 0 } END { exit 1 }' "$MAKEFILE_PATH"; then
     sed_inplace "/^([[:space:]]*PKG_RELEASE[[:space:]]*:[=][[:space:]])*[0-9]+/\1 1/" "$MAKEFILE_PATH"
     echo "PKG_RELEASE reset to 1"
