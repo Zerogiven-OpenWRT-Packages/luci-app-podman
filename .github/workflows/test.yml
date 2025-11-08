@@ -1,0 +1,17 @@
+name: Test workflow
+
+# Trigger on version tags only
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-packages:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo test
+        run: |
+          echo "Test"
