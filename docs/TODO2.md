@@ -1,1 +1,5 @@
 - Import volume from tar. At the moment it only supports tar.gz. Maybe with a checkbox chooseable for the user.
+- Form in modal does not clear after submit (secrets, network, ...)
+- init.d script can/should be added to /etc/sysupgrade.conf
+- Create containers from podman compose
+- On container delete remove the init.d service
