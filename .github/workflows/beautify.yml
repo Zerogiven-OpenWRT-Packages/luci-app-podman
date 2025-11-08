@@ -3,6 +3,8 @@ name: Beautify JavaScript (changed files, with all option)
 on:
   push:
     branches: [ main ]
+    paths:
+      - '**.js'
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
