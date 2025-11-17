@@ -53,7 +53,7 @@ return baseclass.extend({
 	restartContainers: async function (ids) {
 		return this.callContainers(
 			ids,
-			podmanRPC.container.stop,
+			podmanRPC.container.restart,
 			_('Restart Containers'),
 			_('Restarting %d container(s)...'),
 			_('Restarted %d container(s) successfully'),
