@@ -1073,7 +1073,21 @@ const FormNetwork = baseclass.extend({
 						'Network created successfully'));
 				}
 
-				this.map.reset();  // Reset AFTER successful creation
+				// Reset data object for next form render
+				this.data = {
+					network: {
+						name: null,
+						driver: 'bridge',
+						subnet: null,
+						gateway: null,
+						ip_range: null,
+						ipv6: '0',
+						internal: '0',
+						labels: null,
+						setup_openwrt: '1',
+					}
+				};
+
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
@@ -1192,7 +1206,16 @@ const FormPod = baseclass.extend({
 						if (key) payload.labels[key] = value;
 					}
 				});
-			}
+				// Reset data object for next form render
+				this.data = {
+					pod: {
+						name: null,
+						hostname: null,
+						ports: null,
+						labels: null
+					}
+				};
+
 
 			ui.hideModal();
 			pui.showSpinningModal(_('Creating Pod'), _('Creating pod...'));
@@ -1320,7 +1343,14 @@ const FormSecret = baseclass.extend({
 			}
 
 			ui.hideModal();
-			pui.showSpinningModal(_('Creating Secret'), _('Creating secret...'));
+				// Reset data object for next form render
+				this.data = {
+					secret: {
+						name: null,
+						data: null
+					}
+				};
+
 
 			podmanRPC.secret.create(secretName, secretData).then((result) => {
 				ui.hideModal();
@@ -1476,7 +1506,17 @@ const FormVolume = baseclass.extend({
 					return;
 				}
 				pui.successTimeNotification(_('Volume created successfully'));
-				this.map.reset();  // Reset AFTER successful creation
+
+				// Reset data object for next form render
+				this.data = {
+					volume: {
+						name: null,
+						driver: 'local',
+						options: null,
+						labels: null
+					}
+				};
+
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
