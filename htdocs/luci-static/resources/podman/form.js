@@ -1002,8 +1002,6 @@ const FormNetwork = baseclass.extend({
 			}
 
 			ui.hideModal();
-			this.map.reset();
-
 			pui.showSpinningModal(_('Creating Network'), _('Creating network...'));
 
 			podmanRPC.network.create(JSON.stringify(payload)).then((result) => {
@@ -1075,6 +1073,7 @@ const FormNetwork = baseclass.extend({
 						'Network created successfully'));
 				}
 
+				this.map.reset();  // Reset AFTER successful creation
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
@@ -1196,8 +1195,6 @@ const FormPod = baseclass.extend({
 			}
 
 			ui.hideModal();
-			this.map.reset();
-
 			pui.showSpinningModal(_('Creating Pod'), _('Creating pod...'));
 
 			podmanRPC.pod.create(JSON.stringify(payload)).then((result) => {
@@ -1209,6 +1206,7 @@ const FormPod = baseclass.extend({
 				}
 				pui.successTimeNotification(_('Pod created successfully'));
 
+				this.map.reset();  // Reset AFTER successful creation
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
@@ -1322,8 +1320,6 @@ const FormSecret = baseclass.extend({
 			}
 
 			ui.hideModal();
-			this.map.reset();
-
 			pui.showSpinningModal(_('Creating Secret'), _('Creating secret...'));
 
 			podmanRPC.secret.create(secretName, secretData).then((result) => {
@@ -1347,6 +1343,7 @@ const FormSecret = baseclass.extend({
 
 				pui.successTimeNotification(_('Secret created successfully'));
 
+				this.map.reset();  // Reset AFTER successful creation
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
@@ -1469,8 +1466,6 @@ const FormVolume = baseclass.extend({
 			}
 
 			ui.hideModal();
-			this.map.reset();
-
 			pui.showSpinningModal(_('Creating Volume'), _('Creating volume...'));
 
 			podmanRPC.volume.create(JSON.stringify(payload)).then((result) => {
@@ -1481,6 +1476,7 @@ const FormVolume = baseclass.extend({
 					return;
 				}
 				pui.successTimeNotification(_('Volume created successfully'));
+				this.map.reset();  // Reset AFTER successful creation
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
