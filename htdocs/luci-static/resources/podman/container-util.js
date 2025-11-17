@@ -93,16 +93,59 @@ return baseclass.extend({
 		const forceRemove = force !== undefined ? force : true;
 		const removeVolumes = volumes !== undefined ? volumes : true;
 
-		return this.callContainers(
-			ids,
-			(id) => podmanRPC.container.remove(id, forceRemove, removeVolumes),
-			_('Removing Containers'),
-			_('Removing %d container(s)...'),
-			_('Removed %d container(s) successfully'),
-			_('No containers selected'),
-			_('Failed to remove %d container(s)'),
-			_('Failed to remove containers: %s'),
+		if (!Array.isArray(ids)) {
+			ids = [ids];
+		}
+
+		if (ids.length === 0) {
+			podmanUI.warningTimeNotification(_('No containers selected'));
+			return;
+		}
+
+		// Fetch container names before deletion for init script cleanup
+		const containerData = await Promise.all(
+			ids.map((id) =>
+				podmanRPC.container.inspect(id)
+					.then((data) => ({ id, name: data.Name }))
+					.catch(() => ({ id, name: null }))
+			)
 		);
+
+		podmanUI.showSpinningModal(_('Removing Containers'), _('Removing %d container(s)...').format(ids.length));
+
+		// Delete containers
+		const promises = ids.map((id) => podmanRPC.container.remove(id, forceRemove, removeVolumes));
+		return Promise.all(promises).then((results) => {
+			if (!results || results.some((r) => r === undefined || r === null)) {
+				ui.hideModal();
+				return;
+			}
+
+			ui.hideModal();
+
+			const errors = results.filter((r) => r && r.error);
+			if (errors.length > 0) {
+				podmanUI.errorNotification(_('Failed to remove %d container(s)').format(errors.length));
+				return;
+			}
+
+			// Cleanup init scripts for successfully deleted containers
+			const cleanupPromises = containerData
+				.filter((c) => c.name)
+				.map((c) =>
+					podmanRPC.initScript.remove(c.name)
+						.catch(() => {}) // Ignore errors if init script doesn't exist
+				);
+
+			Promise.all(cleanupPromises).then(() => {
+				podmanUI.successTimeNotification(_('Removed %d container(s) successfully').format(ids.length));
+			});
+		}).catch((err) => {
+			ui.hideModal();
+			if (err && err.message && !err.message.match(/session|auth|login/i)) {
+				podmanUI.errorNotification(_('Failed to remove containers: %s').format(err.message));
+			}
+		});
 	},
 
 	/**
