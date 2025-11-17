@@ -262,7 +262,7 @@ const UITable = baseclass.extend({
 	__init__: function (options) {
 		this.headers = [];
 		this.rows = [];
-		this.options = Object.assign(this.options, options || {});
+		this.options = Object.assign({ 'class': 'table' }, options || {});
 	},
 
 	/**
