@@ -217,7 +217,7 @@ return view.extend({
 	handleImportVolume: function() {
 		const fileInput = E('input', {
 			'type': 'file',
-			'accept': '.tar.gz',
+			'accept': '.tar,.tar.gz',
 			'style': 'display: none'
 		});
 
@@ -225,10 +225,12 @@ return view.extend({
 			const file = ev.target.files[0];
 			if (!file) return;
 
-			const volumeName = file.name.replace(/\.tar.gz$/, '');
+			// Detect if file is compressed based on extension
+			const isCompressed = file.name.endsWith('.tar.gz') || file.name.endsWith('.tgz');
+			const volumeName = file.name.replace(/\.(tar\.gz|tgz|tar)$/, '');
 
 			ui.showModal(_('Import Volume'), [
-				E('p', {}, _('Import volume from tar file: %s').format(file.name)),
+				E('p', {}, _('Import volume from archive: %s').format(file.name)),
 				E('div', { 'class': 'cbi-value' }, [
 					E('label', { 'class': 'cbi-value-title' }, _('Volume Name')),
 					E('div', { 'class': 'cbi-value-field' }, [
@@ -270,7 +272,8 @@ return view.extend({
 								}
 								const base64Data = btoa(binary);
 
-								podmanRPC.volume.importVolume(name, base64Data).then((result) => {
+								// Pass compressed flag to backend
+								podmanRPC.volume.importVolume(name, base64Data, isCompressed).then((result) => {
 									ui.hideModal();
 									if (result.error) {
 										podmanUI.errorNotification(_('Failed to import volume: %s').format(result.error));

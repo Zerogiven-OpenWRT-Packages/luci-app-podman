@@ -462,12 +462,13 @@ return baseclass.extend({
 		 * Import volume from tar.
 		 * @param {string} name - Volume name
 		 * @param {string} data - Base64-encoded tar data
+		 * @param {boolean} compressed - Whether the data is gzip compressed
 		 * @returns {Promise<Object>} Import result
 		 */
 		importVolume: rpc.declare({
 			object: 'luci.podman',
 			method: 'volume_import',
-			params: ['name', 'data']
+			params: ['name', 'data', 'compressed']
 		})
 	},
 

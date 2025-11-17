@@ -597,13 +597,18 @@ EOF
 				echo "{\"data\":\"${encoded_data}\"}"
 				;;
 			volume_import)
-				get_json_params name data
+				get_json_params name data compressed
 				require_param name
 				require_param data
 
 				# Base64 decode the uploaded tar data to temp file
 				temp_file="/tmp/podman_volume_import_$$_${RANDOM}.tar"
-				echo "$data" | openssl base64 -d | gunzip -c > "$temp_file"
+				# Conditionally decompress based on compressed parameter
+				if [ "$compressed" = "true" ]; then
+					echo "$data" | openssl base64 -d | gunzip -c > "$temp_file"
+				else
+					echo "$data" | openssl base64 -d > "$temp_file"
+				fi
 				decode_exit=$?
 
 				if [ $decode_exit -ne 0 ]; then
