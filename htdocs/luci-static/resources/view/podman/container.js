@@ -11,6 +11,7 @@
 'require podman.ui as pui';
 'require podman.form as pform';
 'require podman.format as format';
+'require podman.openwrt-network as openwrtNetwork';
 
 /**
  * Container detail view with tabbed interface
@@ -553,53 +554,10 @@ return view.extend({
 			]}
 		]);
 
-		// Ports - display as clickable links
-		const ports = [];
-		if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
-			Object.keys(hostConfig.PortBindings).forEach(function (containerPort) {
-				const bindings = hostConfig.PortBindings[containerPort];
-				if (bindings) {
-					bindings.forEach(function (binding) {
-						const hostIp = binding.HostIp || '0.0.0.0';
-						const hostPort = binding.HostPort || '-';
-
-						// Determine actual IP for link (replace 0.0.0.0 with hostname)
-						const linkIp = (hostIp === '0.0.0.0' || hostIp === '::')
-							? window.location.hostname
-							: hostIp;
-
-						// Determine protocol (HTTPS for port 443, HTTP otherwise)
-						const protocol = hostPort === '443' ? 'https' : 'http';
-
-						// Create clickable link for TCP ports only
-						const isTcp = containerPort.includes('/tcp');
-						if (isTcp && hostPort !== '-') {
-							const url = protocol + '://' + linkIp + ':' + hostPort;
-							const linkText = hostIp + ':' + hostPort + ' → ' + containerPort;
-							ports.push(E('a', {
-								href: url,
-								target: '_blank',
-								style: 'text-decoration: underline; color: #0066cc;'
-							}, linkText));
-						} else {
-							// Non-TCP or invalid port - display as text
-							ports.push(E('span', {}, hostIp + ':' + hostPort + ' → ' + containerPort));
-						}
-					});
-				}
-			});
-		}
-
-		if (ports.length > 0) {
-			const portsContainer = E('div', {});
-			ports.forEach((port, idx) => {
-				if (idx > 0) {
-					portsContainer.appendChild(E('br'));
-				}
-				portsContainer.appendChild(port);
-			});
-			networkTable.addInfoRow(_('Port Mappings'), portsContainer);
-		}
+		// Ports - smart detection based on network type
+		// For OpenWrt-integrated networks: show container IP + exposed ports
+		// For standard networks: show host IP + port mappings
+		this.renderPorts(networkTable, config, hostConfig, networkSettings);
 
 		// Links - display as single row with line breaks
 		const links = [];
@@ -1643,6 +1601,141 @@ return view.extend({
 				ui.addNotification(null, E('p', _('Failed to disconnect from network: %s')
 					.format(err.message)), 'error');
 			});
+	},
+
+	/**
+	 * Render ports with smart detection based on network type
+	 * @param {Object} networkTable - Table to add port row to
+	 * @param {Object} config - Container config
+	 * @param {Object} hostConfig - Container host config
+	 * @param {Object} networkSettings - Container network settings
+	 */
+	renderPorts: async function (networkTable, config, hostConfig, networkSettings) {
+		const ports = [];
+
+		// Get primary network name and check for OpenWrt integration
+		const networks = networkSettings.Networks || {};
+		const networkNames = Object.keys(networks);
+		const primaryNetwork = networkNames.length > 0 ? networkNames[0] : null;
+
+		let useContainerIp = false;
+		let containerIp = null;
+
+		if (primaryNetwork) {
+			// Check if network has OpenWrt integration
+			const hasIntegration = await openwrtNetwork.hasIntegration(primaryNetwork).catch(() => false);
+
+			if (hasIntegration) {
+				useContainerIp = true;
+				containerIp = networks[primaryNetwork].IPAddress;
+			}
+		}
+
+		// Network mode host - use host IP
+		const isHostNetwork = hostConfig.NetworkMode === 'host';
+
+		if (useContainerIp && containerIp) {
+			// OpenWrt-integrated network: Show container IP + exposed ports
+			// Use PortBindings to get port list (even if bound to 0.0.0.0)
+			if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
+				Object.keys(hostConfig.PortBindings).forEach((containerPort) => {
+					const portNum = containerPort.split('/')[0];
+					const protocol = containerPort.split('/')[1] || 'tcp';
+					const isTcp = protocol === 'tcp';
+
+					// Determine protocol (HTTPS for port 443, HTTP otherwise)
+					const urlProtocol = portNum === '443' ? 'https' : 'http';
+
+					if (isTcp) {
+						const url = `${urlProtocol}://${containerIp}:${portNum}`;
+						const linkText = `${containerIp}:${portNum}`;
+						ports.push(E('a', {
+							href: url,
+							target: '_blank',
+							style: 'text-decoration: underline; color: #0066cc;',
+							title: _('Direct access to container on OpenWrt-integrated network')
+						}, linkText));
+					} else {
+						// Non-TCP - display as text
+						ports.push(E('span', {}, `${containerIp}:${portNum}/${protocol}`));
+					}
+				});
+			}
+			// Also check for exposed ports not in bindings
+			else if (config.ExposedPorts && Object.keys(config.ExposedPorts).length > 0) {
+				Object.keys(config.ExposedPorts).forEach((exposedPort) => {
+					const portNum = exposedPort.split('/')[0];
+					const protocol = exposedPort.split('/')[1] || 'tcp';
+					const isTcp = protocol === 'tcp';
+
+					const urlProtocol = portNum === '443' ? 'https' : 'http';
+
+					if (isTcp) {
+						const url = `${urlProtocol}://${containerIp}:${portNum}`;
+						const linkText = `${containerIp}:${portNum}`;
+						ports.push(E('a', {
+							href: url,
+							target: '_blank',
+							style: 'text-decoration: underline; color: #0066cc;',
+							title: _('Direct access to container on OpenWrt-integrated network')
+						}, linkText));
+					} else {
+						ports.push(E('span', {}, `${containerIp}:${portNum}/${protocol}`));
+					}
+				});
+			}
+		} else {
+			// Standard network or host network: Show port mappings
+			if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
+				Object.keys(hostConfig.PortBindings).forEach((containerPort) => {
+					const bindings = hostConfig.PortBindings[containerPort];
+					if (bindings) {
+						bindings.forEach((binding) => {
+							const hostIp = binding.HostIp || '0.0.0.0';
+							const hostPort = binding.HostPort || '-';
+
+							// Determine actual IP for link (replace 0.0.0.0 with hostname)
+							const linkIp = (hostIp === '0.0.0.0' || hostIp === '::')
+								? window.location.hostname
+								: hostIp;
+
+							// Determine protocol (HTTPS for port 443, HTTP otherwise)
+							const protocol = hostPort === '443' ? 'https' : 'http';
+
+							// Create clickable link for TCP ports only
+							const isTcp = containerPort.includes('/tcp');
+							if (isTcp && hostPort !== '-') {
+								const url = `${protocol}://${linkIp}:${hostPort}`;
+								const linkText = `${hostIp}:${hostPort} → ${containerPort}`;
+								ports.push(E('a', {
+									href: url,
+									target: '_blank',
+									style: 'text-decoration: underline; color: #0066cc;',
+									title: _('Access via host port mapping')
+								}, linkText));
+							} else {
+								// Non-TCP or invalid port - display as text
+								ports.push(E('span', {}, `${hostIp}:${hostPort} → ${containerPort}`));
+							}
+						});
+					}
+				});
+			}
+		}
+
+		if (ports.length > 0) {
+			const portsContainer = E('div', {});
+			ports.forEach((port, idx) => {
+				if (idx > 0) {
+					portsContainer.appendChild(E('br'));
+				}
+				portsContainer.appendChild(port);
+			});
+
+			// Label based on network type
+			const label = useContainerIp ? _('Exposed Ports') : _('Port Mappings');
+			networkTable.addInfoRow(label, portsContainer);
+		}
 	},
 
 	/**
