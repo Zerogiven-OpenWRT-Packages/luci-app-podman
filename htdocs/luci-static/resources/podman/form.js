@@ -17,37 +17,6 @@
 
 const FormContainer = baseclass.extend({
 	map: null,
-	data: {
-		container: {
-			name: null,
-			image: null,
-			command: null,
-			ports: null,
-			env: null,
-			volumes: null,
-			network: 'bridge',
-			restart: 'no',
-			privileged: '0',
-			interactive: '0',
-			tty: '0',
-			remove: '0',
-			autoupdate: '0',
-			start: '0',
-			workdir: null,
-			hostname: null,
-			labels: null,
-			cpus: null,
-			memory: null,
-			enable_healthcheck: '0',
-			healthcheck_type: 'CMD',
-			healthcheck_command: null,
-			healthcheck_interval: null,
-			healthcheck_timeout: null,
-			healthcheck_start_period: null,
-			healthcheck_start_interval: null,
-			healthcheck_retries: null
-		}
-	},
 
 	/**
 	 * Load dependencies and display container creation modal
@@ -71,6 +40,39 @@ const FormContainer = baseclass.extend({
 	 * @param {Array} networks - Available networks from RPC
 	 */
 	showModal: function(images, networks) {
+		// Create data as instance property (not prototype)
+		this.data = {
+			container: {
+				name: null,
+				image: null,
+				command: null,
+				ports: null,
+				env: null,
+				volumes: null,
+				network: 'bridge',
+				restart: 'no',
+				privileged: '0',
+				interactive: '0',
+				tty: '0',
+				remove: '0',
+				autoupdate: '0',
+				start: '0',
+				workdir: null,
+				hostname: null,
+				labels: null,
+				cpus: null,
+				memory: null,
+				enable_healthcheck: '0',
+				healthcheck_type: 'CMD',
+				healthcheck_command: null,
+				healthcheck_interval: null,
+				healthcheck_timeout: null,
+				healthcheck_start_period: null,
+				healthcheck_start_interval: null,
+				healthcheck_retries: null
+			}
+		};
+
 		this.map = new form.JSONMap(this.data, _('Create Container'), '');
 
 		const section = this.map.section(form.NamedSection, 'container', 'container');
@@ -255,10 +257,7 @@ const FormContainer = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => {
-						ui.hideModal();
-						this.map.reset();
-					}
+					onCancel: () => ui.hideModal()
 				}).render()
 			]);
 
@@ -606,18 +605,19 @@ const FormImage = baseclass.extend({
 	map: null,
 	pollFn: null,
 
-	data: {
-		image: {
-			registry: '',
-			image: ''
-		}
-	},
-
 	/**
 	 * Render the image pull form
 	 * @returns {Promise<HTMLElement>} Rendered form element
 	 */
 	render: function() {
+		// Create data as instance property (not prototype)
+		this.data = {
+			image: {
+				registry: '',
+				image: ''
+			}
+		};
+
 		this.map = new form.JSONMap(this.data, _('Pull Image'), _(
 			'Fetch a container image using Podman.'));
 		const s = this.map.section(form.NamedSection, 'image', '');
@@ -837,25 +837,27 @@ const FormImage = baseclass.extend({
 
 const FormNetwork = baseclass.extend({
 	map: null,
-	data: {
-		network: {
-			name: null,
-			driver: 'bridge',
-			subnet: null,
-			gateway: null,
-			ip_range: null,
-			ipv6: '0',
-			internal: '0',
-			labels: null,
-			setup_openwrt: '1',
-		}
-	},
 
 	/**
 	 * Render the network creation form
 	 * @returns {Promise<HTMLElement>} Rendered form element
 	 */
 	render: function() {
+		// Create data as instance property (not prototype)
+		this.data = {
+			network: {
+				name: null,
+				driver: 'bridge',
+				subnet: null,
+				gateway: null,
+				ip_range: null,
+				ipv6: '0',
+				internal: '0',
+				labels: null,
+				setup_openwrt: '1',
+			}
+		};
+
 		this.map = new form.JSONMap(this.data, _('Create Network'), '');
 		const section = this.map.section(form.NamedSection, 'network', 'network');
 
@@ -914,10 +916,7 @@ const FormNetwork = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => {
-						ui.hideModal();
-						this.map.reset();
-					}
+					onCancel: () => ui.hideModal()
 				}).render()
 			]);
 
@@ -1089,21 +1088,24 @@ const FormNetwork = baseclass.extend({
 
 const FormPod = baseclass.extend({
 	map: null,
-	data: {
-		pod: {
-			name: null,
-			hostname: null,
-			ports: null,
-			labels: null
-		}
-	},
 
 	/**
 	 * Render the pod creation form
 	 * @returns {Promise<HTMLElement>} Rendered form element
 	 */
 	render: function() {
+		// Create data as instance property (not prototype)
+		this.data = {
+			pod: {
+				name: null,
+				hostname: null,
+				ports: null,
+				labels: null
+			}
+		};
+
 		this.map = new form.JSONMap(this.data, _('Create Pod'), '');
+
 		const section = this.map.section(form.NamedSection, 'pod', 'pod');
 		let field;
 
@@ -1135,10 +1137,7 @@ const FormPod = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => {
-						ui.hideModal();
-						this.map.reset();
-					}
+					onCancel: () => ui.hideModal()
 				}).render()
 			]);
 
@@ -1220,17 +1219,19 @@ const FormPod = baseclass.extend({
 const FormSecret = baseclass.extend({
 	__name__: 'FormSecret',
 	map: null,
-	data: {
-		secret: {
-			name: null,
-			data: null
-		}
-	},
 
 	/**
 	 * Render the secret creation modal
 	 */
 	render: function () {
+		// Create data as instance property (not prototype)
+		this.data = {
+			secret: {
+				name: null,
+				data: null
+			}
+		};
+
 		let field;
 
 		this.map = new form.JSONMap(this.data, _('Create Secret'), '');
@@ -1285,10 +1286,7 @@ const FormSecret = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => {
-						ui.hideModal();
-						this.map.reset();
-					}
+					onCancel: () => ui.hideModal()
 				}).render()
 			];
 
@@ -1370,16 +1368,18 @@ const FormSecret = baseclass.extend({
 const FormVolume = baseclass.extend({
 	__name__: 'FormVolume',
 	map: null,
-	data: {
-		volume: {
-			name: null,
-			driver: 'local',
-			options: null,
-			labels: null
-		}
-	},
 
 	render: function () {
+		// Create data as instance property (not prototype)
+		this.data = {
+			volume: {
+				name: null,
+				driver: 'local',
+				options: null,
+				labels: null
+			}
+		};
+
 		let field;
 
 		this.map = new form.JSONMap(this.data, _('Create Volume'), '');
@@ -1414,10 +1414,7 @@ const FormVolume = baseclass.extend({
 				new pui.ModalButtons({
 					confirmText: _('Create'),
 					onConfirm: () => this.handleCreate(),
-					onCancel: () => {
-						ui.hideModal();
-						this.map.reset();
-					}
+					onCancel: () => ui.hideModal()
 				}).render()
 			]);
 
