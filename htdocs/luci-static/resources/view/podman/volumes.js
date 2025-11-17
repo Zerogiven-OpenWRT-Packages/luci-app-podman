@@ -217,7 +217,7 @@ return view.extend({
 	handleImportVolume: function() {
 		const fileInput = E('input', {
 			'type': 'file',
-			'accept': '.tar,.tar.gz',
+			'accept': '.tar,.tgz,application/x-tar,application/gzip',
 			'style': 'display: none'
 		});
 
