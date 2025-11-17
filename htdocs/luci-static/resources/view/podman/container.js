@@ -553,7 +553,7 @@ return view.extend({
 			]}
 		]);
 
-		// Ports - display as single row with line breaks
+		// Ports - display as clickable links
 		const ports = [];
 		if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
 			Object.keys(hostConfig.PortBindings).forEach(function (containerPort) {
@@ -562,15 +562,43 @@ return view.extend({
 					bindings.forEach(function (binding) {
 						const hostIp = binding.HostIp || '0.0.0.0';
 						const hostPort = binding.HostPort || '-';
-						ports.push(hostIp + ':' + hostPort + ' → ' +
-							containerPort);
+
+						// Determine actual IP for link (replace 0.0.0.0 with hostname)
+						const linkIp = (hostIp === '0.0.0.0' || hostIp === '::')
+							? window.location.hostname
+							: hostIp;
+
+						// Determine protocol (HTTPS for port 443, HTTP otherwise)
+						const protocol = hostPort === '443' ? 'https' : 'http';
+
+						// Create clickable link for TCP ports only
+						const isTcp = containerPort.includes('/tcp');
+						if (isTcp && hostPort !== '-') {
+							const url = protocol + '://' + linkIp + ':' + hostPort;
+							const linkText = hostIp + ':' + hostPort + ' → ' + containerPort;
+							ports.push(E('a', {
+								href: url,
+								target: '_blank',
+								style: 'text-decoration: underline; color: #0066cc;'
+							}, linkText));
+						} else {
+							// Non-TCP or invalid port - display as text
+							ports.push(E('span', {}, hostIp + ':' + hostPort + ' → ' + containerPort));
+						}
 					});
 				}
 			});
 		}
 
 		if (ports.length > 0) {
-			networkTable.addInfoRow(_('Port Mappings'), ports.join('<br>'));
+			const portsContainer = E('div', {});
+			ports.forEach((port, idx) => {
+				if (idx > 0) {
+					portsContainer.appendChild(E('br'));
+				}
+				portsContainer.appendChild(port);
+			});
+			networkTable.addInfoRow(_('Port Mappings'), portsContainer);
 		}
 
 		// Links - display as single row with line breaks
