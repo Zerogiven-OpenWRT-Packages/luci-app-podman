@@ -95,11 +95,53 @@ return view.extend({
 		o = section.option(form.DummyValue, 'Names', _('Name'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
+			const name = container.Names && container.Names[0]
+				? container.Names[0]
+				: utils.truncate(container.Id, 10);
 
-			if (container.Names && container.Names[0]) {
-				return container.Names[0];
+			// Build tooltip with IPs and ports
+			const tooltipParts = [];
+
+			// Add network IPs
+			if (container.NetworkSettings && container.NetworkSettings.Networks) {
+				const networks = container.NetworkSettings.Networks;
+				const ips = [];
+				Object.keys(networks).forEach((netName) => {
+					const net = networks[netName];
+					if (net.IPAddress) {
+						ips.push(`${netName}: ${net.IPAddress}`);
+					}
+				});
+				if (ips.length > 0) {
+					tooltipParts.push('IPs: ' + ips.join(', '));
+				}
 			}
-			return utils.truncate(container.Id, 10);
+
+			// Add port mappings
+			if (container.NetworkSettings && container.NetworkSettings.Ports) {
+				const ports = container.NetworkSettings.Ports;
+				const portMappings = [];
+				Object.keys(ports).forEach((containerPort) => {
+					const bindings = ports[containerPort];
+					if (bindings && bindings.length > 0) {
+						bindings.forEach((binding) => {
+							const hostPort = binding.HostPort;
+							const portNum = containerPort.split('/')[0];
+							portMappings.push(`${hostPort}→${portNum}`);
+						});
+					}
+				});
+				if (portMappings.length > 0) {
+					tooltipParts.push('Ports: ' + portMappings.join(', '));
+				}
+			}
+
+			const tooltip = tooltipParts.length > 0 ? tooltipParts.join(' | ') : '';
+
+			return E('span', {
+				title: tooltip,
+				style: tooltip ? 'cursor: help;' : ''
+			}, name);
 		};
 
 		o = section.option(form.DummyValue, 'Id', _('Id'));
