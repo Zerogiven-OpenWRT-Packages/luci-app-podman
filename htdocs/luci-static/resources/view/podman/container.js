@@ -200,7 +200,7 @@ return view.extend({
 	/**
 	 * Render Info tab with container details and configuration
 	 */
-	renderInfoTab: function () {
+	renderInfoTab: async function () {
 		const container = document.getElementById('tab-info-content');
 		if (!container) return;
 
@@ -557,7 +557,7 @@ return view.extend({
 		// Ports - smart detection based on network type
 		// For OpenWrt-integrated networks: show container IP + exposed ports
 		// For standard networks: show host IP + port mappings
-		this.renderPorts(networkTable, config, hostConfig, networkSettings);
+		await this.renderPorts(networkTable, config, hostConfig, networkSettings);
 
 		// Links - display as single row with line breaks
 		const links = [];
