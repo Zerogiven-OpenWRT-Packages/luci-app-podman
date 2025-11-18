@@ -85,21 +85,20 @@ return view.extend({
 		o = section.option(form.DummyValue, 'Usage', _('Usage'));
 		o.cfgvalue = (sectionId) => {
 			const volume = this.map.data.data[sectionId];
-			const usageData = volume.UsageData || {};
-			const refCount = usageData.RefCount || 0;
+			const mountCount = volume.MountCount || 0;
 
-			if (refCount === 0) {
+			if (mountCount === 0) {
 				return E('span', {
 					'style': 'color: #999;'
 				}, _('Unused'));
-			} else if (refCount === 1) {
+			} else if (mountCount === 1) {
 				return E('span', {
 					'style': 'color: #5cb85c;'
 				}, _('1 container'));
 			} else {
 				return E('span', {
 					'style': 'color: #5cb85c;'
-				}, _('%d containers').format(refCount));
+				}, _('%d containers').format(mountCount));
 			}
 		};
 
