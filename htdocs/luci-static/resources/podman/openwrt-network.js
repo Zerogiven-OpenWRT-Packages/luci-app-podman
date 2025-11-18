@@ -9,9 +9,9 @@
  * Automates OpenWrt configuration when Podman creates networks:
  * - Bridge device (/etc/config/network)
  * - Network interface with static IP
- * - Shared 'podman' firewall zone with DNS access rule
+ * - Per-network or shared firewall zones with DNS access rules
  *
- * All Podman networks share a single firewall zone for simplified management.
+ * Supports both isolated (podman_<network>) and shared (podman) zones.
  * Layer 2 isolation is provided by separate bridge devices.
  */
 
@@ -38,9 +38,9 @@ return L.Class.extend({
 	/**
 	 * Create OpenWrt integration for Podman network.
 	 *
-	 * Creates bridge device, network interface with static IP, and adds to shared
-	 * 'podman' firewall zone. If this is the first Podman network, creates the zone
-	 * and DNS access rule.
+	 * Creates bridge device, network interface with static IP, and adds to firewall zone.
+	 * If zoneName is '_create_new_', creates zone named 'podman_<networkName>'.
+	 * If zoneName is existing, adds network to that zone's network list.
 	 *
 	 * @param {string} networkName - Podman network name
 	 * @param {Object} options - Network configuration
@@ -49,6 +49,7 @@ return L.Class.extend({
 	 * @param {string} options.gateway - Gateway IP (e.g., '10.129.0.1')
 	 * @param {string} [options.ipv6subnet] - Optional IPv6 subnet
 	 * @param {string} [options.ipv6gateway] - Optional IPv6 gateway
+	 * @param {string} [options.zoneName] - Zone name or '_create_new_' (default: '_create_new_')
 	 * @returns {Promise<void>} Resolves when complete
 	 */
 	createIntegration: async function (networkName, options) {
@@ -56,7 +57,8 @@ return L.Class.extend({
 		const gateway = options.gateway;
 		const prefix = cidrToPrefix(options.subnet);
 		const netmask = network.prefixToMask(prefix);
-		const ZONE_NAME = 'podman';
+		const requestedZone = options.zoneName || '_create_new_';
+		const ZONE_NAME = requestedZone === '_create_new_' ? 'podman_' + networkName : requestedZone;
 
 		return Promise.all([
 			uci.load('network'),
@@ -92,25 +94,19 @@ return L.Class.extend({
 				}
 			}
 
-			// Create or update shared 'podman' firewall zone
+			// Create or update firewall zone
 			const existingZone = uci.sections('firewall', 'zone').find((s) => {
 				return uci.get('firewall', s['.name'], 'name') === ZONE_NAME;
 			});
 
 			if (!existingZone) {
-				// First Podman network: create zone and DNS rule
-				const zoneId = uci.add('firewall', 'zone', 'podman_zone');
+				// Zone doesn't exist: create new zone with safe defaults
+				const zoneId = uci.add('firewall', 'zone');
 				uci.set('firewall', zoneId, 'name', ZONE_NAME);
 				uci.set('firewall', zoneId, 'input', 'DROP');
 				uci.set('firewall', zoneId, 'output', 'ACCEPT');
 				uci.set('firewall', zoneId, 'forward', 'REJECT');
 				uci.set('firewall', zoneId, 'network', [networkName]);
-
-				const ruleId = uci.add('firewall', 'rule', 'podman_dns');
-				uci.set('firewall', ruleId, 'name', 'Allow-Podman-DNS');
-				uci.set('firewall', ruleId, 'src', ZONE_NAME);
-				uci.set('firewall', ruleId, 'dest_port', '53');
-				uci.set('firewall', ruleId, 'target', 'ACCEPT');
 			} else {
 				// Zone exists: add network to zone's network list
 				const zoneSection = existingZone['.name'];
@@ -129,6 +125,20 @@ return L.Class.extend({
 				}
 			}
 
+			// Ensure DNS rule exists for this zone
+			const dnsRuleName = 'Allow-' + ZONE_NAME + '-DNS';
+			const existingDnsRule = uci.sections('firewall', 'rule').find((s) => {
+				return uci.get('firewall', s['.name'], 'name') === dnsRuleName;
+			});
+
+			if (!existingDnsRule) {
+				const ruleId = uci.add('firewall', 'rule');
+				uci.set('firewall', ruleId, 'name', dnsRuleName);
+				uci.set('firewall', ruleId, 'src', ZONE_NAME);
+				uci.set('firewall', ruleId, 'dest_port', '53');
+				uci.set('firewall', ruleId, 'target', 'ACCEPT');
+			}
+
 			return uci.save();
 		}).then(() => {
 			return uci.apply(90);
@@ -140,26 +150,24 @@ return L.Class.extend({
 	/**
 	 * Remove OpenWrt integration for Podman network.
 	 *
-	 * Removes network from shared zone. If last network in zone, removes zone and
-	 * DNS rule. Removes network interface and bridge device (if unused).
+	 * Removes network from its zone. If zone is empty AND starts with 'podman',
+	 * removes zone and its DNS rule. Removes network interface and bridge device (if unused).
 	 *
 	 * @param {string} networkName - Podman network name
 	 * @param {string} bridgeName - Bridge name
 	 * @returns {Promise<void>} Resolves when complete
 	 */
 	removeIntegration: function (networkName, bridgeName) {
-		const ZONE_NAME = 'podman';
-
 		return Promise.all([
 			uci.load('network'),
 			uci.load('firewall')
 		]).then(() => {
-			// Remove network from shared 'podman' zone
-			const zone = uci.sections('firewall', 'zone').find((s) => {
-				return uci.get('firewall', s['.name'], 'name') === ZONE_NAME;
-			});
+			// Find which zone this network belongs to
+			const zones = uci.sections('firewall', 'zone');
+			let networkZone = null;
+			let zoneName = null;
 
-			if (zone) {
+			for (const zone of zones) {
 				const zoneSection = zone['.name'];
 				const currentNetworks = uci.get('firewall', zoneSection, 'network');
 
@@ -170,21 +178,41 @@ return L.Class.extend({
 					networkList = [currentNetworks];
 				}
 
+				if (networkList.includes(networkName)) {
+					networkZone = zoneSection;
+					zoneName = uci.get('firewall', zoneSection, 'name');
+					break;
+				}
+			}
+
+			if (networkZone) {
+				const currentNetworks = uci.get('firewall', networkZone, 'network');
+				let networkList = [];
+				if (Array.isArray(currentNetworks)) {
+					networkList = currentNetworks;
+				} else if (currentNetworks) {
+					networkList = [currentNetworks];
+				}
+
 				networkList = networkList.filter((n) => n !== networkName);
 
 				if (networkList.length > 0) {
-					uci.set('firewall', zoneSection, 'network', networkList);
-				} else {
-					// Last network: remove zone and DNS rule
-					uci.remove('firewall', zoneSection);
+					// Zone has other networks: just remove this network
+					uci.set('firewall', networkZone, 'network', networkList);
+				} else if (zoneName && zoneName.startsWith('podman')) {
+					// Last network in podman* zone: remove zone and DNS rule
+					uci.remove('firewall', networkZone);
 
+					const dnsRuleName = 'Allow-' + zoneName + '-DNS';
 					const dnsRule = uci.sections('firewall', 'rule').find((s) => {
-						return uci.get('firewall', s['.name'], 'name') ===
-							'Allow-Podman-DNS';
+						return uci.get('firewall', s['.name'], 'name') === dnsRuleName;
 					});
 					if (dnsRule) {
 						uci.remove('firewall', dnsRule['.name']);
 					}
+				} else {
+					// Non-podman zone: just remove network from list
+					uci.set('firewall', networkZone, 'network', networkList);
 				}
 			}
 
@@ -239,7 +267,6 @@ return L.Class.extend({
 	 * @returns {Promise<Object>} {complete: boolean, missing: string[]}
 	 */
 	isIntegrationComplete: function (networkName) {
-		const ZONE_NAME = 'podman';
 		const missing = [];
 
 		return Promise.all([
@@ -266,13 +293,16 @@ return L.Class.extend({
 				missing.push('device');
 			}
 
-			const zone = uci.sections('firewall', 'zone').find((s) => {
-				return uci.get('firewall', s['.name'], 'name') === ZONE_NAME;
-			});
+			// Find zone that contains this network
+			const zones = uci.sections('firewall', 'zone');
+			let foundInZone = false;
 
-			if (!zone) {
-				missing.push('zone');
-			} else {
+			for (const zone of zones) {
+				const zoneName = uci.get('firewall', zone['.name'], 'name');
+				if (!zoneName || !zoneName.startsWith('podman')) {
+					continue;
+				}
+
 				const currentNetworks = uci.get('firewall', zone['.name'], 'network');
 				let networkList = [];
 				if (Array.isArray(currentNetworks)) {
@@ -281,9 +311,14 @@ return L.Class.extend({
 					networkList = [currentNetworks];
 				}
 
-				if (!networkList.includes(networkName)) {
-					missing.push('zone_membership');
+				if (networkList.includes(networkName)) {
+					foundInZone = true;
+					break;
 				}
+			}
+
+			if (!foundInZone) {
+				missing.push('zone_membership');
 			}
 
 			return {
@@ -320,6 +355,31 @@ return L.Class.extend({
 			};
 		}).catch(() => {
 			return null;
+		});
+	},
+
+	/**
+	 * List existing podman* firewall zones.
+	 *
+	 * Returns zones whose names start with 'podman' (e.g., 'podman', 'podman_frontend', 'podman-iot').
+	 *
+	 * @returns {Promise<Array<string>>} Array of zone names
+	 */
+	listPodmanZones: function () {
+		return uci.load('firewall').then(() => {
+			const zones = uci.sections('firewall', 'zone');
+			const podmanZones = [];
+
+			zones.forEach((zone) => {
+				const zoneName = uci.get('firewall', zone['.name'], 'name');
+				if (zoneName && zoneName.startsWith('podman')) {
+					podmanZones.push(zoneName);
+				}
+			});
+
+			return podmanZones;
+		}).catch(() => {
+			return [];
 		});
 	},
 

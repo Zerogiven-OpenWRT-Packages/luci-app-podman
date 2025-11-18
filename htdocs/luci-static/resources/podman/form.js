@@ -855,9 +855,25 @@ const FormNetwork = baseclass.extend({
 				internal: '0',
 				labels: null,
 				setup_openwrt: '1',
+				firewall_zone: '_create_new_'
 			}
 		};
 
+		// Load existing podman zones before rendering form
+		return openwrtNetwork.listPodmanZones().then((zones) => {
+			this.existingZones = zones;
+			return this.showFormModal();
+		}).catch(() => {
+			this.existingZones = [];
+			return this.showFormModal();
+		});
+	},
+
+	/**
+	 * Display the network creation form modal
+	 * @returns {Promise<HTMLElement>} Rendered form element
+	 */
+	showFormModal: function() {
 		this.map = new form.JSONMap(this.data, _('Create Network'), '');
 		const section = this.map.section(form.NamedSection, 'network', 'network');
 
@@ -902,6 +918,20 @@ const FormNetwork = baseclass.extend({
 		field.depends('setup_openwrt', '1');
 		field.description = _(
 			'Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it.'
+		);
+
+		field = section.option(form.ListValue, 'firewall_zone', _('Firewall Zone'));
+		field.value('_create_new_', _('Create new zone (will be named: podman_<network-name>)'));
+		// Add existing podman* zones
+		if (this.existingZones && this.existingZones.length > 0) {
+			this.existingZones.forEach((zoneName) => {
+				field.value(zoneName, zoneName);
+			});
+		}
+		field.depends('setup_openwrt', '1');
+		field.description = _(
+			'Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. ' +
+			'You can customize zone policies later in Firewall settings.'
 		);
 
 		field = section.option(form.TextValue, 'labels', _('Labels'));
@@ -1037,6 +1067,7 @@ const FormNetwork = baseclass.extend({
 						gateway: podnetwork.gateway,
 						ipv6subnet: podnetwork.ipv6subnet || null,
 						ipv6gateway: podnetwork.ipv6gateway || null,
+						zoneName: podnetwork.firewall_zone || '_create_new_'
 					}).then(() => {
 						return {
 							podmanCreated: true,
