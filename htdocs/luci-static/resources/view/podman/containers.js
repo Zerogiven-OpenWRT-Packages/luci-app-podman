@@ -52,6 +52,13 @@ return view.extend({
 
 				const enrichedContainers = await Promise.all(inspectPromises);
 
+				// Sort containers alphabetically by name
+				enrichedContainers.sort((a, b) => {
+					const nameA = (a.Names && a.Names[0] ? a.Names[0] : '').toLowerCase();
+					const nameB = (b.Names && b.Names[0] ? b.Names[0] : '').toLowerCase();
+					return nameA.localeCompare(nameB);
+				});
+
 				return {
 					containers: enrichedContainers
 				};
