@@ -82,26 +82,6 @@ return view.extend({
 		o.text = (volume) => utils.truncate(volume.Name || _('Unknown'), 20);
 		o.linktitle = (volume) => volume.Name || _('Unknown');
 
-		o = section.option(form.DummyValue, 'Usage', _('Usage'));
-		o.cfgvalue = (sectionId) => {
-			const volume = this.map.data.data[sectionId];
-			const mountCount = volume.MountCount || 0;
-
-			if (mountCount === 0) {
-				return E('span', {
-					'style': 'color: #999;'
-				}, _('Unused'));
-			} else if (mountCount === 1) {
-				return E('span', {
-					'style': 'color: #5cb85c;'
-				}, _('1 container'));
-			} else {
-				return E('span', {
-					'style': 'color: #5cb85c;'
-				}, _('%d containers').format(mountCount));
-			}
-		};
-
 		o = section.option(podmanForm.field.DataDummyValue, 'Driver', _('Driver'));
 		o.cfgdefault = _('local');
 

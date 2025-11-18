@@ -1611,7 +1611,7 @@ return view.extend({
 	 * @param {Object} networkSettings - Container network settings
 	 */
 	renderPorts: async function (networkTable, config, hostConfig, networkSettings) {
-		const ports = [];
+		const portElements = [];
 
 		// Get primary network name and check for OpenWrt integration
 		const networks = networkSettings.Networks || {};
@@ -1631,105 +1631,66 @@ return view.extend({
 			}
 		}
 
-		// Network mode host - use host IP
-		const isHostNetwork = hostConfig.NetworkMode === 'host';
+		// Extract all ports (both mapped and exposed) from NetworkSettings.Ports
+		const extractedPorts = utils.extractPorts(networkSettings.Ports);
 
 		if (useContainerIp && containerIp) {
-			// OpenWrt-integrated network: Show container IP + exposed ports
-			// Use PortBindings to get port list (even if bound to 0.0.0.0)
-			if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
-				Object.keys(hostConfig.PortBindings).forEach((containerPort) => {
-					const portNum = containerPort.split('/')[0];
-					const protocol = containerPort.split('/')[1] || 'tcp';
-					const isTcp = protocol === 'tcp';
+			// OpenWrt-integrated network: Show container IP + port
+			extractedPorts.forEach((port) => {
+				const isTcp = port.protocol === 'tcp';
+				const urlProtocol = port.containerPort === '443' ? 'https' : 'http';
 
-					// Determine protocol (HTTPS for port 443, HTTP otherwise)
-					const urlProtocol = portNum === '443' ? 'https' : 'http';
-
-					if (isTcp) {
-						const url = `${urlProtocol}://${containerIp}:${portNum}`;
-						const linkText = `${containerIp}:${portNum}`;
-						ports.push(E('a', {
-							href: url,
-							target: '_blank',
-							style: 'text-decoration: underline; color: #0066cc;',
-							title: _('Direct access to container on OpenWrt-integrated network')
-						}, linkText));
-					} else {
-						// Non-TCP - display as text
-						ports.push(E('span', {}, `${containerIp}:${portNum}/${protocol}`));
-					}
-				});
-			}
-			// Also check for exposed ports not in bindings
-			else if (config.ExposedPorts && Object.keys(config.ExposedPorts).length > 0) {
-				Object.keys(config.ExposedPorts).forEach((exposedPort) => {
-					const portNum = exposedPort.split('/')[0];
-					const protocol = exposedPort.split('/')[1] || 'tcp';
-					const isTcp = protocol === 'tcp';
-
-					const urlProtocol = portNum === '443' ? 'https' : 'http';
-
-					if (isTcp) {
-						const url = `${urlProtocol}://${containerIp}:${portNum}`;
-						const linkText = `${containerIp}:${portNum}`;
-						ports.push(E('a', {
-							href: url,
-							target: '_blank',
-							style: 'text-decoration: underline; color: #0066cc;',
-							title: _('Direct access to container on OpenWrt-integrated network')
-						}, linkText));
-					} else {
-						ports.push(E('span', {}, `${containerIp}:${portNum}/${protocol}`));
-					}
-				});
-			}
+				if (isTcp) {
+					const url = `${urlProtocol}://${containerIp}:${port.containerPort}`;
+					const linkText = `${containerIp}:${port.containerPort}`;
+					portElements.push(E('a', {
+						href: url,
+						target: '_blank',
+						style: 'text-decoration: underline; color: #0066cc;',
+						title: _('Direct access to container on OpenWrt-integrated network')
+					}, linkText));
+				} else {
+					portElements.push(E('span', {}, `${containerIp}:${port.containerPort}/${port.protocol}`));
+				}
+			});
 		} else {
-			// Standard network or host network: Show port mappings
-			if (hostConfig.PortBindings && Object.keys(hostConfig.PortBindings).length > 0) {
-				Object.keys(hostConfig.PortBindings).forEach((containerPort) => {
-					const bindings = hostConfig.PortBindings[containerPort];
-					if (bindings) {
-						bindings.forEach((binding) => {
-							const hostIp = binding.HostIp || '0.0.0.0';
-							const hostPort = binding.HostPort || '-';
+			// Standard network: Show port mappings for mapped, just port for exposed
+			extractedPorts.forEach((port) => {
+				if (port.isMapped) {
+					// Mapped port with host binding
+					const hostIp = port.hostIp || '0.0.0.0';
+					const linkIp = (hostIp === '0.0.0.0' || hostIp === '::')
+						? window.location.hostname
+						: hostIp;
+					const urlProtocol = port.hostPort === '443' ? 'https' : 'http';
+					const isTcp = port.protocol === 'tcp';
 
-							// Determine actual IP for link (replace 0.0.0.0 with hostname)
-							const linkIp = (hostIp === '0.0.0.0' || hostIp === '::')
-								? window.location.hostname
-								: hostIp;
-
-							// Determine protocol (HTTPS for port 443, HTTP otherwise)
-							const protocol = hostPort === '443' ? 'https' : 'http';
-
-							// Create clickable link for TCP ports only
-							const isTcp = containerPort.includes('/tcp');
-							if (isTcp && hostPort !== '-') {
-								const url = `${protocol}://${linkIp}:${hostPort}`;
-								const linkText = `${hostIp}:${hostPort} → ${containerPort}`;
-								ports.push(E('a', {
-									href: url,
-									target: '_blank',
-									style: 'text-decoration: underline; color: #0066cc;',
-									title: _('Access via host port mapping')
-								}, linkText));
-							} else {
-								// Non-TCP or invalid port - display as text
-								ports.push(E('span', {}, `${hostIp}:${hostPort} → ${containerPort}`));
-							}
-						});
+					if (isTcp) {
+						const url = `${urlProtocol}://${linkIp}:${port.hostPort}`;
+						const linkText = `${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`;
+						portElements.push(E('a', {
+							href: url,
+							target: '_blank',
+							style: 'text-decoration: underline; color: #0066cc;',
+							title: _('Access via host port mapping')
+						}, linkText));
+					} else {
+						portElements.push(E('span', {}, `${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`));
 					}
-				});
-			}
+				} else {
+					// Exposed port without host mapping
+					portElements.push(E('span', { style: 'color: #666;' }, `${port.containerPort}/${port.protocol} (exposed)`));
+				}
+			});
 		}
 
-		if (ports.length > 0) {
+		if (portElements.length > 0) {
 			const portsContainer = E('div', {});
-			ports.forEach((port, idx) => {
+			portElements.forEach((portEl, idx) => {
 				if (idx > 0) {
 					portsContainer.appendChild(E('br'));
 				}
-				portsContainer.appendChild(port);
+				portsContainer.appendChild(portEl);
 			});
 
 			// Label based on network type

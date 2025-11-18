@@ -101,4 +101,49 @@ return baseclass.extend({
 		return selected;
 	},
 
+	/**
+	 * Extract port information from NetworkSettings.Ports.
+	 * Handles both mapped ports (with host binding) and exposed ports (null binding).
+	 * @param {Object} ports - NetworkSettings.Ports object
+	 * @returns {Array} Array of {containerPort, protocol, hostPort, hostIp, isMapped}
+	 */
+	extractPorts: function (ports) {
+		if (!ports) return [];
+
+		const result = [];
+		Object.keys(ports).forEach((containerPort) => {
+			const parts = containerPort.split('/');
+			const portNum = parts[0];
+			const protocol = parts[1] || 'tcp';
+			const bindings = ports[containerPort];
+
+			if (bindings && bindings.length > 0) {
+				// Mapped port with host binding
+				bindings.forEach((binding) => {
+					result.push({
+						containerPort: portNum,
+						protocol: protocol,
+						hostPort: binding.HostPort,
+						hostIp: binding.HostIp || '0.0.0.0',
+						isMapped: true
+					});
+				});
+			} else {
+				// Exposed port without host mapping
+				result.push({
+					containerPort: portNum,
+					protocol: protocol,
+					hostPort: null,
+					hostIp: null,
+					isMapped: false
+				});
+			}
+		});
+
+		// Sort by container port number
+		result.sort((a, b) => parseInt(a.containerPort) - parseInt(b.containerPort));
+
+		return result;
+	},
+
 });

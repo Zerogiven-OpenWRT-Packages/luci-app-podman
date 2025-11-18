@@ -118,22 +118,19 @@ return view.extend({
 				}
 			}
 
-			// Add port mappings
+			// Add ports (both mapped and exposed)
 			if (container.NetworkSettings && container.NetworkSettings.Ports) {
-				const ports = container.NetworkSettings.Ports;
-				const portMappings = [];
-				Object.keys(ports).forEach((containerPort) => {
-					const bindings = ports[containerPort];
-					if (bindings && bindings.length > 0) {
-						bindings.forEach((binding) => {
-							const hostPort = binding.HostPort;
-							const portNum = containerPort.split('/')[0];
-							portMappings.push(`${hostPort}→${portNum}`);
-						});
+				const extractedPorts = utils.extractPorts(container.NetworkSettings.Ports);
+				const portStrings = [];
+				extractedPorts.forEach((port) => {
+					if (port.isMapped) {
+						portStrings.push(`${port.hostPort}→${port.containerPort}`);
+					} else {
+						portStrings.push(`${port.containerPort}/${port.protocol}`);
 					}
 				});
-				if (portMappings.length > 0) {
-					tooltipParts.push('Ports: ' + portMappings.join(', '));
+				if (portStrings.length > 0) {
+					tooltipParts.push('Ports: ' + portStrings.join(', '));
 				}
 			}
 
