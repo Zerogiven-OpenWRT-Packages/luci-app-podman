@@ -13,8 +13,6 @@ This document tracks planned features and enhancements for the LuCI Podman web i
   - [Smart Pod Stop with Kill Fallback](#2-smart-pod-stop-with-kill-fallback)
 - [Image Management](#-image-management)
   - [Image Search](#1-image-search)
-- [OpenWrt Integration](#-openwrt-integration)
-  - [Generate Procd Init Script](#1-generate-procd-init-script-openwrt-specific-)
 - [Feature Status Summary](#-feature-status-summary)
 - [Explicitly Excluded Features](#-explicitly-excluded-features)
 - [Implementation Notes](#-implementation-notes)
@@ -195,7 +193,6 @@ image_search)
 | 🖼️ Image | Image Search | ⭐⭐⭐ High | Medium | 4h | Needed | Needed | Not Started |
 | 📦 Pod | Pod Detail Page | ⭐⭐ Medium | Medium | 6h | Needed | Needed | Not Started |
 | 📦 Pod | Smart Pod Stop with Kill Fallback | ⭐⭐ Medium | Medium | 1h | Needed | Needed | Not Started |
-| 🔧 OpenWrt | Generate Procd Init Script | ⭐⭐ Medium | High | 8-10h | Needed | Needed | Not Started |
 
 **Total Estimated Time:** 23-25 hours
 
