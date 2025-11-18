@@ -34,13 +34,14 @@ return view.extend({
 					return { containers: [] };
 				}
 
-				// Fetch full inspect data for each container to get RestartPolicy
+				// Fetch full inspect data for each container to get RestartPolicy and NetworkSettings
 				const inspectPromises = containers.map((container) =>
 					podmanRPC.container.inspect(container.Id)
 						.then((inspectData) => {
-							// Merge inspect data (especially HostConfig) into list data
+							// Merge inspect data (especially HostConfig and NetworkSettings) into list data
 							return Object.assign({}, container, {
-								HostConfig: inspectData.HostConfig
+								HostConfig: inspectData.HostConfig,
+								NetworkSettings: inspectData.NetworkSettings
 							});
 						})
 						.catch(() => {
@@ -92,12 +93,12 @@ return view.extend({
 				hiddenname: 'all'
 			}).render());
 
-		o = section.option(form.DummyValue, 'Names', _('Name'));
+		o = section.option(podmanForm.field.DataDummyValue, 'Names', _('Name'));
+
+		o = section.option(form.DummyValue, 'Id', _('Id'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
-			const name = container.Names && container.Names[0]
-				? container.Names[0]
-				: utils.truncate(container.Id, 10);
+			const containerId = container.Id;
 
 			// Build tooltip with IPs and ports
 			const tooltipParts = [];
@@ -139,16 +140,8 @@ return view.extend({
 			const tooltip = tooltipParts.length > 0 ? tooltipParts.join(' | ') : '';
 
 			return E('a', {
-				href: L.url('admin/podman/container', container.Id),
+				href: L.url('admin/podman/container', containerId),
 				title: tooltip
-			}, name);
-		};
-
-		o = section.option(form.DummyValue, 'Id', _('Id'));
-		o.cfgvalue = (sectionId) => {
-			const containerId = this.map.data.data[sectionId].Id;
-			return E('a', {
-				href: L.url('admin/podman/container', containerId)
 			}, utils.truncate(containerId, 10));
 		};
 
