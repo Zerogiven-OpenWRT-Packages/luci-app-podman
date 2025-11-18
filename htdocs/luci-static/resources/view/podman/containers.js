@@ -138,9 +138,9 @@ return view.extend({
 
 			const tooltip = tooltipParts.length > 0 ? tooltipParts.join(' | ') : '';
 
-			return E('span', {
-				title: tooltip,
-				style: tooltip ? 'cursor: help;' : ''
+			return E('a', {
+				href: L.url('admin/podman/container', container.Id),
+				title: tooltip
 			}, name);
 		};
 
