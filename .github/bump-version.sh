@@ -109,12 +109,12 @@ fi
 # --- Git commit, tag, push ---
 git add "$MAKEFILE_PATH"
 
-if ! git config user.name >/dev/null 2>&1; then
-  git config user.name "github-actions[bot]" || true
+if ! git config --global user.name >/dev/null 2>&1; then
+  git config --global user.name "github-actions[bot]" || true
 fi
 
-if ! git config user.email >/dev/null 2>&1; then
-  git config user.email "github-actions[bot]@users.noreply.github.com" || true
+if ! git config --global user.email >/dev/null 2>&1; then
+  git config --global user.email "github-actions[bot]@users.noreply.github.com" || true
 fi
 
 # commit only if something changed
