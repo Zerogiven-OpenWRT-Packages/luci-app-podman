@@ -11,8 +11,6 @@ This document tracks planned features and enhancements for the LuCI Podman web i
 - [Pod Management](#-pod-management)
   - [Pod Detail Page](#1-pod-detail-page)
   - [Smart Pod Stop with Kill Fallback](#2-smart-pod-stop-with-kill-fallback)
-- [Image Management](#-image-management)
-  - [Image Search](#1-image-search)
 - [Feature Status Summary](#-feature-status-summary)
 - [Explicitly Excluded Features](#-explicitly-excluded-features)
 - [Implementation Notes](#-implementation-notes)
@@ -136,61 +134,12 @@ pod_kill)
 
 ---
 
-## 🖼️ Image Management
-
-### 1. Image Search
-**Status:** Not Started
-**Complexity:** Medium (4 hours)
-**Priority:** ⭐⭐⭐ High (High user value - discover and pull images easily)
-**Backend:** Need `image_search` RPC method
-
-**Features:**
-- Search box in Images view with auto-search (debounced)
-- Search Docker Hub and configured registries
-- Show results in table: Name, Description, Stars, Official, Automated
-- "Pull" button for each result
-- Filter by official/automated
-
-**Backend RPC Method:**
-```bash
-image_search)
-    get_json_params term limit filters
-    require_param term
-    term_enc=$(urlencode "$term")
-    path="${API_BASE}/images/search?term=${term_enc}"
-    [ -n "$limit" ] && path="${path}&limit=${limit}"
-    curl_request "GET" "$path"
-    ;;
-```
-
-**UI Components:**
-- Search input with 500ms debounce
-- Results table with columns: Name, Description, Stars, Official, Pull button
-- Loading indicator during search
-- Empty state when no results
-
-**API Response Format:**
-```json
-{
-  "Name": "docker.io/library/nginx",
-  "Description": "Official build of Nginx.",
-  "Stars": 19000,
-  "Official": true,
-  "Automated": false
-}
-```
-
-**Why Priority:** Eliminates need to know exact image names, enables image discovery directly from UI, high user value for onboarding.
-
----
-
 ## 📋 Feature Status Summary
 
 | Category | Feature | Priority | Complexity | Time | Backend | Frontend | Status |
 |----------|---------|----------|------------|------|---------|----------|--------|
 | ⚡ Quick Wins | Container Pause/Unpause UI | ⭐⭐⭐ High | Low | 1h | ✅ Done | Needed | Not Started |
 | 🐳 Container | Smart Stop with Kill Fallback | ⭐⭐⭐ High | Medium | 3h | Needed | Needed | Not Started |
-| 🖼️ Image | Image Search | ⭐⭐⭐ High | Medium | 4h | Needed | Needed | Not Started |
 | 📦 Pod | Pod Detail Page | ⭐⭐ Medium | Medium | 6h | Needed | Needed | Not Started |
 | 📦 Pod | Smart Pod Stop with Kill Fallback | ⭐⭐ Medium | Medium | 1h | Needed | Needed | Not Started |
 
