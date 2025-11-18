@@ -61,9 +61,12 @@ return view.extend({
 	 * @returns {Element} Container detail view element
 	 */
 	render: function (data) {
-		// Handle errors from load()
-		if (data && data.error || !data.container) {
-			return utils.renderError(data.error || _('Container not found'));
+		// Handle errors from load() - redirect to containers list
+		// Check for error, missing container, or invalid container data (no Id means container doesn't exist)
+		if (data && data.error || !data.container || !data.container.Id) {
+			ui.addTimeLimitedNotification(null, E('p', data.error || _('Container not found')), 5000, 'warning');
+			window.location.href = L.url('admin/podman/containers');
+			return E('div', {}, _('Redirecting to containers list...'));
 		}
 
 		// Store data for use in methods
