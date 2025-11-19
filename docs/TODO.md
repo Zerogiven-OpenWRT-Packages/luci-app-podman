@@ -11,7 +11,6 @@ This document tracks planned features and enhancements for the LuCI Podman web i
 - [Pod Management](#-pod-management)
   - [Pod Detail Page](#1-pod-detail-page)
   - [Smart Pod Stop with Kill Fallback](#2-smart-pod-stop-with-kill-fallback)
-- [Feature Status Summary](#-feature-status-summary)
 - [Explicitly Excluded Features](#-explicitly-excluded-features)
 - [Implementation Notes](#-implementation-notes)
 
