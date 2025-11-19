@@ -132,19 +132,6 @@ pod_kill)
 
 **Why Priority:** Essential for pod management, should be implemented together with container kill for consistency.
 
----
-
-## 📋 Feature Status Summary
-
-| Category | Feature | Priority | Complexity | Time | Backend | Frontend | Status |
-|----------|---------|----------|------------|------|---------|----------|--------|
-| ⚡ Quick Wins | Container Pause/Unpause UI | ⭐⭐⭐ High | Low | 1h | ✅ Done | Needed | Not Started |
-| 🐳 Container | Smart Stop with Kill Fallback | ⭐⭐⭐ High | Medium | 3h | Needed | Needed | Not Started |
-| 📦 Pod | Pod Detail Page | ⭐⭐ Medium | Medium | 6h | Needed | Needed | Not Started |
-| 📦 Pod | Smart Pod Stop with Kill Fallback | ⭐⭐ Medium | Medium | 1h | Needed | Needed | Not Started |
-
-**Total Estimated Time:** 23-25 hours
-
 **Recommended Implementation Order (by priority/effectiveness):**
 1. **Container Pause/Unpause UI** (1h) - Quick win, backend exists
 2. **Smart Container Stop with Kill Fallback** (3h) - High safety value
