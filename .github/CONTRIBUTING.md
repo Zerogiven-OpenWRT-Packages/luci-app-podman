@@ -40,6 +40,35 @@ Thank you for considering contributing to this project!
 - [ ] Works on actual OpenWrt device
 - [ ] ACL permissions updated if adding RPC methods
 
+## Key Files
+
+```
+htdocs/luci-static/resources/
+├── podman/
+│   ├── rpc.js               # RPC API client
+│   ├── utils.js             # Shared utilities
+│   ├── ui.js                # Custom UI components
+│   ├── form.js              # Form components
+│   ├── format.js            # Date/size formatting
+│   ├── list.js              # List view helpers
+│   ├── container-util.js    # Container operations
+│   ├── openwrt-network.js   # OpenWrt integration
+│   ├── run-command-parser.js # Docker run parser
+│   ├── constants.js         # Shared constants
+│   └── ipv6.js              # IPv6 utilities
+└── view/podman/
+    ├── overview.js          # Dashboard
+    ├── containers.js        # Container list
+    ├── container.js         # Container detail
+    ├── images.js            # Images
+    ├── volumes.js           # Volumes
+    ├── networks.js          # Networks
+    ├── pods.js              # Pods
+    └── secrets.js           # Secrets
+
+root/usr/libexec/rpcd/luci.podman  # RPC backend
+```
+
 ## Testing
 
 ```bash
