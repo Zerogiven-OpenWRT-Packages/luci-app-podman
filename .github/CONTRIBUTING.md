@@ -79,6 +79,20 @@ ubus call luci.podman containers_list '{"query":"all=true"}'
 logread -f | grep luci.podman
 ```
 
+## Troubleshooting
+
+**Access denied:**
+```bash
+cat /usr/share/rpcd/acl.d/luci-app-podman.json
+/etc/init.d/rpcd restart
+```
+
+**RPC debugging:**
+```bash
+ubus call luci.podman containers_list '{"query":"all=true"}'
+logread | grep -i podman
+```
+
 ## Pull Request Guidelines
 
 - One feature per PR
