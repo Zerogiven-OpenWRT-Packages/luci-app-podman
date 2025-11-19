@@ -1630,3 +1630,6 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
+
+msgid "Loading %s..."
+msgstr ""

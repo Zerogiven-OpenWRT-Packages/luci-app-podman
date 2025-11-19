@@ -1635,3 +1635,6 @@ msgstr "Firewall-Zone für dieses Netzwerk wählen. Neue Zonen verwenden sichere
 
 msgid "Loading view…"
 msgstr "Lade Ansicht…"
+
+msgid "Loading %s..."
+msgstr "%s wird geladen..."

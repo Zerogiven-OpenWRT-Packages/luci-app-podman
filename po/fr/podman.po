@@ -1631,3 +1631,180 @@ msgstr "Répertoire de travail"
 
 msgid "Yes"
 msgstr "Oui"
+
+msgid " containers"
+msgstr ""
+
+msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
+msgstr ""
+
+msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
+msgstr ""
+
+msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
+msgstr ""
+
+msgid "Available"
+msgstr ""
+
+msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
+msgstr ""
+
+msgid "Command to run for health check. Exit code 0 = healthy, 1 = unhealthy"
+msgstr ""
+
+msgid "Configure resource limits for this container. Changes will be applied immediately."
+msgstr ""
+
+msgid "Connecting container to network..."
+msgstr ""
+
+msgid "Container created and auto-start configured"
+msgstr ""
+
+msgid "Container created and started successfully"
+msgstr ""
+
+msgid "Container created but failed to start: %s"
+msgstr ""
+
+msgid "Container created, started, and auto-start configured"
+msgstr ""
+
+msgid "Creating OpenWrt integration for network \"%s\"..."
+msgstr ""
+
+msgid "Deleting %d selected %s..."
+msgstr ""
+
+msgid "Deleting %d selected network(s)..."
+msgstr ""
+
+msgid "Disconnected from network successfully"
+msgstr ""
+
+msgid "Disconnecting container from network..."
+msgstr ""
+
+msgid "Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)"
+msgstr ""
+
+msgid "Fetch a container image using Podman."
+msgstr ""
+
+msgid "Grace period before health checks count toward failures. Default: 0s"
+msgstr ""
+
+msgid "Invalid memory swap format. Use: 512m, 1g, -1, etc."
+msgstr ""
+
+msgid "Log stream ended with error"
+msgstr ""
+
+msgid "Manage Podman containers"
+msgstr ""
+
+msgid "Manage Podman images"
+msgstr ""
+
+msgid "Manage Podman networks"
+msgstr ""
+
+msgid "Manage Podman secrets"
+msgstr ""
+
+msgid "Manage Podman volumes"
+msgstr ""
+
+msgid "Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it."
+msgstr ""
+
+msgid "Network and OpenWrt integration created successfully"
+msgstr ""
+
+msgid "Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually."
+msgstr ""
+
+msgid "Network created successfully"
+msgstr ""
+
+msgid "Networks deleted but %d OpenWrt integration(s) failed to remove"
+msgstr ""
+
+msgid "No containers are configured for auto-update or all containers are up to date."
+msgstr ""
+
+msgid "No selected containers have health checks configured"
+msgstr ""
+
+msgid "No unused resources found"
+msgstr ""
+
+msgid "Note: %d network(s) have OpenWrt integration that will also be removed (bridge, firewall zone, and rules)."
+msgstr ""
+
+msgid "Number of consecutive failures before marking unhealthy. Default: 3"
+msgstr ""
+
+msgid "Once created, secret data cannot be viewed or retrieved"
+msgstr ""
+
+msgid "OpenWrt integration for network \"%s\" created successfully"
+msgstr ""
+
+msgid "OpenWrt integration incomplete. Click to setup. Missing: %s"
+msgstr ""
+
+msgid "OpenWrt integration requires subnet to be specified"
+msgstr ""
+
+msgid "Pulling latest version of %d image(s)..."
+msgstr ""
+
+msgid "Resources updated successfully"
+msgstr ""
+
+msgid "Secret data is stored encrypted"
+msgstr ""
+
+msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
+msgstr ""
+
+msgid "Secrets can only be used by containers, not displayed"
+msgstr ""
+
+msgid "Select network for the container. User-created networks provide better isolation and DNS resolution between containers."
+msgstr ""
+
+msgid "Setting up OpenWrt integration..."
+msgstr ""
+
+msgid "Starting container..."
+msgstr ""
+
+msgid "Successfully deleted %d network(s)"
+msgstr ""
+
+msgid "This will permanently delete unused containers, images, networks, and optionally volumes."
+msgstr ""
+
+msgid "To enable auto-update, add label io.containers.autoupdate=registry to your containers."
+msgstr ""
+
+msgid "To update a secret, delete and recreate it"
+msgstr ""
+
+msgid "Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited."
+msgstr ""
+
+msgid "Updating container resources..."
+msgstr ""
+
+msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
+msgstr ""
+
+msgid "Loading view…"
+msgstr ""
+
+msgid "Loading %s..."
+msgstr ""
