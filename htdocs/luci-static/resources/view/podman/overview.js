@@ -101,26 +101,36 @@ return view.extend({
 	createInfoSection: function (version, info) {
 		const memTotal = (info.host && info.host.memTotal) ? (info.host.memTotal / 1024 / 1024 /
 			1024).toFixed(2) : '0';
-		const memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 / 1024)
+		const memFree = (info.host && info.host.memFree) ? (info.host.memFree / 1024 / 1024 /
+				1024)
 			.toFixed(2) : '0';
 
 		const table = new pui.Table()
 			.addInfoRow(_('Podman Version'), version.Version || _('Unknown'))
 			.addInfoRow(_('API Version'), version.ApiVersion || _('Unknown'))
-			.addInfoRow(_('CPU'), (info.host && info.host.cpus) ? info.host.cpus.toString() : _('Unknown'))
+			.addInfoRow(_('CPU'), (info.host && info.host.cpus) ? info.host.cpus.toString() : _(
+				'Unknown'))
 			.addInfoRow(_('Memory'), memFree + ' GB / ' + memTotal + ' GB')
 			.addInfoRow(_('Socket Path'),
-				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+				E('span', {
+						'style': 'font-family: monospace; font-size: 0.9em;'
+					},
 					(info.host && info.host.remoteSocket && info.host.remoteSocket.path) ||
 					'/run/podman/podman.sock'))
 			.addInfoRow(_('Graph Root'),
-				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+				E('span', {
+						'style': 'font-family: monospace; font-size: 0.9em;'
+					},
 					(info.store && info.store.graphRoot) || _('Unknown')))
 			.addInfoRow(_('Run Root'),
-				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+				E('span', {
+						'style': 'font-family: monospace; font-size: 0.9em;'
+					},
 					(info.store && info.store.runRoot) || _('Unknown')))
 			.addInfoRow(_('Registries'),
-				E('span', { 'style': 'font-family: monospace; font-size: 0.9em;' },
+				E('span', {
+						'style': 'font-family: monospace; font-size: 0.9em;'
+					},
 					this.getRegistries(info)));
 
 		const section = new pui.Section();
@@ -155,7 +165,8 @@ return view.extend({
 			0;
 		const imageReclaimable = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0]
 			.Reclaimable) || 0;
-		const imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0].Count) ||
+		const imageCount = (diskUsage.Images && diskUsage.Images[0] && diskUsage.Images[0]
+			.Count) ||
 			0;
 
 		const containerSize = (diskUsage.Containers && diskUsage.Containers[0] && diskUsage
@@ -167,7 +178,8 @@ return view.extend({
 
 		const volumeSize = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Size) || 0;
-		const volumeReclaimable = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
+		const volumeReclaimable = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[
+				0]
 			.Reclaimable) || 0;
 		const volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Count) || 0;
@@ -177,26 +189,49 @@ return view.extend({
 			.addHeader(_('Count'))
 			.addHeader(_('Size'))
 			.addHeader(_('Reclaimable'))
-			.addRow([
-				{ inner: _('Images') },
-				{ inner: String(imageCount) },
-				{ inner: format.bytes(imageSize) },
-				{ inner: format.bytes(imageReclaimable) }
+			.addRow([{
+					inner: _('Images')
+				},
+				{
+					inner: String(imageCount)
+				},
+				{
+					inner: format.bytes(imageSize)
+				},
+				{
+					inner: format.bytes(imageReclaimable)
+				}
 			])
-			.addRow([
-				{ inner: _('Containers') },
-				{ inner: String(containerCount) },
-				{ inner: format.bytes(containerSize) },
-				{ inner: format.bytes(containerReclaimable) }
+			.addRow([{
+					inner: _('Containers')
+				},
+				{
+					inner: String(containerCount)
+				},
+				{
+					inner: format.bytes(containerSize)
+				},
+				{
+					inner: format.bytes(containerReclaimable)
+				}
 			])
-			.addRow([
-				{ inner: _('Volumes') },
-				{ inner: String(volumeCount) },
-				{ inner: format.bytes(volumeSize) },
-				{ inner: format.bytes(volumeReclaimable) }
+			.addRow([{
+					inner: _('Volumes')
+				},
+				{
+					inner: String(volumeCount)
+				},
+				{
+					inner: format.bytes(volumeSize)
+				},
+				{
+					inner: format.bytes(volumeReclaimable)
+				}
 			]);
 
-		const section = new pui.Section({ 'style': 'margin-top: 20px;' });
+		const section = new pui.Section({
+			'style': 'margin-top: 20px;'
+		});
 		section.addNode(_('Disk Usage'), '', table.render());
 		return section.render();
 	},
@@ -323,11 +358,15 @@ return view.extend({
 		const buttons = E('div', {
 			'style': 'display: flex; gap: 10px; flex-wrap: wrap;'
 		}, [
-			new pui.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(), 'action').render(),
-			new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove').render()
+			new pui.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(),
+				'action').render(),
+			new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove')
+			.render()
 		]);
 
-		const section = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		const section = new pui.Section({
+			'style': 'margin-bottom: 20px;'
+		});
 		section.addNode(_('System Maintenance'), '', buttons);
 		return section.render();
 	},
@@ -363,7 +402,7 @@ return view.extend({
 						},
 						_(
 							'To enable auto-update, add label io.containers.autoupdate=registry to your containers.'
-							)
+						)
 					),
 					new pui.ModalButtons({
 						confirmText: _('Close'),
@@ -499,7 +538,7 @@ return view.extend({
 						' ',
 						_(
 							'This will permanently delete unused containers, images, networks, and optionally volumes.'
-							)
+						)
 					])
 			]),
 			new pui.ModalButtons({
