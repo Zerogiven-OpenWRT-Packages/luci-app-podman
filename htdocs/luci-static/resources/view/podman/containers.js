@@ -154,15 +154,14 @@ return view.extend({
 		o = section.option(form.DummyValue, 'Health', _('Health'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
-			const health = container.State && container.State.Health;
+			const status = container.Status;
 
-			if (!health) {
+			if (!status || !['healthy', 'unhealthy', 'starting'].includes(status.toLowerCase())) {
 				return E('span', {
 					'style': 'color: #999;'
 				}, '—');
 			}
 
-			const status = health.Status || 'starting';
 			const badgeClass = 'badge status-' + status.toLowerCase();
 
 			return E('span', {
