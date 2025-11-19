@@ -216,7 +216,7 @@ return view.extend({
 	createResourceCards: function (containers, pods, images, networks, volumes, runningContainers,
 		runningPods) {
 		return E('div', {
-			'style': 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;'
+			'style': 'display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px;'
 		}, [
 			this.createCard('Containers', containers.length, runningContainers,
 				'admin/podman/containers', '#3498db'),
