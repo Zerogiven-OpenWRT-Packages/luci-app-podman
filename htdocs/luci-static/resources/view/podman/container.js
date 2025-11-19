@@ -1381,6 +1381,10 @@ return view.extend({
 				const exitClass = exitCode === 0 ? 'status-healthy' : 'status-unhealthy';
 				const outputText = entry.Output ? entry.Output.trim() : '-';
 
+				// Create span with textContent to properly escape HTML
+				const outputSpan = E('span', {});
+				outputSpan.textContent = outputText;
+
 				const resultBadge = E('span', {}, [
 					E('span', { 'class': 'badge ' + exitClass }, exitStatus),
 					' ',
@@ -1391,7 +1395,7 @@ return view.extend({
 					{ inner: entry.Start ? format.date(entry.Start) : '-' },
 					{ inner: entry.End ? format.date(entry.End) : '-' },
 					{ inner: resultBadge },
-					{ inner: outputText, options: {
+					{ inner: outputSpan, options: {
 						'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
 						'title': outputText
 					}}
