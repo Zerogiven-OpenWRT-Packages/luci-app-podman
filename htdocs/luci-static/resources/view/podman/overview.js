@@ -12,80 +12,143 @@
  */
 return view.extend({
 	/**
-	 * Load all system data on view initialization
+	 * Load Phase 1 data (fast) on view initialization
+	 * Phase 2 data (slower) is loaded after render in loadPhase2()
 	 *
 	 * @returns {Promise<Array>} Promise resolving to array of:
 	 *   [0] version - Podman version information
 	 *   [1] info - System info (CPU, memory, paths, registries)
-	 *   [2] containers - All containers (including stopped)
-	 *   [3] images - All images
-	 *   [4] volumes - All volumes
-	 *   [5] networks - All networks
-	 *   [6] pods - All pods
-	 *   [7] diskUsage - Disk usage statistics by resource type
 	 */
 	load: function () {
+		// Phase 1: Fast initial load - version and system info only
 		return Promise.all([
 			podmanRPC.system.version(),
-			podmanRPC.system.info(),
-			podmanRPC.container.list('all=true'),
-			podmanRPC.image.list(),
-			podmanRPC.volume.list(),
-			podmanRPC.network.list(),
-			podmanRPC.pod.list(),
-			podmanRPC.system.df()
+			podmanRPC.system.info()
 		]);
 	},
 
 	/**
 	 * Render the overview dashboard
+	 * Shows Phase 1 data immediately, then loads Phase 2 data asynchronously
 	 *
-	 * @param {Array} data - Array from load()
+	 * @param {Array} data - Array from load() (Phase 1 data only)
 	 * @returns {Element} Complete dashboard view element
 	 */
 	render: function (data) {
+		// Phase 1 data (loaded immediately)
 		const version = data[0] || {};
 		const info = data[1] || {};
-		const containers = data[2] || [];
-		const images = data[3] || [];
-		// Handle volumes - can be wrapped in Volumes property or data array
-		const volumeData = data[4] || [];
-		const volumes = Array.isArray(volumeData) ? volumeData : (volumeData.Volumes || []);
-		const networks = data[5] || [];
-		const pods = data[6] || [];
-		const diskUsage = data[7] || {};
 
-		const runningContainers = containers.filter(function (c) {
-				return c.State === 'running';
-			})
-			.length;
-		const runningPods = pods.filter(function (p) {
-			return p.Status === 'Running';
-		}).length;
+		// Create placeholders for Phase 2 data
+		const diskUsageContainer = E('div', {
+			'id': 'disk-usage-section'
+		}, [
+			this.createLoadingPlaceholder(_('Disk Usage'))
+		]);
+
+		const resourceCardsContainer = E('div', {
+			'id': 'resource-cards-container'
+		}, [
+			this.createLoadingPlaceholder(_('Resources'))
+		]);
 
 		const container = E('div', {}, [
-			// System Actions Section (Auto-update, Prune)
+			// System Actions Section (immediate)
 			this.createSystemActionsSection(),
 
-			// System Info Section
+			// System Info Section (immediate - from Phase 1)
 			this.createInfoSection(version, info),
 
-			// Disk Usage Section
-			this.createDiskUsageSection(diskUsage),
+			// Disk Usage Section (placeholder - Phase 2)
+			diskUsageContainer,
 
-			// Resource Cards Section
+			// Resource Cards Section (placeholder - Phase 2)
 			E('div', {
 				'style': 'margin-top: 30px;'
 			}, [
 				E('h3', {
 					'style': 'margin-bottom: 15px;'
 				}, _('Resources')),
-				this.createResourceCards(containers, pods, images, networks, volumes,
-					runningContainers, runningPods)
+				resourceCardsContainer
 			])
 		]);
 
+		// Start Phase 2 loading asynchronously
+		this.loadPhase2(diskUsageContainer, resourceCardsContainer);
+
 		return container;
+	},
+
+	/**
+	 * Load Phase 2 data (slower) and update placeholders
+	 *
+	 * @param {Element} diskUsageContainer - Container for disk usage section
+	 * @param {Element} resourceCardsContainer - Container for resource cards
+	 */
+	loadPhase2: function (diskUsageContainer, resourceCardsContainer) {
+		Promise.all([
+			podmanRPC.container.list('all=true'),
+			podmanRPC.image.list(),
+			podmanRPC.volume.list(),
+			podmanRPC.network.list(),
+			podmanRPC.pod.list(),
+			podmanRPC.system.df()
+		]).then((data) => {
+			const containers = data[0] || [];
+			const images = data[1] || [];
+			// Handle volumes - can be wrapped in Volumes property or data array
+			const volumeData = data[2] || [];
+			const volumes = Array.isArray(volumeData) ? volumeData : (volumeData.Volumes || []);
+			const networks = data[3] || [];
+			const pods = data[4] || [];
+			const diskUsage = data[5] || {};
+
+			const runningContainers = containers.filter((c) => c.State === 'running').length;
+			const runningPods = pods.filter((p) => p.Status === 'Running').length;
+
+			// Update Disk Usage section
+			diskUsageContainer.innerHTML = '';
+			diskUsageContainer.appendChild(this.createDiskUsageSection(diskUsage));
+
+			// Update Resource Cards section
+			resourceCardsContainer.innerHTML = '';
+			resourceCardsContainer.appendChild(
+				this.createResourceCards(containers, pods, images, networks, volumes,
+					runningContainers, runningPods)
+			);
+		}).catch((err) => {
+			// Show error in the placeholders
+			diskUsageContainer.innerHTML = '';
+			diskUsageContainer.appendChild(
+				E('p', {
+					'class': 'alert-message error'
+				}, _('Failed to load disk usage: %s').format(err.message))
+			);
+
+			resourceCardsContainer.innerHTML = '';
+			resourceCardsContainer.appendChild(
+				E('p', {
+					'class': 'alert-message error'
+				}, _('Failed to load resources: %s').format(err.message))
+			);
+		});
+	},
+
+	/**
+	 * Create a loading placeholder for lazy-loaded sections
+	 *
+	 * @param {string} title - Section title being loaded
+	 * @returns {Element} Loading placeholder element
+	 */
+	createLoadingPlaceholder: function (title) {
+		return E('div', {
+			'class': 'cbi-section',
+			'style': 'text-align: center; padding: 30px;'
+		}, [
+			E('em', {
+				'class': 'spinning'
+			}, _('Loading %s...').format(title))
+		]);
 	},
 
 	/**
