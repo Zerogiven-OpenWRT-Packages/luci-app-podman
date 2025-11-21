@@ -64,8 +64,9 @@ const ListUtil = baseclass.extend({
 		const buttons = [];
 
 		if (options.onCreate !== undefined) {
+			const capitalizedItemName = this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1);
 			buttons.push(new podmanUI.Button(
-				_('Create %s').format(this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1)),
+				_('Create %s').format(_(capitalizedItemName)),
 				options.onCreate, 'add'
 			).render(), ' ');
 		}
@@ -237,9 +238,9 @@ const ListUtil = baseclass.extend({
 				return;
 			}
 
+			const capitalizedItemName = this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1);
 			this.showInspectModal(
-				_('%s Information').format(this.itemName.charAt(0).toUpperCase() +
-					this.itemName.slice(1)),
+				_('%s %s').format(_(capitalizedItemName), _('Information')),
 				data,
 				hiddenFields,
 				closeButtonFn

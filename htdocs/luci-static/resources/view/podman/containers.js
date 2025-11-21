@@ -151,6 +151,7 @@ return view.extend({
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Image', _('Image'));
 		o = section.option(podmanForm.field.DataDummyValue, 'State', _('Status'));
+		o.cfgformatter = (state) => _(state);
 		o = section.option(form.DummyValue, 'Health', _('Health'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];

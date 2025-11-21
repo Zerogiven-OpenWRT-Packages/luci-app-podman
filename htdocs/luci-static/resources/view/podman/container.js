@@ -247,7 +247,7 @@ return view.extend({
 			])
 			.addRow([
 				{ inner: _('Status'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: data.State ? data.State.Status : '-' }
+				{ inner: data.State ? _(data.State.Status) : '-' }
 			])
 			.addRow([
 				{ inner: _('Created'), options: { 'style': 'width: 33%; font-weight: bold;' } },
@@ -846,7 +846,7 @@ return view.extend({
 			const processTable = new pui.Table({ 'style': 'font-size: 11px; width: 100%;' });
 
 			titles.forEach((title) => {
-				processTable.addHeader(title, { 'style': 'font-family: monospace; white-space: nowrap;' });
+				processTable.addHeader(_(title), { 'style': 'font-family: monospace; white-space: nowrap;' });
 			});
 
 

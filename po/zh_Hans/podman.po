@@ -1,0 +1,2202 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_Hans\n"
+
+# 导航 / 菜单
+msgid "Podman"
+msgstr "Podman"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Containers"
+msgstr "容器"
+
+msgid "Images"
+msgstr "镜像"
+
+msgid "Volumes"
+msgstr "卷"
+
+msgid "Networks"
+msgstr "网络"
+
+msgid "Pods"
+msgstr "容器组"
+
+msgid "Secrets"
+msgstr "密钥"
+
+# 通用操作
+msgid "Start"
+msgstr "启动"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Unpause"
+msgstr "恢复"
+
+msgid "Remove"
+msgstr "删除"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Create"
+msgstr "创建"
+
+msgid "Delete Selected"
+msgstr "删除选中"
+
+msgid "Pull Latest Selected"
+msgstr "拉取最新选中"
+
+msgid "Prune"
+msgstr "清理"
+
+# 通用状态/消息
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Collecting data..."
+msgstr "收集数据中..."
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Unknown"
+msgstr "未知"
+
+# 容器管理
+msgid "Create Container"
+msgstr "创建容器"
+
+msgid "Container Name"
+msgstr "容器名称"
+
+msgid "Container created successfully"
+msgstr "容器创建成功"
+
+msgid "Container image to use"
+msgstr "使用的容器镜像"
+
+msgid "Creating Container"
+msgstr "创建容器中"
+
+msgid "my-container (optional)"
+msgstr "我的容器（可选）"
+
+msgid "Leave empty to auto-generate"
+msgstr "留空自动生成"
+
+msgid "-- Select Image --"
+msgstr "-- 选择镜像 --"
+
+msgid "Please select an image"
+msgstr "请选择一个镜像"
+
+msgid "Command"
+msgstr "命令"
+
+msgid "Command to run (space-separated)"
+msgstr "运行的命令（空格分隔）"
+
+msgid "Port Mappings"
+msgstr "端口映射"
+
+msgid "One per line, format: host:container"
+msgstr "每行一个，格式：主机端口:容器端口"
+
+msgid ""
+"8080:80\n"
+"8443:443"
+msgstr ""
+"8080:80\n"
+"8443:443"
+
+msgid "Environment Variables"
+msgstr "环境变量"
+
+msgid "One per line, format: KEY=value"
+msgstr "每行一个，格式：键=值"
+
+msgid ""
+"VAR1=value1\n"
+"VAR2=value2"
+msgstr ""
+"VAR1=value1\n"
+"VAR2=value2"
+
+msgid "One per line, format: source:destination"
+msgstr "每行一个，格式：源路径:目标路径"
+
+msgid ""
+"/host/path:/container/path\n"
+"volume-name:/data"
+msgstr ""
+"/host/path:/container/path\n"
+"volume-name:/data"
+
+msgid "Network Mode"
+msgstr "网络模式"
+
+msgid "Restart Policy"
+msgstr "重启策略"
+
+msgid "Always"
+msgstr "总是"
+
+msgid "On Failure"
+msgstr "失败时"
+
+msgid "Unless Stopped"
+msgstr "除非停止"
+
+msgid "Privileged Mode"
+msgstr "特权模式"
+
+msgid "Interactive (-i)"
+msgstr "交互式 (-i)"
+
+msgid "Allocate TTY (-t)"
+msgstr "分配终端 (-t)"
+
+msgid "Auto Remove (--rm)"
+msgstr "自动删除 (--rm)"
+
+msgid "Auto-Update"
+msgstr "自动更新"
+
+msgid ""
+"Automatically update container when newer image is available. Adds label: "
+"io.containers.autoupdate=registry"
+msgstr ""
+"当有新镜像可用时自动更新容器。添加标签：io.containers.autoupdate=registry"
+
+msgid "Start after creation"
+msgstr "创建后启动"
+
+msgid "Automatically start the container after it is created"
+msgstr "创建后自动启动容器"
+
+msgid "Container created and started successfully"
+msgstr "容器创建并启动成功"
+
+msgid "Container created but failed to start: %s"
+msgstr "容器已创建但启动失败：%s"
+
+msgid "Starting container..."
+msgstr "启动容器中..."
+
+msgid "Using Form"
+msgstr "使用表单"
+
+msgid "Import from Run Command"
+msgstr "从运行命令导入"
+
+msgid "Import from Compose File (Coming Soon)"
+msgstr "从 Compose 文件导入（即将推出）"
+
+msgid "Paste a docker or podman run command below:"
+msgstr "在下方粘贴 docker 或 podman run 命令："
+
+msgid "Please enter a run command"
+msgstr "请输入运行命令"
+
+msgid "Failed to parse command: %s"
+msgstr "解析命令失败：%s"
+
+msgid "Import"
+msgstr "导入"
+
+msgid "Compose import will be available in a future release"
+msgstr "Compose 导入将在未来版本中提供"
+
+msgid "Working Directory"
+msgstr "工作目录"
+
+msgid "Hostname"
+msgstr "主机名"
+
+msgid "Labels"
+msgstr "标签"
+
+msgid "One per line, format: key=value"
+msgstr "每行一个，格式：键=值"
+
+msgid ""
+"key1=value1\n"
+"key2=value2"
+msgstr ""
+"key1=value1\n"
+"key2=value2"
+
+msgid "CPU Limit"
+msgstr "CPU 限制"
+
+msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0)"
+msgstr "CPU 数量（例如：0.5, 1.0, 2.0）"
+
+msgid "Memory Limit"
+msgstr "内存限制"
+
+msgid "Memory limit (e.g., 512m, 1g)"
+msgstr "内存限制（例如：512m, 1g）"
+
+msgid "Invalid format. Use: 512m, 1g, etc."
+msgstr "格式无效。使用：512m, 1g 等"
+
+msgid "Container started successfully"
+msgstr "容器启动成功"
+
+msgid "Container stopped successfully"
+msgstr "容器停止成功"
+
+msgid "Container restarted successfully"
+msgstr "容器重启成功"
+
+msgid "Container paused successfully"
+msgstr "容器暂停成功"
+
+msgid "Container resumed successfully"
+msgstr "容器恢复成功"
+
+msgid "Container removed successfully"
+msgstr "容器删除成功"
+
+msgid "Container committed successfully"
+msgstr "容器提交成功"
+
+msgid "Starting Container"
+msgstr "启动容器"
+
+msgid "Stopping Container"
+msgstr "停止容器"
+
+msgid "Restarting Container"
+msgstr "重启容器"
+
+msgid "Pausing Container"
+msgstr "暂停容器"
+
+msgid "Resuming Container"
+msgstr "恢复容器"
+
+msgid "Removing Container"
+msgstr "删除容器"
+
+msgid "Committing Container"
+msgstr "提交容器"
+
+msgid "Failed to start container"
+msgstr "启动容器失败"
+
+msgid "Failed to stop container"
+msgstr "停止容器失败"
+
+msgid "Failed to restart container"
+msgstr "重启容器失败"
+
+msgid "Failed to pause container"
+msgstr "暂停容器失败"
+
+msgid "Failed to resume container"
+msgstr "恢复容器失败"
+
+msgid "Failed to remove container"
+msgstr "删除容器失败"
+
+msgid "Failed to commit container"
+msgstr "提交容器失败"
+
+msgid "Failed to create container: %s"
+msgstr "创建容器失败：%s"
+
+msgid "Failed to load images: %s"
+msgstr "加载镜像失败：%s"
+
+msgid "Show all containers"
+msgstr "显示所有容器"
+
+msgid "Logs"
+msgstr "日志"
+
+msgid "Live Stream"
+msgstr "实时流"
+
+msgid "Lines: "
+msgstr "行数："
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Loading logs..."
+msgstr "加载日志中..."
+
+msgid "No logs available"
+msgstr "无可用日志"
+
+msgid "Failed to load logs: %s"
+msgstr "加载日志失败：%s"
+
+msgid "Stats"
+msgstr "统计信息"
+
+msgid "CPU Usage"
+msgstr "CPU 使用率"
+
+msgid "Memory Usage"
+msgstr "内存使用量"
+
+msgid "Memory %"
+msgstr "内存 %"
+
+msgid "Network I/O"
+msgstr "网络 I/O"
+
+msgid "Block I/O"
+msgstr "块 I/O"
+
+msgid "PIDs"
+msgstr "进程数"
+
+msgid "Console"
+msgstr "控制台"
+
+msgid "Info"
+msgstr "信息"
+
+msgid "Container: %s"
+msgstr "容器：%s"
+
+msgid "Back to List"
+msgstr "返回列表"
+
+msgid "Basic Information"
+msgstr "基本信息"
+
+msgid "Started"
+msgstr "已启动"
+
+msgid "Finished"
+msgstr "已完成"
+
+msgid "Configuration"
+msgstr "配置"
+
+msgid "Entrypoint"
+msgstr "入口点"
+
+msgid "User"
+msgstr "用户"
+
+msgid "Privileged"
+msgstr "特权"
+
+msgid "Interactive"
+msgstr "交互式"
+
+msgid "Variable"
+msgstr "变量"
+
+msgid "Value"
+msgstr "值"
+
+msgid "Network"
+msgstr "网络"
+
+msgid "IP Address"
+msgstr "IP 地址"
+
+msgid "Host IP"
+msgstr "主机 IP"
+
+msgid "Host Port"
+msgstr "主机端口"
+
+msgid "Container Port"
+msgstr "容器端口"
+
+msgid "Links"
+msgstr "链接"
+
+msgid "Mounts"
+msgstr "挂载"
+
+msgid "Source"
+msgstr "源"
+
+msgid "Destination"
+msgstr "目标"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "Resources"
+msgstr "资源"
+
+msgid ""
+"Configure resource limits for this container. Changes will be applied "
+"immediately."
+msgstr "配置此容器的资源限制。更改将立即应用。"
+
+msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited."
+msgstr "CPU 数量（例如：0.5, 1.0, 2.0）。留空为不限制。"
+
+msgid "CPU Shares Weight"
+msgstr "CPU 份额权重"
+
+msgid "CPU shares (relative weight), default is 1024. 0 = use default."
+msgstr "CPU 份额（相对权重），默认为 1024。0 = 使用默认值。"
+
+msgid "Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited."
+msgstr "内存限制（例如：512m, 1g, 2g）。留空为不限制。"
+
+msgid "Memory + Swap Limit"
+msgstr "内存 + 交换分区限制"
+
+msgid ""
+"Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for "
+"unlimited."
+msgstr "总内存限制（内存 + 交换分区）。-1 为无限交换分区。留空为不限制。"
+
+msgid "Block IO Weight"
+msgstr "块 I/O 权重"
+
+msgid "Block IO weight (relative weight), 10-1000. 0 = use default."
+msgstr "块 I/O 权重（相对权重），10-1000。0 = 使用默认值。"
+
+msgid "Update Resources"
+msgstr "更新资源"
+
+msgid "Updating Resources"
+msgstr "更新资源中"
+
+msgid "Updating container resources..."
+msgstr "更新容器资源中..."
+
+msgid "Resources updated successfully"
+msgstr "资源更新成功"
+
+msgid "Failed to update resources: %s"
+msgstr "更新资源失败：%s"
+
+msgid "Invalid memory format. Use: 512m, 1g, etc."
+msgstr "内存格式无效。使用：512m, 1g 等"
+
+msgid "Invalid memory swap format. Use: 512m, 1g, -1, etc."
+msgstr "内存交换分区格式无效。使用：512m, 1g, -1 等"
+
+msgid "No changes to apply"
+msgstr "无需应用更改"
+
+msgid "CPU Shares"
+msgstr "CPU 份额"
+
+msgid "Unlimited"
+msgstr "不限制"
+
+msgid "Default"
+msgstr "默认"
+
+msgid "Key"
+msgstr "键"
+
+msgid "Terminal access coming soon..."
+msgstr "终端访问即将推出..."
+
+msgid "Loading stats..."
+msgstr "加载统计信息中..."
+
+msgid "Terminal"
+msgstr "终端"
+
+msgid "Never"
+msgstr "从不"
+
+msgid "Health"
+msgstr "健康状态"
+
+msgid "Connect to"
+msgstr "连接到"
+
+msgid "Disconnect"
+msgstr "断开连接"
+
+msgid "IP (optional)"
+msgstr "IP（可选）"
+
+msgid "Renaming container..."
+msgstr "重命名容器中..."
+
+msgid "Container renamed successfully"
+msgstr "容器重命名成功"
+
+msgid "Failed to rename container: %s"
+msgstr "重命名容器失败：%s"
+
+msgid "Updating restart policy..."
+msgstr "更新重启策略中..."
+
+msgid "Restart policy updated successfully"
+msgstr "重启策略更新成功"
+
+msgid "Failed to update restart policy: %s"
+msgstr "更新重启策略失败：%s"
+
+msgid "Connecting to Network"
+msgstr "连接到网络"
+
+msgid "Connecting container to network..."
+msgstr "连接容器到网络中..."
+
+msgid "Connected to network successfully"
+msgstr "成功连接到网络"
+
+msgid "Failed to connect to network: %s"
+msgstr "连接到网络失败：%s"
+
+msgid "Disconnect from network %s?"
+msgstr "断开与网络 %s 的连接？"
+
+msgid "Disconnecting from Network"
+msgstr "断开网络连接"
+
+msgid "Disconnecting container from network..."
+msgstr "断开容器网络连接中..."
+
+msgid "Disconnected from network successfully"
+msgstr "成功断开网络连接"
+
+msgid "Failed to disconnect from network: %s"
+msgstr "断开网络连接失败：%s"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "-- Select Network --"
+msgstr "-- 选择网络 --"
+
+msgid "Updating Container"
+msgstr "更新容器"
+
+msgid "Commit"
+msgstr "提交"
+
+msgid "Inspect"
+msgstr "检查"
+
+msgid "Creating container from image %s..."
+msgstr "从镜像 %s 创建容器中..."
+
+# 镜像管理
+msgid "Pull Image"
+msgstr "拉取镜像"
+
+msgid "Image"
+msgstr "镜像"
+
+msgid "Registry"
+msgstr "仓库"
+
+msgid "Image removed successfully"
+msgstr "镜像删除成功"
+
+msgid "Removing Image"
+msgstr "删除镜像"
+
+msgid "Image Name/Tag"
+msgstr "镜像名称/标签"
+
+msgid "nginx:latest"
+msgstr "nginx:latest"
+
+msgid "Pulling Image"
+msgstr "拉取镜像"
+
+msgid "Pulling image %s..."
+msgstr "拉取镜像 %s 中..."
+
+msgid "Image pull started"
+msgstr "镜像拉取已开始"
+
+msgid "Image pulled successfully"
+msgstr "镜像拉取成功"
+
+msgid "Failed to pull image: %s"
+msgstr "拉取镜像失败：%s"
+
+msgid "Failed to remove image: %s"
+msgstr "删除镜像失败：%s"
+
+msgid "Prune Unused Images"
+msgstr "清理未使用的镜像"
+
+msgid "Pruning Images"
+msgstr "清理镜像"
+
+msgid "Pruning unused images..."
+msgstr "清理未使用的镜像中..."
+
+msgid "Images pruned successfully"
+msgstr "镜像清理成功"
+
+msgid "Failed to prune images: %s"
+msgstr "清理镜像失败：%s"
+
+msgid "Pull latest for selected images"
+msgstr "为选中的镜像拉取最新版本"
+
+msgid "Remove selected images"
+msgstr "删除选中的镜像"
+
+msgid "Select all"
+msgstr "全选"
+
+msgid " images"
+msgstr " 个镜像"
+
+msgid " containers"
+msgstr " 个容器"
+
+msgid " volumes"
+msgstr " 个卷"
+
+# 卷管理
+msgid "Create Volume"
+msgstr "创建卷"
+
+msgid "Volume Name"
+msgstr "卷名称"
+
+msgid "Volume name. Leave empty to auto-generate."
+msgstr "卷名称。留空自动生成。"
+
+msgid "my-volume (optional)"
+msgstr "我的卷（可选）"
+
+msgid "Driver"
+msgstr "驱动"
+
+msgid "Volume driver to use"
+msgstr "使用的卷驱动"
+
+msgid "Mount Options"
+msgstr "挂载选项"
+
+msgid "Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)"
+msgstr "驱动特定选项（逗号分隔，例如：type=tmpfs,o=size=100m）"
+
+msgid "type=tmpfs,device=tmpfs,o=size=100m"
+msgstr "type=tmpfs,device=tmpfs,o=size=100m"
+
+msgid "Labels in key=value format, one per line"
+msgstr "标签格式为 键=值，每行一个"
+
+msgid "Creating Volume"
+msgstr "创建卷"
+
+msgid "Creating volume..."
+msgstr "创建卷中..."
+
+msgid "Volume created successfully"
+msgstr "卷创建成功"
+
+msgid "Failed to create volume: %s"
+msgstr "创建卷失败：%s"
+
+msgid "Removing Volume"
+msgstr "删除卷"
+
+msgid "Removing volume..."
+msgstr "删除卷中..."
+
+msgid "Volume removed successfully"
+msgstr "卷删除成功"
+
+msgid "Failed to remove volume: %s"
+msgstr "删除卷失败：%s"
+
+msgid "Prune Unused Volumes"
+msgstr "清理未使用的卷"
+
+msgid "Pruning Volumes"
+msgstr "清理卷"
+
+msgid "Pruning unused volumes..."
+msgstr "清理未使用的卷中..."
+
+msgid "Volumes pruned successfully"
+msgstr "卷清理成功"
+
+msgid "Failed to prune volumes: %s"
+msgstr "清理卷失败：%s"
+
+msgid "Delete selected volumes"
+msgstr "删除选中的卷"
+
+# 网络管理
+msgid "Create Network"
+msgstr "创建网络"
+
+msgid "Network Name"
+msgstr "网络名称"
+
+msgid "Name for the network"
+msgstr "网络的名称"
+
+msgid "my-network"
+msgstr "我的网络"
+
+msgid "Network name is required"
+msgstr "网络名称必填"
+
+msgid "Network driver"
+msgstr "网络驱动"
+
+msgid "IPv4 Subnet (CIDR)"
+msgstr "IPv4 子网 (CIDR)"
+
+msgid "IPv4 subnet in CIDR notation"
+msgstr "CIDR 格式的 IPv4 子网"
+
+msgid "IPv4 Gateway"
+msgstr "IPv4 网关"
+
+msgid "IPv4 gateway address"
+msgstr "IPv4 网关地址"
+
+msgid "IP Range (CIDR)"
+msgstr "IP 范围 (CIDR)"
+
+msgid "Allocate container IP from this range"
+msgstr "从此范围分配容器 IP"
+
+msgid "Enable IPv6"
+msgstr "启用 IPv6"
+
+msgid "Enable IPv6 networking"
+msgstr "启用 IPv6 网络"
+
+msgid "Internal Network"
+msgstr "内部网络"
+
+msgid "Restrict external access to the network"
+msgstr "限制对网络的外部访问"
+
+msgid "Creating Network"
+msgstr "创建网络"
+
+msgid "Creating network..."
+msgstr "创建网络中..."
+
+msgid "Network created successfully"
+msgstr "网络创建成功"
+
+msgid "Failed to create network: %s"
+msgstr "创建网络失败：%s"
+
+msgid "Removing Network"
+msgstr "删除网络"
+
+msgid "Removing network..."
+msgstr "删除网络中..."
+
+msgid "Network removed successfully"
+msgstr "网络删除成功"
+
+msgid "Failed to remove network: %s"
+msgstr "删除网络失败：%s"
+
+msgid "Prune Unused Networks"
+msgstr "清理未使用的网络"
+
+msgid "Pruning Networks"
+msgstr "清理网络"
+
+msgid "Pruning unused networks..."
+msgstr "清理未使用的网络中..."
+
+msgid "Networks pruned successfully"
+msgstr "网络清理成功"
+
+msgid "Failed to prune networks: %s"
+msgstr "清理网络失败：%s"
+
+msgid "Delete selected networks"
+msgstr "删除选中的网络"
+
+# 容器组管理
+msgid "Create Pod"
+msgstr "创建容器组"
+
+msgid "Pod Name"
+msgstr "容器组名称"
+
+msgid "Pod name is required"
+msgstr "容器组名称必填"
+
+msgid "Name for the pod"
+msgstr "容器组的名称"
+
+msgid "my-pod"
+msgstr "我的容器组"
+
+msgid "Hostname to assign to the pod"
+msgstr "分配给容器组的主机名"
+
+msgid "pod-hostname"
+msgstr "pod-hostname"
+
+msgid "Publish ports, one per line (host:container format)"
+msgstr "发布端口，每行一个（主机:容器 格式）"
+
+msgid "Creating Pod"
+msgstr "创建容器组"
+
+msgid "Creating pod..."
+msgstr "创建容器组中..."
+
+msgid "Pod created successfully"
+msgstr "容器组创建成功"
+
+msgid "Failed to create pod: %s"
+msgstr "创建容器组失败：%s"
+
+msgid "Pod started successfully"
+msgstr "容器组启动成功"
+
+msgid "Pod stopped successfully"
+msgstr "容器组停止成功"
+
+msgid "Pod restarted successfully"
+msgstr "容器组重启成功"
+
+msgid "Pod removed successfully"
+msgstr "容器组删除成功"
+
+msgid "Starting Pod"
+msgstr "启动容器组"
+
+msgid "Starting pod..."
+msgstr "启动容器组中..."
+
+msgid "Stopping Pod"
+msgstr "停止容器组"
+
+msgid "Stopping pod..."
+msgstr "停止容器组中..."
+
+msgid "Restarting Pod"
+msgstr "重启容器组"
+
+msgid "Restarting pod..."
+msgstr "重启容器组中..."
+
+msgid "Removing Pod"
+msgstr "删除容器组"
+
+msgid "Removing pod..."
+msgstr "删除容器组中..."
+
+msgid "Failed to start pod: %s"
+msgstr "启动容器组失败：%s"
+
+msgid "Failed to stop pod: %s"
+msgstr "停止容器组失败：%s"
+
+msgid "Failed to restart pod: %s"
+msgstr "重启容器组失败：%s"
+
+msgid "Failed to remove pod: %s"
+msgstr "删除容器组失败：%s"
+
+msgid "Prune Unused Pods"
+msgstr "清理未使用的容器组"
+
+msgid "Pruning Pods"
+msgstr "清理容器组"
+
+msgid "Pruning unused pods..."
+msgstr "清理未使用的容器组中..."
+
+msgid "Pods pruned successfully"
+msgstr "容器组清理成功"
+
+msgid "Failed to prune pods: %s"
+msgstr "清理容器组失败：%s"
+
+msgid "Delete selected pods"
+msgstr "删除选中的容器组"
+
+# 密钥管理
+msgid "Create Secret"
+msgstr "创建密钥"
+
+msgid "Secret Name"
+msgstr "密钥名称"
+
+msgid "Secret name is required"
+msgstr "密钥名称必填"
+
+msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
+msgstr "密钥名称只能包含字母、数字、下划线和连字符"
+
+msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
+msgstr "1-253 个字符：仅限字母、数字、下划线 (_)、连字符 (-)"
+
+msgid "my-secret"
+msgstr "我的密钥"
+
+msgid "Secret Data"
+msgstr "密钥数据"
+
+msgid "Secret data is required"
+msgstr "密钥数据必填"
+
+msgid "The sensitive data to store securely"
+msgstr "要安全存储的敏感数据"
+
+msgid "Enter secret data (password, token, key, etc.)"
+msgstr "输入密钥数据（密码、令牌、密钥等）"
+
+msgid "Security Notice:"
+msgstr "安全提示："
+
+msgid "Secret data is stored encrypted"
+msgstr "密钥数据加密存储"
+
+msgid "Once created, secret data cannot be viewed or retrieved"
+msgstr "创建后，密钥数据无法查看或检索"
+
+msgid "Secrets can only be used by containers, not displayed"
+msgstr "密钥只能由容器使用，不会显示"
+
+msgid "To update a secret, delete and recreate it"
+msgstr "要更新密钥，请删除后重新创建"
+
+msgid "Creating Secret"
+msgstr "创建密钥"
+
+msgid "Creating secret..."
+msgstr "创建密钥中..."
+
+msgid "Secret created successfully"
+msgstr "密钥创建成功"
+
+msgid "Failed to create secret: %s"
+msgstr "创建密钥失败：%s"
+
+msgid "Removing Secret"
+msgstr "删除密钥"
+
+msgid "Removing secret..."
+msgstr "删除密钥中..."
+
+msgid "Secret removed successfully"
+msgstr "密钥删除成功"
+
+msgid "Failed to remove secret: %s"
+msgstr "删除密钥失败：%s"
+
+msgid "Delete selected secrets"
+msgstr "删除选中的密钥"
+
+# 系统 / 概览
+msgid "System Information"
+msgstr "系统信息"
+
+msgid "Podman Version"
+msgstr "Podman 版本"
+
+msgid "API Version"
+msgstr "API 版本"
+
+msgid "Go Version"
+msgstr "Go 版本"
+
+msgid "Built"
+msgstr "构建时间"
+
+msgid "OS/Arch"
+msgstr "操作系统/架构"
+
+msgid "Running Containers"
+msgstr "运行中的容器"
+
+msgid "Total Images"
+msgstr "镜像总数"
+
+msgid "Total Volumes"
+msgstr "卷总数"
+
+msgid "Total Networks"
+msgstr "网络总数"
+
+msgid "Total Pods"
+msgstr "容器组总数"
+
+msgid "Total Secrets"
+msgstr "密钥总数"
+
+msgid "Disk Usage"
+msgstr "磁盘使用"
+
+msgid "Count"
+msgstr "数量"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Reclaimable"
+msgstr "可回收"
+
+msgid "Cleanup / Prune"
+msgstr "清理 / 清除"
+
+msgid "Cleanup Unused Resources"
+msgstr "清理未使用的资源"
+
+msgid "All unused resources (images, containers, volumes, networks)"
+msgstr "所有未使用的资源（镜像、容器、卷、网络）"
+
+msgid "Include stopped containers"
+msgstr "包括已停止的容器"
+
+msgid "Include unused volumes"
+msgstr "包括未使用的卷"
+
+msgid "Clean Up Now"
+msgstr "立即清理"
+
+msgid "Cleaning Up"
+msgstr "清理中"
+
+msgid "Cleaning up unused resources..."
+msgstr "清理未使用的资源中..."
+
+msgid "Cleanup Complete"
+msgstr "清理完成"
+
+msgid "Cleanup successful!"
+msgstr "清理成功！"
+
+msgid "Failed to cleanup: %s"
+msgstr "清理失败：%s"
+
+msgid "Auto-Update Containers"
+msgstr "自动更新容器"
+
+msgid "Auto-Update Check"
+msgstr "自动更新检查"
+
+msgid "Checking for container updates..."
+msgstr "检查容器更新中..."
+
+msgid "Auto-Update Complete"
+msgstr "自动更新完成"
+
+msgid "Auto-Update Available"
+msgstr "有可用的自动更新"
+
+msgid "No container updates available"
+msgstr "无可用的容器更新"
+
+msgid "Failed to check updates: %s"
+msgstr "检查更新失败：%s"
+
+# 额外的界面元素
+msgid "System Maintenance"
+msgstr "系统维护"
+
+msgid "Socket Path"
+msgstr "套接字路径"
+
+msgid "Graph Root"
+msgstr "图形根目录"
+
+msgid "Run Root"
+msgstr "运行根目录"
+
+msgid "Registries"
+msgstr "镜像仓库"
+
+msgid "Repository"
+msgstr "仓库"
+
+msgid "Mountpoint"
+msgstr "挂载点"
+
+msgid "Infra ID"
+msgstr "基础设施 ID"
+
+msgid "Subnet"
+msgstr "子网"
+
+msgid "Fetch a container image using Podman."
+msgstr "使用 Podman 拉取容器镜像。"
+
+msgid "Manage Podman containers"
+msgstr "管理 Podman 容器"
+
+msgid "Manage Podman images"
+msgstr "管理 Podman 镜像"
+
+msgid "Manage Podman volumes"
+msgstr "管理 Podman 卷"
+
+msgid "Manage Podman networks"
+msgstr "管理 Podman 网络"
+
+msgid "Manage Podman pods"
+msgstr "管理 Podman 容器组"
+
+msgid "Manage Podman secrets"
+msgstr "管理 Podman 密钥"
+
+msgid "No I/O"
+msgstr "无 I/O"
+
+msgid "Gateway is required"
+msgstr "网关必填"
+
+msgid "Bridge name is required"
+msgstr "网桥名称必填"
+
+msgid "Subnet is required"
+msgstr "子网必填"
+
+msgid "Subnet must be in CIDR notation (e.g., 10.129.0.0/24)"
+msgstr "子网必须使用 CIDR 表示法（例如：10.129.0.0/24）"
+
+msgid "Subnet: %s"
+msgstr "子网：%s"
+
+msgid "Gateway: %s"
+msgstr "网关：%s"
+
+msgid "Bridge: %s"
+msgstr "网桥：%s"
+
+msgid "Details:"
+msgstr "详情："
+
+msgid "Network: %s"
+msgstr "网络：%s"
+
+# 动态UI元素
+msgid "Create %s"
+msgstr "创建%s"
+
+msgid "running"
+msgstr "运行中"
+
+msgid "total"
+msgstr "总计"
+
+msgid "Pull Latest"
+msgstr "拉取最新版本"
+
+msgid ""
+"Pull latest version of %d image(s)?\n"
+"\n"
+"%s"
+msgstr ""
+"拉取 %d 个镜像的最新版本？\n"
+"\n"
+"%s"
+
+msgid "Image ID: "
+msgstr "镜像 ID："
+
+msgid "No %s selected"
+msgstr "未选中%s"
+
+msgid ""
+"Are you sure you want to remove %d %s?\n"
+"\n"
+"%s"
+msgstr ""
+"确定要删除 %d 个%s吗？\n"
+"\n"
+"%s"
+
+msgid "Deleting %s"
+msgstr "删除%s"
+
+msgid "Deleting %d selected %s..."
+msgstr "删除 %d 个选中的%s..."
+
+# 列标题
+msgid "Created"
+msgstr "创建时间"
+
+msgid "Auto-start"
+msgstr "自动启动"
+
+msgid "Image ID"
+msgstr "镜像 ID"
+
+# 导入导出操作
+msgid "Import Volume"
+msgstr "导入卷"
+
+msgid "Import from Compose File"
+msgstr "从 Compose 文件导入"
+
+msgid "Import volume from tar file: %s"
+msgstr "从 tar 文件导入卷：%s"
+
+msgid "Failed to import volume: %s"
+msgstr "导入卷失败：%s"
+
+msgid "Volume imported successfully"
+msgstr "卷导入成功"
+
+# 信息显示
+msgid "Loading %s Details"
+msgstr "加载%s详情"
+
+msgid "%s Information"
+msgstr "%s信息"
+
+msgid "Fetching information..."
+msgstr "获取信息..."
+
+# 网络集成消息
+msgid "OpenWrt integration incomplete. Click to setup. Missing: %s"
+msgstr "OpenWrt 集成不完整。点击设置。缺少：%s"
+
+msgid "No networks selected"
+msgstr "未选中网络"
+
+msgid ""
+"Are you sure you want to remove %d network(s)?\n"
+"\n"
+"%s"
+msgstr ""
+"确定要删除 %d 个网络吗？\n"
+"\n"
+"%s"
+
+msgid ""
+"Note: %d network(s) have OpenWrt integration that will also be removed "
+"(bridge, firewall zone, and rules)."
+msgstr "注意：%d 个网络已集成到 OpenWrt，将同时删除其网桥、防火墙区域和规则。"
+
+msgid "Deleting Networks"
+msgstr "删除网络"
+
+msgid "Deleting %d selected network(s)..."
+msgstr "删除 %d 个选中的网络..."
+
+msgid "Failed to delete %d network(s)"
+msgstr "删除 %d 个网络失败"
+
+msgid "Networks deleted but %d OpenWrt integration(s) failed to remove"
+msgstr "网络已删除，但 %d 个 OpenWrt 集成删除失败"
+
+msgid "Successfully deleted %d network(s)"
+msgstr "成功删除 %d 个网络"
+
+msgid "Failed to delete networks: %s"
+msgstr "删除网络失败：%s"
+
+# 缺失翻译的简体中文版本 - 第1批
+msgid "interface"
+msgstr "接口"
+
+msgid "Setup OpenWrt Integration"
+msgstr "设置 OpenWrt 集成"
+
+msgid "Setup OpenWrt integration for network \"%s\"?"
+msgstr "为网络 \"%s\" 设置 OpenWrt 集成？"
+
+msgid "This will create:"
+msgstr "这将创建："
+
+msgid "Bridge device (%s)"
+msgstr "网桥设备 (%s)"
+
+msgid "Network interface with static IP"
+msgstr "静态 IP 的网络接口"
+
+msgid "Add to shared \"podman\" firewall zone"
+msgstr "添加到共享的 \"podman\" 防火墙区域"
+
+msgid "DNS access rule (if first network)"
+msgstr "DNS 访问规则（如果是第一个网络）"
+
+msgid "Setup"
+msgstr "设置"
+
+msgid "All volumes exported successfully"
+msgstr "所有卷导出成功"
+
+msgid "Are you sure you want to remove container %s?"
+msgstr "确定要删除容器 %s 吗？"
+
+msgid "Auto-update failed: %s"
+msgstr "自动更新失败：%s"
+
+msgid "Back to Containers"
+msgstr "返回容器列表"
+
+msgid "Back to Pods"
+msgstr "返回容器组列表"
+
+msgid "Bridge Interface Name"
+msgstr "网桥接口名称"
+
+msgid "Cleanup failed: %s"
+msgstr "清理失败：%s"
+
+msgid "Click to reveal/hide value"
+msgstr "点击显示/隐藏值"
+
+msgid "CMD runs command directly, CMD-SHELL runs command in shell"
+msgstr "CMD 直接运行命令，CMD-SHELL 在 shell 中运行命令"
+
+msgid "Configure health check to monitor container health status"
+msgstr "配置健康检查以监控容器健康状态"
+
+msgid "Connect"
+msgstr "连接"
+
+msgid "Connect to Network"
+msgstr "连接到网络"
+
+msgid "Container not found"
+msgstr "未找到容器"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Creating auto-start configuration for %s"
+msgstr "正在为 %s 创建自动启动配置"
+
+msgid " (%d consecutive failures)"
+msgstr "（%d 次连续失败）"
+
+msgid "%d consecutive failures"
+msgstr "%d 次连续失败"
+
+msgid "Disable"
+msgstr "禁用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Disabling"
+msgstr "正在禁用"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Enable Health Check"
+msgstr "启用健康检查"
+
+msgid "Enabling"
+msgstr "正在启用"
+
+msgid "Ended"
+msgstr "已结束"
+
+msgid "Enter volume name"
+msgstr "输入卷名称"
+
+msgid "Error checking status: %s"
+msgstr "检查状态出错：%s"
+
+msgid "Error polling log stream: %s"
+msgstr "轮询日志流出错：%s"
+
+msgid "Export"
+msgstr "导出"
+
+msgid "Exporting selected volumes..."
+msgstr "正在导出选中的卷..."
+
+msgid "Exporting Volumes"
+msgstr "导出卷"
+
+msgid "Export selected volumes"
+msgstr "导出选中的卷"
+
+msgid "Failed to check for updates: %s"
+msgstr "检查更新失败：%s"
+
+msgid "Failed to decode logs"
+msgstr "解码日志失败"
+
+msgid "Failed to delete %d %s"
+msgstr "删除 %d 个%s失败"
+
+msgid "Failed to delete some %s: %s"
+msgstr "删除部分%s失败：%s"
+
+msgid "Failed to enable init script"
+msgstr "启用初始化脚本失败"
+
+msgid "Failed to export volume %s: %s"
+msgstr "导出卷 %s 失败：%s"
+
+msgid "Failed to generate init script"
+msgstr "生成初始化脚本失败"
+
+msgid "Failed to inspect: %s"
+msgstr "检查失败：%s"
+
+msgid "Failed to load container data"
+msgstr "加载容器数据失败"
+
+msgid "Failed to load containers"
+msgstr "加载容器列表失败"
+
+msgid "Failed to load data: %s"
+msgstr "加载数据失败：%s"
+
+msgid "Failed to load disk usage: %s"
+msgstr "加载磁盘使用情况失败：%s"
+
+msgid "Failed to load resources: %s"
+msgstr "加载资源信息失败：%s"
+
+msgid "Failed to load images"
+msgstr "加载镜像列表失败"
+
+msgid "Failed to load init script"
+msgstr "加载初始化脚本失败"
+
+msgid "Failed to load init script: %s"
+msgstr "加载初始化脚本失败：%s"
+
+msgid "Failed to load networks"
+msgstr "加载网络列表失败"
+
+msgid "Failed to load pods"
+msgstr "加载容器组列表失败"
+
+msgid "Failed to load process list: %s"
+msgstr "加载进程列表失败：%s"
+
+msgid "Failed to load secrets"
+msgstr "加载密钥列表失败"
+
+msgid "Failed to load volumes"
+msgstr "加载卷列表失败"
+
+msgid "Failed to pull %d image(s)"
+msgstr "拉取 %d 个镜像失败"
+
+msgid "Failed to pull image"
+msgstr "拉取镜像失败"
+
+msgid "Failed to pull some images: %s"
+msgstr "拉取部分镜像失败：%s"
+
+msgid "Failed to read file"
+msgstr "读取文件失败"
+
+msgid "Failed to refresh: %s"
+msgstr "刷新失败：%s"
+
+msgid "Failed to remove containers: %s"
+msgstr "删除容器失败：%s"
+
+msgid "Failed to remove %d container(s)"
+msgstr "删除 %d 个容器失败"
+
+msgid "Failed to restart containers: %s"
+msgstr "重启容器失败：%s"
+
+msgid "Failed to restart %d container(s)"
+msgstr "重启 %d 个容器失败"
+
+msgid "Failed to run health checks on %d container(s)"
+msgstr "对 %d 个容器运行健康检查失败"
+
+msgid "Failed to run health checks: %s"
+msgstr "运行健康检查失败：%s"
+
+msgid "Failed to setup auto-start: %s"
+msgstr "设置自动启动失败：%s"
+
+msgid "Failed to setup OpenWrt integration: %s"
+msgstr "设置 OpenWrt 集成失败：%s"
+
+msgid "Failed to start containers: %s"
+msgstr "启动容器失败：%s"
+
+msgid "Failed to start %d container(s)"
+msgstr "启动 %d 个容器失败"
+
+msgid "Failed to start image pull"
+msgstr "开始拉取镜像失败"
+
+msgid "Failed to start log stream: %s"
+msgstr "启动日志流失败：%s"
+
+msgid "Failed to start some pods: %s"
+msgstr "启动部分容器组失败：%s"
+
+msgid "Failed to stop containers: %s"
+msgstr "停止容器失败：%s"
+
+msgid "Failed to stop %d container(s)"
+msgstr "停止 %d 个容器失败"
+
+msgid "Failed to stop some pods: %s"
+msgstr "停止部分容器组失败：%s"
+
+msgid "Failed to update init script"
+msgstr "更新初始化脚本失败"
+
+msgid "Failed to update init script: %s"
+msgstr "更新初始化脚本失败：%s"
+
+msgid "Failed to validate: %s"
+msgstr "验证失败：%s"
+
+msgid "Failing Streak"
+msgstr "连续失败次数"
+
+msgid "Fetching script for %s"
+msgstr "正在获取 %s 的脚本"
+
+msgid "file"
+msgstr "文件"
+
+msgid ""
+"Full container inspect data in JSON format. This is the raw data returned "
+"from the Podman API."
+msgstr "JSON 格式的完整容器检查数据。这是从 Podman API 返回的原始数据。"
+
+msgid "Gateway"
+msgstr "网关"
+
+msgid "Gateway must be a valid IP address"
+msgstr "网关必须是有效的 IP 地址"
+
+msgid "Generate"
+msgstr "生成"
+
+msgid "Generating init script..."
+msgstr "正在生成初始化脚本..."
+
+msgid "Generating Init Script"
+msgstr "生成初始化脚本"
+
+msgid "Health Check Command"
+msgstr "健康检查命令"
+
+msgid "Health checks completed successfully"
+msgstr "健康检查完成"
+
+msgid "Health Check Type"
+msgstr "健康检查类型"
+
+msgid "Health Status"
+msgstr "健康状态"
+
+msgid "Id"
+msgstr "ID"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Importing volume..."
+msgstr "正在导入卷..."
+
+msgid "Importing Volume"
+msgstr "导入卷"
+
+msgid "Information"
+msgstr "信息"
+
+msgid "Init Script"
+msgstr "初始化脚本"
+
+msgid "Init script created and enabled for %s"
+msgstr "已为 %s 创建并启用初始化脚本"
+
+msgid "Init script disabled"
+msgstr "初始化脚本已禁用"
+
+msgid "Init script disabled for %s"
+msgstr "已禁用 %s 的初始化脚本"
+
+msgid "Init script enabled"
+msgstr "初始化脚本已启用"
+
+msgid "Init script enabled for %s"
+msgstr "已启用 %s 的初始化脚本"
+
+msgid "Init Script: %s"
+msgstr "初始化脚本：%s"
+
+msgid "Interval"
+msgstr "间隔"
+
+msgid "Interval during start period (podman 4.8+). Default: 5s"
+msgstr "启动期间的间隔（podman 4.8+）。默认：5s"
+
+msgid "Invalid format. Use: 1g, 2g, or -1 for unlimited swap"
+msgstr "格式无效。使用：1g、2g 或 -1 表示无限交换空间"
+
+msgid "Invalid format. Use: 30s, 1m, 1h, etc."
+msgstr "格式无效。使用：30s、1m、1h 等"
+
+msgid "Invalid format. Use: 30s, 1m, 5m, etc."
+msgstr "格式无效。使用：30s、1m、5m 等"
+
+msgid "Invalid format. Use: 5s, 10s, 30s, etc."
+msgstr "格式无效。使用：5s、10s、30s 等"
+
+msgid "Invalid format. Use: 5s, 10s, etc."
+msgstr "格式无效。使用：5s、10s 等"
+
+msgid "Last check: %s"
+msgstr "最后检查：%s"
+
+msgid "Leave empty for automatic IP assignment"
+msgstr "留空以自动分配 IP"
+
+msgid "Loading health check data..."
+msgstr "正在加载健康检查数据..."
+
+msgid "Loading Init Script"
+msgstr "加载初始化脚本"
+
+msgid "Loading process list..."
+msgstr "正在加载进程列表..."
+
+msgid "local"
+msgstr "本地"
+
+msgid "Maximum time for health check to complete. Default: 30s"
+msgstr "健康检查完成的最长时间。默认：30s"
+
+msgid "Memory"
+msgstr "内存"
+
+msgid "Must be 0 or between 10 and 1000"
+msgstr "必须是 0 或介于 10 到 1000 之间"
+
+msgid "Must be between 0 and 262144"
+msgstr "必须介于 0 到 262144 之间"
+
+msgid "N/A"
+msgstr "不适用"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "No auto-start configured"
+msgstr "未配置自动启动"
+
+msgid "No container ID in URL"
+msgstr "URL 中没有容器 ID"
+
+msgid "No containers selected"
+msgstr "未选中容器"
+
+msgid "No data received"
+msgstr "未收到数据"
+
+msgid "No failures"
+msgstr "无失败"
+
+msgid "No health check configured"
+msgstr "未配置健康检查"
+
+msgid "No images selected"
+msgstr "未选中镜像"
+
+msgid "No pods selected"
+msgstr "未选中容器组"
+
+msgid "No process data available"
+msgstr "无可用的进程数据"
+
+msgid "No running processes"
+msgstr "无运行中的进程"
+
+msgid "Not available (no restart policy)"
+msgstr "不可用（无重启策略）"
+
+msgid "Not configured"
+msgstr "未配置"
+
+msgid "No volumes selected"
+msgstr "未选中卷"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Output"
+msgstr "输出"
+
+msgid "Please enter an image name"
+msgstr "请输入镜像名称"
+
+msgid "Please select a network"
+msgstr "请选择网络"
+
+msgid "Pods started successfully"
+msgstr "容器组启动成功"
+
+msgid "Pods stopped successfully"
+msgstr "容器组停止成功"
+
+msgid "Pulling Images"
+msgstr "拉取镜像"
+
+msgid "Recent Checks (Last 10)"
+msgstr "最近检查（最后 10 次）"
+
+msgid "Refreshing %s..."
+msgstr "正在刷新 %s..."
+
+msgid "Remove all unused images (not just dangling)"
+msgstr "删除所有未使用的镜像（不仅仅是悬空镜像）"
+
+msgid "Removed %d container(s) successfully"
+msgstr "成功删除 %d 个容器"
+
+msgid "Removed: %s"
+msgstr "已删除：%s"
+
+msgid "Remove unused volumes"
+msgstr "删除未使用的卷"
+
+msgid "Removing Containers"
+msgstr "删除容器"
+
+msgid "Removing %d container(s)..."
+msgstr "正在删除 %d 个容器..."
+
+msgid "Removing unused resources, please wait..."
+msgstr "正在删除未使用的资源，请稍候..."
+
+msgid "Resource Limits"
+msgstr "资源限制"
+
+msgid "Resource Usage"
+msgstr "资源使用"
+
+msgid "Restart Containers"
+msgstr "重启容器"
+
+msgid "Restarted %d container(s) successfully"
+msgstr "成功重启 %d 个容器"
+
+msgid "Restarting %d container(s)..."
+msgstr "正在重启 %d 个容器..."
+
+msgid "Restart policy set but no init script"
+msgstr "已设置重启策略但无初始化脚本"
+
+msgid "Restart policy set but no init script. Click to generate."
+msgstr "已设置重启策略但无初始化脚本。点击生成。"
+
+msgid "Result"
+msgstr "结果"
+
+msgid "Retries"
+msgstr "重试次数"
+
+msgid "RPC call failure: "
+msgstr "RPC 调用失败："
+
+msgid "Run Check"
+msgstr "运行检查"
+
+msgid "Run Health Check Now"
+msgstr "立即运行健康检查"
+
+msgid "Run health checks on selected containers"
+msgstr "对选中的容器运行健康检查"
+
+msgid "Running Health Checks"
+msgstr "运行健康检查"
+
+msgid "Running health checks on %d container(s)..."
+msgstr "正在对 %d 个容器运行健康检查..."
+
+msgid "Running Processes"
+msgstr "运行中的进程"
+
+msgid "%s auto-start for %s"
+msgstr "%s %s 的自动启动"
+
+msgid "Select what to clean up:"
+msgstr "选择要清理的内容："
+
+msgid "Sensitive data is hidden for security reasons."
+msgstr "出于安全原因，敏感数据已隐藏。"
+
+msgid "Set a restart policy to enable auto-start"
+msgstr "设置重启策略以启用自动启动"
+
+msgid "Setting up auto-start"
+msgstr "设置自动启动"
+
+msgid "Setting up Integration"
+msgstr "设置集成"
+
+msgid "Show"
+msgstr "显示"
+
+msgid "Space freed: %s"
+msgstr "已释放空间：%s"
+
+msgid "Started %d container(s) successfully"
+msgstr "成功启动 %d 个容器"
+
+msgid "Starting Containers"
+msgstr "启动容器"
+
+msgid "Starting %d container(s)..."
+msgstr "正在启动 %d 个容器..."
+
+msgid "Starting image pull..."
+msgstr "开始拉取镜像..."
+
+msgid "Starting Pods"
+msgstr "启动容器组"
+
+msgid "Starting selected pods..."
+msgstr "正在启动选中的容器组..."
+
+msgid "Start Interval"
+msgstr "启动间隔"
+
+msgid "Start Period"
+msgstr "启动周期"
+
+msgid "Start selected containers"
+msgstr "启动选中的容器"
+
+msgid "Start selected pods"
+msgstr "启动选中的容器组"
+
+msgid "Static IP (Optional)"
+msgstr "静态 IP（可选）"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Stopped %d container(s) successfully"
+msgstr "成功停止 %d 个容器"
+
+msgid "Stopping Containers"
+msgstr "停止容器"
+
+msgid "Stopping %d container(s)..."
+msgstr "正在停止 %d 个容器..."
+
+msgid "Stopping Pods"
+msgstr "停止容器组"
+
+msgid "Stopping selected pods..."
+msgstr "正在停止选中的容器组..."
+
+msgid "Stop selected containers"
+msgstr "停止选中的容器"
+
+msgid "Stop selected pods"
+msgstr "停止选中的容器组"
+
+msgid "Successfully deleted %d %s"
+msgstr "成功删除 %d 个%s"
+
+msgid "Successfully pulled %d image(s)"
+msgstr "成功拉取 %d 个镜像"
+
+msgid "Tag"
+msgstr "标签"
+
+msgid "Test Command"
+msgstr "测试命令"
+
+msgid "The following containers can be updated:"
+msgstr "以下容器可以更新："
+
+msgid "Time between health checks (e.g., 30s, 1m, 5m). Default: 30s"
+msgstr "健康检查之间的时间间隔（例如：30s、1m、5m）。默认：30s"
+
+msgid "Timeout"
+msgstr "超时时间"
+
+msgid "TTY"
+msgstr "TTY"
+
+msgid "Unknown error"
+msgstr "未知错误"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Updated"
+msgstr "已更新"
+
+msgid "Updated %d container(s) successfully."
+msgstr "成功更新 %d 个容器。"
+
+msgid "Update Now"
+msgstr "立即更新"
+
+msgid "Updating Containers"
+msgstr "更新容器"
+
+msgid "Updating containers, please wait..."
+msgstr "正在更新容器，请稍候..."
+
+msgid "Updating Init Script"
+msgstr "更新初始化脚本"
+
+msgid "Volume name is required"
+msgstr "卷名称必填"
+
+msgid "Warning:"
+msgstr "警告："
+
+# 进程表头
+msgid "USER"
+msgstr "用户"
+
+msgid "PID"
+msgstr "进程ID"
+
+msgid "PPID"
+msgstr "父进程ID"
+
+msgid "%CPU"
+msgstr "CPU%"
+
+msgid "ELAPSED"
+msgstr "运行时长"
+
+msgid "TIME"
+msgstr "时间"
+
+msgid "COMMAND"
+msgstr "命令"
+
+# 时间单位
+msgid "h"
+msgstr "小时"
+
+msgid "m"
+msgstr "分"
+
+msgid "s"
+msgstr "秒"
+
+msgid "y"
+msgstr "年"
+
+msgid "d"
+msgstr "天"
+
+msgid "Container"
+msgstr "容器"
+
+msgid "Lines:"
+msgstr "行数："
+
+msgid "Read: %s / Write: %s"
+msgstr "读取：%s / 写入：%s"
+
+msgid "paused"
+msgstr "已暂停"
+
+msgid "exited"
+msgstr "已退出"
+
+msgid "created"
+msgstr "已创建"
+
+msgid "restarting"
+msgstr "重启中"
+
+msgid "dead"
+msgstr "已终止"
+
+msgid "removing"
+msgstr "删除中"
+
+msgid "unknown"
+msgstr "未知"
+
+msgid "Volume"
+msgstr "卷"
+
+msgid "Secret"
+msgstr "密钥"
+
+msgid "Pod"
+msgstr "容器组"
+
+msgid "stopped"
+msgstr "已停止"
+
+msgid "%s %s"
+msgstr "%s%s"
+
+# 新增翻译 - 容器详情页面
+msgid "Redirecting to containers list..."
+msgstr "正在重定向到容器列表..."
+
+# 容器健康状态
+msgid "healthy"
+msgstr "健康"
+
+msgid "unhealthy"
+msgstr "不健康"
+
+# 端口映射相关
+msgid "Exposed Ports"
+msgstr "暴露端口"
+
+msgid "Container IP + Exposed Ports"
+msgstr "容器 IP + 暴露端口"
+
+msgid "Host IP + Port Mappings"
+msgstr "主机 IP + 端口映射"
+
+# OpenWrt 网络集成
+msgid "OpenWrt Network"
+msgstr "OpenWrt 网络"
+
+msgid "Standard Network"
+msgstr "标准网络"
+
+msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
+msgstr "自动配置 OpenWrt 网络接口、网桥和防火墙区域。<strong>强烈推荐</strong>用于在 OpenWrt 上实现正确的容器网络。"
+
+msgid "Direct access to container on OpenWrt-integrated network"
+msgstr "直接访问 OpenWrt 集成网络上的容器"
+
+msgid "Access via host port mapping"
+msgstr "通过主机端口映射访问"
+
+msgid "Firewall Zone"
+msgstr "防火墙区域"
+
+msgid "Create new zone (will be named: podman_<network-name>)"
+msgstr "创建新区域（将命名为：podman_<网络名称>）"
+
+msgid "Add to shared "
+msgstr "添加到共享的 "
+
+msgid "Bridge "
+msgstr "网桥 "
+
+msgid "Network interface "
+msgstr "网络接口 "
+
+msgid "Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it."
+msgstr "网桥接口名称（例如：podman0、mynet0）。留空则使用：&lt;网络名称&gt;0。注意：如果生成的名称与现有接口冲突，OpenWrt 将自动递增。"
+
+msgid "Setting up OpenWrt integration..."
+msgstr "正在设置 OpenWrt 集成..."
+
+msgid "Setup OpenWrt integration for network "
+msgstr "为网络设置 OpenWrt 集成 "
+
+msgid "Creating OpenWrt integration for network "
+msgstr "正在为网络创建 OpenWrt 集成 "
+
+msgid "Creating OpenWrt integration for network \"%s\"..."
+msgstr "正在为网络 \"%s\" 创建 OpenWrt 集成..."
+
+msgid "OpenWrt integration for network "
+msgstr "网络的 OpenWrt 集成 "
+
+msgid "Cannot setup OpenWrt integration: Network "
+msgstr "无法设置 OpenWrt 集成：网络 "
+
+msgid "OpenWrt integration requires subnet to be specified"
+msgstr "OpenWrt 集成需要指定子网"
+
+msgid "Network and OpenWrt integration created successfully"
+msgstr "网络和 OpenWrt 集成创建成功"
+
+msgid "OpenWrt integration for network \"%s\" created successfully"
+msgstr "网络 \"%s\" 的 OpenWrt 集成创建成功"
+
+msgid "Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually."
+msgstr "网络已创建但 OpenWrt 集成失败：%s。您可能需要手动配置 OpenWrt。"
+
+# 容器创建和自动启动
+msgid "Container created and auto-start configured"
+msgstr "容器已创建并配置自动启动"
+
+msgid "Container created, started, and auto-start configured"
+msgstr "容器已创建、启动并配置自动启动"
+
+# 自动更新
+msgid "To enable auto-update, add label io.containers.autoupdate=registry to your containers."
+msgstr "要启用自动更新，请为您的容器添加标签 io.containers.autoupdate=registry。"
+
+msgid "No containers are configured for auto-update or all containers are up to date."
+msgstr "没有容器配置为自动更新或所有容器都是最新的。"
+
+msgid "Available"
+msgstr "可用"
+
+# 健康检查
+msgid "Command to run for health check. Exit code 0 = healthy, 1 = unhealthy"
+msgstr "用于健康检查的命令。退出代码 0 = 健康，1 = 不健康"
+
+msgid "Grace period before health checks count toward failures. Default: 0s"
+msgstr "健康检查计入失败前的宽限期。默认：0s"
+
+msgid "No selected containers have health checks configured"
+msgstr "所选容器未配置健康检查"
+
+# 网络选择
+msgid "Select network for the container. User-created networks provide better isolation and DNS resolution between containers."
+msgstr "为容器选择网络。用户创建的网络在容器之间提供更好的隔离和 DNS 解析。"
+
+# 日志
+msgid "Log stream ended with error"
+msgstr "日志流因错误而结束"
+
+# 卷导入
+msgid "Import volume from archive: %s"
+msgstr "从归档导入卷：%s"
