@@ -64,7 +64,8 @@ return view.extend({
 		// Handle errors from load() - redirect to containers list
 		// Check for error, missing container, or invalid container data (no Id means container doesn't exist)
 		if (data && data.error || !data.container || !data.container.Id) {
-			ui.addTimeLimitedNotification(null, E('p', data.error || _('Container not found')), 5000, 'warning');
+			ui.addTimeLimitedNotification(null, E('p', data.error || _('Container not found')),
+				5000, 'warning');
 			window.location.href = L.url('admin/podman/containers');
 			return E('div', {}, _('Redirecting to containers list...'));
 		}
@@ -109,17 +110,25 @@ return view.extend({
 		tabs
 			.addTab('info', _('Info'), 'tab-info-content')
 			.addTab('resources', _('Resources'), 'tab-resources-content')
-			.addTab('stats', _('Stats'), E('div', { 'id': 'tab-stats-content' }, [
+			.addTab('stats', _('Stats'), E('div', {
+				'id': 'tab-stats-content'
+			}, [
 				E('p', {}, _('Loading stats...'))
 			]))
-			.addTab('logs', _('Logs'), E('div', { 'id': 'tab-logs-content' }, [
+			.addTab('logs', _('Logs'), E('div', {
+				'id': 'tab-logs-content'
+			}, [
 				E('p', {}, _('Loading logs...'))
 			]))
-			.addTab('health', _('Health'), E('div', { 'id': 'tab-health-content' }, [
+			.addTab('health', _('Health'), E('div', {
+				'id': 'tab-health-content'
+			}, [
 				E('p', {}, _('Loading health check data...'))
 			]))
 			.addTab('inspect', _('Inspect'), 'tab-inspect-content')
-			.addTab('console', _('Console'), E('div', { 'id': 'tab-console-content' }, [
+			.addTab('console', _('Console'), E('div', {
+				'id': 'tab-console-content'
+			}, [
 				E('p', {}, _('Terminal access coming soon...'))
 			]));
 
@@ -205,41 +214,79 @@ return view.extend({
 
 		// Name (editable)
 		const inputId = 'edit-name';
-		basicTable.addRow([
-			{ inner: _('Name'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-			{ inner: [
-				E('input', {
-					'type': 'text',
-					'id': inputId,
-					'class': 'cbi-input-text',
-					'value': data.Name ? data.Name.replace(/^\//, '') : '-',
-					'style': 'width: 60%; margin-right: 5px;'
-				}),
-				new pui.Button(_('Update'), () => this.handleUpdateName(document.getElementById(inputId).value), 'apply').render()
-			]}
+		basicTable.addRow([{
+				inner: _('Name'),
+				options: {
+					'style': 'width: 33%; font-weight: bold;'
+				}
+			},
+			{
+				inner: [
+					E('input', {
+						'type': 'text',
+						'id': inputId,
+						'class': 'cbi-input-text',
+						'value': data.Name ? data.Name.replace(/^\//, '') : '-',
+						'style': 'width: 60%; margin-right: 5px;'
+					}),
+					new pui.Button(_('Update'), () => this.handleUpdateName(document
+						.getElementById(inputId).value), 'apply').render()
+				]
+			}
 		]);
 
 		// Standard info rows
 		basicTable
-			.addRow([
-				{ inner: _('ID'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: data.Id ? data.Id.substring(0, 64) : '-' }
+			.addRow([{
+					inner: _('ID'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: data.Id ? data.Id.substring(0, 64) : '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Image'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: config.Image || '-' }
+			.addRow([{
+					inner: _('Image'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: config.Image || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Status'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: data.State ? data.State.Status : '-' }
+			.addRow([{
+					inner: _('Status'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: data.State ? data.State.Status : '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Created'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: data.Created ? format.date(data.Created) : '-' }
+			.addRow([{
+					inner: _('Created'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: data.Created ? format.date(data.Created) : '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Started'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: data.State && data.State.StartedAt ? format.date(data.State.StartedAt) : '-' }
+			.addRow([{
+					inner: _('Started'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: data.State && data.State.StartedAt ? format.date(data.State
+						.StartedAt) : '-'
+				}
 			]);
 
 		// Restart policy (editable)
@@ -250,7 +297,8 @@ return view.extend({
 			'on-failure': _('On Failure'),
 			'unless-stopped': _('Unless Stopped')
 		};
-		const currentPolicy = hostConfig.RestartPolicy ? hostConfig.RestartPolicy.Name || 'no' : 'no';
+		const currentPolicy = hostConfig.RestartPolicy ? hostConfig.RestartPolicy.Name || 'no' :
+			'no';
 		const policyOptions = Object.keys(policies).map((key) => {
 			return E('option', {
 				'value': key,
@@ -258,27 +306,42 @@ return view.extend({
 			}, policies[key]);
 		});
 
-		basicTable.addRow([
-			{ inner: _('Restart Policy'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-			{ inner: [
-				E('select', {
-					'id': selectId,
-					'class': 'cbi-input-select',
-					'style': 'width: 60%; margin-right: 5px;'
-				}, policyOptions),
-				new pui.Button(_('Update'), () => this.handleUpdateRestartPolicy(document.getElementById(selectId).value), 'apply').render()
-			]}
+		basicTable.addRow([{
+				inner: _('Restart Policy'),
+				options: {
+					'style': 'width: 33%; font-weight: bold;'
+				}
+			},
+			{
+				inner: [
+					E('select', {
+						'id': selectId,
+						'class': 'cbi-input-select',
+						'style': 'width: 60%; margin-right: 5px;'
+					}, policyOptions),
+					new pui.Button(_('Update'), () => this.handleUpdateRestartPolicy(
+						document.getElementById(selectId).value), 'apply').render()
+				]
+			}
 		]);
 
 		// Auto-update status
 		const autoUpdateLabel = config.Labels && config.Labels['io.containers.autoupdate'];
-		basicTable.addRow([
-			{ inner: _('Auto-Update'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-			{ inner: autoUpdateLabel || _('Disabled') }
+		basicTable.addRow([{
+				inner: _('Auto-Update'),
+				options: {
+					'style': 'width: 33%; font-weight: bold;'
+				}
+			},
+			{
+				inner: autoUpdateLabel || _('Disabled')
+			}
 		]);
 
 		// Init Script status (loaded asynchronously)
-		const initScriptCell = E('span', { 'style': 'color: #999;' }, '...');
+		const initScriptCell = E('span', {
+			'style': 'color: #999;'
+		}, '...');
 		const containerName = data.Name ? data.Name.replace(/^\//, '') : null;
 
 		// Check if container has a restart policy set
@@ -298,9 +361,12 @@ return view.extend({
 						'style': 'color: #5cb85c; margin-right: 10px;'
 					}, '✓ ' + _('Enabled')));
 
-					buttons.push(new pui.Button(_('Show'), () => this.handleShowInitScript(containerName), 'neutral').render());
+					buttons.push(new pui.Button(_('Show'), () => this
+						.handleShowInitScript(containerName), 'neutral').render());
 					buttons.push(' ');
-					buttons.push(new pui.Button(_('Disable'), () => this.handleToggleInitScript(containerName, false), 'negative').render());
+					buttons.push(new pui.Button(_('Disable'), () => this
+							.handleToggleInitScript(containerName, false), 'negative')
+						.render());
 				} else if (status.exists && !status.enabled) {
 					// Init script exists but disabled
 					initScriptCell.innerHTML = '';
@@ -308,9 +374,12 @@ return view.extend({
 						'style': 'color: #999; margin-right: 10px;'
 					}, '○ ' + _('Disabled')));
 
-					buttons.push(new pui.Button(_('Show'), () => this.handleShowInitScript(containerName), 'neutral').render());
+					buttons.push(new pui.Button(_('Show'), () => this
+						.handleShowInitScript(containerName), 'neutral').render());
 					buttons.push(' ');
-					buttons.push(new pui.Button(_('Enable'), () => this.handleToggleInitScript(containerName, true), 'positive').render());
+					buttons.push(new pui.Button(_('Enable'), () => this
+							.handleToggleInitScript(containerName, true), 'positive')
+						.render());
 				} else if (hasRestartPolicy) {
 					// No init script but has restart policy - show warning with Generate button
 					initScriptCell.innerHTML = '';
@@ -319,13 +388,16 @@ return view.extend({
 						'title': _('Restart policy set but no init script')
 					}, '⚠️ ' + _('Not configured')));
 
-					buttons.push(new pui.Button(_('Generate'), () => this.handleGenerateInitScript(containerName), 'positive').render());
+					buttons.push(new pui.Button(_('Generate'), () => this
+							.handleGenerateInitScript(containerName), 'positive')
+						.render());
 				} else {
 					// No init script and no restart policy - show helper text
 					initScriptCell.innerHTML = '';
 					initScriptCell.appendChild(E('span', {
 						'style': 'color: #999;',
-						'title': _('Set a restart policy to enable auto-start')
+						'title': _(
+							'Set a restart policy to enable auto-start')
 					}, '— ' + _('Not available (no restart policy)')));
 				}
 
@@ -345,9 +417,15 @@ return view.extend({
 			initScriptCell.textContent = '—';
 		}
 
-		basicTable.addRow([
-			{ inner: _('Init Script'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-			{ inner: initScriptCell }
+		basicTable.addRow([{
+				inner: _('Init Script'),
+				options: {
+					'style': 'width: 33%; font-weight: bold;'
+				}
+			},
+			{
+				inner: initScriptCell
+			}
 		]);
 
 		// Health status if exists
@@ -383,16 +461,28 @@ return view.extend({
 			// Add manual health check button if container is running
 			if (status === 'running') {
 				healthDetails.push(' ');
-				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(), 'positive').render());
+				healthDetails.push(new pui.Button(_('Run Check'), () => this.handleHealthCheck(),
+					'positive').render());
 			}
 
-			basicTable.addRow([
-				{ inner: _('Health'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: healthDetails, options: { 'style': 'word-break: break-word;' } }
+			basicTable.addRow([{
+					inner: _('Health'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: healthDetails,
+					options: {
+						'style': 'word-break: break-word;'
+					}
+				}
 			]);
 		}
 
-		const basicSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		const basicSection = new pui.Section({
+			'style': 'margin-bottom: 20px;'
+		});
 		basicSection.addNode(_('Basic Information'), '', basicTable.render());
 		sections.push(basicSection.render());
 
@@ -402,40 +492,96 @@ return view.extend({
 
 		const configTable = new pui.Table();
 		configTable
-			.addRow([
-				{ inner: _('Command'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: cmd, options: { 'style': 'word-break: break-word;' } }
+			.addRow([{
+					inner: _('Command'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: cmd,
+					options: {
+						'style': 'word-break: break-word;'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Entrypoint'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: entrypoint, options: { 'style': 'word-break: break-word;' } }
+			.addRow([{
+					inner: _('Entrypoint'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: entrypoint,
+					options: {
+						'style': 'word-break: break-word;'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Working Directory'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: config.WorkingDir || '-' }
+			.addRow([{
+					inner: _('Working Directory'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: config.WorkingDir || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('User'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: config.User || '-' }
+			.addRow([{
+					inner: _('User'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: config.User || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Hostname'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: config.Hostname || '-' }
+			.addRow([{
+					inner: _('Hostname'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: config.Hostname || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Privileged'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: hostConfig.Privileged ? _('Yes') : _('No') }
+			.addRow([{
+					inner: _('Privileged'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: hostConfig.Privileged ? _('Yes') : _('No')
+				}
 			])
-			.addRow([
-				{ inner: _('TTY'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: config.Tty ? _('Yes') : _('No') }
+			.addRow([{
+					inner: _('TTY'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: config.Tty ? _('Yes') : _('No')
+				}
 			])
-			.addRow([
-				{ inner: _('Interactive'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: config.OpenStdin ? _('Yes') : _('No') }
+			.addRow([{
+					inner: _('Interactive'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: config.OpenStdin ? _('Yes') : _('No')
+				}
 			]);
 
-		const configSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		const configSection = new pui.Section({
+			'style': 'margin-bottom: 20px;'
+		});
 		configSection.addNode(_('Configuration'), '', configTable.render());
 		sections.push(configSection.render());
 
@@ -457,38 +603,43 @@ return view.extend({
 			});
 
 			// Only display user-created networks with disconnect buttons
-		userNetworks.forEach((netName) => {
-			const net = networkSettings.Networks[netName];
-			const tooltip = (() => {
-				const parts = [];
-				if (net.IPAddress) parts.push(`IPv4: ${net.IPAddress}`);
-				if (net.GlobalIPv6Address) parts.push(`IPv6: ${net.GlobalIPv6Address}`);
-				else parts.push('IPv6: disabled');
-				if (net.Gateway) parts.push(`Gateway: ${net.Gateway}`);
-				if (net.MacAddress) parts.push(`MAC: ${net.MacAddress}`);
-				if (net.NetworkID) parts.push(`Network ID: ${net.NetworkID.substring(0, 12)}`);
-				return parts.join('\n');
-			})();
+			userNetworks.forEach((netName) => {
+				const net = networkSettings.Networks[netName];
+				const tooltip = (() => {
+					const parts = [];
+					if (net.IPAddress) parts.push(`IPv4: ${net.IPAddress}`);
+					if (net.GlobalIPv6Address) parts.push(
+						`IPv6: ${net.GlobalIPv6Address}`);
+					else parts.push('IPv6: disabled');
+					if (net.Gateway) parts.push(`Gateway: ${net.Gateway}`);
+					if (net.MacAddress) parts.push(`MAC: ${net.MacAddress}`);
+					if (net.NetworkID) parts.push(
+						`Network ID: ${net.NetworkID.substring(0, 12)}`);
+					return parts.join('\n');
+				})();
 
-			networkTable.addRow([
-				{
-					inner: netName,
-					options: {
-						'style': 'width: 33%; font-weight: bold; cursor: help;',
-						'title': tooltip
+				networkTable.addRow([{
+						inner: netName,
+						options: {
+							'style': 'width: 33%; font-weight: bold; cursor: help;',
+							'title': tooltip
+						}
+					},
+					{
+						inner: [
+							net.IPAddress || '-',
+							' ',
+							E('span', {
+								'style': 'margin-left: 10px;'
+							}, [
+								new pui.Button(_('Disconnect'), () => this
+									.handleNetworkDisconnect(netName),
+									'remove').render()
+							])
+						]
 					}
-				},
-				{
-					inner: [
-						net.IPAddress || '-',
-						' ',
-						E('span', { 'style': 'margin-left: 10px;' }, [
-							new pui.Button(_('Disconnect'), () => this.handleNetworkDisconnect(netName), 'remove').render()
-						])
-					]
-				}
-			]);
-		});
+				]);
+			});
 		}
 
 		// Only show legacy IP Address row if no user networks are displayed
@@ -516,29 +667,36 @@ return view.extend({
 			});
 		}
 
-		networkTable.addRow([
-			{ inner: _('Connect to'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-			{ inner: [
-				E('select', {
-					'id': networkSelectId,
-					'class': 'cbi-input-select',
-					'style': 'width: 40%; margin-right: 5px;'
-				}, networkOptions),
-				E('input', {
-					'type': 'text',
-					'id': ipInputId,
-					'class': 'cbi-input-text',
-					'placeholder': _('IP (optional)'),
-					'style': 'width: 30%; margin-right: 5px;'
-				}),
-				new pui.Button(_('Connect'), () => {
-					const netName = document.getElementById(networkSelectId).value;
-					const ip = document.getElementById(ipInputId).value;
-					if (netName) {
-						this.handleNetworkConnect(netName, ip);
-					}
-				}, 'positive').render()
-			]}
+		networkTable.addRow([{
+				inner: _('Connect to'),
+				options: {
+					'style': 'width: 33%; font-weight: bold;'
+				}
+			},
+			{
+				inner: [
+					E('select', {
+						'id': networkSelectId,
+						'class': 'cbi-input-select',
+						'style': 'width: 40%; margin-right: 5px;'
+					}, networkOptions),
+					E('input', {
+						'type': 'text',
+						'id': ipInputId,
+						'class': 'cbi-input-text',
+						'placeholder': _('IP (optional)'),
+						'style': 'width: 30%; margin-right: 5px;'
+					}),
+					new pui.Button(_('Connect'), () => {
+						const netName = document.getElementById(networkSelectId)
+							.value;
+						const ip = document.getElementById(ipInputId).value;
+						if (netName) {
+							this.handleNetworkConnect(netName, ip);
+						}
+					}, 'positive').render()
+				]
+			}
 		]);
 
 		// Ports - smart detection based on network type
@@ -559,7 +717,9 @@ return view.extend({
 		}
 
 		// Render Network section using pui.Section
-		const networkSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+		const networkSection = new pui.Section({
+			'style': 'margin-bottom: 20px;'
+		});
 		networkSection.addNode(_('Network'), '', networkTable.render());
 		sections.push(networkSection.render());
 
@@ -579,8 +739,12 @@ return view.extend({
 				// Create censored value display (bullet points)
 				const censoredValue = '••••••••';
 
-				envTable.addRow([
-					{ inner: varName, options: { 'style': 'font-family: monospace; word-break: break-all;' } },
+				envTable.addRow([{
+						inner: varName,
+						options: {
+							'style': 'font-family: monospace; word-break: break-all;'
+						}
+					},
 					{
 						inner: censoredValue,
 						options: {
@@ -588,18 +752,21 @@ return view.extend({
 							'title': _('Click to reveal/hide value'),
 							'data-revealed': 'false',
 							'data-value': varValue,
-							'click': function() {
-								const isRevealed = this.getAttribute('data-revealed') === 'true';
+							'click': function () {
+								const isRevealed = this.getAttribute(
+									'data-revealed') === 'true';
 								if (isRevealed) {
 									// Hide value
 									this.textContent = censoredValue;
-									this.setAttribute('data-revealed', 'false');
+									this.setAttribute('data-revealed',
+										'false');
 
 									return;
 								}
 
 								// Reveal value
-								this.textContent = this.getAttribute('data-value');
+								this.textContent = this.getAttribute(
+									'data-value');
 								this.setAttribute('data-revealed', 'true');
 							}
 						}
@@ -607,7 +774,9 @@ return view.extend({
 				]);
 			});
 
-			const envSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			const envSection = new pui.Section({
+				'style': 'margin-bottom: 20px;'
+			});
 			envSection.addNode(_('Environment Variables'), '', envTable.render());
 
 			sections.push(envSection.render());
@@ -622,15 +791,30 @@ return view.extend({
 				.addHeader(_('Mode'));
 
 			data.Mounts.forEach(function (mount) {
-				mountsTable.addRow([
-					{ inner: mount.Type || '-' },
-					{ inner: utils.truncate(mount.Source || '-', 50), options: { 'title': mount.Source || '-' } },
-					{ inner: utils.truncate(mount.Destination || '-', 50), options: { 'title': mount.Destination || '-' } },
-					{ inner: mount.RW ? 'rw' : 'ro' }
+				mountsTable.addRow([{
+						inner: mount.Type || '-'
+					},
+					{
+						inner: utils.truncate(mount.Source || '-', 50),
+						options: {
+							'title': mount.Source || '-'
+						}
+					},
+					{
+						inner: utils.truncate(mount.Destination || '-', 50),
+						options: {
+							'title': mount.Destination || '-'
+						}
+					},
+					{
+						inner: mount.RW ? 'rw' : 'ro'
+					}
 				]);
 			});
 
-			const mountsSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			const mountsSection = new pui.Section({
+				'style': 'margin-bottom: 20px;'
+			});
 			mountsSection.addNode(_('Mounts'), '', mountsTable.render());
 			sections.push(mountsSection.render());
 		}
@@ -652,8 +836,12 @@ return view.extend({
 		const editor = new pform.ResourceEditor();
 		editor.render(this.containerId, this.containerData).then((renderedForm) => {
 			// Add description above the form
-			const wrapper = E('div', { 'class': 'cbi-section' }, [
-				E('div', { 'class': 'cbi-section-descr' }, _(
+			const wrapper = E('div', {
+				'class': 'cbi-section'
+			}, [
+				E('div', {
+					'class': 'cbi-section-descr'
+				}, _(
 					'Configure resource limits for this container. Changes will be applied immediately.'
 				)),
 				renderedForm
@@ -675,33 +863,96 @@ return view.extend({
 
 		const statsTable = new pui.Table();
 		statsTable
-			.addRow([
-				{ inner: _('CPU Usage'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-cpu' } }
+			.addRow([{
+					inner: _('CPU Usage'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-cpu'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Memory Usage'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-memory' } }
+			.addRow([{
+					inner: _('Memory Usage'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-memory'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Memory Limit'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-memory-limit' } }
+			.addRow([{
+					inner: _('Memory Limit'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-memory-limit'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Memory %'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-memory-percent' } }
+			.addRow([{
+					inner: _('Memory %'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-memory-percent'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Network I/O'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-network' } }
+			.addRow([{
+					inner: _('Network I/O'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-network'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('Block I/O'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-blockio' } }
+			.addRow([{
+					inner: _('Block I/O'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-blockio'
+					}
+				}
 			])
-			.addRow([
-				{ inner: _('PIDs'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: '-', options: { 'id': 'stat-pids' } }
+			.addRow([{
+					inner: _('PIDs'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: '-',
+					options: {
+						'id': 'stat-pids'
+					}
+				}
 			]);
 
 		const statsSection = new pui.Section();
@@ -709,8 +960,12 @@ return view.extend({
 
 		const statsDisplay = statsSection.render();
 
-		const processSection = new pui.Section({ 'style': 'margin-top: 20px;' });
-		processSection.addNode(_('Running Processes'), '', E('div', { 'id': 'process-list-container' }, [
+		const processSection = new pui.Section({
+			'style': 'margin-top: 20px;'
+		});
+		processSection.addNode(_('Running Processes'), '', E('div', {
+			'id': 'process-list-container'
+		}, [
 			E('p', {}, _('Loading process list...'))
 		]));
 
@@ -725,7 +980,7 @@ return view.extend({
 			this.updateProcessList();
 
 			const view = this;
-			this.statsPollFn = function() {
+			this.statsPollFn = function () {
 				return Promise.all([
 					view.updateStats(),
 					view.updateProcessList()
@@ -756,7 +1011,9 @@ return view.extend({
 			const processContainer = document.getElementById('process-list-container');
 			if (processContainer) {
 				processContainer.innerHTML = '';
-				processContainer.appendChild(E('p', { 'style': 'color: #999;' },
+				processContainer.appendChild(E('p', {
+						'style': 'color: #999;'
+					},
 					_('Container must be running to view processes')));
 			}
 		}
@@ -765,7 +1022,7 @@ return view.extend({
 	/**
 	 * Update stats display with current resource usage
 	 */
-	updateStats: function() {
+	updateStats: function () {
 		return podmanRPC.container.stats(this.containerId).then((result) => {
 			// Podman stats API returns different formats:
 			// - With stream=false: Single stats object
@@ -834,7 +1091,7 @@ return view.extend({
 	/**
 	 * Update process list with running processes
 	 */
-	updateProcessList: function() {
+	updateProcessList: function () {
 		return podmanRPC.container.top(this.containerId, '').then((result) => {
 			const container = document.getElementById('process-list-container');
 			if (!container) return;
@@ -856,24 +1113,31 @@ return view.extend({
 				return;
 			}
 
-			const processTable = new pui.Table({ 'style': 'font-size: 11px; width: 100%;' });
+			const processTable = new pui.Table({
+				'style': 'font-size: 11px; width: 100%;'
+			});
 
 			titles.forEach((title) => {
-				processTable.addHeader(title, { 'style': 'font-family: monospace; white-space: nowrap;' });
+				processTable.addHeader(title, {
+					'style': 'font-family: monospace; white-space: nowrap;'
+				});
 			});
 
 
 			processes.forEach((proc) => {
 				const cells = proc.map((cell, index) => {
-					let style = 'font-family: monospace; font-size: 11px; padding: 4px 8px;';
+					let style =
+						'font-family: monospace; font-size: 11px; padding: 4px 8px;';
 					let displayValue = cell || '-';
 
-					if (titles[index] === 'PID' || titles[index] === 'PPID' || titles[index] === '%CPU') {
+					if (titles[index] === 'PID' || titles[index] ===
+						'PPID' || titles[index] === '%CPU') {
 						style += ' text-align: right;';
 					} else if (titles[index] === 'ELAPSED') {
 						displayValue = format.elapsedTime(cell);
 					} else if (titles[index] === 'COMMAND') {
-						style += ' max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+						style +=
+							' max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 					}
 
 					return {
@@ -897,8 +1161,11 @@ return view.extend({
 				while (container.firstChild) {
 					container.removeChild(container.firstChild);
 				}
-				container.appendChild(E('p', { 'style': 'color: #999;' },
-					_('Failed to load process list: %s').format(err.message || _('Unknown error'))));
+				container.appendChild(E('p', {
+						'style': 'color: #999;'
+					},
+					_('Failed to load process list: %s').format(err.message || _(
+						'Unknown error'))));
 			}
 		});
 	},
@@ -1307,7 +1574,9 @@ return view.extend({
 			const configTable = new pui.Table();
 
 			const testCmd = healthConfig.Test.join(' ');
-			configTable.addInfoRow(_('Test Command'), E('code', { 'style': 'font-family: monospace; background: #f5f5f5; padding: 2px 6px; border-radius: 3px;' }, testCmd));
+			configTable.addInfoRow(_('Test Command'), E('code', {
+				'style': 'font-family: monospace; background: #f5f5f5; padding: 2px 6px; border-radius: 3px;'
+			}, testCmd));
 
 			if (healthConfig.Interval) {
 				configTable.addInfoRow(_('Interval'), format.duration(healthConfig.Interval));
@@ -1318,24 +1587,34 @@ return view.extend({
 			}
 
 			if (healthConfig.StartPeriod) {
-				configTable.addInfoRow(_('Start Period'), format.duration(healthConfig.StartPeriod));
+				configTable.addInfoRow(_('Start Period'), format.duration(healthConfig
+					.StartPeriod));
 			}
 
 			if (healthConfig.Retries) {
 				configTable.addInfoRow(_('Retries'), String(healthConfig.Retries));
 			}
 
-			const configSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			const configSection = new pui.Section({
+				'style': 'margin-bottom: 20px;'
+			});
 			configSection.addNode(_('Health Check Configuration'),
-				E('div', { 'style': 'font-size: 0.9em; color: #666; margin-top: 5px;' },
-					_('Health check configuration is set at container creation and cannot be modified. To change it, you must recreate the container.')),
+				E('div', {
+						'style': 'font-size: 0.9em; color: #666; margin-top: 5px;'
+					},
+					_(
+						'Health check configuration is set at container creation and cannot be modified. To change it, you must recreate the container.')
+					),
 				configTable.render());
 			sections.push(configSection.render());
 		} else {
 			// No health check configured
-			const noHealthSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			const noHealthSection = new pui.Section({
+				'style': 'margin-bottom: 20px;'
+			});
 			noHealthSection.addNode(_('Health Check Configuration'),
-				_('No health check configured. To add a health check, you must recreate the container with health check parameters.'),
+				_(
+					'No health check configured. To add a health check, you must recreate the container with health check parameters.'),
 				E('div'));
 			sections.push(noHealthSection.render());
 		}
@@ -1346,25 +1625,39 @@ return view.extend({
 			const failingStreak = health.FailingStreak || 0;
 
 			const statusTable = new pui.Table();
-			statusTable.addRow([
-				{ inner: _('Status'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{ inner: E('span', {
-					'class': 'badge status-' + status.toLowerCase(),
-					'style': 'font-size: 16px;'
-				}, status) }
+			statusTable.addRow([{
+					inner: _('Status'),
+					options: {
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: E('span', {
+						'class': 'badge status-' + status.toLowerCase(),
+						'style': 'font-size: 16px;'
+					}, status)
+				}
 			]);
 
-			statusTable.addRow([
-				{ inner: _('Failing Streak'), options: { 'style': 'width: 33%; font-weight: bold;' } },
-				{
-					inner: failingStreak > 0 ? _('%d consecutive failures').format(failingStreak) : _('No failures'),
+			statusTable.addRow([{
+					inner: _('Failing Streak'),
 					options: {
-						'style': failingStreak > 0 ? 'color: #ff6b6b; font-weight: bold;' : ''
+						'style': 'width: 33%; font-weight: bold;'
+					}
+				},
+				{
+					inner: failingStreak > 0 ? _('%d consecutive failures').format(
+						failingStreak) : _('No failures'),
+					options: {
+						'style': failingStreak > 0 ?
+							'color: #ff6b6b; font-weight: bold;' : ''
 					}
 				}
 			]);
 
-			const statusSection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			const statusSection = new pui.Section({
+				'style': 'margin-bottom: 20px;'
+			});
 			statusSection.addNode(_('Health Status'), '', statusTable.render());
 			sections.push(statusSection.render());
 		}
@@ -1390,23 +1683,35 @@ return view.extend({
 				outputSpan.textContent = outputText;
 
 				const resultBadge = E('span', {}, [
-					E('span', { 'class': 'badge ' + exitClass }, exitStatus),
+					E('span', {
+						'class': 'badge ' + exitClass
+					}, exitStatus),
 					' ',
 					E('small', {}, '(Exit: ' + exitCode + ')')
 				]);
 
-				historyTable.addRow([
-					{ inner: entry.Start ? format.date(entry.Start) : '-' },
-					{ inner: entry.End ? format.date(entry.End) : '-' },
-					{ inner: resultBadge },
-					{ inner: outputSpan, options: {
-						'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
-						'title': outputText
-					}}
+				historyTable.addRow([{
+						inner: entry.Start ? format.date(entry.Start) : '-'
+					},
+					{
+						inner: entry.End ? format.date(entry.End) : '-'
+					},
+					{
+						inner: resultBadge
+					},
+					{
+						inner: outputSpan,
+						options: {
+							'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
+							'title': outputText
+						}
+					}
 				]);
 			});
 
-			const historySection = new pui.Section({ 'style': 'margin-bottom: 20px;' });
+			const historySection = new pui.Section({
+				'style': 'margin-bottom: 20px;'
+			});
 			historySection.addNode(_('Recent Checks (Last 10)'), '', historyTable.render());
 			sections.push(historySection.render());
 		}
@@ -1421,7 +1726,8 @@ return view.extend({
 			container.appendChild(E('div', {
 				'style': 'margin-top: 20px;'
 			}, [
-				new pui.Button(_('Run Health Check Now'), () => this.handleHealthCheck(),
+				new pui.Button(_('Run Health Check Now'), () => this
+					.handleHealthCheck(),
 					'positive').render()
 			]));
 		}
@@ -1430,7 +1736,7 @@ return view.extend({
 	/**
 	 * Render Inspect tab with full JSON container data
 	 */
-	renderInspectTab: function() {
+	renderInspectTab: function () {
 		const container = document.getElementById('tab-inspect-content');
 		if (!container) return;
 
@@ -1439,7 +1745,8 @@ return view.extend({
 		const jsonSection = new pui.Section();
 		jsonSection.addNode(
 			'',
-			_('Full container inspect data in JSON format. This is the raw data returned from the Podman API.'),
+			_(
+				'Full container inspect data in JSON format. This is the raw data returned from the Podman API.'),
 			E('pre', {
 				'style': 'background: #f5f5f5; padding: 15px; overflow: auto; max-height: 800px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.5;'
 			}, JSON.stringify(data, null, 2))
@@ -1483,7 +1790,8 @@ return view.extend({
 	handleUpdateRestartPolicy: function (policy) {
 		pui.showSpinningModal(_('Updating Container'), _('Updating restart policy...'));
 
-		const containerName = this.containerData.Name ? this.containerData.Name.replace(/^\//, '') : null;
+		const containerName = this.containerData.Name ? this.containerData.Name.replace(/^\//,
+			'') : null;
 		const hasRestartPolicy = policy && policy !== '' && policy !== 'no';
 
 		// Podman libpod API uses query parameters for restart policy
@@ -1516,15 +1824,20 @@ return view.extend({
 					return podmanRPC.initScript.generate(containerName)
 						.then((genResult) => {
 							if (genResult && genResult.success) {
-								return podmanRPC.initScript.setEnabled(containerName, true);
+								return podmanRPC.initScript.setEnabled(
+									containerName, true);
 							}
 							// Generation failed, but policy update succeeded - just log warning
-							console.warn('Failed to auto-generate init script:', genResult.error);
+							console.warn(
+								'Failed to auto-generate init script:',
+								genResult.error);
 							return Promise.resolve();
 						})
 						.catch((err) => {
 							// Auto-generation failed, but policy update succeeded - just log warning
-							console.warn('Failed to auto-generate init script:', err.message);
+							console.warn(
+								'Failed to auto-generate init script:',
+								err.message);
 							return Promise.resolve();
 						});
 				} else if (!hasRestartPolicy && status.exists) {
@@ -1532,7 +1845,8 @@ return view.extend({
 					return podmanRPC.initScript.remove(containerName)
 						.catch((err) => {
 							// Auto-removal failed, but policy update succeeded - just log warning
-							console.warn('Failed to auto-remove init script:', err.message);
+							console.warn('Failed to auto-remove init script:',
+								err.message);
 							return Promise.resolve();
 						});
 				}
@@ -1636,7 +1950,8 @@ return view.extend({
 
 		if (primaryNetwork) {
 			// Check if network has OpenWrt integration
-			const hasIntegration = await openwrtNetwork.hasIntegration(primaryNetwork).catch(() => false);
+			const hasIntegration = await openwrtNetwork.hasIntegration(primaryNetwork).catch(() =>
+				false);
 
 			if (hasIntegration) {
 				useContainerIp = true;
@@ -1660,10 +1975,13 @@ return view.extend({
 						href: url,
 						target: '_blank',
 						style: 'text-decoration: underline; color: #0066cc;',
-						title: _('Direct access to container on OpenWrt-integrated network')
+						title: _(
+							'Direct access to container on OpenWrt-integrated network'
+							)
 					}, linkText));
 				} else {
-					portElements.push(E('span', {}, `${containerIp}:${port.containerPort}/${port.protocol}`));
+					portElements.push(E('span', {},
+						`${containerIp}:${port.containerPort}/${port.protocol}`));
 				}
 			});
 		} else {
@@ -1672,15 +1990,16 @@ return view.extend({
 				if (port.isMapped) {
 					// Mapped port with host binding
 					const hostIp = port.hostIp || '0.0.0.0';
-					const linkIp = (hostIp === '0.0.0.0' || hostIp === '::')
-						? window.location.hostname
-						: hostIp;
+					const linkIp = (hostIp === '0.0.0.0' || hostIp === '::') ?
+						window.location.hostname :
+						hostIp;
 					const urlProtocol = port.hostPort === '443' ? 'https' : 'http';
 					const isTcp = port.protocol === 'tcp';
 
 					if (isTcp) {
 						const url = `${urlProtocol}://${linkIp}:${port.hostPort}`;
-						const linkText = `${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`;
+						const linkText =
+							`${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`;
 						portElements.push(E('a', {
 							href: url,
 							target: '_blank',
@@ -1688,11 +2007,15 @@ return view.extend({
 							title: _('Access via host port mapping')
 						}, linkText));
 					} else {
-						portElements.push(E('span', {}, `${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`));
+						portElements.push(E('span', {},
+							`${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`
+							));
 					}
 				} else {
 					// Exposed port without host mapping
-					portElements.push(E('span', { style: 'color: #666;' }, `${port.containerPort}/${port.protocol} (exposed)`));
+					portElements.push(E('span', {
+						style: 'color: #666;'
+					}, `${port.containerPort}/${port.protocol} (exposed)`));
 				}
 			});
 		}
@@ -1826,8 +2149,12 @@ return view.extend({
 
 				ui.showModal(_('Init Script'), [
 					content,
-					E('div', { 'class': 'right', 'style': 'margin-top: 15px;' }, [
-						new pui.Button(_('Close'), ui.hideModal, 'neutral').render()
+					E('div', {
+						'class': 'right',
+						'style': 'margin-top: 15px;'
+					}, [
+						new pui.Button(_('Close'), ui.hideModal, 'neutral')
+						.render()
 					])
 				]);
 			} else {
@@ -1835,7 +2162,8 @@ return view.extend({
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			pui.errorNotification(_('Failed to load init script: %s').format(err.message));
+			pui.errorNotification(_('Failed to load init script: %s').format(err
+			.message));
 		});
 	},
 
@@ -1863,7 +2191,8 @@ return view.extend({
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			pui.errorNotification(_('Failed to update init script: %s').format(err.message));
+			pui.errorNotification(_('Failed to update init script: %s').format(err
+				.message));
 		});
 	}
 });
