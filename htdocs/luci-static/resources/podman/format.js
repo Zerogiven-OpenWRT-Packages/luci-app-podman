@@ -237,7 +237,7 @@ return baseclass.extend({
 						write += entry.value || 0;
 					}
 				});
-				return `Read: ${this.bytes(read)} / Write: ${this.bytes(write)}`;
+				return _('Read: %s / Write: %s').format(this.bytes(read), this.bytes(write));
 			}
 
 			// No data available
@@ -280,30 +280,31 @@ return baseclass.extend({
 	elapsedTime: function (timeStr) {
 		if (!timeStr) return '-';
 
-		// Match format: (optional minutes)(seconds).(fractional)s
-		const match = timeStr.match(/^(\d+m)?(\d+)\.(\d+)s$/);
-		if (!match) {
-			return timeStr;
+		// Parse all time units: y, d, h, m, s with optional decimal
+		const result = [];
+		const pattern = /(\d+)([ydhms])/g;
+		let match;
+		let hasSeconds = false;
+		
+		while ((match = pattern.exec(timeStr)) !== null) {
+			const value = parseInt(match[1]);
+			const unit = match[2];
+			
+			if (unit === 's') {
+				hasSeconds = true;
+				// Only show seconds, ignore fractional part for display
+				result.push(`${value}${_('s')}`);
+			} else if (unit === 'm') {
+				result.push(`${value}${_('m')}`);
+			} else if (unit === 'h') {
+				result.push(`${value}${_('h')}`);
+			} else if (unit === 'd') {
+				result.push(`${value}${_('d')}`);
+			} else if (unit === 'y') {
+				result.push(`${value}${_('y')}`);
+			}
 		}
-
-		const minutes = match[1] || '';
-		const seconds = match[2];
-		const fractional = match[3];
-
-		// Round seconds up if fractional part >= 0.5
-		let roundedSeconds = fractional && fractional[0] >= '5'
-			? parseInt(seconds) + 1
-			: parseInt(seconds);
-
-		// Handle overflow: if seconds reach 60, increment minutes
-		if (roundedSeconds >= 60 && minutes) {
-			const totalMinutes = parseInt(minutes) + 1;
-			roundedSeconds = 0;
-			return `${totalMinutes}m${String(roundedSeconds).padStart(2, '0')}s`;
-		}
-
-		// Format with zero-padding for minutes, or without for seconds-only
-		const formattedSeconds = minutes ? String(roundedSeconds).padStart(2, '0') : String(roundedSeconds);
-		return `${minutes}${formattedSeconds}s`;
+		
+		return result.length > 0 ? result.join('') : timeStr;
 	}
 });

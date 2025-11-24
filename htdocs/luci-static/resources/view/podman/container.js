@@ -257,15 +257,9 @@ return view.extend({
 					inner: config.Image || '-'
 				}
 			])
-			.addRow([{
-					inner: _('Status'),
-					options: {
-						'style': 'width: 33%; font-weight: bold;'
-					}
-				},
-				{
-					inner: data.State ? data.State.Status : '-'
-				}
+			.addRow([
+				{ inner: _('Status'), options: { 'style': 'width: 33%; font-weight: bold;' } },
+				{ inner: data.State ? _(data.State.Status) : '-' }
 			])
 			.addRow([{
 					inner: _('Created'),
@@ -1118,9 +1112,7 @@ return view.extend({
 			});
 
 			titles.forEach((title) => {
-				processTable.addHeader(title, {
-					'style': 'font-family: monospace; white-space: nowrap;'
-				});
+				processTable.addHeader(_(title), { 'style': 'font-family: monospace; white-space: nowrap;' });
 			});
 
 

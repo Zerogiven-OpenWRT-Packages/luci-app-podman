@@ -153,13 +153,15 @@ return view.extend({
 					name);
 				if (iconEl && !result.complete) {
 					iconEl.innerHTML = '';
+					// Translate missing component names
+					const translatedMissing = result.missing.map(item => _(item));
 					iconEl.appendChild(E('a', {
 						'href': '#',
 						'class': 'alert-icon',
 						'style': 'color: #f90; text-decoration: none; cursor: pointer;',
 						'title': _(
 							'OpenWrt integration incomplete. Click to setup. Missing: %s'
-						).format(result.missing.join(', ')),
+						).format(translatedMissing.join(', ')),
 						'click': (ev) => {
 							ev.preventDefault();
 							ev.stopPropagation();
