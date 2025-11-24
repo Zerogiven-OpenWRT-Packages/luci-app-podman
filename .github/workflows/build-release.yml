@@ -1,6 +1,5 @@
 name: Build OpenWRT package (release)
 
-# Trigger on version tags only
 on:
   push:
     tags:
@@ -13,15 +12,15 @@ jobs:
     strategy:
       matrix:
         include:
+          # 24.10
           - openwrt_version: '24.10'
-            arch: 'x86_64-24.10.3'
+            openwrt_build_version: '24.10.3'
+            arch: 'x86_64'
       fail-fast: false
 
     outputs:
       version: ${{ steps.get_version.outputs.version }}
-      tag_name: ${{ steps.get_version.outputs.tag_name }}
-      package_path: ${{ steps.build_package.outputs.package_path }}
-      package_name: ${{ steps.build_package.outputs.package_name }}
+      tag_name: ${{ steps.get_version.outputs.version_tag }}
 
     steps:
       - name: Checkout repository
@@ -30,26 +29,19 @@ jobs:
           path: ${{ github.workspace }}/feed/luci-app-podman
           fetch-depth: 0
 
-      - name: Get version from tag
+      - name: Get Version from Tag
         id: get_version
-        run: |
-          # Extract version from tag (remove 'v' prefix)
-          VERSION=${GITHUB_REF#refs/tags/v}
-          TAG_NAME="v$VERSION"
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION for OpenWrt ${{ matrix.openwrt_version }}"
+        uses: ChrSchu90/GitTagSemanticVersion@v1.1
 
       - name: Create artifacts directory structure
         run: |
           mkdir -p ${{ github.workspace }}/artifacts
 
-      - name: Build OpenWrt ${{ matrix.openwrt_version }} package
+      - name: Build OpenWrt ${{ matrix.openwrt_version }}-${{ matrix.arch }} package
         id: build_package
         uses: openwrt/gh-action-sdk@v9
         env:
-          ARCH: ${{ matrix.arch }}
+          ARCH: ${{ matrix.arch }}-${{ matrix.openwrt_build_version }}
           PACKAGES: luci-app-podman
           V: '0'
           FEED_DIR: ${{ github.workspace }}/feed
@@ -72,8 +64,8 @@ jobs:
       - name: Upload package artifact
         uses: actions/upload-artifact@v5
         with:
-          name: luci-app-podman-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk
-          path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ matrix.openwrt_version }}-${{ steps.get_version.outputs.version }}.ipk
+          name: luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}-${{ matrix.arch }}.ipk
+          path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}-${{ matrix.arch }}.ipk
           retention-days: 30
 
   create-release:
@@ -91,12 +83,6 @@ jobs:
           pattern: luci-app-podman-*.ipk
           merge-multiple: true
 
-      - name: Generate changelog
-        id: changelog
-        uses: metcalfc/changelog-generator@v4.6.2
-        with:
-          mytoken: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
-
       - name: Create GitHub Release & upload assets
         uses: softprops/action-gh-release@v2
         with:
@@ -106,7 +92,6 @@ jobs:
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
-          body: ${{ steps.changelog.outputs.changelog }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
@@ -119,5 +104,8 @@ jobs:
             TAG="${GITHUB_REF#refs/tags/}"
           fi
           CURRENT_VERSION="${TAG#v}"   # remove leading 'v' if present
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Release Created**: v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Release URL**: https://github.com/${{ github.repository }}/releases/tag/v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
