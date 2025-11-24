@@ -226,7 +226,8 @@ return baseclass.extend({
 		// Block I/O stats object
 		if (typeof blkio === 'object' && blkio !== null) {
 			// Try io_service_bytes_recursive first (most common)
-			if (blkio.io_service_bytes_recursive && Array.isArray(blkio.io_service_bytes_recursive) &&
+			if (blkio.io_service_bytes_recursive && Array.isArray(blkio
+					.io_service_bytes_recursive) &&
 				blkio.io_service_bytes_recursive.length > 0) {
 				let read = 0;
 				let write = 0;
