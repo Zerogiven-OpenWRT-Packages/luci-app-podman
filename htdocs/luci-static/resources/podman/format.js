@@ -274,6 +274,7 @@ return baseclass.extend({
 	/**
 	 * Format elapsed time from Podman process list
 	 * Converts times like "1m23.456s" to "1m23s" or "23.456s" to "23s"
+	 * Handles cases where nanoseconds are mistakenly in seconds position
 	 * @param {string} timeStr - Time string in format like "1m23.456s" or "23.456s"
 	 * @returns {string} Formatted elapsed time
 	 */
@@ -282,29 +283,44 @@ return baseclass.extend({
 
 		// Parse all time units: y, d, h, m, s with optional decimal
 		const result = [];
-		const pattern = /(\d+)([ydhms])/g;
+		const pattern = /(\d+(?:\.\d+)?)([ydhms])/g;
 		let match;
-		let hasSeconds = false;
-		
+
 		while ((match = pattern.exec(timeStr)) !== null) {
-			const value = parseInt(match[1]);
+			let value = parseFloat(match[1]);
 			const unit = match[2];
-			
+
+			// Special case: if seconds value is huge (> 1000), it's likely nanoseconds
+			// Convert nanoseconds to seconds
+			if (unit === 's' && value > 1000) {
+				// This is likely nanoseconds, convert to seconds
+				value = Math.floor(value / 1000000000);
+				// If still > 60, convert to minutes
+				if (value >= 60) {
+					const mins = Math.floor(value / 60);
+					const secs = value % 60;
+					if (mins > 0) result.push(`${mins}m`);
+					if (secs > 0) result.push(`${secs}s`);
+					continue;
+				}
+			} else {
+				// Normal value, just floor it
+				value = Math.floor(value);
+			}
+
 			if (unit === 's') {
-				hasSeconds = true;
-				// Only show seconds, ignore fractional part for display
-				result.push(`${value}${_('s')}`);
+				result.push(`${value}s`);
 			} else if (unit === 'm') {
-				result.push(`${value}${_('m')}`);
+				result.push(`${value}m`);
 			} else if (unit === 'h') {
-				result.push(`${value}${_('h')}`);
+				result.push(`${value}h`);
 			} else if (unit === 'd') {
-				result.push(`${value}${_('d')}`);
+				result.push(`${value}d`);
 			} else if (unit === 'y') {
-				result.push(`${value}${_('y')}`);
+				result.push(`${value}y`);
 			}
 		}
-		
+
 		return result.length > 0 ? result.join('') : timeStr;
 	}
 });
