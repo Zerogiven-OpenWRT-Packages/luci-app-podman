@@ -394,12 +394,12 @@ EOF
 				# Add ? if we have parameters
 				[ -n "$query" ] && query="?${query}"
 
-				# Check if we have resource updates (cpu, memory, blockIO) to send as body
+				# Check if we have resource/health updates (cpu, memory, blockIO, health) to send as body
 				# If the JSON contains fields other than RestartPolicy/RestartRetries, send as body
-				# This is a simple check - if data contains 'cpu', 'memory', or 'blockIO', use body
+				# This is a simple check - if data contains 'cpu', 'memory', 'blockIO', or 'health', use body
 				case "$data" in
-					*cpu*|*memory*|*blockIO*)
-						# Send with body for resource updates
+					*cpu*|*memory*|*blockIO*|*health*|*no_healthcheck*)
+						# Send with body for resource/health updates
 						curl_request "POST" "${API_BASE}/containers/${id_enc}/update${query}" "$data"
 						;;
 					*)
