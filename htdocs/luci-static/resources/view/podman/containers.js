@@ -31,13 +31,17 @@ return view.extend({
 		return podmanRPC.container.list('all=true')
 			.then((containers) => {
 				if (!containers || containers.length === 0) {
-					return { containers: [] };
+					return {
+						containers: []
+					};
 				}
 
 				// Sort containers alphabetically by name
 				containers.sort((a, b) => {
-					const nameA = (a.Names && a.Names[0] ? a.Names[0] : '').toLowerCase();
-					const nameB = (b.Names && b.Names[0] ? b.Names[0] : '').toLowerCase();
+					const nameA = (a.Names && a.Names[0] ? a.Names[0] : '')
+						.toLowerCase();
+					const nameB = (b.Names && b.Names[0] ? b.Names[0] : '')
+						.toLowerCase();
 					return nameA.localeCompare(nameB);
 				});
 
@@ -57,7 +61,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Rendered view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
@@ -88,7 +92,8 @@ return view.extend({
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
 			const containerId = container.Id;
-			const containerName = container.Names && container.Names[0] ? container.Names[0] : '';
+			const containerName = container.Names && container.Names[0] ? container.Names[0] :
+				'';
 
 			return E('a', {
 				href: L.url('admin/podman/container', containerId),
@@ -105,7 +110,8 @@ return view.extend({
 			const container = this.map.data.data[sectionId];
 			const status = container.Status;
 
-			if (!status || !['healthy', 'unhealthy', 'starting'].includes(status.toLowerCase())) {
+			if (!status || !['healthy', 'unhealthy', 'starting'].includes(status
+				.toLowerCase())) {
 				return E('span', {
 					'style': 'color: #999;'
 				}, '—');
@@ -123,10 +129,13 @@ return view.extend({
 		o = section.option(form.DummyValue, 'InitScript', _('Auto-start'));
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
-			const containerName = container.Names && container.Names[0] ? container.Names[0] : null;
+			const containerName = container.Names && container.Names[0] ? container.Names[0] :
+				null;
 
 			if (!containerName) {
-				return E('span', { 'style': 'color: #999;' }, '—');
+				return E('span', {
+					'style': 'color: #999;'
+				}, '—');
 			}
 
 			return E('span', {
@@ -199,7 +208,7 @@ return view.extend({
 	 * Calls one Promise.all per container to fetch inspect + init script status
 	 * @param {Element} mapRendered - Rendered table element
 	 */
-	fetchContainerDetails: function(mapRendered) {
+	fetchContainerDetails: function (mapRendered) {
 		const containers = this.map.data.data;
 
 		// Loop through all containers
@@ -208,11 +217,14 @@ return view.extend({
 			if (!container || !container.Id) return;
 
 			const containerId = container.Id;
-			const containerName = container.Names && container.Names[0] ? container.Names[0] : null;
+			const containerName = container.Names && container.Names[0] ? container.Names[
+				0] : null;
 
 			// Find DOM elements for this container using data attributes
-			const idLink = mapRendered.querySelector(`a[data-container-id="${containerId}"]`);
-			const autoStartCell = mapRendered.querySelector(`.autostart-status[data-container-id="${containerId}"]`);
+			const idLink = mapRendered.querySelector(
+				`a[data-container-id="${containerId}"]`);
+			const autoStartCell = mapRendered.querySelector(
+				`.autostart-status[data-container-id="${containerId}"]`);
 
 			// Skip if no autostart cell (container has no name)
 			if (!containerName || !autoStartCell) {
@@ -245,13 +257,18 @@ return view.extend({
 
 					// Add ports (both mapped and exposed)
 					if (inspectData.NetworkSettings.Ports) {
-						const extractedPorts = utils.extractPorts(inspectData.NetworkSettings.Ports);
+						const extractedPorts = utils.extractPorts(inspectData
+							.NetworkSettings.Ports);
 						const portStrings = [];
 						extractedPorts.forEach((port) => {
 							if (port.isMapped) {
-								portStrings.push(`${port.hostPort}→${port.containerPort}`);
+								portStrings.push(
+									`${port.hostPort}→${port.containerPort}`
+									);
 							} else {
-								portStrings.push(`${port.containerPort}/${port.protocol}`);
+								portStrings.push(
+									`${port.containerPort}/${port.protocol}`
+									);
 							}
 						});
 						if (portStrings.length > 0) {
@@ -284,7 +301,9 @@ return view.extend({
 						autoStartCell.innerHTML = '⚠️';
 						autoStartCell.style.color = '#f0ad4e';
 						autoStartCell.style.cursor = 'pointer';
-						autoStartCell.title = _('Restart policy set but no init script. Click to generate.');
+						autoStartCell.title = _(
+							'Restart policy set but no init script. Click to generate.'
+							);
 						autoStartCell.addEventListener('click', (ev) => {
 							ev.preventDefault();
 							this.handleGenerateInitScript(containerName);
@@ -306,7 +325,8 @@ return view.extend({
 				if (autoStartCell) {
 					autoStartCell.textContent = '✗';
 					autoStartCell.style.color = '#d9534f';
-					autoStartCell.title = _('Error loading details: %s').format(err.message);
+					autoStartCell.title = _('Error loading details: %s').format(
+						err.message);
 				}
 			});
 		});
@@ -341,8 +361,7 @@ return view.extend({
 	/**
 	 * Show import from compose file dialog (not implemented)
 	 */
-	handleImportFromCompose: function() {
-	},
+	handleImportFromCompose: function () {},
 
 	/**
 	 * Start selected containers
