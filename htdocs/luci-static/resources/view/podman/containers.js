@@ -24,43 +24,25 @@ return view.extend({
 
 	/**
 	 * Load container data (all containers including stopped)
-	 * Enriches list data with full inspect data to access HostConfig.RestartPolicy
+	 * Returns basic list data only - inspect data loaded on-demand for performance
 	 * @returns {Promise<Object>} Container data or error
 	 */
 	load: async () => {
 		return podmanRPC.container.list('all=true')
-			.then(async (containers) => {
+			.then((containers) => {
 				if (!containers || containers.length === 0) {
 					return { containers: [] };
 				}
 
-				// Fetch full inspect data for each container to get RestartPolicy and NetworkSettings
-				const inspectPromises = containers.map((container) =>
-					podmanRPC.container.inspect(container.Id)
-						.then((inspectData) => {
-							// Merge inspect data (especially HostConfig and NetworkSettings) into list data
-							return Object.assign({}, container, {
-								HostConfig: inspectData.HostConfig,
-								NetworkSettings: inspectData.NetworkSettings
-							});
-						})
-						.catch(() => {
-							// If inspect fails, return original list data
-							return container;
-						})
-				);
-
-				const enrichedContainers = await Promise.all(inspectPromises);
-
 				// Sort containers alphabetically by name
-				enrichedContainers.sort((a, b) => {
+				containers.sort((a, b) => {
 					const nameA = (a.Names && a.Names[0] ? a.Names[0] : '').toLowerCase();
 					const nameB = (b.Names && b.Names[0] ? b.Names[0] : '').toLowerCase();
 					return nameA.localeCompare(nameB);
 				});
 
 				return {
-					containers: enrichedContainers
+					containers: containers
 				};
 			})
 			.catch((err) => {
@@ -106,46 +88,12 @@ return view.extend({
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
 			const containerId = container.Id;
-
-			// Build tooltip with IPs and ports
-			const tooltipParts = [];
-
-			// Add network IPs
-			if (container.NetworkSettings && container.NetworkSettings.Networks) {
-				const networks = container.NetworkSettings.Networks;
-				const ips = [];
-				Object.keys(networks).forEach((netName) => {
-					const net = networks[netName];
-					if (net.IPAddress) {
-						ips.push(`${netName}: ${net.IPAddress}`);
-					}
-				});
-				if (ips.length > 0) {
-					tooltipParts.push('IPs: ' + ips.join(', '));
-				}
-			}
-
-			// Add ports (both mapped and exposed)
-			if (container.NetworkSettings && container.NetworkSettings.Ports) {
-				const extractedPorts = utils.extractPorts(container.NetworkSettings.Ports);
-				const portStrings = [];
-				extractedPorts.forEach((port) => {
-					if (port.isMapped) {
-						portStrings.push(`${port.hostPort}→${port.containerPort}`);
-					} else {
-						portStrings.push(`${port.containerPort}/${port.protocol}`);
-					}
-				});
-				if (portStrings.length > 0) {
-					tooltipParts.push('Ports: ' + portStrings.join(', '));
-				}
-			}
-
-			const tooltip = tooltipParts.length > 0 ? tooltipParts.join(' | ') : '';
+			const containerName = container.Names && container.Names[0] ? container.Names[0] : '';
 
 			return E('a', {
 				href: L.url('admin/podman/container', containerId),
-				title: tooltip
+				title: containerName || containerId,
+				'data-container-id': containerId
 			}, utils.truncate(containerId, 10));
 		};
 
@@ -181,48 +129,12 @@ return view.extend({
 				return E('span', { 'style': 'color: #999;' }, '—');
 			}
 
-			// Check init script status asynchronously
-			const statusCell = E('span', { 'style': 'color: #999;' }, '...');
-
-			podmanRPC.initScript.status(containerName).then((status) => {
-				const hasRestartPolicy = container.HostConfig && container.HostConfig.RestartPolicy &&
-					container.HostConfig.RestartPolicy.Name &&
-					container.HostConfig.RestartPolicy.Name !== '' &&
-					container.HostConfig.RestartPolicy.Name !== 'no';
-
-				if (status.exists && status.enabled) {
-					// Init script exists and enabled
-					statusCell.textContent = '✓';
-					statusCell.style.color = '#5cb85c';
-					statusCell.title = _('Init script enabled');
-				} else if (hasRestartPolicy && !status.exists) {
-					// Has restart policy but no init script - show warning
-					statusCell.innerHTML = '⚠️';
-					statusCell.style.color = '#f0ad4e';
-					statusCell.style.cursor = 'pointer';
-					statusCell.title = _('Restart policy set but no init script. Click to generate.');
-					statusCell.addEventListener('click', (ev) => {
-						ev.preventDefault();
-						this.handleGenerateInitScript(containerName);
-					});
-				} else if (status.exists && !status.enabled) {
-					// Init script exists but disabled
-					statusCell.textContent = '○';
-					statusCell.style.color = '#999';
-					statusCell.title = _('Init script disabled');
-				} else {
-					// No init script, no restart policy
-					statusCell.textContent = '—';
-					statusCell.style.color = '#999';
-					statusCell.title = _('No auto-start configured');
-				}
-			}).catch((err) => {
-				statusCell.textContent = '✗';
-				statusCell.style.color = '#d9534f';
-				statusCell.title = _('Error checking status: %s').format(err.message);
-			});
-
-			return statusCell;
+			return E('span', {
+				'class': 'autostart-status',
+				'data-container-id': container.Id,
+				'data-container-name': containerName,
+				'style': 'color: #999;'
+			}, '...');
 		};
 
 		const toolbar = this.listHelper.createToolbar({
@@ -267,6 +179,9 @@ return view.extend({
 			viewContainer.appendChild(mapRendered);
 			this.listHelper.setupSelectAll(mapRendered);
 
+			// Fetch detailed container data asynchronously (non-blocking)
+			this.fetchContainerDetails(mapRendered);
+
 			return viewContainer;
 		});
 	},
@@ -277,6 +192,124 @@ return view.extend({
 	 */
 	refreshTable: function (clearSelections) {
 		return this.listHelper.refreshTable(clearSelections);
+	},
+
+	/**
+	 * Fetch detailed container data and update DOM after table render
+	 * Calls one Promise.all per container to fetch inspect + init script status
+	 * @param {Element} mapRendered - Rendered table element
+	 */
+	fetchContainerDetails: function(mapRendered) {
+		const containers = this.map.data.data;
+
+		// Loop through all containers
+		Object.keys(containers).forEach((sectionId) => {
+			const container = containers[sectionId];
+			if (!container || !container.Id) return;
+
+			const containerId = container.Id;
+			const containerName = container.Names && container.Names[0] ? container.Names[0] : null;
+
+			// Find DOM elements for this container using data attributes
+			const idLink = mapRendered.querySelector(`a[data-container-id="${containerId}"]`);
+			const autoStartCell = mapRendered.querySelector(`.autostart-status[data-container-id="${containerId}"]`);
+
+			// Skip if no autostart cell (container has no name)
+			if (!containerName || !autoStartCell) {
+				return;
+			}
+
+			// Fetch inspect data and init script status in parallel (ONE Promise.all per container)
+			Promise.all([
+				podmanRPC.container.inspect(containerId),
+				podmanRPC.initScript.status(containerName)
+			]).then(([inspectData, initStatus]) => {
+				// Update ID column tooltip with network details
+				if (idLink && inspectData.NetworkSettings) {
+					const tooltipParts = [];
+
+					// Add network IPs
+					if (inspectData.NetworkSettings.Networks) {
+						const networks = inspectData.NetworkSettings.Networks;
+						const ips = [];
+						Object.keys(networks).forEach((netName) => {
+							const net = networks[netName];
+							if (net.IPAddress) {
+								ips.push(`${netName}: ${net.IPAddress}`);
+							}
+						});
+						if (ips.length > 0) {
+							tooltipParts.push('IPs: ' + ips.join(', '));
+						}
+					}
+
+					// Add ports (both mapped and exposed)
+					if (inspectData.NetworkSettings.Ports) {
+						const extractedPorts = utils.extractPorts(inspectData.NetworkSettings.Ports);
+						const portStrings = [];
+						extractedPorts.forEach((port) => {
+							if (port.isMapped) {
+								portStrings.push(`${port.hostPort}→${port.containerPort}`);
+							} else {
+								portStrings.push(`${port.containerPort}/${port.protocol}`);
+							}
+						});
+						if (portStrings.length > 0) {
+							tooltipParts.push('Ports: ' + portStrings.join(', '));
+						}
+					}
+
+					if (tooltipParts.length > 0) {
+						idLink.title = tooltipParts.join(' | ');
+					} else {
+						idLink.title = containerName || containerId;
+					}
+				}
+
+				// Update Auto-start column status
+				if (autoStartCell) {
+					const hasRestartPolicy = inspectData.HostConfig &&
+						inspectData.HostConfig.RestartPolicy &&
+						inspectData.HostConfig.RestartPolicy.Name &&
+						inspectData.HostConfig.RestartPolicy.Name !== '' &&
+						inspectData.HostConfig.RestartPolicy.Name !== 'no';
+
+					if (initStatus.exists && initStatus.enabled) {
+						// Init script exists and enabled
+						autoStartCell.textContent = '✓';
+						autoStartCell.style.color = '#5cb85c';
+						autoStartCell.title = _('Init script enabled');
+					} else if (hasRestartPolicy && !initStatus.exists) {
+						// Has restart policy but no init script - show warning
+						autoStartCell.innerHTML = '⚠️';
+						autoStartCell.style.color = '#f0ad4e';
+						autoStartCell.style.cursor = 'pointer';
+						autoStartCell.title = _('Restart policy set but no init script. Click to generate.');
+						autoStartCell.addEventListener('click', (ev) => {
+							ev.preventDefault();
+							this.handleGenerateInitScript(containerName);
+						});
+					} else if (initStatus.exists && !initStatus.enabled) {
+						// Init script exists but disabled
+						autoStartCell.textContent = '○';
+						autoStartCell.style.color = '#999';
+						autoStartCell.title = _('Init script disabled');
+					} else {
+						// No init script, no restart policy
+						autoStartCell.textContent = '—';
+						autoStartCell.style.color = '#999';
+						autoStartCell.title = _('No auto-start configured');
+					}
+				}
+			}).catch((err) => {
+				// On error, show error state in auto-start column
+				if (autoStartCell) {
+					autoStartCell.textContent = '✗';
+					autoStartCell.style.color = '#d9534f';
+					autoStartCell.title = _('Error loading details: %s').format(err.message);
+				}
+			});
+		});
 	},
 
 	/**
