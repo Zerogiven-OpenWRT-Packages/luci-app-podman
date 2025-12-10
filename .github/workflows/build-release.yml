@@ -56,7 +56,7 @@ jobs:
             [
               {
                 "search": "luci-app-podman*.ipk",
-                "name": "luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}-${{ matrix.arch }}.ipk"
+                "name": "luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk"
               }
             ]
           output_directory: ${{ github.workspace }}/release-assets
@@ -64,8 +64,8 @@ jobs:
       - name: Upload package artifact
         uses: actions/upload-artifact@v5
         with:
-          name: luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}-${{ matrix.arch }}.ipk
-          path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}-${{ matrix.arch }}.ipk
+          name: luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk
+          path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk
           retention-days: 30
 
   create-release:
