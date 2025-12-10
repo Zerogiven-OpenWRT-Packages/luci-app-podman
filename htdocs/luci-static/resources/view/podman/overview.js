@@ -28,71 +28,63 @@ return view.extend({
 	},
 
 	/**
-	 * Render the overview dashboard
-	 * Shows Phase 1 data immediately, then loads Phase 2 data asynchronously
+	 * Render the overview dashboard with tab-based UI
+	 * Tab 1 (Overview): Shows Phase 1 data immediately, then loads Phase 2 resource data
+	 * Tab 2 (Disk Usage): Load on demand with button
 	 *
 	 * @param {Array} data - Array from load() (Phase 1 data only)
-	 * @returns {Element} Complete dashboard view element
+	 * @returns {Element} Complete dashboard view with tabs
 	 */
 	render: function (data) {
 		// Phase 1 data (loaded immediately)
 		const version = data[0] || {};
 		const info = data[1] || {};
 
-		// Create placeholders for Phase 2 data
-		const diskUsageContainer = E('div', {
-			'id': 'disk-usage-section'
-		}, [
-			this.createLoadingPlaceholder(_('Disk Usage'))
-		]);
-
-		const resourceCardsContainer = E('div', {
-			'id': 'resource-cards-container'
-		}, [
-			this.createLoadingPlaceholder(_('Resources'))
-		]);
-
-		const container = E('div', {}, [
-			// System Actions Section (immediate)
+		// Tab 1: Overview (loads immediately)
+		const overviewTabContent = E('div', {}, [
 			this.createSystemActionsSection(),
-
-			// System Info Section (immediate - from Phase 1)
 			this.createInfoSection(version, info),
-
-			// Disk Usage Section (placeholder - Phase 2)
-			diskUsageContainer,
-
-			// Resource Cards Section (placeholder - Phase 2)
 			E('div', {
+				'id': 'resource-cards-container',
 				'style': 'margin-top: 30px;'
 			}, [
 				E('h3', {
 					'style': 'margin-bottom: 15px;'
 				}, _('Resources')),
-				resourceCardsContainer
+				this.createLoadingPlaceholder(_('Resources'))
 			])
 		]);
 
-		// Start Phase 2 loading asynchronously
-		this.loadPhase2(diskUsageContainer, resourceCardsContainer);
+		// Tab 2: Disk Usage (load on demand)
+		const diskUsageTabContent = E('div', {
+			'id': 'disk-usage-tab-content'
+		}, [
+			this.createDiskUsageLoadButton()
+		]);
 
-		return container;
+		// Create tabs
+		const tabs = new pui.Tabs('overview')
+			.addTab('overview', _('Overview'), overviewTabContent, true)
+			.addTab('disk-usage', _('Disk Usage'), diskUsageTabContent)
+			.render();
+
+		// Start Phase 2 loading for Overview tab only
+		this.loadPhase2Overview();
+
+		return tabs;
 	},
 
 	/**
-	 * Load Phase 2 data (slower) and update placeholders
-	 *
-	 * @param {Element} diskUsageContainer - Container for disk usage section
-	 * @param {Element} resourceCardsContainer - Container for resource cards
+	 * Load Phase 2 data for Overview tab (fast endpoints only)
+	 * No longer loads system.df() - that's in Disk Usage tab on demand
 	 */
-	loadPhase2: function (diskUsageContainer, resourceCardsContainer) {
+	loadPhase2Overview: function () {
 		Promise.all([
 			podmanRPC.container.list('all=true'),
 			podmanRPC.image.list(),
 			podmanRPC.volume.list(),
 			podmanRPC.network.list(),
-			podmanRPC.pod.list(),
-			podmanRPC.system.df()
+			podmanRPC.pod.list()
 		]).then((data) => {
 			const containers = data[0] || [];
 			const images = data[1] || [];
@@ -101,36 +93,34 @@ return view.extend({
 			const volumes = Array.isArray(volumeData) ? volumeData : (volumeData.Volumes || []);
 			const networks = data[3] || [];
 			const pods = data[4] || [];
-			const diskUsage = data[5] || {};
 
 			const runningContainers = containers.filter((c) => c.State === 'running').length;
 			const runningPods = pods.filter((p) => p.Status === 'Running').length;
 
-			// Update Disk Usage section
-			diskUsageContainer.innerHTML = '';
-			diskUsageContainer.appendChild(this.createDiskUsageSection(diskUsage));
-
 			// Update Resource Cards section
-			resourceCardsContainer.innerHTML = '';
-			resourceCardsContainer.appendChild(
-				this.createResourceCards(containers, pods, images, networks, volumes,
-					runningContainers, runningPods)
-			);
+			const resourceCardsContainer = document.getElementById('resource-cards-container');
+			if (resourceCardsContainer) {
+				resourceCardsContainer.innerHTML = '';
+				resourceCardsContainer.appendChild(
+					E('h3', {
+						'style': 'margin-bottom: 15px;'
+					}, _('Resources'))
+				);
+				resourceCardsContainer.appendChild(
+					this.createResourceCards(containers, pods, images, networks, volumes,
+						runningContainers, runningPods)
+				);
+			}
 		}).catch((err) => {
-			// Show error in the placeholders
-			diskUsageContainer.innerHTML = '';
-			diskUsageContainer.appendChild(
-				E('p', {
-					'class': 'alert-message error'
-				}, _('Failed to load disk usage: %s').format(err.message))
-			);
-
-			resourceCardsContainer.innerHTML = '';
-			resourceCardsContainer.appendChild(
-				E('p', {
-					'class': 'alert-message error'
-				}, _('Failed to load resources: %s').format(err.message))
-			);
+			const resourceCardsContainer = document.getElementById('resource-cards-container');
+			if (resourceCardsContainer) {
+				resourceCardsContainer.innerHTML = '';
+				resourceCardsContainer.appendChild(
+					E('p', {
+						'class': 'alert-message error'
+					}, _('Failed to load resources: %s').format(err.message))
+				);
+			}
 		});
 	},
 
@@ -212,6 +202,79 @@ return view.extend({
 			return info.registries.search.join(', ');
 		}
 		return 'docker.io, registry.fedoraproject.org, registry.access.redhat.com';
+	},
+
+	/**
+	 * Create disk usage tab content with load button
+	 * @returns {Element} Container with button to trigger system.df() call
+	 */
+	createDiskUsageLoadButton: function () {
+		const button = new pui.Button(
+			_('Load Disk Usage Statistics'),
+			() => this.loadDiskUsage(),
+			'action'
+		).render();
+
+		const description = E('p', {
+			'style': 'margin: 15px 0 10px 0; color: #666; font-size: 0.9em;'
+		}, _('Click to load detailed disk usage information for containers, images, and volumes. This may take several seconds with many resources.'));
+
+		return E('div', {
+			'style': 'padding: 20px;'
+		}, [description, button]);
+	},
+
+	/**
+	 * Load disk usage data on demand (called from Disk Usage tab)
+	 * Replaces load button with actual disk usage statistics
+	 */
+	loadDiskUsage: function () {
+		const diskUsageTabContent = document.getElementById('disk-usage-tab-content');
+		if (!diskUsageTabContent) return;
+
+		// Show loading state
+		diskUsageTabContent.innerHTML = '';
+		diskUsageTabContent.appendChild(
+			E('div', {
+				'style': 'padding: 20px; text-align: center;'
+			}, [
+				E('em', {
+					'class': 'spinning'
+				}, _('Loading disk usage data...'))
+			])
+		);
+
+		// Call system.df() with user awareness this may be slow
+		podmanRPC.system.df().then((diskUsage) => {
+			diskUsageTabContent.innerHTML = '';
+			diskUsageTabContent.appendChild(
+				this.createDiskUsageSection(diskUsage)
+			);
+		}).catch((err) => {
+			diskUsageTabContent.innerHTML = '';
+
+			const errorMsg = E('div', {
+				'style': 'padding: 20px;'
+			}, [
+				E('p', {
+					'class': 'alert-message error'
+				}, _('Failed to load disk usage: %s').format(err.message)),
+				E('p', {
+					'style': 'margin-top: 10px; font-size: 0.9em;'
+				}, _('This typically occurs with many containers. The operation may have timed out.')),
+				E('div', {
+					'style': 'margin-top: 15px;'
+				}, [
+					new pui.Button(
+						_('Try Again'),
+						() => this.loadDiskUsage(),
+						'action'
+					).render()
+				])
+			]);
+
+			diskUsageTabContent.appendChild(errorMsg);
+		});
 	},
 
 	/**
