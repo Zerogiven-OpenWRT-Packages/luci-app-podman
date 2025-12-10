@@ -57,17 +57,15 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 ### From IPK Package
 
 ```bash
-scp luci-app-podman_*.ipk root@192.168.1.1:/tmp/
-ssh root@192.168.1.1
-opkg update && opkg install /tmp/luci-app-podman_*.ipk
+wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.3.2/luci-app-podman-1.3.2.ipk
+opkg update && opkg install luci-app-podman-1.3.2.ipk
 ```
 
 ### From Source
 
 ```bash
 # Clone openwrt repository and prepare build environment. Next:
-git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git package/luci-app-podma
-cd luci-app-podman
+git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git package/luci-app-podman
 # In OpenWrt build environment:
 make package/luci-app-podman/compile V=s
 ```
