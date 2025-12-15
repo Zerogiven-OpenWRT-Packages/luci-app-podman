@@ -51,7 +51,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load containers')
+					error: err.message || _('Failed to load %s').format(_('Containers').toLowerCase())
 				};
 			});
 	},
@@ -76,7 +76,7 @@ return view.extend({
 		this.map = new form.JSONMap(this.listHelper.data, _('Containers'));
 
 		const section = this.map.section(form.TableSection, 'containers', '', _(
-			'Manage Podman containers'));
+			'Manage Podman %s').format(_('Containers').toLowerCase()));
 		section.anonymous = true;
 
 		let o;
@@ -88,7 +88,7 @@ return view.extend({
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Names', _('Name'));
 
-		o = section.option(form.DummyValue, 'Id', _('Id'));
+		o = section.option(form.DummyValue, 'Id', _('Id').toUpperCase());
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
 			const containerId = container.Id;
@@ -132,12 +132,6 @@ return view.extend({
 			const containerName = container.Names && container.Names[0] ? container.Names[0] :
 				null;
 
-			if (!containerName) {
-				return E('span', {
-					'style': 'color: #999;'
-				}, '—');
-			}
-
 			return E('span', {
 				'class': 'autostart-status',
 				'data-container-id': container.Id,
@@ -154,13 +148,13 @@ return view.extend({
 					text: '&#9658;',
 					handler: () => this.handleStart(),
 					cssClass: 'positive',
-					tooltip: _('Start selected containers')
+					tooltip: _('Start selected %s').format(_('Containers').toLowerCase())
 				},
 				{
 					text: '&#9724;',
 					handler: () => this.handleStop(),
 					cssClass: 'negative',
-					tooltip: _('Stop selected containers')
+					tooltip: _('Stop selected %s').format(_('Containers').toLowerCase())
 				},
 				{
 					text: '&#10010;',
@@ -174,7 +168,7 @@ return view.extend({
 		const createButton = new podmanUI.MultiButton({}, 'add')
 			.addItem(_('Create Container'), () => this.handleCreateContainer())
 			.addItem(_('Import from Run Command'), () => this.handleImportFromRunCommand())
-			.addItem(_('Import from Compose File'), () => this.handleImportFromCompose())
+			// .addItem(_('Import from Compose File'), () => this.handleImportFromCompose())
 			.render();
 
 		toolbar.prependButton(createButton);

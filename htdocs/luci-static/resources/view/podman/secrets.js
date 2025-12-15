@@ -34,7 +34,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load secrets')
+					error: err.message || _('Failed to load %s').format(_('Secrets').toLowerCase())
 				};
 			});
 	},
@@ -59,7 +59,7 @@ return view.extend({
 		this.map = new form.JSONMap(this.listHelper.data, _('Secrets'));
 
 		const section = this.map.section(form.TableSection, 'secrets', '', _(
-			'Manage Podman secrets'));
+			'Manage Podman %s').format(_('Secrets').toLowerCase()));
 		section.anonymous = true;
 
 		let o;

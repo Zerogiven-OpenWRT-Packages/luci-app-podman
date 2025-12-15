@@ -131,7 +131,7 @@ const ListUtil = baseclass.extend({
 		const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item : item.name || item.Name || item.id || item.Id);
 		const itemNames = selected.map(formatFn).join(', ');
 
-		if (!confirm(_('Are you sure you want to remove %d %s?\n\n%s').format(
+		if (!confirm(_('Are you sure you want to delete %d %s?\n\n%s').format(
 				selected.length,
 				selected.length === 1 ? this.itemName : this.itemName + 's',
 				itemNames
@@ -240,7 +240,7 @@ const ListUtil = baseclass.extend({
 
 			const capitalizedItemName = this.itemName.charAt(0).toUpperCase() + this.itemName.slice(1);
 			this.showInspectModal(
-				_('%s %s').format(_(capitalizedItemName), _('Information')),
+				_('%s Information').format(_(capitalizedItemName)),
 				data,
 				hiddenFields,
 				closeButtonFn

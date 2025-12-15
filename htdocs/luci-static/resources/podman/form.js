@@ -83,7 +83,7 @@ const FormContainer = baseclass.extend({
 		field.datatype = 'maxlength(253)';
 		field.description = _('Leave empty to auto-generate');
 		field = section.option(form.ListValue, 'image', _('Image'));
-		field.value('', _('-- Select Image --'));
+		field.value('', _('-- Select %s --').format(_('Image')));
 		if (images && Array.isArray(images)) {
 			images.forEach((img) => {
 				if (img.RepoTags && img.RepoTags.length > 0) {
@@ -176,7 +176,7 @@ const FormContainer = baseclass.extend({
 		field.validate = (_section_id, value) => {
 			if (!value) return true;
 			if (!/^\d+(?:\.\d+)?\s*[kmg]?$/i.test(value)) {
-				return _('Invalid format. Use: 512m, 1g, etc.');
+				return _('Invalid format.') + ' ' + _('Use: 512m, 1g');
 			}
 			return true;
 		};
@@ -201,7 +201,7 @@ const FormContainer = baseclass.extend({
 		field.validate = (_section_id, value) => {
 			if (!value) return true;
 			if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
-				return _('Invalid format. Use: 30s, 1m, 1h, etc.');
+				return _('Invalid format. Use: 5s, 30s, 1m, 1h');
 			}
 			return true;
 		};
@@ -213,7 +213,7 @@ const FormContainer = baseclass.extend({
 		field.validate = (_section_id, value) => {
 			if (!value) return true;
 			if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
-				return _('Invalid format. Use: 5s, 10s, 30s, etc.');
+				return _('Invalid format. Use: 5s, 10s, 30s');
 			}
 			return true;
 		};
@@ -225,7 +225,7 @@ const FormContainer = baseclass.extend({
 		field.validate = (_section_id, value) => {
 			if (!value) return true;
 			if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
-				return _('Invalid format. Use: 30s, 1m, 5m, etc.');
+				return _('Invalid format. Use: 5s, 30s, 1m, 1h');
 			}
 			return true;
 		};
@@ -238,7 +238,7 @@ const FormContainer = baseclass.extend({
 		field.validate = (_section_id, value) => {
 			if (!value) return true;
 			if (!/^\d+(?:\.\d+)?(ns|us|ms|s|m|h)$/.test(value)) {
-				return _('Invalid format. Use: 5s, 10s, etc.');
+				return _('Invalid format. Use: 5s, 10s, 30s');
 			}
 			return true;
 		};
@@ -414,14 +414,13 @@ const FormContainer = baseclass.extend({
 			ui.hideModal();
 			this.map.reset();
 
-			pui.showSpinningModal(_('Creating Container'), _(
+			pui.showSpinningModal(_('Creating %s').format(_('Container')), _(
 				'Creating container from image %s...').format(container.image));
 
 			podmanRPC.container.create(JSON.stringify(spec)).then((result) => {
 				if (result && result.error) {
 					ui.hideModal();
-					pui.errorNotification(_('Failed to create container: %s')
-						.format(result.error));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Container').toLowerCase(), result.error));
 					return;
 				}
 
@@ -434,8 +433,8 @@ const FormContainer = baseclass.extend({
 				let promise = Promise.resolve();
 
 				if (shouldStart && result && result.Id) {
-					pui.showSpinningModal(_('Starting Container'), _(
-						'Starting container...'));
+					pui.showSpinningModal(_('Starting %s').format(_('Container')), _(
+						'Starting %s...').format(_('Container').toLowerCase()));
 
 					promise = podmanRPC.container.start(result.Id).then((startResult) => {
 						if (startResult && startResult.error) {
@@ -489,14 +488,13 @@ const FormContainer = baseclass.extend({
 							'Container created and auto-start configured'));
 					} else {
 						pui.successTimeNotification(_(
-							'Container created successfully'));
+							'%s created successfully').format(_('Container')));
 					}
 					this.submit();
 				});
 			}).catch((err) => {
 				ui.hideModal();
-				pui.errorNotification(_('Failed to create container: %s').format(
-					err.message));
+				pui.errorNotification(_('Failed to create %s: %s').format(_('Container').toLowerCase(), err.message));
 			});
 		}).catch(() => {});
 	},
@@ -550,22 +548,21 @@ const FormContainer = baseclass.extend({
 	 * @param {Object} spec - Container specification parsed from run command
 	 */
 	createFromSpec: function (spec) {
-		pui.showSpinningModal(_('Creating Container'), _('Creating container from image %s...')
+		pui.showSpinningModal(_('Creating %s').format(_('Container')), _('Creating container from image %s...')
 			.format(spec.image));
 
 		podmanRPC.container.create(JSON.stringify(spec)).then((result) => {
 			if (result && result.error) {
 				ui.hideModal();
-				pui.errorNotification(_('Failed to create container: %s').format(result
-					.error));
+				pui.errorNotification(_('Failed to create %s: %s').format(_('Container').toLowerCase(), result.error));
 				return;
 			}
 			// Auto-start if container needs interactive session or should auto-remove
 			const shouldStart = spec.remove || spec.stdin || spec.terminal || spec.detach;
 
 			if (shouldStart && result && result.Id) {
-				pui.showSpinningModal(_('Starting Container'), _(
-					'Starting container...'));
+				pui.showSpinningModal(_('Starting %s').format(_('Container')), _(
+					'Starting %s...').format(_('Container').toLowerCase()));
 
 				podmanRPC.container.start(result.Id).then((startResult) => {
 					ui.hideModal();
@@ -587,13 +584,12 @@ const FormContainer = baseclass.extend({
 				});
 			} else {
 				ui.hideModal();
-				pui.successTimeNotification(_('Container created successfully'));
+				pui.successTimeNotification(_('%s created successfully').format(_('Container')));
 				this.submit();
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			pui.errorNotification(_('Failed to create container: %s').format(err
-				.message));
+			pui.errorNotification(_('Failed to create %s: %s').format(_('Container').toLowerCase(), err.message));
 		});
 	},
 
@@ -1031,34 +1027,31 @@ const FormNetwork = baseclass.extend({
 			}
 
 			ui.hideModal();
-			pui.showSpinningModal(_('Creating Network'), _('Creating network...'));
+			pui.showSpinningModal(_('Creating %s').format(_('Network')), _('Creating %s...').format(_('Network').toLowerCase()));
 
 			podmanRPC.network.create(JSON.stringify(payload)).then((result) => {
 				if (result && result.error) {
 					ui.hideModal();
-					pui.errorNotification(_('Failed to create network: %s')
-						.format(result.error));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), result.error));
 					return Promise.reject(new Error(
 						'Podman network creation failed'));
 				}
 				if (result && result.message && result.response >= 400) {
 					ui.hideModal();
-					pui.errorNotification(_('Failed to create network: %s')
-						.format(result.message));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), result.message));
 					return Promise.reject(new Error(
 						'Podman network creation failed'));
 				}
 				if (result && result.cause) {
 					ui.hideModal();
-					pui.errorNotification(_('Failed to create network: %s')
-						.format(result.cause));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), result.cause));
 					return Promise.reject(new Error(
 						'Podman network creation failed'));
 				}
 
 				if (setupOpenwrt) {
 					ui.hideModal();
-					pui.showSpinningModal(_('Creating Network'), _(
+					pui.showSpinningModal(_('Creating %s').format(_('Network')), _(
 						'Setting up OpenWrt integration...'));
 
 					return openwrtNetwork.createIntegration(podnetwork.name, {
@@ -1100,15 +1093,14 @@ const FormNetwork = baseclass.extend({
 					).format(status.openwrtError));
 				} else if (status.podmanCreated) {
 					pui.successTimeNotification(_(
-						'Network created successfully'));
+						'%s created successfully').format(_('Network')));
 				}
 
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
 				if (err.message !== 'Podman network creation failed') {
-					pui.errorNotification(_('Failed to create network: %s')
-						.format(err.message));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), err.message));
 				}
 			});
 		}).catch(() => {});
@@ -1224,22 +1216,20 @@ const FormPod = baseclass.extend({
 			}
 
 			ui.hideModal();
-			pui.showSpinningModal(_('Creating Pod'), _('Creating pod...'));
+			pui.showSpinningModal(_('Creating %s').format(_('Pod')), _('Creating %s...').format(_('Pod').toLowerCase()));
 
 			podmanRPC.pod.create(JSON.stringify(payload)).then((result) => {
 				ui.hideModal();
 				if (result && result.error) {
-					pui.errorNotification(_('Failed to create pod: %s').format(
-						result.error));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Pod').toLowerCase(), result.error));
 					return;
 				}
-				pui.successTimeNotification(_('Pod created successfully'));
+				pui.successTimeNotification(_('%s created successfully').format(_('Pod')));
 
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
-				pui.errorNotification(_('Failed to create pod: %s').format(err
-					.message));
+				pui.errorNotification(_('Failed to create %s: %s').format(_('Pod').toLowerCase(), err.message));
 			});
 		}).catch(() => {});
 	},
@@ -1347,28 +1337,25 @@ const FormSecret = baseclass.extend({
 			}
 
 			ui.hideModal();
-			pui.showSpinningModal(_('Creating Secret'), _('Creating secret...'));
+			pui.showSpinningModal(_('Creating %s').format(_('Secret')), _('Creating %s...').format(_('Secret').toLowerCase()));
 
 			podmanRPC.secret.create(secretName, secretData).then((result) => {
 				ui.hideModal();
 
 				if (result && result.error) {
-					pui.errorNotification(_('Failed to create secret: %s').format(
-						result.error));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Secret').toLowerCase(), result.error));
 					return;
 				}
 				if (result && result.message && result.response >= 400) {
-					pui.errorNotification(_('Failed to create secret: %s').format(
-						result.message));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Secret').toLowerCase(), result.message));
 					return;
 				}
 				if (result && result.cause) {
-					pui.errorNotification(_('Failed to create secret: %s').format(
-						result.cause));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Secret').toLowerCase(), result.cause));
 					return;
 				}
 
-				pui.successTimeNotification(_('Secret created successfully'));
+				pui.successTimeNotification(_('%s created successfully').format(_('Secret')));
 
 				this.submit();
 			}).catch((err) => {
@@ -1383,8 +1370,7 @@ const FormSecret = baseclass.extend({
 					}
 				} catch (e) {
 				}
-				pui.errorNotification(_('Failed to create secret: %s').format(
-					errorMsg));
+				pui.errorNotification(_('Failed to create %s: %s').format(_('Secret').toLowerCase(), errorMsg));
 			});
 		}).catch((err) => {
 		});
@@ -1491,21 +1477,19 @@ const FormVolume = baseclass.extend({
 			}
 
 			ui.hideModal();
-			pui.showSpinningModal(_('Creating Volume'), _('Creating volume...'));
+			pui.showSpinningModal(_('Creating %s').format(_('Volume')), _('Creating %s...').format(_('Volume').toLowerCase()));
 
 			podmanRPC.volume.create(JSON.stringify(payload)).then((result) => {
 				ui.hideModal();
 				if (result && result.error) {
-					pui.errorNotification(_('Failed to create volume: %s').format(
-						result.error));
+					pui.errorNotification(_('Failed to create %s: %s').format(_('Volume').toLowerCase(), result.error));
 					return;
 				}
-				pui.successTimeNotification(_('Volume created successfully'));
+				pui.successTimeNotification(_('%s created successfully').format(_('Volume')));
 				this.submit();
 			}).catch((err) => {
 				ui.hideModal();
-				pui.errorNotification(_('Failed to create volume: %s').format(err
-					.message));
+				pui.errorNotification(_('Failed to create %s: %s').format(_('Volume').toLowerCase(), err.message));
 			});
 		}).catch(() => {});
 	},
@@ -1559,7 +1543,7 @@ const FormResourceEditor = baseclass.extend({
 		field.datatype = 'ufloat';
 		field.placeholder = '0.5, 1.0, 2.0';
 		field.optional = true;
-		field.description = _('Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited.');
+		field.description = _('Number of CPUs (e.g., 0.5, 1.0, 2.0)') + ' ' + _('Leave empty for unlimited.');
 
 		field = section.option(form.Value, 'cpuShares', _('CPU Shares Weight'));
 		field.datatype = 'uinteger';
@@ -1579,11 +1563,11 @@ const FormResourceEditor = baseclass.extend({
 		field.validate = (_section_id, value) => {
 			if (!value) return true;
 			if (!/^\d+(?:\.\d+)?\s*[kmg]?b?$/i.test(value)) {
-				return _('Invalid format. Use: 512m, 1g, etc.');
+				return _('Invalid format.') + ' ' + _('Use: 512m, 1g');
 			}
 			return true;
 		};
-		field.description = _('Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited.');
+		field.description = _('Memory limit (e.g., 512m, 1g)') + ' ' + _('Leave empty for unlimited.');
 
 		field = section.option(form.Value, 'memorySwap', _('Memory + Swap Limit'));
 		field.placeholder = '1g, 2g, -1';
@@ -1592,13 +1576,11 @@ const FormResourceEditor = baseclass.extend({
 			if (!value) return true;
 			if (value === '-1') return true;
 			if (!/^\d+(?:\.\d+)?\s*[kmg]?b?$/i.test(value)) {
-				return _('Invalid format. Use: 1g, 2g, or -1 for unlimited swap');
+				return _('Invalid format.') + ' ' + _('Use: 512m, 1g, or -1 for unlimited swap');
 			}
 			return true;
 		};
-		field.description = _(
-			'Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited.'
-		);
+		field.description = _('Total memory limit (memory + swap). -1 for unlimited swap.');
 
 		field = section.option(form.Value, 'blkioWeight', _('Block IO Weight'));
 		field.datatype = 'uinteger';
@@ -1633,13 +1615,12 @@ const FormResourceEditor = baseclass.extend({
 				resources.memorySwap, true);
 
 			if (memory === null && resources.memory) {
-				pui.errorNotification(_('Invalid memory format. Use: 512m, 1g, etc.'));
+				pui.errorNotification(_('Invalid format.') + ' ' + _('Use: 512m, 1g'));
 				return;
 			}
 			if (memorySwap === null && resources.memorySwap && resources.memorySwap !==
 				'-1') {
-				pui.errorNotification(_(
-					'Invalid memory swap format. Use: 512m, 1g, -1, etc.'));
+				pui.errorNotification(_('Invalid format.') + ' ' + _('Use: 512m, 1g, or -1 for unlimited swap'));
 				return;
 			}
 
@@ -1735,7 +1716,7 @@ const FormNetworkConnect = baseclass.extend({
 		let field;
 
 		field = section.option(form.ListValue, 'name', _('Connect to Network'));
-		field.value('', _('-- Select Network --'));
+		field.value('', _('-- Select %s --').format(_('Network')));
 		if (networks && Array.isArray(networks)) {
 			networks.forEach((net) => {
 				const name = net.Name || net.name;

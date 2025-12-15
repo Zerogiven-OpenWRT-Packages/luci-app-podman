@@ -42,7 +42,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load volumes')
+					error: err.message || _('Failed to load %s').format(_('Volumes').toLowerCase())
 				};
 			});
 	},
@@ -67,7 +67,7 @@ return view.extend({
 		this.map = new form.JSONMap(this.listHelper.data, _('Volumes'));
 
 		const section = this.map.section(form.TableSection, 'volumes', '', _(
-			'Manage Podman volumes'));
+			'Manage Podman %s').format(_('Volumes').toLowerCase()));
 		section.anonymous = true;
 
 		let o;
@@ -169,7 +169,7 @@ return view.extend({
 		const selected = this.listHelper.getSelected((volume) => volume.Name);
 
 		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No volumes selected')), 3000, 'warning');
+			ui.addTimeLimitedNotification(null, E('p', _('No %s selected').format(_('Volumes').toLowerCase())), 3000, 'warning');
 			return;
 		}
 

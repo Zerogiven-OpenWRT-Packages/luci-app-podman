@@ -18,11 +18,11 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.start,
-			_('Starting Containers'),
-			_('Starting %d container(s)...'),
-			_('Started %d container(s) successfully'),
-			_('No containers selected'),
-			_('Failed to start %d container(s)'),
+			_('Starting %s').format(_('Containers')),
+			_('Starting %d %s...').replace('%s', _('Containers').toLowerCase()),
+			_('Started %d %s successfully').replace('%s', _('Containers').toLowerCase()),
+			_('No %s selected').format(_('Containers').toLowerCase()),
+			_('Failed to start %d %s').replace('%s', _('Containers').toLowerCase()),
 			_('Failed to start containers: %s'),
 		);
 	},
@@ -36,11 +36,11 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.stop,
-			_('Stopping Containers'),
-			_('Stopping %d container(s)...'),
-			_('Stopped %d container(s) successfully'),
-			_('No containers selected'),
-			_('Failed to stop %d container(s)'),
+			_('Stopping %s').format(_('Containers')),
+			_('Stopping %d %s...').replace('%s', _('Containers').toLowerCase()),
+			_('Stopped %d %s successfully').replace('%s', _('Containers').toLowerCase()),
+			_('No %s selected').format(_('Containers').toLowerCase()),
+			_('Failed to stop %d %s').replace('%s', _('Containers').toLowerCase()),
 			_('Failed to stop containers: %s'),
 		);
 	},
@@ -54,11 +54,11 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.restart,
-			_('Restart Containers'),
-			_('Restarting %d container(s)...'),
-			_('Restarted %d container(s) successfully'),
-			_('No containers selected'),
-			_('Failed to restart %d container(s)'),
+			_('Restarting %s').format(_('Containers')),
+			_('Restarting %d %s...').replace('%s', _('Containers').toLowerCase()),
+			_('Restarted %d %s successfully').replace('%s', _('Containers').toLowerCase()),
+			_('No %s selected').format(_('Containers').toLowerCase()),
+			_('Failed to restart %d %s').replace('%s', _('Containers').toLowerCase()),
 			_('Failed to restart containers: %s'),
 		);
 	},
@@ -73,10 +73,10 @@ return baseclass.extend({
 			ids,
 			podmanRPC.container.healthcheck,
 			_('Running Health Checks'),
-			_('Running health checks on %d container(s)...'),
+			_('Running health checks on %d %s...').replace('%s', _('Containers').toLowerCase()),
 			_('Health checks completed successfully'),
-			_('No containers selected'),
-			_('Failed to run health checks on %d container(s)'),
+			_('No %s selected').format(_('Containers').toLowerCase()),
+			_('Failed to run health checks on %d %s').replace('%s', _('Containers').toLowerCase()),
 			_('Failed to run health checks: %s'),
 		);
 	},
@@ -98,7 +98,7 @@ return baseclass.extend({
 		}
 
 		if (ids.length === 0) {
-			podmanUI.warningTimeNotification(_('No containers selected'));
+			podmanUI.warningTimeNotification(_('No %s selected').format(_('Containers').toLowerCase()));
 			return;
 		}
 
@@ -111,7 +111,7 @@ return baseclass.extend({
 			)
 		);
 
-		podmanUI.showSpinningModal(_('Removing Containers'), _('Removing %d container(s)...').format(ids.length));
+		podmanUI.showSpinningModal(_('Removing %s').format(_('Containers')), _('Removing %d %s...').format(ids.length, _('Containers').toLowerCase()));
 
 		// Delete containers
 		const promises = ids.map((id) => podmanRPC.container.remove(id, forceRemove, removeVolumes));
@@ -125,7 +125,7 @@ return baseclass.extend({
 
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
-				podmanUI.errorNotification(_('Failed to remove %d container(s)').format(errors.length));
+				podmanUI.errorNotification(_('Failed to remove %d %s').format(errors.length, _('Containers').toLowerCase()));
 				return;
 			}
 
@@ -138,7 +138,7 @@ return baseclass.extend({
 				);
 
 			Promise.all(cleanupPromises).then(() => {
-				podmanUI.successTimeNotification(_('Removed %d container(s) successfully').format(ids.length));
+				podmanUI.successTimeNotification(_('Removed %d %s successfully').format(ids.length, _('Containers').toLowerCase()));
 			});
 		}).catch((err) => {
 			ui.hideModal();

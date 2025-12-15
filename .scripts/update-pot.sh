@@ -30,7 +30,7 @@ echo ""
 echo "Extracting strings from code..."
 
 find "$HTDOCS_DIR" -name "*.js" -exec cat {} \; | \
-    perl -0777 -ne "while (/\_\(\s*'([^']+)'\s*\)/gs) { print \"\$1\n\"; }" | \
+    perl -0777 -ne "while (/\_\(\s*('([^']+)'|\"([^\"]+)\")\s*\)/gs) { print \"\$1\n\"; }" | \
     sort -u > "$CODE_STRINGS"
 
 STRING_COUNT=$(wc -l < "$CODE_STRINGS" | tr -d ' ')

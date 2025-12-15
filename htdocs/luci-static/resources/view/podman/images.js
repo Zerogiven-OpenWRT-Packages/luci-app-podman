@@ -28,24 +28,13 @@ return view.extend({
 	load: async () => {
 		return podmanRPC.image.list()
 			.then((images) => {
-				const expandedImages = [];
-				(images || []).forEach((image) => {
-					const repoTags = image.RepoTags || ['<none>:<none>'];
-					repoTags.forEach((tag) => {
-						expandedImages.push({
-							...image,
-							_displayTag: tag,
-							_originalImage: image
-						});
-					});
-				});
 				return {
-					images: expandedImages
+					images: images || []
 				};
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load images')
+					error: err.message || _('Failed to load %s').format(_('Images').toLowerCase())
 				};
 			});
 	},
@@ -70,7 +59,7 @@ return view.extend({
 		this.map = new form.JSONMap(this.listHelper.data, _('Images'));
 
 		const section = this.map.section(form.TableSection, 'images', '', _(
-			'Manage Podman images'));
+			'Manage Podman %s').format(_('Images').toLowerCase()));
 		section.anonymous = true;
 
 		let o;
@@ -93,8 +82,18 @@ return view.extend({
 			const image = this.map.data.data[sectionId];
 			const tag = image._displayTag || '<none>:<none>';
 			const parts = tag.split(':');
-			return parts[1] || '<none>';
+			const tagValue = parts[1] || '<none>';
+
+		// Truncate long tags (like SHA hashes) and show with tooltip
+		if (tagValue.length > 20) {
+			return E('span', {
+				'title': tagValue,
+				'style': 'border-bottom: 1px dotted; cursor: help;'
+			}, tagValue.substring(0, 20) + '...');
+		}
+		return tagValue;
 		};
+		o.rawhtml = true;
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'ImageId', _('Image ID'));
 		o.click = (image) => this.handleInspect(image.Id);
@@ -171,17 +170,17 @@ return view.extend({
 		const selected = this.getSelectedImages();
 
 		if (selected.length === 0) {
-			podmanUI.simpleTimeNotification(_('No images selected'), 'warning');
+			podmanUI.simpleTimeNotification(_('No %s selected').format(_('Images').toLowerCase()), 'warning');
 			return;
 		}
 
 		const imageNames = selected.map((img) => img.name).join(', ');
-		if (!confirm(_('Pull latest version of %d image(s)?\n\n%s').format(selected.length,
-				imageNames)))
+		if (!confirm(_('Pull latest version of %d %s?\n\n%s').format(selected.length,
+				_('Images').toLowerCase(), imageNames)))
 			return;
 
 		podmanUI.showSpinningModal(_('Pulling Images'), _(
-			'Pulling latest version of %d image(s)...').format(selected.length));
+			'Pulling latest version of %d %s...').format(selected.length, _('Images').toLowerCase()));
 
 		const pullPromises = selected.map((img) => podmanRPC.image.pull(img.name));
 
@@ -189,11 +188,11 @@ return view.extend({
 			ui.hideModal();
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
-				podmanUI.errorNotification(_('Failed to pull %d image(s)').format(errors
-					.length));
+				podmanUI.errorNotification(_('Failed to pull %d %s').format(errors
+					.length, _('Images').toLowerCase()));
 			} else {
-				podmanUI.successTimeNotification(_('Successfully pulled %d image(s)')
-					.format(selected.length));
+				podmanUI.successTimeNotification(_('Successfully pulled %d %s')
+					.format(selected.length, _('Images').toLowerCase()));
 			}
 			this.handleRefresh();
 		}).catch((err) => {

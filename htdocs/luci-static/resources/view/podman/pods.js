@@ -34,7 +34,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load pods')
+					error: err.message || _('Failed to load %s').format(_('Pods').toLowerCase())
 				};
 			});
 	},
@@ -58,7 +58,7 @@ return view.extend({
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Pods'));
 
-		const section = this.map.section(form.TableSection, 'pods', '', _('Manage Podman pods'));
+		const section = this.map.section(form.TableSection, 'pods', '', _('Manage Podman %s').format(_('Pods').toLowerCase()));
 		section.anonymous = true;
 
 		let o;
@@ -123,13 +123,13 @@ return view.extend({
 					text: '&#9658;', // Play symbol
 					handler: () => this.handleStart(),
 					cssClass: 'positive',
-					tooltip: _('Start selected pods')
+					tooltip: _('Start selected %s').format(_('Pods').toLowerCase())
 				},
 				{
 					text: '&#9724;', // Stop symbol
 					handler: () => this.handleStop(),
 					cssClass: 'negative',
-					tooltip: _('Stop selected pods')
+					tooltip: _('Stop selected %s').format(_('Pods').toLowerCase())
 				}
 			]
 		});
@@ -203,11 +203,11 @@ return view.extend({
 		const selected = this.getSelectedPods();
 
 		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No pods selected')), 3000, 'warning');
+			ui.addTimeLimitedNotification(null, E('p', _('No %s selected').format(_('Pods').toLowerCase())), 3000, 'warning');
 			return;
 		}
 
-		podmanUI.showSpinningModal(_('Starting Pods'), _('Starting selected pods...'));
+		podmanUI.showSpinningModal(_('Starting %s').format(_('Pods')), _('Starting selected %s...').format(_('Pods').toLowerCase()));
 
 		const startPromises = selected.map((pod) => {
 			return podmanRPC.pod.start(pod.id).catch((err) => {
@@ -226,7 +226,7 @@ return view.extend({
 				podmanUI.errorNotification(_('Failed to start some pods: %s').format(
 					errorMsg));
 			} else {
-				podmanUI.successTimeNotification(_('Pods started successfully'));
+				podmanUI.successTimeNotification(_('%s started successfully').format(_('Pods')));
 			}
 			this.handleRefresh(false);
 		});
@@ -239,11 +239,11 @@ return view.extend({
 		const selected = this.getSelectedPods();
 
 		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No pods selected')), 3000, 'warning');
+			ui.addTimeLimitedNotification(null, E('p', _('No %s selected').format(_('Pods').toLowerCase())), 3000, 'warning');
 			return;
 		}
 
-		podmanUI.showSpinningModal(_('Stopping Pods'), _('Stopping selected pods...'));
+		podmanUI.showSpinningModal(_('Stopping %s').format(_('Pods')), _('Stopping selected %s...').format(_('Pods').toLowerCase()));
 
 		const stopPromises = selected.map((pod) => {
 			return podmanRPC.pod.stop(pod.id).catch((err) => {
@@ -262,7 +262,7 @@ return view.extend({
 				podmanUI.errorNotification(_('Failed to stop some pods: %s').format(
 					errorMsg));
 			} else {
-				podmanUI.successTimeNotification(_('Pods stopped successfully'));
+				podmanUI.successTimeNotification(_('%s stopped successfully').format(_('Pods')));
 			}
 			this.handleRefresh(false);
 		});

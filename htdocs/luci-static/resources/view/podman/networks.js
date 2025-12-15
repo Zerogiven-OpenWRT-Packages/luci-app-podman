@@ -35,7 +35,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load networks')
+					error: err.message || _('Failed to load %s').format(_('Networks').toLowerCase())
 				};
 			});
 	},
@@ -60,7 +60,7 @@ return view.extend({
 		this.map = new form.JSONMap(this.listHelper.data, _('Networks'));
 
 		const section = this.map.section(form.TableSection, 'networks', '', _(
-			'Manage Podman networks'));
+			'Manage Podman %s').format(_('Networks').toLowerCase()));
 		section.anonymous = true;
 
 		let o;
@@ -189,7 +189,7 @@ return view.extend({
 		const selected = this.getSelectedNetworks();
 
 		if (selected.length === 0) {
-			podmanUI.warningTimeNotification(_('No networks selected'));
+			podmanUI.warningTimeNotification(_('No %s selected').format(_('Networks').toLowerCase()));
 			return;
 		}
 
@@ -206,20 +206,20 @@ return view.extend({
 		Promise.all(checkPromises).then((checks) => {
 			const withOpenwrt = checks.filter((c) => c.hasOpenwrt);
 
-			let confirmMsg = _('Are you sure you want to remove %d network(s)?\n\n%s')
-				.format(selected.length, selected.join(', '));
+			let confirmMsg = _('Are you sure you want to delete %d %s?\n\n%s')
+				.format(selected.length, _('Networks').toLowerCase(), selected.join(', '));
 
 			if (withOpenwrt.length > 0) {
 				confirmMsg += '\n\n' + _(
-						'Note: %d network(s) have OpenWrt integration that will also be removed (bridge, firewall zone, and rules).'
+						'Note: %d %s have OpenWrt integration that will also be removed (bridge, firewall zone, and rules).'
 					)
-					.format(withOpenwrt.length);
+					.format(withOpenwrt.length, _('Networks').toLowerCase());
 			}
 
 			if (!confirm(confirmMsg)) return;
 
-			podmanUI.showSpinningModal(_('Deleting Networks'), _(
-				'Deleting %d selected network(s)...').format(selected.length));
+			podmanUI.showSpinningModal(_('Deleting %s').format(_('Networks')), _(
+				'Deleting %d selected %s...').format(selected.length, _('Networks').toLowerCase()));
 
 			const deletePromises = selected.map((name) => {
 				const check = checks.find((c) => c.name === name);
@@ -269,16 +269,16 @@ return view.extend({
 				const openwrtErrors = results.filter((r) => r.openwrtError);
 
 				if (errors.length > 0) {
-					podmanUI.errorNotification(_('Failed to delete %d network(s)')
-						.format(errors.length));
+					podmanUI.errorNotification(_('Failed to delete %d %s')
+						.format(errors.length, _('Networks').toLowerCase()));
 				} else if (openwrtErrors.length > 0) {
 					podmanUI.warningNotification(_(
-						'Networks deleted but %d OpenWrt integration(s) failed to remove'
+						'Networks deleted but %d OpenWrt integrations failed to remove'
 					).format(openwrtErrors.length));
 				} else {
 					podmanUI.successTimeNotification(_(
-						'Successfully deleted %d network(s)').format(
-						selected.length));
+						'Successfully deleted %d %s').format(
+						selected.length, _('Networks').toLowerCase()));
 				}
 
 				this.handleRefresh(true);

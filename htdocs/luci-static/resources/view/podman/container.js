@@ -238,7 +238,7 @@ return view.extend({
 		// Standard info rows
 		basicTable
 			.addRow([{
-					inner: _('ID'),
+					inner: _('Id').toUpperCase(),
 					options: {
 						'style': 'width: 33%; font-weight: bold;'
 					}
@@ -648,7 +648,7 @@ return view.extend({
 
 		const networkOptions = [E('option', {
 			'value': ''
-		}, _('-- Select Network --'))];
+		}, _('-- Select %s --').format(_('Network')))];
 
 		if (this.networksData && Array.isArray(this.networksData)) {
 			this.networksData.forEach(function (net) {
@@ -2066,7 +2066,7 @@ return view.extend({
 	 * @param {string} name - Container name
 	 */
 	handleRemove: function (id, name) {
-		if (!confirm(_('Are you sure you want to remove container %s?').format(name)))
+		if (!confirm(_('Are you sure you want to delete %s %s?').format(_('Container').toLowerCase(), name)))
 			return;
 
 		ContainerUtil.removeContainers(id).then(() => {

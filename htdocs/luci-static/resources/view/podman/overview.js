@@ -595,8 +595,8 @@ return view.extend({
 			}).length;
 
 			ui.showModal(_('Auto-Update Complete'), [
-				E('p', {}, _('Updated %d container(s) successfully.').format(
-					successful)),
+				E('p', {}, _('Updated %d %s successfully.').format(
+				successful, _('Containers').toLowerCase())),
 				new pui.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: () => {
@@ -709,8 +709,7 @@ return view.extend({
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.ContainerPruneReports.length > 0) {
-					deletedItems.push(result.ContainerPruneReports.length + _(
-						' containers'));
+					deletedItems.push(result.ContainerPruneReports.length + ' ' + _('Containers').toLowerCase());
 				}
 			}
 
@@ -719,7 +718,7 @@ return view.extend({
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.ImagePruneReports.length > 0) {
-					deletedItems.push(result.ImagePruneReports.length + _(' images'));
+					deletedItems.push(result.ImagePruneReports.length + ' ' + _('Images').toLowerCase());
 				}
 			}
 
@@ -728,7 +727,7 @@ return view.extend({
 					if (r.Size) freedSpace += r.Size;
 				});
 				if (result.VolumePruneReports.length > 0) {
-					deletedItems.push(result.VolumePruneReports.length + _(' volumes'));
+					deletedItems.push(result.VolumePruneReports.length + ' ' + _('Volumes').toLowerCase());
 				}
 			}
 

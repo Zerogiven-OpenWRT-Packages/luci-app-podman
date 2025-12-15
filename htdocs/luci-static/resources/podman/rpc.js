@@ -215,6 +215,27 @@ return baseclass.extend({
 			params: [],
 			expect: {
 				data: []
+			},
+			filter: function(data) {
+				// Expand multi-tag images into separate entries
+				const expandedImages = [];
+				(data || []).forEach((image) => {
+					const repoTags = image.RepoTags || ['<none>:<none>'];
+					repoTags.forEach((tag) => {
+						expandedImages.push({
+							...image,
+							_displayTag: tag,
+							_originalImage: image
+						});
+					});
+				});
+				// Sort by repository:tag alphabetically
+				expandedImages.sort((a, b) => {
+					const tagA = a._displayTag || '';
+					const tagB = b._displayTag || '';
+					return tagA.localeCompare(tagB);
+				});
+				return expandedImages;
 			}
 		}),
 
@@ -487,6 +508,14 @@ return baseclass.extend({
 			params: [],
 			expect: {
 				data: []
+			},
+			filter: function(data) {
+				// Sort by name alphabetically
+				return (data || []).sort((a, b) => {
+					const nameA = a.name || a.Name || '';
+					const nameB = b.name || b.Name || '';
+					return nameA.localeCompare(nameB);
+				});
 			}
 		}),
 
