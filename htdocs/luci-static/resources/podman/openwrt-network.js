@@ -2,6 +2,7 @@
 
 'require network';
 'require uci';
+'require fs';
 
 /**
  * OpenWrt network/firewall integration for Podman networks.
@@ -144,6 +145,9 @@ return L.Class.extend({
 			return uci.apply(90);
 		}).then(() => {
 			return network.flushCache();
+		}).then(() => {
+			// Configure dnsmasq to exclude this bridge
+			return this._configureDnsmasq(bridgeName, true);
 		});
 	},
 
@@ -228,18 +232,27 @@ return L.Class.extend({
 					s['.name'] !== networkName;
 			});
 
-			if (otherInterfaces.length === 0) {
+			const shouldRemoveBridge = otherInterfaces.length === 0;
+
+			if (shouldRemoveBridge) {
 				const device = uci.get('network', bridgeName);
 				if (device) {
 					uci.remove('network', bridgeName);
 				}
 			}
 
-			return uci.save();
-		}).then(() => {
-			return uci.apply(90);
-		}).then(() => {
-			return network.flushCache();
+			return { shouldRemoveBridge: shouldRemoveBridge };
+		}).then((result) => {
+			return uci.save().then(() => result);
+		}).then((result) => {
+			return uci.apply(90).then(() => result);
+		}).then((result) => {
+			return network.flushCache().then(() => result);
+		}).then((result) => {
+			// Remove dnsmasq exclusion if bridge was deleted
+			if (result.shouldRemoveBridge) {
+				return this._configureDnsmasq(bridgeName, false);
+			}
 		});
 	},
 
@@ -261,74 +274,78 @@ return L.Class.extend({
 	/**
 	 * Check if integration is complete (all components exist).
 	 *
-	 * Verifies device, interface, and zone membership.
+	 * Verifies device, interface, and dnsmasq exclusion.
+	 * Does NOT check firewall zones (user's choice).
 	 *
 	 * @param {string} networkName - Podman network name
-	 * @returns {Promise<Object>} {complete: boolean, missing: string[]}
+	 * @returns {Promise<Object>} {complete: boolean, missing: string[], details: object}
 	 */
 	isIntegrationComplete: function (networkName) {
 		const missing = [];
+		const details = {
+			hasInterface: false,
+			hasDevice: false,
+			hasDnsmasqExclusion: false
+		};
 
 		return Promise.all([
 			uci.load('network'),
-			uci.load('firewall')
+			uci.load('dhcp')
 		]).then(() => {
+			// Check interface
 			const iface = uci.get('network', networkName);
 			if (!iface) {
 				missing.push('interface');
-				return {
-					complete: false,
-					missing: missing
-				};
+			} else {
+				details.hasInterface = true;
 			}
 
+			// Check device (bridge)
 			const bridgeName = uci.get('network', networkName, 'device');
-
 			if (bridgeName) {
 				const device = uci.get('network', bridgeName);
 				if (!device) {
 					missing.push('device');
+				} else {
+					details.hasDevice = true;
+
+					// Check dnsmasq exclusion (only if device exists and dnsmasq is configured)
+					const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
+					if (dnsmasqSections.length > 0) {
+						const mainSection = dnsmasqSections[0]['.name'];
+						const notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
+
+						let isExcluded = false;
+						if (Array.isArray(notinterfaces)) {
+							isExcluded = notinterfaces.includes(bridgeName);
+						} else if (notinterfaces) {
+							isExcluded = notinterfaces === bridgeName;
+						}
+
+						if (isExcluded) {
+							details.hasDnsmasqExclusion = true;
+						} else {
+							missing.push('dnsmasq');
+						}
+					} else {
+						// dnsmasq not configured - this is OK, mark as complete
+						details.hasDnsmasqExclusion = true;
+					}
 				}
 			} else {
 				missing.push('device');
 			}
 
-			// Find zone that contains this network
-			const zones = uci.sections('firewall', 'zone');
-			let foundInZone = false;
-
-			for (const zone of zones) {
-				const zoneName = uci.get('firewall', zone['.name'], 'name');
-				if (!zoneName || !zoneName.startsWith('podman')) {
-					continue;
-				}
-
-				const currentNetworks = uci.get('firewall', zone['.name'], 'network');
-				let networkList = [];
-				if (Array.isArray(currentNetworks)) {
-					networkList = currentNetworks;
-				} else if (currentNetworks) {
-					networkList = [currentNetworks];
-				}
-
-				if (networkList.includes(networkName)) {
-					foundInZone = true;
-					break;
-				}
-			}
-
-			if (!foundInZone) {
-				missing.push('zone_membership');
-			}
-
 			return {
 				complete: missing.length === 0,
-				missing: missing
+				missing: missing,
+				details: details
 			};
 		}).catch(() => {
 			return {
 				complete: false,
-				missing: ['unknown']
+				missing: ['unknown'],
+				details: details
 			};
 		});
 	},
@@ -460,6 +477,220 @@ return L.Class.extend({
 				valid: false,
 				errors: errors
 			};
+		});
+	},
+
+	/**
+	 * Repair OpenWrt integration by adding only missing components.
+	 *
+	 * Does NOT touch existing configurations. Only adds what's missing.
+	 * Does NOT manage firewall zones (user's responsibility).
+	 *
+	 * @param {string} networkName - Podman network name
+	 * @param {Object} options - Network configuration
+	 * @param {string} options.bridgeName - Bridge name
+	 * @param {string} options.subnet - Subnet CIDR (only needed if creating interface)
+	 * @param {string} options.gateway - Gateway IP (only needed if creating interface)
+	 * @returns {Promise<Object>} {added: string[], skipped: string[]}
+	 */
+	repairIntegration: async function (networkName, options) {
+		const added = [];
+		const skipped = [];
+
+		// Check what's missing
+		const status = await this.isIntegrationComplete(networkName);
+
+		if (status.complete) {
+			return {
+				added: [],
+				skipped: ['complete'],
+				details: status.details
+			};
+		}
+
+		const bridgeName = options.bridgeName;
+
+		return Promise.all([
+			uci.load('network'),
+			uci.load('dhcp')
+		]).then(() => {
+			// Repair device if missing
+			if (!status.details.hasDevice) {
+				const existingDevice = uci.get('network', bridgeName);
+				if (!existingDevice) {
+					uci.add('network', 'device', bridgeName);
+					uci.set('network', bridgeName, 'type', 'bridge');
+					uci.set('network', bridgeName, 'name', bridgeName);
+					uci.set('network', bridgeName, 'bridge_empty', '1');
+					uci.set('network', bridgeName, 'ipv6', '0');
+					added.push('device');
+				} else {
+					skipped.push('device');
+				}
+			} else {
+				skipped.push('device');
+			}
+
+			// Repair interface if missing
+			if (!status.details.hasInterface) {
+				const existingInterface = uci.get('network', networkName);
+				if (!existingInterface) {
+					const gateway = options.gateway;
+					const prefix = cidrToPrefix(options.subnet);
+					const netmask = network.prefixToMask(prefix);
+
+					uci.add('network', 'interface', networkName);
+					uci.set('network', networkName, 'proto', 'static');
+					uci.set('network', networkName, 'device', bridgeName);
+					uci.set('network', networkName, 'ipaddr', gateway);
+					uci.set('network', networkName, 'netmask', netmask);
+					added.push('interface');
+				} else {
+					skipped.push('interface');
+				}
+			} else {
+				skipped.push('interface');
+			}
+
+			return uci.save();
+		}).then(() => {
+			return uci.apply(90);
+		}).then(() => {
+			return network.flushCache();
+		}).then(() => {
+			// Repair dnsmasq if missing (most common case)
+			if (!status.details.hasDnsmasqExclusion) {
+				return this._configureDnsmasq(bridgeName, true).then(() => {
+					added.push('dnsmasq');
+				});
+			} else {
+				skipped.push('dnsmasq');
+			}
+		}).then(() => {
+			return {
+				added: added,
+				skipped: skipped,
+				details: status.details
+			};
+		});
+	},
+
+	/**
+	 * Configure dnsmasq to exclude (or include) a bridge interface.
+	 *
+	 * Prevents dnsmasq from binding to port 53 on Podman bridges, allowing
+	 * Podman's aardvark-dns service to handle container DNS resolution.
+	 *
+	 * This is optional - if dnsmasq is not installed, this step is skipped.
+	 *
+	 * @param {string} bridgeName - Bridge interface name (e.g., 'podman0')
+	 * @param {boolean} enable - true to exclude, false to remove exclusion
+	 * @returns {Promise<void>}
+	 */
+	_configureDnsmasq: function (bridgeName, enable) {
+		return uci.load('dhcp').then(() => {
+			// Get main dnsmasq config section
+			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
+
+			// Skip if dnsmasq is not configured (e.g., router uses odhcpd only)
+			if (dnsmasqSections.length === 0) {
+				console.log('dnsmasq not configured, skipping exclusion setup');
+				return { skip: true };
+			}
+
+			let mainSection = dnsmasqSections[0]['.name'];
+
+			// Get current notinterface list
+			let notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
+			let notinterfaceList = [];
+
+			if (Array.isArray(notinterfaces)) {
+				notinterfaceList = notinterfaces;
+			} else if (notinterfaces) {
+				notinterfaceList = [notinterfaces];
+			}
+
+			if (enable) {
+				// Add to exclusion list if not present
+				if (!notinterfaceList.includes(bridgeName)) {
+					notinterfaceList.push(bridgeName);
+					uci.set('dhcp', mainSection, 'notinterface', notinterfaceList);
+				}
+			} else {
+				// Remove from exclusion list
+				const filtered = notinterfaceList.filter(iface => iface !== bridgeName);
+				if (filtered.length > 0) {
+					uci.set('dhcp', mainSection, 'notinterface', filtered);
+				} else {
+					// Remove option entirely if list is empty
+					uci.unset('dhcp', mainSection, 'notinterface');
+				}
+			}
+
+			return { skip: false };
+		}).then((result) => {
+			if (result.skip) {
+				return result;
+			}
+			return uci.save().then(() => result);
+		}).then((result) => {
+			if (result.skip) {
+				return result;
+			}
+			return uci.apply(90).then(() => result);
+		}).then((result) => {
+			if (result.skip) {
+				return Promise.resolve();
+			}
+			return this._restartDnsmasq();
+		});
+	},
+
+	/**
+	 * Check if bridge interface is excluded from dnsmasq.
+	 *
+	 * @param {string} bridgeName - Bridge interface name
+	 * @returns {Promise<boolean>}
+	 */
+	_isDnsmasqExcluded: function (bridgeName) {
+		return uci.load('dhcp').then(() => {
+			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
+			if (dnsmasqSections.length === 0) {
+				return false;
+			}
+
+			const mainSection = dnsmasqSections[0]['.name'];
+			const notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
+
+			if (Array.isArray(notinterfaces)) {
+				return notinterfaces.includes(bridgeName);
+			} else if (notinterfaces) {
+				return notinterfaces === bridgeName;
+			}
+
+			return false;
+		}).catch(() => {
+			return false;
+		});
+	},
+
+	/**
+	 * Restart dnsmasq service.
+	 *
+	 * Uses fs.exec to call init script.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	_restartDnsmasq: function () {
+		return fs.exec('/etc/init.d/dnsmasq', ['restart']).then(() => {
+			// Wait a moment for service to fully restart
+			return new Promise((resolve) => {
+				setTimeout(resolve, 1000);
+			});
+		}).catch((err) => {
+			console.warn('Failed to restart dnsmasq:', err.message);
+			// Don't fail the integration if dnsmasq restart fails
+			return Promise.resolve();
 		});
 	}
 });

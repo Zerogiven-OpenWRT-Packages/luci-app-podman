@@ -35,7 +35,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load %s').format(_('Networks').toLowerCase())
+					error: err.message || _('Failed')
 				};
 			});
 	},
@@ -344,36 +344,80 @@ return view.extend({
 
 		const bridgeName = name + '0';
 
-		ui.showModal(_('Setup OpenWrt Integration'), [
-			E('p', {}, _('Setup OpenWrt integration for network "%s"?').format(name)),
-			E('p', {}, [
-				E('strong', {}, _('Details:')),
-				E('br'),
-				_('Network: %s').format(name), E('br'),
-				_('Subnet: %s').format(subnet), E('br'),
-				_('Gateway: %s').format(gateway), E('br'),
-				_('Bridge: %s').format(bridgeName)
-			]),
-			E('p', {}, _('This will create:')),
-			E('ul', {}, [
-				E('li', {}, _('Bridge device (%s)').format(bridgeName)),
-				E('li', {}, _('Network interface with static IP')),
-				E('li', {}, _('Add to shared "podman" firewall zone')),
-				E('li', {}, _('DNS access rule (if first network)'))
-			]),
-			new podmanUI.ModalButtons({
-				confirmText: _('Setup'),
-				onConfirm: () => {
-					ui.hideModal();
-					this.executeSetupIntegration(name, bridgeName, subnet,
-						gateway);
-				}
-			}).render()
-		]);
+		// Check what's missing
+		openwrtNetwork.isIntegrationComplete(name).then((status) => {
+			const missingItems = [];
+			const existingItems = [];
+
+			// Build lists
+			if (status.details.hasDevice) {
+				existingItems.push(_('Bridge device'));
+			} else {
+				missingItems.push(_('Bridge device'));
+			}
+
+			if (status.details.hasInterface) {
+				existingItems.push(_('Network interface'));
+			} else {
+				missingItems.push(_('Network interface'));
+			}
+
+			if (status.details.hasDnsmasqExclusion) {
+				existingItems.push(_('dnsmasq exclusion'));
+			} else {
+				missingItems.push(_('dnsmasq exclusion'));
+			}
+
+			const modalContent = [
+				E('p', {}, _('Setup OpenWrt integration for network "%s"?').format(name)),
+				E('p', {}, [
+					E('strong', {}, _('Network: %s').format(name)), E('br'),
+					_('Subnet: %s').format(subnet), E('br'),
+					_('Gateway: %s').format(gateway), E('br'),
+					_('Bridge: %s').format(bridgeName)
+				])
+			];
+
+			// Show existing components (if any)
+			if (existingItems.length > 0) {
+				modalContent.push(
+					E('p', { 'style': 'margin-top: 15px;' }, [
+						E('strong', { 'style': 'color: #28a745;' }, '✓ ' + _('Already configured:'))
+					]),
+					E('ul', { 'style': 'margin: 5px 0;' },
+						existingItems.map(item => E('li', {}, item))
+					)
+				);
+			}
+
+			// Show missing components
+			if (missingItems.length > 0) {
+				modalContent.push(
+					E('p', { 'style': 'margin-top: 15px;' }, [
+						E('strong', { 'style': 'color: #f90;' }, '⚠ ' + _('Will be added:'))
+					]),
+					E('ul', { 'style': 'margin: 5px 0;' },
+						missingItems.map(item => E('li', {}, item))
+					)
+				);
+			}
+
+			modalContent.push(
+				new podmanUI.ModalButtons({
+					confirmText: _('Setup'),
+					onConfirm: () => {
+						ui.hideModal();
+						this.executeSetupIntegration(name, bridgeName, subnet, gateway);
+					}
+				}).render()
+			);
+
+			ui.showModal(_('Setup OpenWrt Integration'), modalContent);
+		});
 	},
 
 	/**
-	 * Execute OpenWrt integration creation
+	 * Execute OpenWrt integration creation or repair
 	 * @param {string} name - Network name
 	 * @param {string} bridgeName - Bridge name
 	 * @param {string} subnet - Network subnet
@@ -381,12 +425,30 @@ return view.extend({
 	 */
 	executeSetupIntegration: function (name, bridgeName, subnet, gateway) {
 		podmanUI.showSpinningModal(_('Setting up Integration'), _(
-			'Creating OpenWrt integration for network "%s"...').format(name));
+			'Setting up OpenWrt integration...'));
 
-		openwrtNetwork.createIntegration(name, {
-			bridgeName: bridgeName,
-			subnet: subnet,
-			gateway: gateway
+		// Check if network has any existing integration
+		openwrtNetwork.isIntegrationComplete(name).then((status) => {
+			// If any component exists, use repair (selective)
+			// If nothing exists, use create (full integration)
+			const hasAnyComponent = status.details.hasInterface || status.details.hasDevice;
+
+			if (hasAnyComponent) {
+				// Use repair - only add missing components
+				return openwrtNetwork.repairIntegration(name, {
+					bridgeName: bridgeName,
+					subnet: subnet,
+					gateway: gateway
+				});
+			} else {
+				// Use create - full integration with firewall zone
+				return openwrtNetwork.createIntegration(name, {
+					bridgeName: bridgeName,
+					subnet: subnet,
+					gateway: gateway,
+					zoneName: 'podman'
+				});
+			}
 		}).then(() => {
 			ui.hideModal();
 			podmanUI.successTimeNotification(_(
