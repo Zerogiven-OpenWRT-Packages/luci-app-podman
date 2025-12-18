@@ -2,6 +2,8 @@
 
 'require view';
 'require form';
+'require ui';
+
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.format as format';
@@ -9,7 +11,6 @@
 'require podman.form as podmanForm';
 'require podman.list as List';
 'require podman.container-util as ContainerUtil';
-'require ui';
 
 /**
  * Container management view with create, start, stop, health check, and delete operations
@@ -51,7 +52,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load %s').format(_('Containers').toLowerCase())
+					error: err.message || _('Failed')
 				};
 			});
 	},
@@ -75,8 +76,12 @@ return view.extend({
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Containers'));
 
-		const section = this.map.section(form.TableSection, 'containers', '', _(
-			'Manage Podman %s').format(_('Containers').toLowerCase()));
+		const section = this.map.section(
+			form.TableSection,
+			'containers',
+			'',
+			_('Manage Podman %s').format(_('Containers').toLowerCase())
+		);
 		section.anonymous = true;
 
 		let o;
@@ -270,10 +275,9 @@ return view.extend({
 						}
 					}
 
+					idLink.title = containerName || containerId;
 					if (tooltipParts.length > 0) {
 						idLink.title = tooltipParts.join(' | ');
-					} else {
-						idLink.title = containerName || containerId;
 					}
 				}
 
@@ -284,6 +288,10 @@ return view.extend({
 						inspectData.HostConfig.RestartPolicy.Name &&
 						inspectData.HostConfig.RestartPolicy.Name !== '' &&
 						inspectData.HostConfig.RestartPolicy.Name !== 'no';
+
+					autoStartCell.textContent = '—';
+					autoStartCell.style.color = '#999';
+					autoStartCell.title = _('No auto-start configured');
 
 					if (initStatus.exists && initStatus.enabled) {
 						// Init script exists and enabled
@@ -307,11 +315,6 @@ return view.extend({
 						autoStartCell.textContent = '○';
 						autoStartCell.style.color = '#999';
 						autoStartCell.title = _('Init script disabled');
-					} else {
-						// No init script, no restart policy
-						autoStartCell.textContent = '—';
-						autoStartCell.style.color = '#999';
-						autoStartCell.title = _('No auto-start configured');
 					}
 				}
 			}).catch((err) => {
@@ -403,8 +406,9 @@ return view.extend({
 		});
 
 		if (containersWithHealth.length === 0) {
-			podmanUI.warningTimeNotification(_(
-				'No selected containers have health checks configured'));
+			podmanUI.warningTimeNotification(
+				_('No selected containers have health checks configured')
+			);
 			return;
 		}
 
@@ -418,8 +422,10 @@ return view.extend({
 	 * @param {string} containerName - Container name
 	 */
 	handleGenerateInitScript: function (containerName) {
-		podmanUI.showSpinningModal(_('Generating init script...'),
-			_('Creating auto-start configuration for %s').format(containerName));
+		podmanUI.showSpinningModal(
+			_('Generating Init Script'),
+			_('Creating auto-start configuration for %s').format(containerName)
+		);
 
 		podmanRPC.initScript.generate(containerName).then((result) => {
 			if (result && result.success) {

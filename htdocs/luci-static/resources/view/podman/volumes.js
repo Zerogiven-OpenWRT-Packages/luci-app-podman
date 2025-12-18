@@ -42,7 +42,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load %s').format(_('Volumes').toLowerCase())
+					error: err.message || _('Failed')
 				};
 			});
 	},

@@ -96,25 +96,30 @@ const FormContainer = baseclass.extend({
 			});
 		}
 		field.description = _('Container image to use');
+
 		field = section.option(form.Value, 'command', _('Command'));
 		field.placeholder = '/bin/sh';
 		field.optional = true;
 		field.description = _('Command to run (space-separated)');
+
 		field = section.option(form.TextValue, 'ports', _('Port Mappings'));
-		field.placeholder = _('8080:80\n8443:443');
+		field.placeholder = '8080:80\n8443:443';
 		field.rows = 3;
 		field.optional = true;
 		field.description = _('One per line, format: host:container');
+
 		field = section.option(form.TextValue, 'env', _('Environment Variables'));
-		field.placeholder = _('VAR1=value1\nVAR2=value2');
+		field.placeholder = 'VAR1=value1\nVAR2=value2';
 		field.rows = 4;
 		field.optional = true;
-		field.description = _('One per line, format: KEY=value');
+		field.description = _('One per line, format: key=value');
+
 		field = section.option(form.TextValue, 'volumes', _('Volumes'));
 		field.placeholder = _('/host/path:/container/path\nvolume-name:/data');
 		field.rows = 4;
 		field.optional = true;
 		field.description = _('One per line, format: source:destination');
+
 		field = section.option(form.ListValue, 'network', _('Network'));
 		field.value('bridge', 'bridge (default)');
 		field.value('host', 'host');
@@ -130,7 +135,8 @@ const FormContainer = baseclass.extend({
 		field.description = _(
 			'Select network for the container. User-created networks provide better isolation and DNS resolution between containers.'
 			);
-		field = section.option(form.ListValue, 'restart', _('Restart Policy'));
+
+			field = section.option(form.ListValue, 'restart', _('Restart Policy'));
 		field.value('no', _('No'));
 		field.value('always', _('Always'));
 		field.value('on-failure', _('On Failure'));
@@ -144,7 +150,6 @@ const FormContainer = baseclass.extend({
 
 		field = section.option(form.Flag, 'remove', _('Auto Remove (--rm)'));
 
-
 		field = section.option(form.Flag, 'autoupdate', _('Auto-Update'));
 		field.description = _(
 			'Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry'
@@ -152,6 +157,7 @@ const FormContainer = baseclass.extend({
 
 		field = section.option(form.Flag, 'start', _('Start after creation'));
 		field.description = _('Automatically start the container after it is created');
+
 		field = section.option(form.Value, 'workdir', _('Working Directory'));
 		field.placeholder = '/app';
 		field.optional = true;
@@ -160,16 +166,19 @@ const FormContainer = baseclass.extend({
 		field.placeholder = 'container-host';
 		field.optional = true;
 		field.datatype = 'hostname';
+
 		field = section.option(form.TextValue, 'labels', _('Labels'));
 		field.placeholder = _('key1=value1\nkey2=value2');
 		field.rows = 3;
 		field.optional = true;
 		field.description = _('One per line, format: key=value');
+
 		field = section.option(form.Value, 'cpus', _('CPU Limit'));
 		field.placeholder = '1.0';
 		field.optional = true;
 		field.datatype = 'ufloat';
 		field.description = _('Number of CPUs (e.g., 0.5, 1.0, 2.0)');
+
 		field = section.option(form.Value, 'memory', _('Memory Limit'));
 		field.placeholder = '512m';
 		field.optional = true;
@@ -181,19 +190,23 @@ const FormContainer = baseclass.extend({
 			return true;
 		};
 		field.description = _('Memory limit (e.g., 512m, 1g)');
+
 		field = section.option(form.Flag, 'enable_healthcheck', _('Enable Health Check'));
 		field.description = _('Configure health check to monitor container health status');
+
 		field = section.option(form.ListValue, 'healthcheck_type', _('Health Check Type'));
 		field.depends('enable_healthcheck', '1');
 		field.value('CMD', 'CMD');
 		field.value('CMD-SHELL', 'CMD-SHELL');
 		field.description = _('CMD runs command directly, CMD-SHELL runs command in shell');
+
 		field = section.option(form.Value, 'healthcheck_command', _('Health Check Command'));
 		field.depends('enable_healthcheck', '1');
 		field.placeholder = '/bin/health-check.sh';
 		field.optional = false;
 		field.description = _(
 			'Command to run for health check. Exit code 0 = healthy, 1 = unhealthy');
+
 		field = section.option(form.Value, 'healthcheck_interval', _('Interval'));
 		field.depends('enable_healthcheck', '1');
 		field.placeholder = '30s';
@@ -206,6 +219,7 @@ const FormContainer = baseclass.extend({
 			return true;
 		};
 		field.description = _('Time between health checks (e.g., 30s, 1m, 5m). Default: 30s');
+
 		field = section.option(form.Value, 'healthcheck_timeout', _('Timeout'));
 		field.depends('enable_healthcheck', '1');
 		field.placeholder = '30s';
@@ -433,8 +447,10 @@ const FormContainer = baseclass.extend({
 				let promise = Promise.resolve();
 
 				if (shouldStart && result && result.Id) {
-					pui.showSpinningModal(_('Starting %s').format(_('Container')), _(
-						'Starting %s...').format(_('Container').toLowerCase()));
+					pui.showSpinningModal(
+						_('Starting %s').format(_('Container')),
+						_('Starting %s').format(_('Container'))
+					);
 
 					promise = podmanRPC.container.start(result.Id).then((startResult) => {
 						if (startResult && startResult.error) {
@@ -454,8 +470,10 @@ const FormContainer = baseclass.extend({
 				// Auto-generate init script if restart policy is set
 				if (hasRestartPolicy && containerName) {
 					promise = promise.then(() => {
-						pui.showSpinningModal(_('Setting up auto-start'), _(
-							'Generating init script...'));
+						pui.showSpinningModal(
+							_('Setting up auto-start'),
+							_('Generating Init Script')
+						);
 
 						return podmanRPC.initScript.generate(containerName)
 							.then((genResult) => {
@@ -1143,7 +1161,7 @@ const FormPod = baseclass.extend({
 		field.datatype = 'hostname';
 		field.description = _('Hostname to assign to the pod');
 		field = section.option(form.TextValue, 'ports', _('Port Mappings'));
-		field.placeholder = _('8080:80\n8443:443');
+		field.placeholder = '8080:80\n8443:443';
 		field.rows = 4;
 		field.optional = true;
 		field.description = _('Publish ports, one per line (host:container format)');
@@ -1414,7 +1432,7 @@ const FormVolume = baseclass.extend({
 		field.description = _('Volume driver to use');
 
 		field = section.option(form.Value, 'options', _('Mount Options'));
-		field.placeholder = _('type=tmpfs,device=tmpfs,o=size=100m');
+		field.placeholder = 'type=tmpfs,device=tmpfs,o=size=100m';
 		field.optional = true;
 		field.description = _(
 			'Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)');

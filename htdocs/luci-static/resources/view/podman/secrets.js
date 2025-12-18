@@ -34,7 +34,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load %s').format(_('Secrets').toLowerCase())
+					error: err.message || _('Failed')
 				};
 			});
 	},

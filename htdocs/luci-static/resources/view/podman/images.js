@@ -3,12 +3,19 @@
 'require view';
 'require form';
 'require ui';
+
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.format as format';
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
 'require podman.list as List';
+
+document.querySelector('head').appendChild(E('link', {
+	'rel': 'stylesheet',
+	'type': 'text/css',
+	'href': L.resource('view/podman/podman.css')
+}));
 
 /**
  * Image management view with pull, inspect, and delete operations
@@ -34,7 +41,7 @@ return view.extend({
 			})
 			.catch((err) => {
 				return {
-					error: err.message || _('Failed to load %s').format(_('Images').toLowerCase())
+					error: err.message || _('Failed')
 				};
 			});
 	},
@@ -58,16 +65,21 @@ return view.extend({
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Images'));
 
-		const section = this.map.section(form.TableSection, 'images', '', _(
-			'Manage Podman %s').format(_('Images').toLowerCase()));
+		const section = this.map.section(
+			form.TableSection,
+			'images',
+			'',
+			_('Manage Podman %s').format(_('Images').toLowerCase())
+		);
 		section.anonymous = true;
 
 		let o;
 
-		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
-			0, {
-				hiddenname: 'all'
-			}).render());
+		o = section.option(
+			podmanForm.field.SelectDummyValue,
+			'Id',
+			new ui.Checkbox(0, { hiddenname: 'all' }).render()
+		);
 
 		o = section.option(form.DummyValue, 'Repository', _('Repository'));
 		o.cfgvalue = (sectionId) => {
@@ -84,16 +96,16 @@ return view.extend({
 			const parts = tag.split(':');
 			const tagValue = parts[1] || '<none>';
 
-		// Truncate long tags (like SHA hashes) and show with tooltip
-		if (tagValue.length > 20) {
-			return E('span', {
-				'title': tagValue,
-				'style': 'border-bottom: 1px dotted; cursor: help;'
-			}, tagValue.substring(0, 20) + '...');
-		}
-		return tagValue;
+			if (tagValue.length > 14) {
+				return E(
+					'span',
+					{ 'title': tagValue, 'class': 'tt' },
+					tagValue.substring(0, 14) + '...'
+				);
+			}
+
+			return tagValue;
 		};
-		o.rawhtml = true;
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'ImageId', _('Image ID'));
 		o.click = (image) => this.handleInspect(image.Id);
@@ -101,6 +113,7 @@ return view.extend({
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Size', _('Size'));
 		o.cfgformatter = format.bytes;
+
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
 		o.cfgformatter = format.date;
 
@@ -175,12 +188,21 @@ return view.extend({
 		}
 
 		const imageNames = selected.map((img) => img.name).join(', ');
-		if (!confirm(_('Pull latest version of %d %s?\n\n%s').format(selected.length,
-				_('Images').toLowerCase(), imageNames)))
+		const confirmText = _('Pull latest version of %d %s?\n\n%s').format(
+			selected.length,
+			N_(selected.length, 'Image', 'Images').toLowerCase(),
+			imageNames
+		);
+		if (!confirm(confirmText))
 			return;
 
-		podmanUI.showSpinningModal(_('Pulling Images'), _(
-			'Pulling latest version of %d %s...').format(selected.length, _('Images').toLowerCase()));
+		podmanUI.showSpinningModal(
+			_('Pulling Images'),
+			_('Pulling latest version of %d %s...').format(
+				selected.length,
+				N_(selected.length, 'Image', 'Images').toLowerCase()
+			)
+		);
 
 		const pullPromises = selected.map((img) => podmanRPC.image.pull(img.name));
 
@@ -188,17 +210,26 @@ return view.extend({
 			ui.hideModal();
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
-				podmanUI.errorNotification(_('Failed to pull %d %s').format(errors
-					.length, _('Images').toLowerCase()));
+				podmanUI.errorNotification(
+					_('Failed to pull %d %s').format(
+						errors.length,
+						N_(errors.length, 'Image', 'Images').toLowerCase()
+					)
+				);
 			} else {
-				podmanUI.successTimeNotification(_('Successfully pulled %d %s')
-					.format(selected.length, _('Images').toLowerCase()));
+				podmanUI.successTimeNotification(
+					_('Successfully pulled %d %s').format(
+						selected.length,
+						N_(selected.length, 'Image', 'Images').toLowerCase()
+					)
+				);
 			}
 			this.handleRefresh();
 		}).catch((err) => {
 			ui.hideModal();
-			podmanUI.errorNotification(_('Failed to pull some images: %s').format(err
-				.message));
+			podmanUI.errorNotification(
+				_('Failed to pull some images: %s').format(err.message)
+			);
 		});
 	},
 

@@ -18,12 +18,9 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.start,
-			_('Starting %s').format(_('Containers')),
-			_('Starting %d %s...').replace('%s', _('Containers').toLowerCase()),
-			_('Started %d %s successfully').replace('%s', _('Containers').toLowerCase()),
-			_('No %s selected').format(_('Containers').toLowerCase()),
-			_('Failed to start %d %s').replace('%s', _('Containers').toLowerCase()),
-			_('Failed to start containers: %s'),
+			_('Starting %d %s...'),
+			_('Started %d %s successfully'),
+			_('Failed to start %d %s'),
 		);
 	},
 
@@ -36,12 +33,9 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.stop,
-			_('Stopping %s').format(_('Containers')),
-			_('Stopping %d %s...').replace('%s', _('Containers').toLowerCase()),
-			_('Stopped %d %s successfully').replace('%s', _('Containers').toLowerCase()),
-			_('No %s selected').format(_('Containers').toLowerCase()),
-			_('Failed to stop %d %s').replace('%s', _('Containers').toLowerCase()),
-			_('Failed to stop containers: %s'),
+			_('Stopping %d %s...'),
+			_('Stopped %d %s successfully'),
+			_('Failed to stop %d %s'),
 		);
 	},
 
@@ -54,12 +48,9 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.restart,
-			_('Restarting %s').format(_('Containers')),
-			_('Restarting %d %s...').replace('%s', _('Containers').toLowerCase()),
-			_('Restarted %d %s successfully').replace('%s', _('Containers').toLowerCase()),
-			_('No %s selected').format(_('Containers').toLowerCase()),
-			_('Failed to restart %d %s').replace('%s', _('Containers').toLowerCase()),
-			_('Failed to restart containers: %s'),
+			_('Restarting %d %s...'),
+			_('Restarted %d %s successfully'),
+			_('Failed to restart %d %s'),
 		);
 	},
 
@@ -72,12 +63,9 @@ return baseclass.extend({
 		return this.callContainers(
 			ids,
 			podmanRPC.container.healthcheck,
-			_('Running Health Checks'),
-			_('Running health checks on %d %s...').replace('%s', _('Containers').toLowerCase()),
+			_('Running health checks on %d %s...'),
 			_('Health checks completed successfully'),
-			_('No %s selected').format(_('Containers').toLowerCase()),
-			_('Failed to run health checks on %d %s').replace('%s', _('Containers').toLowerCase()),
-			_('Failed to run health checks: %s'),
+			_('Failed to run health checks on %d %s'),
 		);
 	},
 
@@ -111,7 +99,12 @@ return baseclass.extend({
 			)
 		);
 
-		podmanUI.showSpinningModal(_('Removing %s').format(_('Containers')), _('Removing %d %s...').format(ids.length, _('Containers').toLowerCase()));
+		const removeText = _('Removing %d %s...').format(
+			ids.length,
+			N_(ids.length, 'Container', 'Containers').toLowerCase()
+		);
+
+		podmanUI.showSpinningModal(removeText, removeText);
 
 		// Delete containers
 		const promises = ids.map((id) => podmanRPC.container.remove(id, forceRemove, removeVolumes));
@@ -125,7 +118,10 @@ return baseclass.extend({
 
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
-				podmanUI.errorNotification(_('Failed to remove %d %s').format(errors.length, _('Containers').toLowerCase()));
+				podmanUI.errorNotification(_('Failed to remove %d %s').format(
+					errors.length,
+					N_(errors.length, 'Container', 'Containers').toLowerCase()
+				));
 				return;
 			}
 
@@ -138,12 +134,18 @@ return baseclass.extend({
 				);
 
 			Promise.all(cleanupPromises).then(() => {
-				podmanUI.successTimeNotification(_('Removed %d %s successfully').format(ids.length, _('Containers').toLowerCase()));
+				podmanUI.successTimeNotification(_('Removed %d %s successfully').format(
+					ids.length,
+					N_(ids.length, 'Container', 'Containers').toLowerCase()
+				));
 			});
 		}).catch((err) => {
 			ui.hideModal();
 			if (err && err.message && !err.message.match(/session|auth|login/i)) {
-				podmanUI.errorNotification(_('Failed to remove containers: %s').format(err.message));
+				podmanUI.errorNotification(`${_('Failed to remove %d %s').format(
+					ids.length,
+					N_(ids.length, 'Container', 'Containers').toLowerCase()
+				)}: ${err.message}`);
 			}
 		});
 	},
@@ -152,26 +154,27 @@ return baseclass.extend({
 	 * Generic handler for bulk container operations
 	 * @param {string|Array<string>} ids - Container ID(s)
 	 * @param {Function} rpcCall - RPC function to call for each container
-	 * @param {string} titleLoad - Modal title during operation
 	 * @param {string} textLoad - Modal text during operation
 	 * @param {string} textSuccess - Success notification text
-	 * @param {string} textNoIds - Warning text when no IDs provided
 	 * @param {string} textFailed - Error text for partial failures
-	 * @param {string} textFailedPromise - Error text for promise rejection
 	 * @returns {Promise} Operation result
 	 */
-	callContainers: async function (ids, rpcCall, titleLoad, textLoad, textSuccess, textNoIds,
-		textFailed, textFailedPromise) {
+	callContainers: async function (ids, rpcCall, textLoad, textSuccess, textFailed) {
 		if (!Array.isArray(ids)) {
 			ids = [ids];
 		}
 
 		if (ids.length === 0) {
-			podmanUI.warningTimeNotification(textNoIds);
+			podmanUI.warningTimeNotification(_('No %s selected').format(_('Containers').toLowerCase()));
 			return;
 		}
 
-		podmanUI.showSpinningModal(titleLoad, textLoad.format(ids.length));
+		textLoad = textLoad.format(
+			ids.length,
+			N_(ids.length, 'Container', 'Containers').toLowerCase()
+		);
+
+		podmanUI.showSpinningModal(textLoad, textLoad);
 
 		const promises = ids.map((id) => rpcCall(id));
 		return Promise.all(promises).then((results) => {
@@ -184,15 +187,27 @@ return baseclass.extend({
 
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
-				podmanUI.errorNotification(textFailed.format(errors.length));
+				podmanUI.errorNotification(textFailed.format(
+					ids.length,
+					N_(ids.length, 'Container', 'Containers').toLowerCase()
+				));
+
 				return;
 			}
 
-			podmanUI.successTimeNotification(textSuccess.format(ids.length));
+			podmanUI.successTimeNotification(textSuccess.format(
+				ids.length,
+				N_(ids.length, 'Container', 'Containers').toLowerCase()
+			));
 		}).catch((err) => {
 			ui.hideModal();
 			if (err && err.message && !err.message.match(/session|auth|login/i)) {
-				podmanUI.errorNotification(textFailedPromise.format(err.message));
+				podmanUI.errorNotification(
+					textFailed.format(
+						ids.length,
+						N_(ids.length, 'Container', 'Containers').toLowerCase()
+					) + ': ' + err.message
+				);
 			}
 		});
 	}

@@ -1,0 +1,58 @@
+.container-status {
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.section-container-info {
+    margin-bottom: 1.25rem;
+}
+
+.edit-container-name {
+    width: 60%;
+    margin-right: 5px;
+}
+
+.table-list > tr > td:first-of-type {
+    width: 33%;
+    font-weight: bold;
+}
+
+.table-env-vars th {
+    width: 50%;
+}
+
+.table-env-vars td {
+    font-family: monospace;
+    word-break: break-all;
+}
+
+.table-env-vars td:nth-of-type(2) {
+    cursor: pointer;
+    user-select: none;
+}
+
+.tt {
+    border-bottom: 1px dotted;
+    cursor: help;
+}
+
+.code-area {
+    background: #f5f5f5;
+    padding: 1rem;
+    overflow: auto;
+    max-height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    font-weight: 100;
+}
+
+.modal .modal-buttons {
+    margin-top: 15px;
+}
+
+.loading-gray {
+    color: #999;
+}

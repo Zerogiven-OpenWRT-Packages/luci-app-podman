@@ -3,6 +3,7 @@
 'require view';
 'require form';
 'require ui';
+
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.format as format';
@@ -206,20 +207,28 @@ return view.extend({
 		Promise.all(checkPromises).then((checks) => {
 			const withOpenwrt = checks.filter((c) => c.hasOpenwrt);
 
-			let confirmMsg = _('Are you sure you want to delete %d %s?\n\n%s')
-				.format(selected.length, _('Networks').toLowerCase(), selected.join(', '));
+			let confirmMsg = _('Are you sure you want to delete %d %s?\n\n%s').format(
+				selected.length,
+				N_(selected.length, 'Network', 'Networks').toLowerCase(),
+				selected.join(', ')
+			);
 
 			if (withOpenwrt.length > 0) {
-				confirmMsg += '\n\n' + _(
-						'Note: %d %s have OpenWrt integration that will also be removed (bridge, firewall zone, and rules).'
-					)
-					.format(withOpenwrt.length, _('Networks').toLowerCase());
+				confirmMsg += '\n\n' +
+					_('Note: Some %s have OpenWrt integration that will also be removed.').format(
+						N_(selected.length, 'Network', 'Networks').toLowerCase()
+					);
 			}
 
 			if (!confirm(confirmMsg)) return;
 
-			podmanUI.showSpinningModal(_('Deleting %s').format(_('Networks')), _(
-				'Deleting %d selected %s...').format(selected.length, _('Networks').toLowerCase()));
+			podmanUI.showSpinningModal(
+				_('Deleting %s').format(_('Networks')),
+				_('Deleting %d selected %s...').format(
+					selected.length,
+					N_(selected.length, 'Network', 'Networks').toLowerCase()
+				)
+			);
 
 			const deletePromises = selected.map((name) => {
 				const check = checks.find((c) => c.name === name);
