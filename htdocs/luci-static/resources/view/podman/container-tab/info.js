@@ -10,7 +10,15 @@
 'require podman.utils as utils';
 
 return baseclass.extend({
-	render: async function (container, data) {
+	containerId: 0,
+	containerData: {},
+	networksData: [],
+
+	render: async function (content, id, data, networks) {
+		this.containerId = id;
+		this.containerData = data;
+		this.networksData = networks || [];
+
 		const config = data.Config || {};
 		const hostConfig = data.HostConfig || {};
 		const networkSettings = data.NetworkSettings || {};
@@ -19,7 +27,7 @@ return baseclass.extend({
 		// Build info sections
 		const sections = [];
 
-		sections.push((await this.basicSection(data, status, config, hostConfig)).render());
+		sections.push((await this.basicSection(status, config, hostConfig)).render());
 		sections.push((await this.configSection(config, hostConfig)).render());
 		sections.push((await this.networkSection(config, hostConfig, networkSettings)).render());
 
@@ -33,12 +41,13 @@ return baseclass.extend({
 
 		// Append all sections
 		sections.forEach(function (section) {
-			container.appendChild(section);
+			content.appendChild(section);
 		});
 	},
 
-	basicSection: async function (data, status, config, hostConfig) {
+	basicSection: async function (status, config, hostConfig) {
 		// Basic Information - using podmanUI.Table
+		const data = this.containerData;
 		const basicTable = new podmanUI.Table({ 'class': 'table table-list' });
 
 		// Name (editable)
@@ -56,9 +65,10 @@ return baseclass.extend({
 					new podmanUI.Button(
 						_('Update'),
 						() => this.handleUpdateName(
-							document.getElementById(inputId).value),
-							'apply'
-						).render()
+							document.getElementById(inputId).value
+						),
+						'apply'
+					).render()
 				]
 			}
 		]);

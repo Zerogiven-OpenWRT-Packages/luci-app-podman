@@ -85,6 +85,7 @@ return view.extend({
 		// Store data for use in methods
 		this.containerId = data.containerId;
 		this.containerData = data.container;
+		this.networksData = data.networks;
 
 		// Create header with container name and status
 		const name = this.containerData.Name ?
@@ -204,7 +205,7 @@ return view.extend({
 		const container = document.getElementById('tab-info-content');
 		if (!container) return;
 
-		containerInfo.render(container, this.containerData);
+		containerInfo.render(container, this.containerId, this.containerData, this.networksData);
 	},
 
 	/**
