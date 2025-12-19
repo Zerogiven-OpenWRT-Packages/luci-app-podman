@@ -643,7 +643,7 @@ return baseclass.extend({
 	 * @param {boolean} enable - true to exclude, false to remove exclusion
 	 * @returns {Promise<void>}
 	 */
-	_configureDnsmasq: function (bridgeName, enable) {
+	_configureDnsmasq: async function (bridgeName, enable) {
 		return uci.load('dhcp').then(() => {
 			// Get main dnsmasq config section
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
@@ -688,12 +688,12 @@ return baseclass.extend({
 			if (result.skip) {
 				return result;
 			}
-			return uci.save().then(() => result);
+			return uci.apply(90).then(() => result);
 		}).then((result) => {
 			if (result.skip) {
 				return result;
 			}
-			return uci.apply(90).then(() => result);
+			return uci.save().then(() => result);
 		}).then((result) => {
 			if (result.skip) {
 				return Promise.resolve();

@@ -235,6 +235,7 @@ return view.extend({
 		this.listHelper.bulkDelete({
 			selected: selected,
 			formatItemName: (name) => name,
+			sequentialCleanup: true,  // UCI operations must run sequentially
 			preDeleteCheck: (networks) => {
 				const checkPromises = networks.map((name) => {
 					const network = networkMap[name];
@@ -272,14 +273,21 @@ return view.extend({
 						checkResult.deviceName,
 						checkResult.driver
 					).catch((err) => {
-						// Return error object for cleanup error handling
-						return { error: err.message };
+						// Return error object with network name for better error messages
+						return { error: err.message, networkName: name };
 					});
 				}
 				return Promise.resolve();
 			},
-			cleanupErrorMessage: (errorCount) => {
-				return _('Networks deleted but %d OpenWrt integrations failed to remove').format(errorCount);
+			cleanupErrorMessage: (cleanupErrors) => {
+				// cleanupErrors = [{item, cleanupError, ...}, ...]
+				const failedNames = cleanupErrors.map((e) => e.item).join(', ');
+				const errorDetails = cleanupErrors.map((e) => e.cleanupError).filter(Boolean).join('; ');
+				if (errorDetails) {
+					return _('Networks deleted but OpenWrt integration removal failed for: %s (%s)').format(
+						failedNames, errorDetails);
+				}
+				return _('Networks deleted but OpenWrt integration removal failed for: %s').format(failedNames);
 			},
 			onSuccess: () => this.handleRefresh(true)
 		});

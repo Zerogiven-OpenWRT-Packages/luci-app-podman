@@ -126,7 +126,9 @@ const ListUtil = baseclass.extend({
 	 * @param {Function} [options.preDeleteCheck] - Function(items) => Promise<checkResults[]>
 	 * @param {Function} [options.confirmMessage] - Function(items, checkResults) => string
 	 * @param {Function} [options.afterDeleteEach] - Function(item, checkResult) => Promise
-	 * @param {Function} [options.cleanupErrorMessage] - Function(errorCount) => string
+	 * @param {boolean} [options.sequentialCleanup] - Run afterDeleteEach sequentially (for UCI operations)
+	 * @param {Function} [options.cleanupErrorMessage] - Function(cleanupErrors) => string
+	 *        where cleanupErrors = [{item, cleanupError}, ...]
 	 * @param {Function} [options.onSuccess] - Callback after successful deletion
 	 */
 	bulkDelete: function (options) {
@@ -189,58 +191,94 @@ const ListUtil = baseclass.extend({
 			)
 		);
 
+		// Step 1: Run all main deletions in parallel
 		const deletePromises = selected.map((item, index) => {
 			const checkResult = checkResults ? checkResults[index] : null;
 
 			return options.deletePromiseFn(item).then((result) => {
 				if (result && result.error) {
-					// Main deletion failed
-					return {
-						item: item,
-						error: result.error
-					};
+					return { item: item, checkResult: checkResult, error: result.error };
 				}
-
-				// Main deletion succeeded - run cleanup if provided
-				if (options.afterDeleteEach) {
-					return options.afterDeleteEach(item, checkResult).then((cleanupResult) => {
-						// Cleanup can return error object
-						if (cleanupResult && cleanupResult.error) {
-							return {
-								item: item,
-								success: true,
-								cleanupError: cleanupResult.error
-							};
-						}
-						return {
-							item: item,
-							success: true
-						};
-					}).catch((err) => {
-						// Cleanup failed with exception
-						return {
-							item: item,
-							success: true,
-							cleanupError: err.message
-						};
-					});
-				}
-
-				return {
-					item: item,
-					success: true
-				};
+				return { item: item, checkResult: checkResult, success: true };
 			}).catch((err) => {
-				return {
-					item: item,
-					error: err.message
-				};
+				return { item: item, checkResult: checkResult, error: err.message };
 			});
 		});
 
-		Promise.all(deletePromises).then((results) => {
-			this._handleDeleteResults(results, selected, options);
+		Promise.all(deletePromises).then((deleteResults) => {
+			// Step 2: Run cleanup for successful deletions
+			if (!options.afterDeleteEach) {
+				return this._handleDeleteResults(deleteResults, selected, options);
+			}
+
+			const successfulDeletes = deleteResults.filter((r) => r.success);
+			const failedDeletes = deleteResults.filter((r) => r.error);
+
+			if (successfulDeletes.length === 0) {
+				return this._handleDeleteResults(deleteResults, selected, options);
+			}
+
+			// Run cleanup either sequentially or in parallel
+			let cleanupPromise;
+			if (options.sequentialCleanup) {
+				// Sequential: run one at a time to avoid UCI race conditions
+				cleanupPromise = this._runSequentialCleanup(successfulDeletes, options);
+			} else {
+				// Parallel: run all at once (default)
+				cleanupPromise = this._runParallelCleanup(successfulDeletes, options);
+			}
+
+			cleanupPromise.then((cleanupResults) => {
+				// Merge failed deletes with cleanup results
+				const allResults = [...failedDeletes, ...cleanupResults];
+				this._handleDeleteResults(allResults, selected, options);
+			});
 		});
+	},
+
+	/**
+	 * Run cleanup operations in parallel.
+	 */
+	_runParallelCleanup: function (successfulDeletes, options) {
+		const cleanupPromises = successfulDeletes.map((deleteResult) => {
+			return options.afterDeleteEach(deleteResult.item, deleteResult.checkResult)
+				.then((cleanupResult) => {
+					if (cleanupResult && cleanupResult.error) {
+						return { item: deleteResult.item, success: true, cleanupError: cleanupResult.error };
+					}
+					return { item: deleteResult.item, success: true };
+				})
+				.catch((err) => {
+					return { item: deleteResult.item, success: true, cleanupError: err.message };
+				});
+		});
+		return Promise.all(cleanupPromises);
+	},
+
+	/**
+	 * Run cleanup operations sequentially (for UCI operations).
+	 */
+	_runSequentialCleanup: function (successfulDeletes, options) {
+		const results = [];
+		let chain = Promise.resolve();
+
+		successfulDeletes.forEach((deleteResult) => {
+			chain = chain.then(() => {
+				return options.afterDeleteEach(deleteResult.item, deleteResult.checkResult)
+					.then((cleanupResult) => {
+						if (cleanupResult && cleanupResult.error) {
+							results.push({ item: deleteResult.item, success: true, cleanupError: cleanupResult.error });
+						} else {
+							results.push({ item: deleteResult.item, success: true });
+						}
+					})
+					.catch((err) => {
+						results.push({ item: deleteResult.item, success: true, cleanupError: err.message });
+					});
+			});
+		});
+
+		return chain.then(() => results);
 	},
 
 	/**
@@ -266,7 +304,8 @@ const ListUtil = baseclass.extend({
 		} else if (cleanupErrors.length > 0) {
 			// Warning: Deletion succeeded but cleanup failed
 			if (options.cleanupErrorMessage) {
-				podmanUI.warningNotification(options.cleanupErrorMessage(cleanupErrors.length));
+				// Pass full error array for detailed messages
+				podmanUI.warningNotification(options.cleanupErrorMessage(cleanupErrors));
 			}
 			// If no custom message provided, cleanup errors are silently ignored
 		} else {
@@ -392,7 +431,7 @@ const ListUtil = baseclass.extend({
 		if (closeButton && typeof closeButton === 'function') {
 			content.push(closeButton());
 		} else {
-			content.push(E('div', { 'class': 'right', 'style': 'margin-top: 10px;' }, [
+			content.push(E('div', { 'class': 'right modal-buttons' }, [
 				E('button', { 'class': 'cbi-button', 'click': () => ui.hideModal() }, _('Close'))
 			]));
 		}

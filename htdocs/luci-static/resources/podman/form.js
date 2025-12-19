@@ -97,6 +97,8 @@ const FormEditableField = baseclass.extend({
  *
  */
 const FormSelectDummyValue = form.DummyValue.extend({
+	__name__: 'CBI.SelectDummyValue',
+
 	/**
 	 * Render checkbox for row selection
 	 * @param {string} sectionId - Section identifier
@@ -111,6 +113,8 @@ const FormSelectDummyValue = form.DummyValue.extend({
  *
  */
 const FormDataDummyValue = form.DummyValue.extend({
+	__name__: 'CBI.DataDummyValue',
+
 	containerProperty: '',
 	cfgdefault: _('Unknown'),
 	cfgtitle: null,
@@ -147,6 +151,8 @@ const FormDataDummyValue = form.DummyValue.extend({
  *
  */
 const FormLinkDataDummyValue = form.DummyValue.extend({
+	__name__: 'CBI.LinkDataDummyValue',
+
 	text: (_data) => '',
 	click: (_data) => null,
 	linktitle: (_data) => null,
