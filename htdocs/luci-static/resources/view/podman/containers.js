@@ -162,6 +162,12 @@ return view.extend({
 					tooltip: _('Stop selected %s').format(_('Containers').toLowerCase())
 				},
 				{
+					text: '&#8635;',
+					handler: () => this.handleRestart(),
+					cssClass: '',
+					tooltip: _('Restart selected %s').format(_('Containers').toLowerCase())
+				},
+				{
 					text: '&#10010;',
 					handler: () => this.handleBulkHealthCheck(),
 					cssClass: 'apply',
@@ -379,6 +385,17 @@ return view.extend({
 		const selected = this.getSelectedContainerIds();
 
 		ContainerUtil.stopContainers(selected).then(() => {
+			this.refreshTable(false);
+		});
+	},
+
+	/**
+	 * Restart selected containers
+	 */
+	handleRestart: function () {
+		const selected = this.getSelectedContainerIds();
+
+		ContainerUtil.restartContainers(selected).then(() => {
 			this.refreshTable(false);
 		});
 	},
