@@ -13,6 +13,40 @@
 'require podman.openwrt-network as openwrtNetwork';
 
 /**
+ * Extract driver from Podman network object
+ * @param {Object} network - Network object from Podman API
+ * @returns {string} Driver type (bridge, macvlan, ipvlan)
+ */
+function getDriver(network) {
+	return network.driver || network.Driver || 'bridge';
+}
+
+/**
+ * Extract device name based on driver
+ * @param {Object} network - Network object from Podman API
+ * @param {string} name - Network name
+ * @returns {string} Device name (bridge name or parent interface)
+ */
+function getDevice(network, name) {
+	const driver = getDriver(network);
+
+	if (driver === 'bridge') {
+		return network.network_interface || (name + '0');
+	} else {
+		if (network.options && network.options.parent) {
+			return network.options.parent;
+		}
+		return network.network_interface || (name + '0');
+	}
+}
+
+document.querySelector('head').appendChild(E('link', {
+	'rel': 'stylesheet',
+	'type': 'text/css',
+	'href': L.resource('view/podman/podman.css')
+}));
+
+/**
  * Network management view with create, inspect, delete, and OpenWrt integration setup
  */
 return view.extend({
@@ -149,7 +183,8 @@ return view.extend({
 		const networks = this.listHelper.getDataArray();
 		(networks || []).forEach((network) => {
 			const name = network.name || network.Name;
-			openwrtNetwork.isIntegrationComplete(name).then((result) => {
+			const driver = getDriver(network);
+			openwrtNetwork.isIntegrationComplete(name, driver).then((result) => {
 				const iconEl = document.getElementById('integration-icon-' +
 					name);
 				if (iconEl && !result.complete) {
@@ -189,21 +224,35 @@ return view.extend({
 	handleDeleteSelected: function () {
 		const selected = this.getSelectedNetworks();
 
+		// Build lookup map: name -> network object
+		const networkMap = {};
+		const networks = this.listHelper.getDataArray();
+		networks.forEach((net) => {
+			const name = net.name || net.Name;
+			networkMap[name] = net;
+		});
+
 		this.listHelper.bulkDelete({
 			selected: selected,
 			formatItemName: (name) => name,
 			preDeleteCheck: (networks) => {
-				const checkPromises = networks.map((name) =>
-					openwrtNetwork.hasIntegration(name).then((exists) => ({
+				const checkPromises = networks.map((name) => {
+					const network = networkMap[name];
+					const driver = getDriver(network);
+					const deviceName = getDevice(network, name);
+
+					return openwrtNetwork.hasIntegration(name).then((exists) => ({
 						name: name,
 						hasOpenwrt: exists,
-						bridgeName: name + '0'
+						driver: driver,
+						deviceName: deviceName
 					})).catch(() => ({
 						name: name,
 						hasOpenwrt: false,
-						bridgeName: name + '0'
-					}))
-				);
+						driver: driver,
+						deviceName: deviceName
+					}));
+				});
 				return Promise.all(checkPromises);
 			},
 			confirmMessage: (networks, checkResults) => {
@@ -218,11 +267,14 @@ return view.extend({
 			deletePromiseFn: (name) => podmanRPC.network.remove(name, false),
 			afterDeleteEach: (name, checkResult) => {
 				if (checkResult && checkResult.hasOpenwrt) {
-					return openwrtNetwork.removeIntegration(name, checkResult.bridgeName)
-						.catch((err) => {
-							// Return error object for cleanup error handling
-							return { error: err.message };
-						});
+					return openwrtNetwork.removeIntegration(
+						name,
+						checkResult.deviceName,
+						checkResult.driver
+					).catch((err) => {
+						// Return error object for cleanup error handling
+						return { error: err.message };
+					});
 				}
 				return Promise.resolve();
 			},
@@ -266,6 +318,7 @@ return view.extend({
 	 */
 	handleSetupIntegration: function (network) {
 		const name = network.name || network.Name;
+		const driver = getDriver(network);
 
 		let subnet, gateway;
 
@@ -285,18 +338,27 @@ return view.extend({
 			return;
 		}
 
-		const bridgeName = name + '0';
+		const deviceName = getDevice(network, name);
+		const deviceLabel = driver === 'bridge' ? _('Bridge') : _('Parent Interface');
 
 		// Check what's missing
-		openwrtNetwork.isIntegrationComplete(name).then((status) => {
+		openwrtNetwork.isIntegrationComplete(name, driver).then((status) => {
 			const missingItems = [];
 			const existingItems = [];
 
-			// Build lists
-			if (status.details.hasDevice) {
-				existingItems.push(_('Bridge device'));
-			} else {
-				missingItems.push(_('Bridge device'));
+			// Build lists - only show bridge-specific items for bridge networks
+			if (driver === 'bridge') {
+				if (status.details.hasDevice) {
+					existingItems.push(_('Bridge device'));
+				} else {
+					missingItems.push(_('Bridge device'));
+				}
+
+				if (status.details.hasDnsmasqExclusion) {
+					existingItems.push(_('dnsmasq exclusion'));
+				} else {
+					missingItems.push(_('dnsmasq exclusion'));
+				}
 			}
 
 			if (status.details.hasInterface) {
@@ -305,19 +367,14 @@ return view.extend({
 				missingItems.push(_('Network interface'));
 			}
 
-			if (status.details.hasDnsmasqExclusion) {
-				existingItems.push(_('dnsmasq exclusion'));
-			} else {
-				missingItems.push(_('dnsmasq exclusion'));
-			}
-
 			const modalContent = [
 				E('p', {}, _('Setup OpenWrt integration for network "%s"?').format(name)),
 				E('p', {}, [
 					E('strong', {}, _('Network: %s').format(name)), E('br'),
+					_('Driver: %s').format(driver), E('br'),
 					_('Subnet: %s').format(subnet), E('br'),
 					_('Gateway: %s').format(gateway), E('br'),
-					_('Bridge: %s').format(bridgeName)
+					deviceLabel + ': ' + deviceName
 				])
 			];
 
@@ -350,7 +407,7 @@ return view.extend({
 					confirmText: _('Setup'),
 					onConfirm: () => {
 						ui.hideModal();
-						this.executeSetupIntegration(name, bridgeName, subnet, gateway);
+						this.executeSetupIntegration(name, driver, deviceName, subnet, gateway);
 					}
 				}).render()
 			);
@@ -362,35 +419,41 @@ return view.extend({
 	/**
 	 * Execute OpenWrt integration creation or repair
 	 * @param {string} name - Network name
-	 * @param {string} bridgeName - Bridge name
+	 * @param {string} driver - Network driver
+	 * @param {string} deviceName - Device name (bridge or parent)
 	 * @param {string} subnet - Network subnet
 	 * @param {string} gateway - Gateway IP
 	 */
-	executeSetupIntegration: function (name, bridgeName, subnet, gateway) {
+	executeSetupIntegration: function (name, driver, deviceName, subnet, gateway) {
 		podmanUI.showSpinningModal(_('Setting up Integration'), _(
 			'Setting up OpenWrt integration...'));
 
 		// Check if network has any existing integration
-		openwrtNetwork.isIntegrationComplete(name).then((status) => {
+		openwrtNetwork.isIntegrationComplete(name, driver).then((status) => {
 			// If any component exists, use repair (selective)
 			// If nothing exists, use create (full integration)
 			const hasAnyComponent = status.details.hasInterface || status.details.hasDevice;
 
+			const options = {
+				driver: driver,
+				subnet: subnet,
+				gateway: gateway
+			};
+
+			// Set device based on driver
+			if (driver === 'bridge') {
+				options.bridgeName = deviceName;
+			} else {
+				options.parent = deviceName;
+			}
+
 			if (hasAnyComponent) {
 				// Use repair - only add missing components
-				return openwrtNetwork.repairIntegration(name, {
-					bridgeName: bridgeName,
-					subnet: subnet,
-					gateway: gateway
-				});
+				return openwrtNetwork.repairIntegration(name, options);
 			} else {
 				// Use create - full integration with firewall zone
-				return openwrtNetwork.createIntegration(name, {
-					bridgeName: bridgeName,
-					subnet: subnet,
-					gateway: gateway,
-					zoneName: 'podman'
-				});
+				options.zoneName = 'podman';
+				return openwrtNetwork.createIntegration(name, options);
 			}
 		}).then(() => {
 			ui.hideModal();

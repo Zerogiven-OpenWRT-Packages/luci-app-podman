@@ -3,9 +3,31 @@
 'require baseclass';
 'require form';
 'require ui';
+'require uci';
+'require network';
 
 'require podman.openwrt-network as openwrtNetwork';
 'require podman.ui as podmanUI';
+'require podman.rpc as podmanRPC';
+'require podman.ipv6 as ipv6';
+
+/**
+ * Check if a device is a valid parent interface for macvlan/ipvlan
+ * @param {LuCI.network.Device} device - Network device
+ * @returns {boolean} True if valid parent
+ */
+function isValidParentDevice(device) {
+	const type = device.getType();
+	const name = device.getName();
+
+	if (!['ethernet', 'bridge', 'vlan'].includes(type) ||
+		name === 'lo' ||
+		name.match(/^(podman|cni-|docker|veth)/)) {
+		return false;
+	}
+
+	return true;
+}
 
 return baseclass.extend({
 	init: baseclass.extend({
@@ -33,12 +55,14 @@ return baseclass.extend({
 				}
 			};
 
-			// Load existing podman zones before rendering form
-			return openwrtNetwork.listPodmanZones().then((zones) => {
+			// Load existing podman zones and network devices before rendering form
+			return Promise.all([
+				openwrtNetwork.listPodmanZones().catch(() => []),
+				network.getDevices().catch(() => [])
+			]).then(([zones, devices]) => {
 				this.existingZones = zones;
-				return this.showFormModal();
-			}).catch(() => {
-				this.existingZones = [];
+				// Filter to valid parent interfaces
+				this.parentDevices = devices.filter(isValidParentDevice);
 				return this.showFormModal();
 			});
 		},
@@ -57,39 +81,61 @@ return baseclass.extend({
 			field.datatype = 'maxlength(253)';
 			field.description = _('Name for the network');
 			field.rmempty = false;
+
 			field = section.option(form.ListValue, 'driver', _('Driver'));
 			field.value('bridge', 'bridge');
 			field.value('macvlan', 'macvlan');
 			field.value('ipvlan', 'ipvlan');
 			field.description = _('Network driver');
+
+			field = section.option(form.ListValue, 'parent', _('Parent Interface'));
+			field.depends('driver', 'macvlan');
+			field.depends('driver', 'ipvlan');
+			field.description = _('Existing physical interface to use as parent. Required for macvlan/ipvlan networks.');
+			// Populate with available parent interfaces
+			if (this.parentDevices && this.parentDevices.length > 0) {
+				this.parentDevices.forEach((device) => {
+					const name = device.getName();
+					field.value(name, name + ' (' + device.getType() + ')');
+				});
+			} else {
+				field.value('', _('No suitable interfaces found'));
+			}
+
 			field = section.option(form.Value, 'subnet', _('IPv4 Subnet (CIDR)'));
 			field.placeholder = '10.89.0.0/24';
 			field.datatype = 'cidr4';
 			field.description = _('IPv4 subnet in CIDR notation');
 			field.rmempty = false;
+
 			field = section.option(form.Value, 'gateway', _('IPv4 Gateway'));
 			field.placeholder = '10.89.0.1';
 			field.optional = true;
 			field.datatype = 'ip4addr';
 			field.description = _('IPv4 gateway address');
+
 			field = section.option(form.Value, 'ip_range', _('IP Range (CIDR)'));
 			field.placeholder = '10.89.0.0/28';
 			field.optional = true;
 			field.datatype = 'cidr4';
 			field.description = _('Allocate container IP from this range');
+
 			field = section.option(form.Flag, 'ipv6', _('Enable IPv6'));
 			field.description = _('Enable IPv6 networking');
+
 			field = section.option(form.Flag, 'internal', _('Internal Network'));
 			field.description = _('Restrict external access to the network');
+
 			field = section.option(form.Flag, 'setup_openwrt', _('Setup OpenWrt Integration'));
 			field.description = _(
 				'Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt.'
 			);
+
 			field = section.option(form.Value, 'bridge_name', _('Bridge Interface Name'));
 			field.placeholder = _('Leave empty to auto-generate');
 			field.optional = true;
 			field.datatype = 'netdevname';
-			field.depends('setup_openwrt', '1');
+			field.depends({ 'setup_openwrt': '1', 'driver': 'bridge' });
 			field.description = _(
 				'Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it.'
 			);
@@ -136,11 +182,30 @@ return baseclass.extend({
 		 */
 		handleCreate: function () {
 			const ulaPrefix = uci.get('network', 'globals', 'ula_prefix');
-
+			console.log('before save');
 			this.map.save().then(() => {
+				console.log('save now');
 				const podnetwork = this.map.data.data.network;
 				const setupOpenwrt = podnetwork.setup_openwrt === '1';
+				const driver = podnetwork.driver || 'bridge';
 				const bridgeName = podnetwork.bridge_name || (podnetwork.name + '0');
+
+				// Validate parent for macvlan/ipvlan
+				console.log('driver', driver);
+				if (driver === 'macvlan' || driver === 'ipvlan') {
+					if (!podnetwork.parent) {
+						podmanUI.errorNotification(_(
+							'Parent interface is required for macvlan/ipvlan networks'));
+						return;
+					}
+					if (podnetwork.parent === '') {
+						podmanUI.errorNotification(_(
+							'No suitable parent interfaces available on this system'));
+						return;
+					}
+				}
+
+				console.log('driver', setupOpenwrt, podnetwork);
 
 				if (setupOpenwrt && !podnetwork.subnet) {
 					podmanUI.errorNotification(_(
@@ -148,6 +213,7 @@ return baseclass.extend({
 					return;
 				}
 
+				console.log('driver', podnetwork.gateway, podnetwork.subnet);
 				// Auto-generate gateway: increment last octet by 1 (e.g., 10.89.0.0 → 10.89.0.1)
 				if (!podnetwork.gateway && podnetwork.subnet) {
 					const regex = new RegExp('(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.)(\\d{1,3})',
@@ -158,10 +224,18 @@ return baseclass.extend({
 
 				const payload = {
 					name: podnetwork.name,
-					driver: podnetwork.driver || 'bridge',
-					network_interface: bridgeName
+					driver: driver
 				};
 
+				// Set network_interface based on driver
+				if (driver === 'bridge') {
+					payload.network_interface = bridgeName;
+				} else if (driver === 'macvlan' || driver === 'ipvlan') {
+					// For macvlan/ipvlan, network_interface is the parent interface
+					payload.network_interface = podnetwork.parent;
+				}
+
+				console.log('payload', payload);
 				if (podnetwork.subnet) {
 					payload.subnets = [{
 						subnet: podnetwork.subnet
@@ -207,7 +281,10 @@ return baseclass.extend({
 				ui.hideModal();
 				podmanUI.showSpinningModal(_('Creating %s').format(_('Network')), _('Creating %s...').format(_('Network').toLowerCase()));
 
+				console.log('podmanRPC', podmanRPC)
+
 				podmanRPC.network.create(JSON.stringify(payload)).then((result) => {
+					console.log('??');
 					if (result && result.error) {
 						ui.hideModal();
 						podmanUI.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), result.error));
@@ -232,14 +309,23 @@ return baseclass.extend({
 						podmanUI.showSpinningModal(_('Creating %s').format(_('Network')), _(
 							'Setting up OpenWrt integration...'));
 
-						return openwrtNetwork.createIntegration(podnetwork.name, {
-							bridgeName: bridgeName,
+						const openwrtOptions = {
+							driver: driver,
 							subnet: podnetwork.subnet,
 							gateway: podnetwork.gateway,
 							ipv6subnet: podnetwork.ipv6subnet || null,
 							ipv6gateway: podnetwork.ipv6gateway || null,
 							zoneName: podnetwork.firewall_zone || '_create_new_'
-						}).then(() => {
+						};
+
+						// Set device name based on driver
+						if (driver === 'bridge') {
+							openwrtOptions.bridgeName = bridgeName;
+						} else {
+							openwrtOptions.parent = podnetwork.parent;
+						}
+
+						return openwrtNetwork.createIntegration(podnetwork.name, openwrtOptions).then(() => {
 							return {
 								podmanCreated: true,
 								openwrtCreated: true

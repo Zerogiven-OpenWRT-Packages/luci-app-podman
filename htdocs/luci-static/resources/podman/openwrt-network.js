@@ -36,17 +36,30 @@ function cidrToPrefix(cidr) {
 	return parts.length === 2 ? parseInt(parts[1]) : 24;
 }
 
+/**
+ * Check if driver needs a bridge device.
+ * @param {string} driver - Network driver (bridge, macvlan, ipvlan)
+ * @returns {boolean} True if bridge is needed
+ */
+function needsBridge(driver) {
+	return !driver || driver === 'bridge';
+}
+
 return baseclass.extend({
 	/**
 	 * Create OpenWrt integration for Podman network.
 	 *
-	 * Creates bridge device, network interface with static IP, and adds to firewall zone.
+	 * Creates network interface with static IP, and adds to firewall zone.
+	 * For bridge driver: Creates bridge device and configures dnsmasq exclusion.
+	 * For macvlan/ipvlan: Uses parent interface directly, no bridge needed.
 	 * If zoneName is '_create_new_', creates zone named 'podman_<networkName>'.
 	 * If zoneName is existing, adds network to that zone's network list.
 	 *
 	 * @param {string} networkName - Podman network name
 	 * @param {Object} options - Network configuration
-	 * @param {string} options.bridgeName - Bridge name (e.g., 'podman0')
+	 * @param {string} [options.driver] - Network driver (bridge, macvlan, ipvlan) - defaults to 'bridge'
+	 * @param {string} [options.bridgeName] - Bridge name (required for bridge driver)
+	 * @param {string} [options.parent] - Parent interface (required for macvlan/ipvlan)
 	 * @param {string} options.subnet - Subnet CIDR (e.g., '10.129.0.0/24')
 	 * @param {string} options.gateway - Gateway IP (e.g., '10.129.0.1')
 	 * @param {string} [options.ipv6subnet] - Optional IPv6 subnet
@@ -55,7 +68,8 @@ return baseclass.extend({
 	 * @returns {Promise<void>} Resolves when complete
 	 */
 	createIntegration: async function (networkName, options) {
-		const bridgeName = options.bridgeName;
+		const driver = options.driver || 'bridge';
+		const deviceName = needsBridge(driver) ? options.bridgeName : options.parent;
 		const gateway = options.gateway;
 		const prefix = cidrToPrefix(options.subnet);
 		const netmask = network.prefixToMask(prefix);
@@ -66,27 +80,29 @@ return baseclass.extend({
 			uci.load('network'),
 			uci.load('firewall')
 		]).then(() => {
-			// Create bridge device if not exists
-			const existingDevice = uci.get('network', bridgeName);
-			if (!existingDevice) {
-				uci.add('network', 'device', bridgeName);
-				uci.set('network', bridgeName, 'type', 'bridge');
-				uci.set('network', bridgeName, 'name', bridgeName);
-				uci.set('network', bridgeName, 'bridge_empty', '1');
-				uci.set('network', bridgeName, 'ipv6', '0');
+			// Create bridge device ONLY for bridge networks
+			if (needsBridge(driver)) {
+				const existingDevice = uci.get('network', deviceName);
+				if (!existingDevice) {
+					uci.add('network', 'device', deviceName);
+					uci.set('network', deviceName, 'type', 'bridge');
+					uci.set('network', deviceName, 'name', deviceName);
+					uci.set('network', deviceName, 'bridge_empty', '1');
+					uci.set('network', deviceName, 'ipv6', '0');
 
-				if (options.ipv6subnet) {
-					uci.set('network', bridgeName, 'ipv6', '1');
-					uci.set('network', bridgeName, 'ip6assign', '64');
+					if (options.ipv6subnet) {
+						uci.set('network', deviceName, 'ipv6', '1');
+						uci.set('network', deviceName, 'ip6assign', '64');
+					}
 				}
 			}
 
-			// Create network interface if not exists
+			// Create network interface (for ALL drivers)
 			const existingInterface = uci.get('network', networkName);
 			if (!existingInterface) {
 				uci.add('network', 'interface', networkName);
 				uci.set('network', networkName, 'proto', 'static');
-				uci.set('network', networkName, 'device', bridgeName);
+				uci.set('network', networkName, 'device', deviceName);
 				uci.set('network', networkName, 'ipaddr', gateway);
 				uci.set('network', networkName, 'netmask', netmask);
 
@@ -147,8 +163,10 @@ return baseclass.extend({
 		}).then(() => {
 			return network.flushCache();
 		}).then(() => {
-			// Configure dnsmasq to exclude this bridge
-			return this._configureDnsmasq(bridgeName, true);
+			// Configure dnsmasq ONLY for bridge networks
+			if (needsBridge(driver)) {
+				return this._configureDnsmasq(deviceName, true);
+			}
 		});
 	},
 
@@ -157,12 +175,15 @@ return baseclass.extend({
 	 *
 	 * Removes network from its zone. If zone is empty AND starts with 'podman',
 	 * removes zone and its DNS rule. Removes network interface and bridge device (if unused).
+	 * For macvlan/ipvlan: Only removes interface and zone membership (no bridge cleanup).
 	 *
 	 * @param {string} networkName - Podman network name
-	 * @param {string} bridgeName - Bridge name
+	 * @param {string} deviceName - Device name (bridge name or parent interface)
+	 * @param {string} [driver] - Network driver (bridge, macvlan, ipvlan) - defaults to 'bridge'
 	 * @returns {Promise<void>} Resolves when complete
 	 */
-	removeIntegration: function (networkName, bridgeName) {
+	removeIntegration: function (networkName, deviceName, driver) {
+		driver = driver || 'bridge';
 		return Promise.all([
 			uci.load('network'),
 			uci.load('firewall')
@@ -227,18 +248,21 @@ return baseclass.extend({
 				uci.remove('network', networkName);
 			}
 
-			// Remove bridge device if not used by other interfaces
-			const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
-				return uci.get('network', s['.name'], 'device') === bridgeName &&
-					s['.name'] !== networkName;
-			});
+			// Remove bridge device ONLY for bridge networks and if not used by others
+			let shouldRemoveBridge = false;
+			if (needsBridge(driver)) {
+				const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
+					return uci.get('network', s['.name'], 'device') === deviceName &&
+						s['.name'] !== networkName;
+				});
 
-			const shouldRemoveBridge = otherInterfaces.length === 0;
+				shouldRemoveBridge = otherInterfaces.length === 0;
 
-			if (shouldRemoveBridge) {
-				const device = uci.get('network', bridgeName);
-				if (device) {
-					uci.remove('network', bridgeName);
+				if (shouldRemoveBridge) {
+					const device = uci.get('network', deviceName);
+					if (device) {
+						uci.remove('network', deviceName);
+					}
 				}
 			}
 
@@ -250,9 +274,9 @@ return baseclass.extend({
 		}).then((result) => {
 			return network.flushCache().then(() => result);
 		}).then((result) => {
-			// Remove dnsmasq exclusion if bridge was deleted
-			if (result.shouldRemoveBridge) {
-				return this._configureDnsmasq(bridgeName, false);
+			// Remove dnsmasq exclusion ONLY for bridge networks if bridge was deleted
+			if (needsBridge(driver) && result.shouldRemoveBridge) {
+				return this._configureDnsmasq(deviceName, false);
 			}
 		});
 	},
@@ -275,18 +299,21 @@ return baseclass.extend({
 	/**
 	 * Check if integration is complete (all components exist).
 	 *
-	 * Verifies device, interface, and dnsmasq exclusion.
+	 * Verifies interface, and for bridge networks also checks device and dnsmasq exclusion.
 	 * Does NOT check firewall zones (user's choice).
 	 *
 	 * @param {string} networkName - Podman network name
+	 * @param {string} [driver] - Network driver (bridge, macvlan, ipvlan) - defaults to 'bridge'
 	 * @returns {Promise<Object>} {complete: boolean, missing: string[], details: object}
 	 */
-	isIntegrationComplete: async function (networkName) {
+	isIntegrationComplete: async function (networkName, driver) {
+		driver = driver || 'bridge';
 		const missing = [];
 		const details = {
 			hasInterface: false,
 			hasDevice: false,
-			hasDnsmasqExclusion: false
+			hasDnsmasqExclusion: false,
+			driver: driver
 		};
 
 		return Promise.all([
@@ -301,37 +328,51 @@ return baseclass.extend({
 				details.hasInterface = true;
 			}
 
-			// Check device (bridge)
-			const bridgeName = uci.get('network', networkName, 'device');
-			if (bridgeName) {
-				const device = uci.get('network', bridgeName);
-				if (!device) {
-					missing.push('device');
-				} else {
-					details.hasDevice = true;
-
-					// Check dnsmasq exclusion (only if device exists and dnsmasq is configured)
-					const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
-					if (dnsmasqSections.length > 0) {
-						const mainSection = dnsmasqSections[0]['.name'];
-						const notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
-
-						let isExcluded = false;
-						if (Array.isArray(notinterfaces)) {
-							isExcluded = notinterfaces.includes(bridgeName);
-						} else if (notinterfaces) {
-							isExcluded = notinterfaces === bridgeName;
-						}
-
-						if (isExcluded) {
-							details.hasDnsmasqExclusion = true;
-						} else {
-							missing.push('dnsmasq');
-						}
+			// Check device
+			const deviceName = uci.get('network', networkName, 'device');
+			if (deviceName) {
+				if (needsBridge(driver)) {
+					// For bridge networks: Check bridge device exists
+					const device = uci.get('network', deviceName);
+					if (!device) {
+						missing.push('device');
 					} else {
-						// dnsmasq not configured - this is OK, mark as complete
-						details.hasDnsmasqExclusion = true;
+						const deviceType = uci.get('network', deviceName, 'type');
+						if (deviceType !== 'bridge') {
+							missing.push('device');  // Device exists but not a bridge
+						} else {
+							details.hasDevice = true;
+
+							// Check dnsmasq exclusion (only for bridge networks)
+							const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
+							if (dnsmasqSections.length > 0) {
+								const mainSection = dnsmasqSections[0]['.name'];
+								const notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
+
+								let isExcluded = false;
+								if (Array.isArray(notinterfaces)) {
+									isExcluded = notinterfaces.includes(deviceName);
+								} else if (notinterfaces) {
+									isExcluded = notinterfaces === deviceName;
+								}
+
+								if (isExcluded) {
+									details.hasDnsmasqExclusion = true;
+								} else {
+									missing.push('dnsmasq');
+								}
+							} else {
+								// dnsmasq not configured - this is OK
+								details.hasDnsmasqExclusion = true;
+							}
+						}
 					}
+				} else {
+					// For macvlan/ipvlan: Device name is parent interface
+					// We can't easily verify if parent is a real physical interface,
+					// so assume if deviceName is set, it's OK
+					details.hasDevice = true;
+					details.hasDnsmasqExclusion = true;  // Not applicable for macvlan/ipvlan
 				}
 			} else {
 				missing.push('device');
@@ -355,7 +396,7 @@ return baseclass.extend({
 	 * Get integration details for network.
 	 *
 	 * @param {string} networkName - Podman network name
-	 * @returns {Promise<Object|null>} {networkName, bridgeName, gateway, netmask, proto} or null
+	 * @returns {Promise<Object|null>} {networkName, deviceName, gateway, netmask, proto} or null
 	 */
 	getIntegration: async function (networkName) {
 		return uci.load('network').then(() => {
@@ -366,7 +407,7 @@ return baseclass.extend({
 
 			return {
 				networkName: networkName,
-				bridgeName: uci.get('network', networkName, 'device'),
+				deviceName: uci.get('network', networkName, 'device'),
 				gateway: uci.get('network', networkName, 'ipaddr'),
 				netmask: uci.get('network', networkName, 'netmask'),
 				proto: uci.get('network', networkName, 'proto')
@@ -411,14 +452,24 @@ return baseclass.extend({
 	 * @returns {Promise<Object>} {valid: boolean, errors: string[]}
 	 */
 	validateIntegration: async function (networkName, options) {
+		const driver = options.driver || 'bridge';
 		const errors = [];
 
 		if (!networkName || !networkName.trim()) {
 			errors.push(_('Network name is required'));
 		}
-		if (!options.bridgeName || !options.bridgeName.trim()) {
-			errors.push(_('Bridge name is required'));
+
+		// Validate based on driver
+		if (needsBridge(driver)) {
+			if (!options.bridgeName || !options.bridgeName.trim()) {
+				errors.push(_('Bridge name is required'));
+			}
+		} else {
+			if (!options.parent || !options.parent.trim()) {
+				errors.push(_('Parent interface is required for macvlan/ipvlan networks'));
+			}
 		}
+
 		if (!options.subnet || !options.subnet.trim()) {
 			errors.push(_('Subnet is required'));
 		}
@@ -455,17 +506,19 @@ return baseclass.extend({
 				}
 			}
 
-			const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
-				return uci.get('network', s['.name'], 'device') === options
-					.bridgeName &&
-					s['.name'] !== networkName;
-			});
+			// Check device conflicts only for bridge networks
+			if (needsBridge(driver) && options.bridgeName) {
+				const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
+					return uci.get('network', s['.name'], 'device') === options.bridgeName &&
+						s['.name'] !== networkName;
+				});
 
-			if (otherInterfaces.length > 0) {
-				errors.push(_('Bridge "%s" is already used by interface "%s"').format(
-					options.bridgeName,
-					otherInterfaces[0]['.name']
-				));
+				if (otherInterfaces.length > 0) {
+					errors.push(_('Bridge "%s" is already used by interface "%s"').format(
+						options.bridgeName,
+						otherInterfaces[0]['.name']
+					));
+				}
 			}
 
 			return {
@@ -489,17 +542,21 @@ return baseclass.extend({
 	 *
 	 * @param {string} networkName - Podman network name
 	 * @param {Object} options - Network configuration
-	 * @param {string} options.bridgeName - Bridge name
-	 * @param {string} options.subnet - Subnet CIDR (only needed if creating interface)
-	 * @param {string} options.gateway - Gateway IP (only needed if creating interface)
+	 * @param {string} [options.driver] - Network driver (bridge, macvlan, ipvlan) - defaults to 'bridge'
+	 * @param {string} [options.bridgeName] - Bridge name (required for bridge networks)
+	 * @param {string} [options.parent] - Parent interface (required for macvlan/ipvlan)
+	 * @param {string} [options.subnet] - Subnet CIDR (only needed if creating interface)
+	 * @param {string} [options.gateway] - Gateway IP (only needed if creating interface)
 	 * @returns {Promise<Object>} {added: string[], skipped: string[]}
 	 */
 	repairIntegration: async function (networkName, options) {
+		const driver = options.driver || 'bridge';
+		const deviceName = needsBridge(driver) ? options.bridgeName : options.parent;
 		const added = [];
 		const skipped = [];
 
 		// Check what's missing
-		const status = await this.isIntegrationComplete(networkName);
+		const status = await this.isIntegrationComplete(networkName, driver);
 
 		if (status.complete) {
 			return {
@@ -509,21 +566,19 @@ return baseclass.extend({
 			};
 		}
 
-		const bridgeName = options.bridgeName;
-
 		return Promise.all([
 			uci.load('network'),
 			uci.load('dhcp')
 		]).then(() => {
-			// Repair device if missing
-			if (!status.details.hasDevice) {
-				const existingDevice = uci.get('network', bridgeName);
+			// Repair device ONLY for bridge networks if missing
+			if (!status.details.hasDevice && needsBridge(driver)) {
+				const existingDevice = uci.get('network', deviceName);
 				if (!existingDevice) {
-					uci.add('network', 'device', bridgeName);
-					uci.set('network', bridgeName, 'type', 'bridge');
-					uci.set('network', bridgeName, 'name', bridgeName);
-					uci.set('network', bridgeName, 'bridge_empty', '1');
-					uci.set('network', bridgeName, 'ipv6', '0');
+					uci.add('network', 'device', deviceName);
+					uci.set('network', deviceName, 'type', 'bridge');
+					uci.set('network', deviceName, 'name', deviceName);
+					uci.set('network', deviceName, 'bridge_empty', '1');
+					uci.set('network', deviceName, 'ipv6', '0');
 					added.push('device');
 				} else {
 					skipped.push('device');
@@ -542,7 +597,7 @@ return baseclass.extend({
 
 					uci.add('network', 'interface', networkName);
 					uci.set('network', networkName, 'proto', 'static');
-					uci.set('network', networkName, 'device', bridgeName);
+					uci.set('network', networkName, 'device', deviceName);
 					uci.set('network', networkName, 'ipaddr', gateway);
 					uci.set('network', networkName, 'netmask', netmask);
 					added.push('interface');
@@ -559,9 +614,9 @@ return baseclass.extend({
 		}).then(() => {
 			return network.flushCache();
 		}).then(() => {
-			// Repair dnsmasq if missing (most common case)
-			if (!status.details.hasDnsmasqExclusion) {
-				return this._configureDnsmasq(bridgeName, true).then(() => {
+			// Repair dnsmasq ONLY for bridge networks if missing
+			if (!status.details.hasDnsmasqExclusion && needsBridge(driver)) {
+				return this._configureDnsmasq(deviceName, true).then(() => {
 					added.push('dnsmasq');
 				});
 			} else {
