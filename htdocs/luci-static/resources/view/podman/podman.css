@@ -38,13 +38,13 @@
 
 .code-area, .terminal-area {
     padding: 1rem;
-    overflow: auto;
+    overflow: auto !important;
     max-height: 600px;
     border-radius: 0.25rem;
     font-size: 0.75rem;
     font-family: monospace;
     font-weight: 100;
-    /* white-space: pre; */
+    white-space: pre !important;
     line-height: 1.25;
 }
 
@@ -60,6 +60,7 @@
 
 .modal .terminal-area {
     max-width: 800px;
+    min-height: 100px;
 }
 
 .modal .modal-buttons {

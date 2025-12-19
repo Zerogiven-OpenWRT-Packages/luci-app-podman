@@ -12,7 +12,11 @@
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
 
-'require podman.form.secret as podmanFormSecret';
+document.querySelector('head').appendChild(E('link', {
+	'rel': 'stylesheet',
+	'type': 'text/css',
+	'href': L.resource('view/podman/podman.css')
+}));
 
 /**
  * Secret management view with create, inspect, and delete operations
