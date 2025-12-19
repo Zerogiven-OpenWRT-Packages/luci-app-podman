@@ -289,7 +289,7 @@ const ListUtil = baseclass.extend({
 	 * @param {boolean} clearSelections - Clear checkboxes after refresh
 	 * @returns {Promise} Resolution when refresh completes
 	 */
-	refreshTable: function (clearSelections) {
+	refreshTable: async function (clearSelections) {
 		if (!this.view) {
 			console.error('ListViewHelper: view reference required for refreshTable()');
 			return Promise.reject(new Error('view reference required'));
@@ -380,9 +380,7 @@ const ListUtil = baseclass.extend({
 		}
 
 		const content = [
-			E('pre', {
-				'style': 'max-height: 500px; max-width: 800px; overflow: auto; background: #000; color: #0f0; padding: 15px; font-family: monospace; font-size: 12px; white-space: pre; border-radius: 4px;'
-			}, JSON.stringify(displayData, null, 2))
+			E('pre', { 'class': 'code-area' }, JSON.stringify(displayData, null, 2))
 		];
 
 		if (hiddenFields && hiddenFields.length > 0) {
