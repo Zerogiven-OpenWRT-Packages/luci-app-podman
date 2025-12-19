@@ -12,6 +12,12 @@
 'require podman.list as List';
 'require podman.container-util as ContainerUtil';
 
+document.querySelector('head').appendChild(E('link', {
+	'rel': 'stylesheet',
+	'type': 'text/css',
+	'href': L.resource('view/podman/podman.css')
+}));
+
 /**
  * Container management view with create, start, stop, health check, and delete operations
  */
@@ -143,6 +149,40 @@ return view.extend({
 				'data-container-name': containerName,
 				'style': 'color: #999;'
 			}, '...');
+		};
+
+		o = section.option(form.DummyValue, 'Action', '');
+		o.name = 'mobile-actions'
+		o.cfgvalue = (sectionId) => {
+			const container = this.map.data.data[sectionId];
+			const isRunning = container.State === 'running';
+
+			const buttons = [];
+
+			if (isRunning) {
+				buttons.push(E('span', {
+					style: 'font-size: 16px;'
+				}, '&#9724;'));
+			} else {
+				buttons.push(E('span', {
+					style: 'font-size: 16px;'
+				}, '&#9658;'));
+			}
+
+			buttons.push('');
+			buttons.push(E('span', {
+				style: 'font-size: 16px;'
+				}, '&#8635;'));
+
+			buttons.push('');
+			buttons.push(E('span', {
+				style: 'font-size: 16px;'
+				}, '&#10010;'));
+
+			return E('span', {
+				'style': 'padding-top: 1rem',
+				'class': 'hide-not-mobile',
+			}, buttons);
 		};
 
 		const toolbar = this.listHelper.createToolbar({
