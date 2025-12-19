@@ -287,16 +287,18 @@ return baseclass.extend({
 
 		}).catch((err) => {
 			console.error('Process list error:', err);
-			const container = document.getElementById('process-list-container');
-			if (container) {
+			const content = document.getElementById('process-list-container');
+			if (content) {
 				while (content.firstChild) {
 					content.removeChild(content.firstChild);
 				}
 				content.appendChild(E('p', {
 						'style': 'color: #999;'
 					},
-					_('Failed to load process list: %s').format(err.message || _(
-						'Unknown error'))));
+					_('Failed to load process list: %s').format(
+						err.message || _('Unknown error')
+					)
+				));
 			}
 		});
 	},

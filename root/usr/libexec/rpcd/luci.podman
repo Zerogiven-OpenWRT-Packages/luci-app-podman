@@ -54,16 +54,17 @@ curl_request() {
 	local method="$1"
 	local path="$2"
 	local data="$3"
+	local timeout="${4:-30}"
 	local result exit_code
 
 	if [ -n "$data" ]; then
-		result=$(curl -s --unix-socket "$SOCKET" -X "$method" \
+		result=$(curl -s -m "$timeout" --unix-socket "$SOCKET" -X "$method" \
 			-H "Content-Type: application/json" \
 			-d "$data" \
 			"http://localhost$path" 2>&1)
 		exit_code=$?
 	else
-		result=$(curl -s --unix-socket "$SOCKET" -X "$method" \
+		result=$(curl -s -m "$timeout" --unix-socket "$SOCKET" -X "$method" \
 			"http://localhost$path" 2>&1)
 		exit_code=$?
 	fi
@@ -224,7 +225,7 @@ EOF
 				# Logs API returns binary stream format with Docker multiplexed headers
 				# Shell variables strip binary data, so save to temp file first
 				temp_file="/tmp/podman_logs_$$_${RANDOM}.log"
-				curl -s --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "$temp_file" 2>&1
+				curl -s -m 60 --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "$temp_file" 2>&1
 				exit_code=$?
 
 				if [ $exit_code -ne 0 ]; then
@@ -233,12 +234,12 @@ EOF
 					exit 1
 				fi
 
-				# Base64 encode binary data for JSON transport (use openssl on OpenWrt)
-				encoded_data=$(openssl base64 -A < "$temp_file")
+				# Base64 encode binary data for JSON transport
+				# Stream directly to stdout to avoid shell variable size limits
+				printf '{"data":"'
+				openssl base64 -A < "$temp_file"
+				printf '"}'
 				rm -f "$temp_file"
-
-				# Return as JSON with base64-encoded data
-				echo "{\"data\":\"${encoded_data}\"}"
 				;;
 			container_logs_stream)
 				get_json_params id params

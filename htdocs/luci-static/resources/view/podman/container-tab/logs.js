@@ -49,9 +49,9 @@ return baseclass.extend({
 							'type': 'number',
 							'id': 'log-lines',
 							'class': 'cbi-input-text',
-							'value': '1000',
+							'value': '100',
 							'min': '10',
-							'max': '10000',
+							'max': '150',
 							'style': 'width: 80px; margin-left: 5px;'
 						})
 					]),
@@ -89,47 +89,47 @@ return baseclass.extend({
 		const params = 'stdout=true&stderr=true&tail=' + lines;
 
 		output.textContent = _('Loading logs...');
-console.log(this.containerId, 'params', params);
-		// podmanRPC.container.logs(this.containerId, params).then((result) => {
-		// 	// // Backend returns base64-encoded binary data in {data: "..."} object
-		// 	// let base64Data = '';
-		// 	// if (result && typeof result === 'object' && result.data) {
-		// 	// 	base64Data = result.data;
-		// 	// } else if (typeof result === 'string') {
-		// 	// 	base64Data = result;
-		// 	// }
 
-		// 	// if (!base64Data) {
-		// 	// 	output.textContent = _('No logs available');
-		// 	// 	return;
-		// 	// }
+		podmanRPC.container.logs(this.containerId, params).then((result) => {
+			// Backend returns base64-encoded binary data in {data: "..."} object
+			let base64Data = '';
+			if (result && typeof result === 'object' && result.data) {
+				base64Data = result.data;
+			} else if (typeof result === 'string') {
+				base64Data = result;
+			}
 
-		// 	// // Decode base64 to binary string
-		// 	// let binaryText = '';
-		// 	// try {
-		// 	// 	binaryText = atob(base64Data);
-		// 	// } catch (e) {
-		// 	// 	console.error('Base64 decode error:', e);
-		// 	// 	output.textContent = _('Failed to decode logs');
-		// 	// 	return;
-		// 	// }
+			if (!base64Data) {
+				output.textContent = _('No logs available');
+				return;
+			}
 
-		// 	// // Strip Docker stream headers (8-byte headers)
-		// 	// const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
+			// Decode base64 to binary string
+			let binaryText = '';
+			try {
+				binaryText = atob(base64Data);
+			} catch (e) {
+				console.error('Base64 decode error:', e);
+				output.textContent = _('Failed to decode logs');
+				return;
+			}
 
-		// 	// // Strip ANSI escape sequences
-		// 	// const cleanText = this.stripAnsi(withoutHeaders);
+			// Strip Docker stream headers (8-byte headers)
+			const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
 
-		// 	// if (cleanText && cleanText.trim().length > 0) {
-		// 	// 	output.textContent = cleanText;
-		// 	// } else {
-		// 	// 	output.textContent = _('No logs available');
-		// 	// }
-		// 	// output.scrollTop = output.scrollHeight;
-		// }).catch((err) => {
-		// 	console.error('LOG ERROR:', err);
-		// 	output.textContent = _('Failed to load logs: %s').format(err.message);
-		// });
+			// Strip ANSI escape sequences
+			const cleanText = this.stripAnsi(withoutHeaders);
+
+			if (cleanText && cleanText.trim().length > 0) {
+				output.textContent = cleanText;
+			} else {
+				output.textContent = _('No logs available');
+			}
+			output.scrollTop = output.scrollHeight;
+		}).catch((err) => {
+			console.error('LOG ERROR:', err);
+			output.textContent = _('Failed to load logs: %s').format(err.message);
+		});
 	},
 
 		/**
