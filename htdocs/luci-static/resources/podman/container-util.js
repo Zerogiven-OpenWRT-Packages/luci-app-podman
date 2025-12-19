@@ -134,10 +134,12 @@ return baseclass.extend({
 				);
 
 			Promise.all(cleanupPromises).then(() => {
-				podmanUI.successTimeNotification(_('Removed %d %s successfully').format(
-					ids.length,
-					N_(ids.length, 'Container', 'Containers').toLowerCase()
-				));
+				podmanUI.successTimeNotification(
+					_('Removed %d %s successfully').format(
+						ids.length,
+						N_(ids.length, 'Container', 'Containers').toLowerCase()
+					)
+				);
 			});
 		}).catch((err) => {
 			ui.hideModal();

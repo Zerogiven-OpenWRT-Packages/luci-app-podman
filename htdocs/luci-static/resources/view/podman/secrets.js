@@ -3,12 +3,15 @@
 'require view';
 'require form';
 'require ui';
+
 'require podman.utils as utils';
 'require podman.format as format';
 'require podman.list as List';
 'require podman.rpc as podmanRPC';
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
+
+'require podman.form.secret as podmanFormSecret';
 
 /**
  * Secret management view with create, inspect, and delete operations
@@ -58,35 +61,49 @@ return view.extend({
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Secrets'));
 
-		const section = this.map.section(form.TableSection, 'secrets', '', _(
-			'Manage Podman %s').format(_('Secrets').toLowerCase()));
+		const section = this.map.section(
+			form.TableSection,
+			'secrets',
+			'',
+			_('Manage Podman %s').format(_('Secrets').toLowerCase())
+		);
 		section.anonymous = true;
 
 		let o;
 
-		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
-			0, {
-				hiddenname: 'all'
-			}).render());
+		o = section.option(
+			podmanForm.field.SelectDummyValue,
+			'ID',
+			new ui.Checkbox(0, { hiddenname: 'all' }).render()
+		);
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
 		o.click = (secret) => {
-			const name = secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name ||
-				_('Unknown'));
+			const name = secret.Spec && secret.Spec.Name ?
+				secret.Spec.Name
+				:
+				(secret.Name || _('Unknown')
+			);
 			this.handleInspect(name);
 		};
-		o.text = (secret) => secret.Spec && secret.Spec.Name ? secret.Spec.Name : (secret.Name ||
-			_('Unknown'));
+		o.text = (secret) => secret.Spec && secret.Spec.Name ?
+			secret.Spec.Name
+			:
+			(secret.Name || _('Unknown')
+		);
 
 		o = section.option(form.DummyValue, 'Driver', _('Driver'));
 		o.cfgvalue = (sectionId) => {
 			const secret = this.map.data.data[sectionId];
 			return secret.Spec && secret.Spec.Driver && secret.Spec.Driver.Name ?
-				secret.Spec.Driver.Name : _('file');
+				secret.Spec.Driver.Name
+				:
+				_('file')
+			;
 		};
 
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
-		o.cfgformatter = (cfg) => format.date(Date.parse(cfg) / 1000);
+		o.cfgformatter = format.date;
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
@@ -101,6 +118,7 @@ return view.extend({
 
 			viewContainer.appendChild(toolbar.container);
 			viewContainer.appendChild(mapRendered);
+
 			this.listHelper.setupSelectAll(mapRendered);
 
 			return viewContainer;
@@ -132,7 +150,7 @@ return view.extend({
 	 * Show create secret form
 	 */
 	handleCreateSecret: function () {
-		const form = new podmanForm.Secret();
+		const form = new podmanForm.Secret.init();
 		form.submit = () => this.handleRefresh();
 		form.render();
 	},

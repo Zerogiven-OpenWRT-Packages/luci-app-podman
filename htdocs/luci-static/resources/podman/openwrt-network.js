@@ -1,5 +1,6 @@
 'use strict';
 
+'require baseclass';
 'require network';
 'require uci';
 'require fs';
@@ -35,7 +36,7 @@ function cidrToPrefix(cidr) {
 	return parts.length === 2 ? parseInt(parts[1]) : 24;
 }
 
-return L.Class.extend({
+return baseclass.extend({
 	/**
 	 * Create OpenWrt integration for Podman network.
 	 *
@@ -262,7 +263,7 @@ return L.Class.extend({
 	 * @param {string} networkName - Podman network name
 	 * @returns {Promise<boolean>} True if interface exists
 	 */
-	hasIntegration: function (networkName) {
+	hasIntegration: async function (networkName) {
 		return uci.load('network').then(() => {
 			const iface = uci.get('network', networkName);
 			return !!iface;
@@ -280,7 +281,7 @@ return L.Class.extend({
 	 * @param {string} networkName - Podman network name
 	 * @returns {Promise<Object>} {complete: boolean, missing: string[], details: object}
 	 */
-	isIntegrationComplete: function (networkName) {
+	isIntegrationComplete: async function (networkName) {
 		const missing = [];
 		const details = {
 			hasInterface: false,
@@ -382,7 +383,7 @@ return L.Class.extend({
 	 *
 	 * @returns {Promise<Array<string>>} Array of zone names
 	 */
-	listPodmanZones: function () {
+	listPodmanZones: async function () {
 		return uci.load('firewall').then(() => {
 			const zones = uci.sections('firewall', 'zone');
 			const podmanZones = [];

@@ -118,7 +118,16 @@ const ListUtil = baseclass.extend({
 
 	/**
 	 * Delete selected items with confirmation and progress modal.
-	 * @param {{selected: Array, deletePromiseFn: Function, formatItemName: Function, onSuccess: Function}} options - Delete config
+	 *
+	 * @param {Object} options - Delete configuration
+	 * @param {Array} options.selected - Items to delete
+	 * @param {Function} options.deletePromiseFn - Function to delete each item
+	 * @param {Function} [options.formatItemName] - Format item for display
+	 * @param {Function} [options.preDeleteCheck] - Function(items) => Promise<checkResults[]>
+	 * @param {Function} [options.confirmMessage] - Function(items, checkResults) => string
+	 * @param {Function} [options.afterDeleteEach] - Function(item, checkResult) => Promise
+	 * @param {Function} [options.cleanupErrorMessage] - Function(errorCount) => string
+	 * @param {Function} [options.onSuccess] - Callback after successful deletion
 	 */
 	bulkDelete: function (options) {
 		const selected = options.selected || this.getSelected();
@@ -128,50 +137,151 @@ const ListUtil = baseclass.extend({
 			return;
 		}
 
+		// Pre-delete check hook (optional)
+		const checkPromise = options.preDeleteCheck
+			? options.preDeleteCheck(selected)
+			: Promise.resolve(null);
+
+		checkPromise.then((checkResults) => {
+			const confirmMsg = this._buildConfirmMessage(selected, checkResults, options);
+
+			if (!confirm(confirmMsg)) {
+				return;
+			}
+
+			this._executeBulkDelete(selected, checkResults, options);
+		});
+	},
+
+	/**
+	 * Build confirmation message with optional custom message.
+	 */
+	_buildConfirmMessage: function (selected, checkResults, options) {
 		const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item : item.name || item.Name || item.id || item.Id);
 		const itemNames = selected.map(formatFn).join(', ');
 
-		if (!confirm(_('Are you sure you want to delete %d %s?\n\n%s').format(
-				selected.length,
-				selected.length === 1 ? this.itemName : this.itemName + 's',
-				itemNames
-			))) {
-			return;
+		let msg = _('Are you sure you want to delete %d %s?\n\n%s').format(
+			selected.length,
+			selected.length === 1 ? this.itemName : this.itemName + 's',
+			itemNames
+		);
+
+		// Custom confirmation message hook (optional)
+		if (options.confirmMessage && checkResults) {
+			const customMsg = options.confirmMessage(selected, checkResults);
+			if (customMsg) {
+				msg += '\n\n' + customMsg;
+			}
 		}
 
-		podmanUI.showSpinningModal(_('Deleting %s').format(this.itemName + 's'), _(
-			'Deleting %d selected %s...').format(
-			selected.length,
-			selected.length === 1 ? this.itemName : this.itemName + 's'
-		));
+		return msg;
+	},
 
-		const deletePromises = selected.map(options.deletePromiseFn);
+	/**
+	 * Execute bulk delete with optional per-item cleanup.
+	 */
+	_executeBulkDelete: function (selected, checkResults, options) {
+		podmanUI.showSpinningModal(
+			_('Deleting %s').format(this.itemName + 's'),
+			_('Deleting %d selected %s...').format(
+				selected.length,
+				selected.length === 1 ? this.itemName : this.itemName + 's'
+			)
+		);
+
+		const deletePromises = selected.map((item, index) => {
+			const checkResult = checkResults ? checkResults[index] : null;
+
+			return options.deletePromiseFn(item).then((result) => {
+				if (result && result.error) {
+					// Main deletion failed
+					return {
+						item: item,
+						error: result.error
+					};
+				}
+
+				// Main deletion succeeded - run cleanup if provided
+				if (options.afterDeleteEach) {
+					return options.afterDeleteEach(item, checkResult).then((cleanupResult) => {
+						// Cleanup can return error object
+						if (cleanupResult && cleanupResult.error) {
+							return {
+								item: item,
+								success: true,
+								cleanupError: cleanupResult.error
+							};
+						}
+						return {
+							item: item,
+							success: true
+						};
+					}).catch((err) => {
+						// Cleanup failed with exception
+						return {
+							item: item,
+							success: true,
+							cleanupError: err.message
+						};
+					});
+				}
+
+				return {
+					item: item,
+					success: true
+				};
+			}).catch((err) => {
+				return {
+					item: item,
+					error: err.message
+				};
+			});
+		});
 
 		Promise.all(deletePromises).then((results) => {
-			ui.hideModal();
-			const errors = results.filter((r) => r && r.error);
-			if (errors.length > 0) {
-				podmanUI.errorNotification(_('Failed to delete %d %s').format(
-					errors.length,
-					errors.length === 1 ? this.itemName : this.itemName + 's'
-				));
-			} else {
-				podmanUI.successTimeNotification(_('Successfully deleted %d %s').format(
-					selected.length,
-					selected.length === 1 ? this.itemName : this.itemName + 's'
-				));
-			}
-
-			if (options.onSuccess) {
-				options.onSuccess();
-			} else {
-				window.location.reload();
-			}
-		}).catch((err) => {
-			ui.hideModal();
-			podmanUI.errorNotification(_('Failed to delete some %s: %s').format(this
-				.itemName + 's', err.message));
+			this._handleDeleteResults(results, selected, options);
 		});
+	},
+
+	/**
+	 * Handle delete results with 3-tier error handling:
+	 * 1. Main errors (critical) -> Error notification
+	 * 2. Cleanup errors (non-critical) -> Warning notification
+	 * 3. All success -> Success notification
+	 */
+	_handleDeleteResults: function (results, selected, options) {
+		ui.hideModal();
+
+		const mainErrors = results.filter((r) => r.error);
+		const cleanupErrors = results.filter((r) => r.cleanupError);
+		const successes = results.filter((r) => r.success && !r.cleanupError);
+
+		// Priority: Main errors > Cleanup errors > Success
+		if (mainErrors.length > 0) {
+			// Critical: Main deletion failed
+			podmanUI.errorNotification(_('Failed to delete %d %s').format(
+				mainErrors.length,
+				mainErrors.length === 1 ? this.itemName : this.itemName + 's'
+			));
+		} else if (cleanupErrors.length > 0) {
+			// Warning: Deletion succeeded but cleanup failed
+			if (options.cleanupErrorMessage) {
+				podmanUI.warningNotification(options.cleanupErrorMessage(cleanupErrors.length));
+			}
+			// If no custom message provided, cleanup errors are silently ignored
+		} else {
+			// Success: Everything worked
+			podmanUI.successTimeNotification(_('Successfully deleted %d %s').format(
+				selected.length,
+				selected.length === 1 ? this.itemName : this.itemName + 's'
+			));
+		}
+
+		if (options.onSuccess) {
+			options.onSuccess();
+		} else {
+			window.location.reload();
+		}
 	},
 
 	/**

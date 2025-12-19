@@ -2,6 +2,8 @@
 
 'require baseclass'
 
+'require podman.format as format';
+
 /**
  * Converts docker/podman run commands into container creation specs
  */
@@ -111,7 +113,7 @@ return baseclass.extend({
 				}
 			} else if (token === '-m' || token === '--memory') {
 				i++;
-				const memBytes = this.parseMemory(tokens[i]);
+				const memBytes = format.parseMemory(tokens[i]);
 				if (memBytes > 0) {
 					spec.resource_limits.memory = {
 						limit: memBytes
@@ -122,10 +124,10 @@ return baseclass.extend({
 				spec.healthconfig.Test = ['CMD-SHELL', tokens[i]];
 			} else if (token === '--health-interval') {
 				i++;
-				spec.healthconfig.Interval = this.parseDuration(tokens[i]);
+				spec.healthconfig.Interval = format.parseDuration(tokens[i]);
 			} else if (token === '--health-timeout') {
 				i++;
-				spec.healthconfig.Timeout = this.parseDuration(tokens[i]);
+				spec.healthconfig.Timeout = format.parseDuration(tokens[i]);
 			} else if (token === '--health-retries') {
 				i++;
 				const retries = parseInt(tokens[i], 10);
@@ -134,10 +136,10 @@ return baseclass.extend({
 				}
 			} else if (token === '--health-start-period') {
 				i++;
-				spec.healthconfig.StartPeriod = this.parseDuration(tokens[i]);
+				spec.healthconfig.StartPeriod = format.parseDuration(tokens[i]);
 			} else if (token === '--health-start-interval') {
 				i++;
-				spec.healthconfig.StartInterval = this.parseDuration(tokens[i]);
+				spec.healthconfig.StartInterval = format.parseDuration(tokens[i]);
 			}
 
 			i++;
@@ -303,54 +305,4 @@ return baseclass.extend({
 			value: labelStr.substring(idx + 1)
 		};
 	},
-
-	/**
-	 * Parse memory string to bytes (e.g., "512m", "1g")
-	 * @param {string} memStr - Memory string
-	 * @returns {number} Memory in bytes
-	 */
-	parseMemory: function (memStr) {
-		if (!memStr) return 0;
-
-		const match = memStr.match(/^(\d+(?:\.\d+)?)\s*([kmgKMG]?)$/);
-		if (!match) return 0;
-
-		const value = parseFloat(match[1]);
-		const unit = match[2].toLowerCase();
-		const multipliers = {
-			'': 1024 * 1024, // Default to MB if no unit
-			'k': 1024,
-			'm': 1024 * 1024,
-			'g': 1024 * 1024 * 1024
-		};
-
-		return Math.floor(value * (multipliers[unit] || 1));
-	},
-
-	/**
-	 * Parse duration string to nanoseconds (Podman format)
-	 * Supports formats: 30s, 1m, 1h, 500ms, etc.
-	 * @param {string} duration - Duration string (e.g., "30s", "1m", "1h")
-	 * @returns {number} Duration in nanoseconds, or 0 if invalid
-	 */
-	parseDuration: function (duration) {
-		if (!duration) return 0;
-
-		const match = duration.match(/^(\d+(?:\.\d+)?)\s*(ns|us|ms|s|m|h)$/);
-		if (!match) return 0;
-
-		const value = parseFloat(match[1]);
-		const unit = match[2];
-
-		const multipliers = {
-			'ns': 1,
-			'us': 1000,
-			'ms': 1000000,
-			's': 1000000000,
-			'm': 60000000000,
-			'h': 3600000000000
-		};
-
-		return Math.floor(value * (multipliers[unit] || 0));
-	}
 });

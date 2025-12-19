@@ -249,11 +249,6 @@ msgid_plural "'Containers'"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "'Image'"
-msgid_plural "'Images'"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "'Count'"
 msgstr ""
 
@@ -302,9 +297,6 @@ msgstr ""
 msgid "'Creating %s...'"
 msgstr ""
 
-msgid "'Creating %s'"
-msgstr ""
-
 msgid "'Creating auto-start configuration for %s'"
 msgstr ""
 
@@ -320,7 +312,7 @@ msgstr ""
 msgid "'Deleting %d selected %s...'"
 msgstr ""
 
-msgid "'Deleting %s'"
+msgid "'Deleting %s...'"
 msgstr ""
 
 msgid "'Destination'"
@@ -464,6 +456,9 @@ msgstr ""
 msgid "'Failed to inspect: %s'"
 msgstr ""
 
+msgid "'Failed to load %s'"
+msgstr ""
+
 msgid "'Failed to load container data'"
 msgstr ""
 
@@ -474,9 +469,6 @@ msgid "'Failed to load disk usage: %s'"
 msgstr ""
 
 msgid "'Failed to load init script: %s'"
-msgstr ""
-
-msgid "'Failed to load init script'"
 msgstr ""
 
 msgid "'Failed to load logs: %s'"
@@ -495,9 +487,6 @@ msgid "'Failed to pull %d %s'"
 msgstr ""
 
 msgid "'Failed to pull image: %s'"
-msgstr ""
-
-msgid "'Failed to pull image'"
 msgstr ""
 
 msgid "'Failed to pull some images: %s'"
@@ -560,7 +549,7 @@ msgstr ""
 msgid "'Failed to stop some pods: %s'"
 msgstr ""
 
-msgid "'Failed to update init script'"
+msgid "'Failed to update init script: %s'"
 msgstr ""
 
 msgid "'Failed to update resources: %s'"
@@ -585,9 +574,6 @@ msgid "'Fetching information...'"
 msgstr ""
 
 msgid "'Fetching script for %s'"
-msgstr ""
-
-msgid "'file'"
 msgstr ""
 
 msgid "'Firewall Zone'"
@@ -680,9 +666,6 @@ msgstr ""
 msgid "'Importing Volume'"
 msgstr ""
 
-msgid "'Info'"
-msgstr ""
-
 msgid "'Information'"
 msgstr ""
 
@@ -695,13 +678,7 @@ msgstr ""
 msgid "'Init script disabled for %s'"
 msgstr ""
 
-msgid "'Init script disabled'"
-msgstr ""
-
 msgid "'Init script enabled for %s'"
-msgstr ""
-
-msgid "'Init script enabled'"
 msgstr ""
 
 msgid "'Init Script: %s'"
@@ -714,9 +691,6 @@ msgid "'Inspect'"
 msgstr ""
 
 msgid "'Interactive (-i)'"
-msgstr ""
-
-msgid "'Interactive'"
 msgstr ""
 
 msgid "'Internal Network'"
@@ -756,9 +730,6 @@ msgid "'IPv4 Subnet (CIDR)'"
 msgstr ""
 
 msgid "'IPv4 subnet in CIDR notation'"
-msgstr ""
-
-msgid "'key1=value1\nkey2=value2'"
 msgstr ""
 
 msgid "'Labels in key=value format, one per line'"
@@ -818,9 +789,6 @@ msgstr ""
 msgid "'Loading...'"
 msgstr ""
 
-msgid "'local'"
-msgstr ""
-
 msgid "'Log stream ended with error'"
 msgstr ""
 
@@ -869,21 +837,6 @@ msgstr ""
 msgid "'Must be between 0 and 262144'"
 msgstr ""
 
-msgid "'my-container (optional)'"
-msgstr ""
-
-msgid "'my-network'"
-msgstr ""
-
-msgid "'my-pod'"
-msgstr ""
-
-msgid "'my-secret'"
-msgstr ""
-
-msgid "'my-volume (optional)'"
-msgstr ""
-
 msgid "'N/A'"
 msgstr ""
 
@@ -929,13 +882,7 @@ msgstr ""
 msgid "'Network: %s'"
 msgstr ""
 
-msgid "'Network'"
-msgstr ""
-
 msgid "'Networks deleted but %d OpenWrt integrations failed to remove'"
-msgstr ""
-
-msgid "'Networks'"
 msgstr ""
 
 msgid "'Never'"
@@ -1049,25 +996,13 @@ msgstr ""
 msgid "'Pod Name'"
 msgstr ""
 
-msgid "'pod-hostname'"
-msgstr ""
-
-msgid "'Pod'"
-msgstr ""
-
 msgid "'Podman Version'"
-msgstr ""
-
-msgid "'Pods'"
 msgstr ""
 
 msgid "'Port Mappings'"
 msgstr ""
 
 msgid "'Privileged Mode'"
-msgstr ""
-
-msgid "'Privileged'"
 msgstr ""
 
 msgid "'Publish ports, one per line (host:container format)'"
@@ -1133,7 +1068,7 @@ msgstr ""
 msgid "'Removing %d %s...'"
 msgstr ""
 
-msgid "'Removing %s'"
+msgid "'Removing %s...'"
 msgstr ""
 
 msgid "'Removing unused resources, please wait...'"
@@ -1178,7 +1113,7 @@ msgstr ""
 msgid "'Restarting %d %s...'"
 msgstr ""
 
-msgid "'Restarting %s'"
+msgid "'Restarting %s...'"
 msgstr ""
 
 msgid "'Restrict external access to the network'"
@@ -1229,13 +1164,7 @@ msgstr ""
 msgid "'Secret Name'"
 msgstr ""
 
-msgid "'Secret'"
-msgstr ""
-
 msgid "'Secrets can only be used by containers, not displayed'"
-msgstr ""
-
-msgid "'Secrets'"
 msgstr ""
 
 msgid "'Security Notice:'"
@@ -1313,9 +1242,6 @@ msgstr ""
 msgid "'Starting %s...'"
 msgstr ""
 
-msgid "'Starting %s'"
-msgstr ""
-
 msgid "'Starting image pull...'"
 msgstr ""
 
@@ -1343,7 +1269,7 @@ msgstr ""
 msgid "'Stopping %d %s...'"
 msgstr ""
 
-msgid "'Stopping %s'"
+msgid "'Stopping %s...'"
 msgstr ""
 
 msgid "'Stopping selected %s...'"
@@ -1502,12 +1428,6 @@ msgstr ""
 msgid "'Volume Name'"
 msgstr ""
 
-msgid "'Volume'"
-msgstr ""
-
-msgid "'Volumes'"
-msgstr ""
-
 msgid "'Warning:'"
 msgstr ""
 
@@ -1517,3 +1437,27 @@ msgstr ""
 msgid "'Yes'"
 msgstr ""
 
+msgid "'Pod'"
+msgid_plural "'Pods'"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "'Volume'"
+msgid_plural "'Volumes'"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "'Network'"
+msgid_plural "'Networks'"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "'Secret'"
+msgid_plural "'Secrets'"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "'Image'"
+msgid_plural "'Images'"
+msgstr[0] ""
+msgstr[1] ""

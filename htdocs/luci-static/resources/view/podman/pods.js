@@ -63,10 +63,11 @@ return view.extend({
 
 		let o;
 
-		o = section.option(podmanForm.field.SelectDummyValue, 'Id', new ui.Checkbox(
-			0, {
-				hiddenname: 'all'
-			}).render());
+		o = section.option(
+			podmanForm.field.SelectDummyValue,
+			'Id',
+			new ui.Checkbox(0, { hiddenname: 'all' }).render()
+		);
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'Name', _('Name'));
 		o.click = (pod) => this.handleInspect(pod.Name);
@@ -112,8 +113,7 @@ return view.extend({
 		};
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Created', _('Created'));
-		o.cfgformatter = (cfg) => format.date(Date.parse(cfg) / 1000);
-
+		o.cfgformatter = format.date;
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
@@ -191,7 +191,7 @@ return view.extend({
 	 * Show create pod form
 	 */
 	handleCreatePod: function () {
-		const form = new podmanForm.Pod();
+		const form = new podmanForm.Pod.init();
 		form.submit = () => this.handleRefresh();
 		form.render();
 	},

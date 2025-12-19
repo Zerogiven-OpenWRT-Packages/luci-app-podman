@@ -214,7 +214,7 @@ return view.extend({
 		const container = document.getElementById('tab-resources-content');
 		if (!container) return;
 
-		const editor = new podmanForm.ResourceEditor();
+		const editor = new podmanForm.Resource.init();
 		editor.render(this.containerId, this.containerData).then((renderedForm) => {
 			const wrapper = E('div', {
 				'class': 'cbi-section'

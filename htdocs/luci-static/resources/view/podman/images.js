@@ -128,7 +128,7 @@ return view.extend({
 			}]
 		});
 
-		const formImage = new podmanForm.Image();
+		const formImage = new podmanForm.Image.init();
 		formImage.submit = () => this.handleRefresh();
 
 		return Promise.all([

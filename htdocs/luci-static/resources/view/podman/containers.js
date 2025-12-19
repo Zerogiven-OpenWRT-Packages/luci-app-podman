@@ -185,6 +185,7 @@ return view.extend({
 
 			viewContainer.appendChild(toolbar.container);
 			viewContainer.appendChild(mapRendered);
+
 			this.listHelper.setupSelectAll(mapRendered);
 
 			// Fetch detailed container data asynchronously (non-blocking)
@@ -341,7 +342,7 @@ return view.extend({
 	 * Show create container form
 	 */
 	handleCreateContainer: function () {
-		const form = new podmanForm.Container();
+		const form = new podmanForm.Container.init();
 		form.submit = () => this.refreshTable(false);
 		form.render();
 	},
@@ -383,13 +384,37 @@ return view.extend({
 	},
 
 	/**
-	 * Remove selected containers
+	 * Remove selected containers with init script cleanup
 	 */
 	handleRemove: function () {
 		const selected = this.getSelectedContainerIds();
 
-		ContainerUtil.removeContainers(selected).then(() => {
-			this.refreshTable(true);
+		this.listHelper.bulkDelete({
+			selected: selected,
+			formatItemName: (id) => utils.truncate(id, 12),
+			preDeleteCheck: (ids) => {
+				const checkPromises = ids.map((id) =>
+					podmanRPC.container.inspect(id)
+						.then((data) => ({
+							id: id,
+							name: data.Name ? data.Name.replace(/^\//, '') : null
+						}))
+						.catch(() => ({
+							id: id,
+							name: null
+						}))
+				);
+				return Promise.all(checkPromises);
+			},
+			deletePromiseFn: (id) => podmanRPC.container.remove(id, true, true),
+			afterDeleteEach: (id, checkResult) => {
+				if (checkResult && checkResult.name) {
+					return podmanRPC.initScript.remove(checkResult.name)
+						.catch(() => Promise.resolve()); // Ignore errors if script doesn't exist
+				}
+				return Promise.resolve();
+			},
+			onSuccess: () => this.refreshTable(true)
 		});
 	},
 
@@ -437,7 +462,8 @@ return view.extend({
 			ui.hideModal();
 			if (result && result.success) {
 				podmanUI.successTimeNotification(
-					_('Init script created and enabled for %s').format(containerName));
+					_('Init script created and enabled for %s').format(containerName)
+				);
 				this.refreshTable(false);
 			} else {
 				throw new Error(result.error || _('Failed to enable init script'));
@@ -445,7 +471,8 @@ return view.extend({
 		}).catch((err) => {
 			ui.hideModal();
 			podmanUI.errorNotification(
-				_('Failed to setup auto-start: %s').format(err.message));
+				_('Failed to setup auto-start: %s').format(err.message)
+			);
 		});
 	}
 });

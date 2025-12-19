@@ -66,16 +66,21 @@ return view.extend({
 
 		this.map = new form.JSONMap(this.listHelper.data, _('Volumes'));
 
-		const section = this.map.section(form.TableSection, 'volumes', '', _(
-			'Manage Podman %s').format(_('Volumes').toLowerCase()));
+		const section = this.map.section(
+			form.TableSection,
+			'volumes',
+			'',
+			_('Manage Podman %s').format(_('Volumes').toLowerCase())
+		);
 		section.anonymous = true;
 
 		let o;
 
-		o = section.option(podmanForm.field.SelectDummyValue, 'Name', new ui.Checkbox(
-			0, {
-				hiddenname: 'all'
-			}).render());
+		o = section.option(
+			podmanForm.field.SelectDummyValue,
+			'Name',
+			new ui.Checkbox(0, { hiddenname: 'all' }).render()
+		);
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
 		o.click = (volume) => this.handleInspect(volume.Name);
@@ -91,7 +96,7 @@ return view.extend({
 		o.cfgformatter = (cfg) => utils.truncate(cfg, 30);
 
 		o = section.option(podmanForm.field.DataDummyValue, 'CreatedAt', _('Created'));
-		o.cfgformatter = (cfg) => format.date(Date.parse(cfg) / 1000);
+		o.cfgformatter = format.date;
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
@@ -149,7 +154,7 @@ return view.extend({
 	 * Show create volume form
 	 */
 	handleCreateVolume: function () {
-		const form = new podmanForm.Volume();
+		const form = new podmanForm.Volume.init();
 		form.submit = () => this.handleRefresh();
 		form.render();
 	},
