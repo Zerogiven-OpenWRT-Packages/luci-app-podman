@@ -5,6 +5,7 @@
 'require ui';
 
 'require podman.ui as podmanUI';
+'require podman.rpc as podmanRPC';
 
 return baseclass.extend({
 	init: baseclass.extend({

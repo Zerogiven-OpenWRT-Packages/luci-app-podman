@@ -2,6 +2,7 @@
 
 'require view';
 'require form';
+'require network';
 'require ui';
 
 'require podman.utils as utils';
@@ -48,6 +49,10 @@ return view.extend({
 	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
+		network.getDevices().then((devices) => {
+			console.log('devices', devices);
+		});
+		// console.log(network.getDevices().getPorts());
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
