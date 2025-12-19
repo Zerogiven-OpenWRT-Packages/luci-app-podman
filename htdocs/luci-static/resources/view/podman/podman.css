@@ -76,3 +76,14 @@
     display: none !important;
   }
 }
+
+@media screen and (max-device-width: 600px) {
+    [data-page="admin-podman-containers"] td[data-name="State"],
+    [data-page="admin-podman-containers"] td[data-name="Health"] {
+        flex-basis: 50% !important;
+    }
+
+    .cbi-section-table td[data-name="Action"] {
+        flex-basis: 100% !important;
+    }
+}
