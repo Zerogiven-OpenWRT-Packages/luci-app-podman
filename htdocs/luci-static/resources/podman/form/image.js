@@ -2,6 +2,7 @@
 
 'require baseclass';
 'require form';
+'require poll';
 'require ui';
 
 'require podman.ui as podmanUI';
@@ -73,11 +74,11 @@ return baseclass.extend({
 
 				ui.showModal(_('Pulling Image'), [
 					E('p', {
-						'class': 'spinning'
+						'class': 'spinning image-pull'
 					}, _('Starting image pull...')),
 					E('pre', {
 						'id': 'pull-output',
-						'style': 'max-height: 300px; overflow-y: auto; overflow-x: auto; background: #000; color: #0f0; padding: 10px; min-height: 100px; white-space: pre;'
+						'class': 'terminal-area',
 					}, '')
 				]);
 
@@ -208,21 +209,24 @@ return baseclass.extend({
 							const closeBtn = modalContent.querySelector('.cbi-button');
 							if (!closeBtn) {
 								const btnContainer = E(
-									'div', {
-									'class': 'right',
-									'style': 'margin-top: 10px;'
-								},
+									'div', { 'class': 'right modal-buttons' },
 									[
-										new podmanUI.Button(_('Close'), () => {
-											ui
-												.hideModal();
-										}, 'positive').render()
-									]);
+										new podmanUI.Button(
+											_('Close'),
+											() => {
+												ui.hideModal();
+											},
+											'positive'
+										).render()
+									]
+								);
 								modalContent.appendChild(btnContainer);
 							}
 						}
 
 						podmanUI.successTimeNotification(_('Image pulled successfully'));
+
+						document.querySelector('.spinning.image-pull').remove();
 
 						this.map.reset();
 						this.submit();
