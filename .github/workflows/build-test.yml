@@ -26,7 +26,7 @@ jobs:
           - openwrt_version: '24.10'
             arch: 'x86_64-24.10.3'
       fail-fast: false
-    
+
     steps:
       - name: Check if version should be built
         run: |
@@ -35,7 +35,7 @@ jobs:
             echo "Skipping build: OpenWrt version mismatch (requested: ${{ github.event.inputs.openwrt_version }}, matrix: ${{ matrix.openwrt_version }})"
             exit 0
           fi
-          
+
           echo "Proceeding with build for OpenWrt ${{ matrix.openwrt_version }}"
 
       - name: Checkout repository
@@ -47,7 +47,7 @@ jobs:
       - name: Create artifacts directory structure
         run: |
           mkdir -p ${{ github.workspace }}/artifacts
-          
+
       - name: Build OpenWrt ${{ matrix.openwrt_version }} package
         uses: openwrt/gh-action-sdk@v9
         env:
@@ -71,20 +71,6 @@ jobs:
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: luci-app-podman-openwrt-${{ matrix.openwrt_version }}
-          path: ${{ steps.find-ipk.outputs.ipk_path }}
+          name: ${{ steps.find-ipk.outputs.ipk_name }}
+          path: ${{ steps.find-ipk.outputs.ipk_path }}/${{ steps.find-ipk.outputs.ipk_name }}
           retention-days: 30
-
-      - name: Write download link to summary
-        run: |
-          echo "## 📦 Build Artifact" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Package:** \`${{ steps.find-ipk.outputs.ipk_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**OpenWrt Version:** ${{ matrix.openwrt_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Download" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "1. Go to the [Actions run page](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-          echo "2. Scroll down to **Artifacts**" >> $GITHUB_STEP_SUMMARY
-          echo "3. Download \`luci-app-podman-openwrt-${{ matrix.openwrt_version }}\`" >> $GITHUB_STEP_SUMMARY
