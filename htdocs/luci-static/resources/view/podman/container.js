@@ -5,6 +5,7 @@
 'require ui';
 'require form';
 'require session';
+
 'require podman.container-util as ContainerUtil';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
@@ -258,7 +259,7 @@ return view.extend({
 		const content = document.getElementById('tab-health-content');
 		if (!content) return;
 
-		containerHealth.render(content, this.containerData);
+		containerHealth.render(content, this.containerId, this.containerData);
 	},
 
 	/**

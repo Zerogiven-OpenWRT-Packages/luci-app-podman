@@ -4,6 +4,7 @@
 'require ui';
 'require poll';
 
+'require podman.container-util as ContainerUtil';
 'require podman.ui as podmanUI';
 'require podman.format as format';
 'require podman.rpc as podmanRPC';
@@ -11,7 +12,9 @@
 'require podman.utils as utils';
 
 return baseclass.extend({
-	render: function (content, containerData) {
+	render: function (content, containerId, containerData) {
+		this.content = content;
+		this.containerId = containerId;
 		this.containerData = containerData;
 
 		// Clear existing content
@@ -199,7 +202,7 @@ return baseclass.extend({
 			// Re-fetch container data and update health tab
 			podmanRPC.container.inspect(this.containerId).then((containerData) => {
 				this.containerData = containerData;
-				this.renderHealthTab();
+				this.render(this.content, this.containerId, this.containerData);
 			}).catch((err) => {
 				console.error('Failed to refresh container data:', err);
 			});

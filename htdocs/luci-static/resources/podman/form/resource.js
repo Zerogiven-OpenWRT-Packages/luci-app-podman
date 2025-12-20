@@ -5,6 +5,8 @@
 'require ui';
 
 'require podman.ui as podmanUI';
+'require podman.rpc as podmanRPC';
+'require podman.format as format';
 
 return baseclass.extend({
 	init: baseclass.extend({
@@ -58,16 +60,17 @@ return baseclass.extend({
 			field.description = _('CPU shares (relative weight), default is 1024. 0 = use default.');
 
 			field = section.option(form.Value, 'memory', _('Memory Limit'));
-			field.placeholder = '512m, 1g, 2g';
+			field.placeholder = '512m, 1g, -1';
 			field.optional = true;
 			field.validate = (_section_id, value) => {
 				if (!value) return true;
+				if (value === '-1' || value === '0') return true;
 				if (!/^\d+(?:\.\d+)?\s*[kmg]?b?$/i.test(value)) {
-					return _('Invalid format.') + ' ' + _('Use: 512m, 1g');
+					return _('Invalid format.') + ' ' + _('Use: 512m, 1g, or -1 for unlimited');
 				}
 				return true;
 			};
-			field.description = _('Memory limit (e.g., 512m, 1g)') + ' ' + _('Leave empty for unlimited.');
+			field.description = _('Memory limit (e.g., 512m, 1g). Use -1 or 0 to remove limit.');
 
 			field = section.option(form.Value, 'memorySwap', _('Memory + Swap Limit'));
 			field.placeholder = '1g, 2g, -1';
@@ -110,12 +113,21 @@ return baseclass.extend({
 			this.map.save().then(() => {
 				const resources = this.map.data.data.resources;
 
-				const memory = format.parseMemory(resources.memory, true);
+				// Parse memory: -1 or 0 means unlimited, empty means no change
+				let memory;
+				if (resources.memory === '-1' || resources.memory === '0') {
+					memory = -1;  // Use -1 for unlimited (OCI spec)
+				} else if (!resources.memory) {
+					memory = null;  // Empty = no change
+				} else {
+					memory = format.parseMemory(resources.memory, true);
+				}
+
 				const memorySwap = resources.memorySwap === '-1' ? -1 : format.parseMemory(
 					resources.memorySwap, true);
 
-				if (memory === null && resources.memory) {
-					podmanUI.errorNotification(_('Invalid format.') + ' ' + _('Use: 512m, 1g'));
+				if (memory === null && resources.memory && resources.memory !== '-1' && resources.memory !== '0') {
+					podmanUI.errorNotification(_('Invalid format.') + ' ' + _('Use: 512m, 1g, or -1 for unlimited'));
 					return;
 				}
 				if (memorySwap === null && resources.memorySwap && resources.memorySwap !==
@@ -128,7 +140,6 @@ return baseclass.extend({
 
 				updateData.cpu = {};
 				if (resources.cpuLimit) {
-					// Podman uses 100000 microseconds (100ms) as the period
 					const period = 100000;
 					updateData.cpu.quota = Math.floor(parseFloat(resources.cpuLimit) *
 						period);
@@ -139,12 +150,20 @@ return baseclass.extend({
 				}
 				updateData.cpu.shares = parseInt(resources.cpuShares) || 0;
 
-				updateData.memory = {};
-				updateData.memory.limit = memory > 0 ? memory : 0;
-				if (memorySwap !== 0) {
-					updateData.memory.swap = memorySwap;
-				} else {
-					updateData.memory.swap = 0;
+				// Memory limits
+				// -1 means unlimited (per OCI runtime spec)
+				// null (empty input) means don't change the limit
+				if (memory !== null) {
+					updateData.memory = {};
+					updateData.memory.limit = memory;
+					// For unlimited memory, also set swap to unlimited
+					if (memory === -1) {
+						updateData.memory.swap = -1;
+					} else if (memorySwap > 0) {
+						updateData.memory.swap = memorySwap;
+					} else if (memorySwap === -1) {
+						updateData.memory.swap = -1;
+					}
 				}
 
 				updateData.blockIO = {
@@ -153,7 +172,6 @@ return baseclass.extend({
 
 				podmanUI.showSpinningModal(_('Updating Resources'), _(
 					'Updating container resources...'));
-
 				podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then(
 					(result) => {
 						ui.hideModal();
@@ -161,9 +179,7 @@ return baseclass.extend({
 							podmanUI.errorNotification(_('Failed to update resources: %s')
 								.format(result.error));
 						} else {
-							podmanUI.successTimeNotification(_(
-								'Resources updated successfully'));
-							session.setLocalData('podman_active_tab', 'resources');
+							podmanUI.successTimeNotification(_('Resources updated successfully'));
 							window.location.reload();
 						}
 					}).catch((err) => {
