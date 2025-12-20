@@ -62,7 +62,7 @@ jobs:
           output_directory: ${{ github.workspace }}/release-assets
 
       - name: Upload package artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk
           path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk

@@ -1,0 +1,53 @@
+name: Reusable Release
+
+on:
+  workflow_call:
+    inputs:
+      artifact_pattern:
+        required: true
+        type: string
+        description: "Pattern zum Download der Artefakte (z.B. reaction-*)"
+      tag_name:
+        required: false
+        type: string
+        description: "Optionaler Tag-Name (Fallback auf GITHUB_REF)"
+    secrets:
+      RELEASE_TOKEN:
+        required: true
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all package artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: ${{ github.workspace }}/release-assets/
+          pattern: ${{ inputs.artifact_pattern }}
+          merge-multiple: true
+
+      - name: Create GitHub Release & upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          files: |
+            ${{ github.workspace }}/release-assets/*.ipk
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Release Summary
+        run: |
+          TAG="${{ inputs.tag_name || github.ref_name }}"
+          CURRENT_VERSION="${TAG#v}"
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Release Created**: v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release URL**: https://github.com/${{ github.repository }}/releases/tag/v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
