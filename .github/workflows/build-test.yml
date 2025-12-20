@@ -72,5 +72,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.find-ipk.outputs.ipk_name }}
-          path: ${{ steps.find-ipk.outputs.ipk_path }}/${{ steps.find-ipk.outputs.ipk_name }}
+          path: ${{ steps.find-ipk.outputs.ipk_path }}
           retention-days: 30
