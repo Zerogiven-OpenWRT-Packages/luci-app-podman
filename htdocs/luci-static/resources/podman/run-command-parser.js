@@ -1,6 +1,6 @@
 'use strict';
 
-'require baseclass'
+'require baseclass';
 
 'require podman.format as format';
 
