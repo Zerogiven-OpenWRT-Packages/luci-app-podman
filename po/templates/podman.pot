@@ -1,1519 +1,1418 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-msgid "' (%d consecutive failures)'"
-msgstr ""
-
-msgid "'-- Select %s --'"
-msgstr ""
-
-msgid "'/host/path:/container/path\nvolume-name:/data'"
-msgstr ""
-
-msgid "'%d consecutive failures'"
-msgstr ""
-
-msgid "'%s auto-start for %s'"
-msgstr ""
-
-msgid "'%s created successfully'"
-msgstr ""
-
-msgid "'%s Information'"
-msgstr ""
-
-msgid "'%s started successfully'"
-msgstr ""
-
-msgid "'%s stopped successfully'"
-msgstr ""
-
-msgid "'1-253 characters: letters, numbers, underscore (_), hyphen (-) only'"
-msgstr ""
-
-msgid "'Access via host port mapping'"
-msgstr ""
-
-msgid "'Add to shared "podman" firewall zone'"
-msgstr ""
-
-msgid "'All volumes exported successfully'"
-msgstr ""
-
-msgid "'Allocate container IP from this range'"
-msgstr ""
-
-msgid "'Allocate TTY (-t)'"
-msgstr ""
-
-msgid "'Always'"
-msgstr ""
-
-msgid "'API Version'"
-msgstr ""
-
-msgid "'Are you sure you want to delete %d %s?\n\n%s'"
-msgstr ""
-
-msgid "'Are you sure you want to delete %s %s?'"
-msgstr ""
-
-msgid "'Auto Remove (--rm)'"
-msgstr ""
-
-msgid "'Auto-start'"
-msgstr ""
-
-msgid "'Auto-Update Available'"
-msgstr ""
-
-msgid "'Auto-Update Check'"
-msgstr ""
-
-msgid "'Auto-Update Complete'"
-msgstr ""
-
-msgid "'Auto-Update Containers'"
-msgstr ""
-
-msgid "'Auto-update failed: %s'"
-msgstr ""
-
-msgid "'Auto-Update'"
-msgstr ""
-
-msgid "'Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt.'"
-msgstr ""
-
-msgid "'Automatically start the container after it is created'"
-msgstr ""
-
-msgid "'Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry'"
-msgstr ""
-
-msgid "'Available'"
-msgstr ""
-
-msgid "'Back to Containers'"
-msgstr ""
-
-msgid "'Back to Pods'"
-msgstr ""
-
-msgid "'Basic Information'"
-msgstr ""
-
-msgid "'Block I/O'"
-msgstr ""
-
-msgid "'Block IO weight (relative weight), 10-1000. 0 = use default.'"
-msgstr ""
-
-msgid "'Block IO Weight'"
-msgstr ""
-
-msgid "'Bridge "%s" is already used by interface "%s"'"
-msgstr ""
-
-msgid "'Bridge device (%s)'"
-msgstr ""
-
-msgid "'Bridge Interface Name'"
-msgstr ""
-
-msgid "'Bridge name is required'"
-msgstr ""
-
-msgid "'Bridge: %s'"
-msgstr ""
-
-msgid "'Cancel'"
-msgstr ""
-
-msgid "'Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured'"
-msgstr ""
-
-msgid "'Checking for container updates...'"
-msgstr ""
-
-msgid "'Clean Up Now'"
-msgstr ""
-
-msgid "'Cleaning Up'"
-msgstr ""
-
-msgid "'Cleanup / Prune'"
-msgstr ""
-
-msgid "'Cleanup Complete'"
-msgstr ""
-
-msgid "'Cleanup failed: %s'"
-msgstr ""
-
-msgid "'Cleanup successful!'"
-msgstr ""
-
-msgid "'Cleanup Unused Resources'"
-msgstr ""
-
-msgid "'Clear'"
-msgstr ""
-
-msgid "'Click to load detailed disk usage information for containers, images, and volumes. This may take several seconds with many resources.'"
-msgstr ""
-
-msgid "'Click to reveal/hide value'"
-msgstr ""
-
-msgid "'Close'"
-msgstr ""
-
-msgid "'CMD runs command directly, CMD-SHELL runs command in shell'"
-msgstr ""
-
-msgid "'Command to run (space-separated)'"
-msgstr ""
-
-msgid "'Command to run for health check. Exit code 0 = healthy, 1 = unhealthy'"
-msgstr ""
-
-msgid "'Command'"
-msgstr ""
-
-msgid "'Configuration'"
-msgstr ""
-
-msgid "'Configure health check to monitor container health status'"
-msgstr ""
-
-msgid "'Configure resource limits for this container. Changes will be applied immediately.'"
-msgstr ""
-
-msgid "'Connect to Network'"
-msgstr ""
-
-msgid "'Connect to'"
-msgstr ""
-
-msgid "'Connect'"
-msgstr ""
-
-msgid "'Connected to network successfully'"
-msgstr ""
-
-msgid "'Connecting container to network...'"
-msgstr ""
-
-msgid "'Connecting to Network'"
-msgstr ""
-
-msgid "'Console'"
-msgstr ""
-
-msgid "'Container created and auto-start configured'"
-msgstr ""
-
-msgid "'Container created and started successfully'"
-msgstr ""
-
-msgid "'Container created but failed to start: %s'"
-msgstr ""
-
-msgid "'Container created, started, and auto-start configured'"
-msgstr ""
-
-msgid "'Container image to use'"
-msgstr ""
-
-msgid "'Container must be running to view processes'"
-msgstr ""
-
-msgid "'Container Name'"
-msgstr ""
-
-msgid "'Container not found'"
-msgstr ""
-
-msgid "'Container not running'"
-msgstr ""
-
-msgid "'Container renamed successfully'"
-msgstr ""
-
-msgid "'Container: %s'"
-msgstr ""
-
-msgid "'Container'"
-msgid_plural "'Containers'"
+msgid "Container"
+msgid_plural "Containers"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "'Image'"
-msgid_plural "'Images'"
+msgid "Image"
+msgid_plural "Images"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "'Count'"
+msgid "Network"
+msgid_plural "Networks"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Pod"
+msgid_plural "Pods"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Secret"
+msgid_plural "Secrets"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Volume"
+msgid_plural "Volumes"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "-- Select %s --"
+msgstr ""
+
+msgid "%d consecutive failures"
+msgstr ""
+
+msgid "%s auto-start for %s"
+msgstr ""
+
+msgid "%s created successfully"
+msgstr ""
+
+msgid "%s Information"
+msgstr ""
+
+msgid "%s started successfully"
+msgstr ""
+
+msgid "%s stopped successfully"
+msgstr ""
+
+msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
+msgstr ""
+
+msgid "Access via host port mapping"
+msgstr ""
+
+msgid "All volumes exported successfully"
+msgstr ""
+
+msgid "Allocate container IP from this range"
+msgstr ""
+
+msgid "Allocate TTY (-t)"
+msgstr ""
+
+msgid "Already configured:"
+msgstr ""
+
+msgid "Always"
+msgstr ""
+
+msgid "API Version"
+msgstr ""
+
+msgid "Are you sure you want to delete %d %s?\n\n%s"
+msgstr ""
+
+msgid "Are you sure you want to delete %s?"
+msgstr ""
+
+msgid "Auto Remove (--rm)"
+msgstr ""
+
+msgid "Auto-start"
+msgstr ""
+
+msgid "Auto-Update"
 msgstr ""
 
-msgid "'CPU Limit'"
+msgid "Auto-Update Available"
 msgstr ""
 
-msgid "'CPU shares (relative weight), default is 1024. 0 = use default.'"
+msgid "Auto-Update Check"
 msgstr ""
 
-msgid "'CPU Shares Weight'"
+msgid "Auto-Update Complete"
 msgstr ""
 
-msgid "'CPU Usage'"
+msgid "Auto-Update Containers"
 msgstr ""
 
-msgid "'CPU'"
+msgid "Auto-update failed: %s"
 msgstr ""
 
-msgid "'Create %s'"
+msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
 msgstr ""
 
-msgid "'Create Container'"
+msgid "Automatically start the container after it is created"
 msgstr ""
 
-msgid "'Create Network'"
+msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
 msgstr ""
 
-msgid "'Create new zone (will be named: podman_<network-name>)'"
+msgid "Available"
 msgstr ""
 
-msgid "'Create Pod'"
+msgid "Back to Containers"
 msgstr ""
 
-msgid "'Create Secret'"
+msgid "Back to Pods"
 msgstr ""
 
-msgid "'Create Volume'"
+msgid "Basic Information"
 msgstr ""
 
-msgid "'Create'"
+msgid "Block I/O"
 msgstr ""
 
-msgid "'Created'"
+msgid "Block IO Weight"
 msgstr ""
 
-msgid "'Creating %s...'"
+msgid "Block IO weight (relative weight), 10-1000. 0 = use default."
 msgstr ""
 
-msgid "'Creating %s'"
+msgid "Bridge"
 msgstr ""
 
-msgid "'Creating auto-start configuration for %s'"
+msgid "Bridge "%s" is already used by interface "%s""
 msgstr ""
 
-msgid "'Creating container from image %s...'"
+msgid "Bridge device"
 msgstr ""
 
-msgid "'Creating OpenWrt integration for network "%s"...'"
+msgid "Bridge Interface Name"
 msgstr ""
 
-msgid "'Delete Selected'"
+msgid "Bridge name is required"
 msgstr ""
 
-msgid "'Deleting %d selected %s...'"
+msgid "Cancel"
 msgstr ""
 
-msgid "'Deleting %s'"
+msgid "Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured"
 msgstr ""
 
-msgid "'Destination'"
+msgid "Checking for container updates..."
 msgstr ""
 
-msgid "'Details:'"
+msgid "Clean Up Now"
 msgstr ""
 
-msgid "'Direct access to container on OpenWrt-integrated network'"
+msgid "Cleanup / Prune"
 msgstr ""
 
-msgid "'Disable'"
+msgid "Cleanup Complete"
 msgstr ""
 
-msgid "'Disabled'"
+msgid "Cleanup failed: %s"
 msgstr ""
 
-msgid "'Disabling'"
+msgid "Cleanup successful!"
 msgstr ""
 
-msgid "'Disconnect from network %s?'"
+msgid "Cleanup Unused Resources"
 msgstr ""
 
-msgid "'Disconnect'"
+msgid "Clear"
 msgstr ""
 
-msgid "'Disconnected from network successfully'"
+msgid "Click to load detailed disk usage information for containers, images, and volumes. This may take several seconds with many resources."
 msgstr ""
 
-msgid "'Disconnecting container from network...'"
+msgid "Click to reveal/hide value"
 msgstr ""
 
-msgid "'Disconnecting from Network'"
+msgid "Close"
 msgstr ""
 
-msgid "'Disk Usage'"
+msgid "CMD runs command directly, CMD-SHELL runs command in shell"
 msgstr ""
 
-msgid "'DNS access rule (if first network)'"
+msgid "Command"
 msgstr ""
 
-msgid "'Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)'"
+msgid "Command to run (space-separated)"
 msgstr ""
 
-msgid "'Driver'"
+msgid "Command to run for health check. Exit code 0 = healthy, 1 = unhealthy"
 msgstr ""
 
-msgid "'Enable Health Check'"
+msgid "Configuration"
 msgstr ""
 
-msgid "'Enable IPv6 networking'"
+msgid "Configure health check to monitor container health status"
 msgstr ""
 
-msgid "'Enable IPv6'"
+msgid "Configure resource limits for this container. Changes will be applied immediately."
 msgstr ""
 
-msgid "'Enable'"
+msgid "Connect"
 msgstr ""
 
-msgid "'Enabled'"
+msgid "Connect to"
 msgstr ""
 
-msgid "'Enabling'"
+msgid "Connect to Network"
 msgstr ""
 
-msgid "'Ended'"
+msgid "Connected to network successfully"
 msgstr ""
 
-msgid "'Enter secret data (password, token, key, etc.)'"
+msgid "Connecting container to network..."
 msgstr ""
 
-msgid "'Enter volume name'"
+msgid "Connecting to Network"
 msgstr ""
 
-msgid "'Entrypoint'"
+msgid "Console"
 msgstr ""
 
-msgid "'Environment Variables'"
+msgid "Container created and auto-start configured"
 msgstr ""
 
-msgid "'Error loading details: %s'"
+msgid "Container created and started successfully"
 msgstr ""
 
-msgid "'Error polling log stream: %s'"
+msgid "Container created but failed to start: %s"
 msgstr ""
 
-msgid "'Error'"
+msgid "Container created, started, and auto-start configured"
 msgstr ""
 
-msgid "'Export selected volumes'"
+msgid "Container image to use"
 msgstr ""
 
-msgid "'Export'"
+msgid "Container must be running to view processes"
 msgstr ""
 
-msgid "'Exporting selected volumes...'"
+msgid "Container Name"
 msgstr ""
 
-msgid "'Exporting Volumes'"
+msgid "Container not running"
 msgstr ""
 
-msgid "'Exposed Ports'"
+msgid "Container renamed successfully"
 msgstr ""
 
-msgid "'Failed to check for updates: %s'"
+msgid "Count"
 msgstr ""
 
-msgid "'Failed to connect to network: %s'"
+msgid "CPU"
 msgstr ""
 
-msgid "'Failed to create %s: %s'"
+msgid "CPU Limit"
 msgstr ""
 
-msgid "'Failed to decode logs'"
+msgid "CPU shares (relative weight), default is 1024. 0 = use default."
 msgstr ""
 
-msgid "'Failed to delete %d %s'"
+msgid "CPU Shares Weight"
 msgstr ""
 
-msgid "'Failed to delete networks: %s'"
+msgid "CPU Usage"
 msgstr ""
 
-msgid "'Failed to delete some %s: %s'"
+msgid "Create %s"
 msgstr ""
 
-msgid "'Failed to disconnect from network: %s'"
+msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr ""
 
-msgid "'Failed to enable init script'"
+msgid "Created"
 msgstr ""
 
-msgid "'Failed to export volume %s: %s'"
+msgid "Creating %s"
 msgstr ""
 
-msgid "'Failed to generate init script'"
+msgid "Creating %s..."
 msgstr ""
 
-msgid "'Failed to import volume: %s'"
+msgid "Creating auto-start configuration for %s"
 msgstr ""
 
-msgid "'Failed to inspect: %s'"
+msgid "Creating container from image %s..."
 msgstr ""
 
-msgid "'Failed to load container data'"
+msgid "Delete Selected"
 msgstr ""
 
-msgid "'Failed to load data: %s'"
+msgid "Deleting %d selected %s..."
 msgstr ""
 
-msgid "'Failed to load disk usage: %s'"
+msgid "Deleting %s"
 msgstr ""
 
-msgid "'Failed to load init script: %s'"
+msgid "Destination"
 msgstr ""
 
-msgid "'Failed to load init script'"
+msgid "Direct access to container on OpenWrt-integrated network"
 msgstr ""
 
-msgid "'Failed to load logs: %s'"
+msgid "Disable"
 msgstr ""
 
-msgid "'Failed to load process list: %s'"
+msgid "Disabled"
 msgstr ""
 
-msgid "'Failed to load resources: %s'"
+msgid "Disabling"
 msgstr ""
 
-msgid "'Failed to parse command: %s'"
+msgid "Disconnect"
 msgstr ""
 
-msgid "'Failed to pull %d %s'"
+msgid "Disconnect from network %s?"
 msgstr ""
 
-msgid "'Failed to pull image: %s'"
+msgid "Disconnected from network successfully"
 msgstr ""
 
-msgid "'Failed to pull image'"
+msgid "Disconnecting container from network..."
 msgstr ""
 
-msgid "'Failed to pull some images: %s'"
+msgid "Disconnecting from Network"
 msgstr ""
 
-msgid "'Failed to read file'"
+msgid "Disk Usage"
 msgstr ""
 
-msgid "'Failed to refresh: %s'"
+msgid "dnsmasq exclusion"
 msgstr ""
 
-msgid "'Failed to remove %d %s'"
+msgid "Driver"
 msgstr ""
 
-msgid "'Failed to remove containers: %s'"
+msgid "Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)"
 msgstr ""
 
-msgid "'Failed to rename container: %s'"
+msgid "Driver: %s"
 msgstr ""
 
-msgid "'Failed to restart %d %s'"
+msgid "Enable"
 msgstr ""
 
-msgid "'Failed to restart containers: %s'"
+msgid "Enable Health Check"
 msgstr ""
 
-msgid "'Failed to run health checks on %d %s'"
+msgid "Enable IPv6"
 msgstr ""
 
-msgid "'Failed to run health checks: %s'"
+msgid "Enable IPv6 networking"
 msgstr ""
 
-msgid "'Failed to setup auto-start: %s'"
+msgid "Enabled"
 msgstr ""
 
-msgid "'Failed to setup OpenWrt integration: %s'"
+msgid "Enabling"
 msgstr ""
 
-msgid "'Failed to start %d %s'"
+msgid "Ended"
 msgstr ""
 
-msgid "'Failed to start containers: %s'"
+msgid "Enter secret data (password, token, key, etc.)"
 msgstr ""
 
-msgid "'Failed to start image pull'"
+msgid "Enter volume name"
 msgstr ""
 
-msgid "'Failed to start log stream: %s'"
+msgid "Entrypoint"
 msgstr ""
 
-msgid "'Failed to start some pods: %s'"
+msgid "Environment Variables"
 msgstr ""
 
-msgid "'Failed to stop %d %s'"
+msgid "Error"
 msgstr ""
 
-msgid "'Failed to stop containers: %s'"
+msgid "Error loading details: %s"
 msgstr ""
 
-msgid "'Failed to stop some pods: %s'"
+msgid "Error polling log stream: %s"
 msgstr ""
 
-msgid "'Failed to update init script'"
+msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr ""
 
-msgid "'Failed to update resources: %s'"
+msgid "Export"
 msgstr ""
 
-msgid "'Failed to update restart policy: %s'"
+msgid "Export selected volumes"
 msgstr ""
 
-msgid "'Failed to validate: %s'"
+msgid "Exporting selected volumes..."
 msgstr ""
 
-msgid "'Failed'"
+msgid "Exporting Volumes"
 msgstr ""
 
-msgid "'Failing Streak'"
+msgid "Exposed Ports"
 msgstr ""
 
-msgid "'Fetch a container image using Podman.'"
+msgid "Failed"
 msgstr ""
 
-msgid "'Fetching information...'"
+msgid "Failed to check for updates: %s"
 msgstr ""
 
-msgid "'Fetching script for %s'"
+msgid "Failed to connect to network: %s"
 msgstr ""
 
-msgid "'file'"
+msgid "Failed to create %s: %s"
 msgstr ""
 
-msgid "'Firewall Zone'"
+msgid "Failed to decode logs"
 msgstr ""
 
-msgid "'Full container inspect data in JSON format. This is the raw data returned from the Podman API.'"
+msgid "Failed to delete %d %s"
 msgstr ""
 
-msgid "'Gateway is required'"
+msgid "Failed to disconnect from network: %s"
 msgstr ""
 
-msgid "'Gateway must be a valid IP address'"
+msgid "Failed to enable init script"
 msgstr ""
 
-msgid "'Gateway: %s'"
+msgid "Failed to export volume %s: %s"
 msgstr ""
 
-msgid "'Gateway'"
+msgid "Failed to generate init script"
 msgstr ""
 
-msgid "'Generate'"
+msgid "Failed to import volume: %s"
 msgstr ""
 
-msgid "'Generating init script...'"
+msgid "Failed to inspect: %s"
 msgstr ""
 
-msgid "'Generating Init Script'"
+msgid "Failed to load data: %s"
 msgstr ""
 
-msgid "'Grace period before health checks count toward failures. Default: 0s'"
+msgid "Failed to load disk usage: %s"
 msgstr ""
 
-msgid "'Graph Root'"
+msgid "Failed to load init script"
 msgstr ""
 
-msgid "'Health Check Command'"
+msgid "Failed to load logs: %s"
 msgstr ""
 
-msgid "'Health check configuration is set at container creation and cannot be modified. To change it, you must recreate the container.'"
+msgid "Failed to load process list: %s"
 msgstr ""
 
-msgid "'Health Check Configuration'"
+msgid "Failed to load resources: %s"
 msgstr ""
 
-msgid "'Health Check Type'"
+msgid "Failed to parse command: %s"
 msgstr ""
 
-msgid "'Health checks completed successfully'"
+msgid "Failed to pull %d %s"
 msgstr ""
 
-msgid "'Health Status'"
+msgid "Failed to pull image"
 msgstr ""
 
-msgid "'Health'"
+msgid "Failed to pull image: %s"
 msgstr ""
 
-msgid "'Hostname to assign to the pod'"
+msgid "Failed to pull some images: %s"
 msgstr ""
 
-msgid "'Hostname'"
+msgid "Failed to read file"
 msgstr ""
 
-msgid "'Id'"
+msgid "Failed to refresh: %s"
 msgstr ""
 
-msgid "'Image ID'"
+msgid "Failed to remove %d %s"
 msgstr ""
 
-msgid "'Image pulled successfully'"
+msgid "Failed to rename container: %s"
 msgstr ""
 
-msgid "'Import from Compose File'"
+msgid "Failed to restart %d %s"
 msgstr ""
 
-msgid "'Import from Run Command'"
+msgid "Failed to run health checks on %d %s"
 msgstr ""
 
-msgid "'Import volume from archive: %s'"
+msgid "Failed to setup auto-start: %s"
 msgstr ""
 
-msgid "'Import Volume'"
+msgid "Failed to setup OpenWrt integration: %s"
 msgstr ""
 
-msgid "'Import'"
+msgid "Failed to start %d %s"
 msgstr ""
 
-msgid "'Importing volume...'"
+msgid "Failed to start image pull"
 msgstr ""
 
-msgid "'Importing Volume'"
+msgid "Failed to start log stream: %s"
 msgstr ""
 
-msgid "'Info'"
+msgid "Failed to start some pods: %s"
 msgstr ""
 
-msgid "'Information'"
+msgid "Failed to stop %d %s"
 msgstr ""
 
-msgid "'Infra ID'"
+msgid "Failed to stop some pods: %s"
 msgstr ""
 
-msgid "'Init script created and enabled for %s'"
+msgid "Failed to update init script"
 msgstr ""
 
-msgid "'Init script disabled for %s'"
+msgid "Failed to update resources: %s"
 msgstr ""
 
-msgid "'Init script disabled'"
+msgid "Failed to update restart policy: %s"
 msgstr ""
 
-msgid "'Init script enabled for %s'"
+msgid "Failed to validate: %s"
 msgstr ""
 
-msgid "'Init script enabled'"
+msgid "Failing Streak"
 msgstr ""
 
-msgid "'Init Script: %s'"
+msgid "Fetch a container image using Podman."
 msgstr ""
 
-msgid "'Init Script'"
+msgid "Fetching information..."
 msgstr ""
 
-msgid "'Inspect'"
+msgid "Fetching script"
 msgstr ""
 
-msgid "'Interactive (-i)'"
+msgid "Firewall Zone"
 msgstr ""
 
-msgid "'Interactive'"
+msgid "Gateway"
 msgstr ""
 
-msgid "'Internal Network'"
+msgid "Gateway is required"
 msgstr ""
 
-msgid "'Interval during start period (podman 4.8+). Default: 5s'"
+msgid "Gateway must be a valid IP address"
 msgstr ""
 
-msgid "'Interval'"
+msgid "Gateway: %s"
 msgstr ""
 
-msgid "'Invalid format. Use: 5s, 10s, 30s'"
+msgid "Generate"
 msgstr ""
 
-msgid "'Invalid format. Use: 5s, 30s, 1m, 1h'"
+msgid "Generating Init Script"
 msgstr ""
 
-msgid "'Invalid format.'"
+msgid "Grace period before health checks count toward failures. Default: 0s"
 msgstr ""
 
-msgid "'IP (optional)'"
+msgid "Graph Root"
 msgstr ""
 
-msgid "'IP Address'"
+msgid "Health"
 msgstr ""
 
-msgid "'IP Range (CIDR)'"
+msgid "Health Check Command"
 msgstr ""
 
-msgid "'IPv4 gateway address'"
+msgid "Health Check Configuration"
 msgstr ""
 
-msgid "'IPv4 Gateway'"
+msgid "Health check configuration is set at container creation and cannot be modified. To change it, you must recreate the container."
 msgstr ""
 
-msgid "'IPv4 Subnet (CIDR)'"
+msgid "Health Check Type"
 msgstr ""
 
-msgid "'IPv4 subnet in CIDR notation'"
+msgid "Health checks completed successfully"
 msgstr ""
 
-msgid "'key1=value1\nkey2=value2'"
+msgid "Health Status"
 msgstr ""
 
-msgid "'Labels in key=value format, one per line'"
+msgid "Hostname"
 msgstr ""
 
-msgid "'Labels'"
+msgid "Hostname to assign to the pod"
 msgstr ""
 
-msgid "'Last check: %s'"
+msgid "Id"
 msgstr ""
 
-msgid "'Leave empty for automatic IP assignment'"
+msgid "Image ID"
 msgstr ""
 
-msgid "'Leave empty for unlimited.'"
+msgid "Image pulled successfully"
 msgstr ""
 
-msgid "'Leave empty to auto-generate'"
+msgid "Import"
 msgstr ""
 
-msgid "'Lines: '"
+msgid "Import from Compose File"
 msgstr ""
 
-msgid "'Links'"
+msgid "Import from Run Command"
 msgstr ""
 
-msgid "'Live Stream'"
+msgid "Import Volume"
 msgstr ""
 
-msgid "'Load Disk Usage Statistics'"
+msgid "Import volume from archive: %s"
 msgstr ""
 
-msgid "'Loading %s Details'"
+msgid "Importing Volume"
 msgstr ""
 
-msgid "'Loading %s...'"
+msgid "Importing volume..."
 msgstr ""
 
-msgid "'Loading disk usage data...'"
+msgid "Info"
 msgstr ""
 
-msgid "'Loading health check data...'"
+msgid "Information"
 msgstr ""
 
-msgid "'Loading Init Script'"
+msgid "Infra ID"
 msgstr ""
 
-msgid "'Loading logs...'"
+msgid "Init Script"
 msgstr ""
 
-msgid "'Loading process list...'"
+msgid "Init script created and enabled for %s"
 msgstr ""
 
-msgid "'Loading stats...'"
+msgid "Init script disabled for %s"
 msgstr ""
 
-msgid "'Loading...'"
+msgid "Init script enabled for %s"
 msgstr ""
 
-msgid "'local'"
+msgid "Inspect"
 msgstr ""
 
-msgid "'Log stream ended with error'"
+msgid "Interactive"
 msgstr ""
 
-msgid "'Logs'"
+msgid "Interactive (-i)"
 msgstr ""
 
-msgid "'Manage Podman %s'"
+msgid "Internal Network"
 msgstr ""
 
-msgid "'Maximum time for health check to complete. Default: 30s'"
+msgid "Interval"
 msgstr ""
 
-msgid "'Memory %'"
+msgid "Interval during start period (podman 4.8+). Default: 5s"
 msgstr ""
 
-msgid "'Memory + Swap Limit'"
+msgid "Invalid format."
 msgstr ""
 
-msgid "'Memory limit (e.g., 512m, 1g)'"
+msgid "Invalid format. Use: 5s, 10s, 30s"
 msgstr ""
 
-msgid "'Memory Limit'"
+msgid "Invalid format. Use: 5s, 30s, 1m, 1h"
 msgstr ""
 
-msgid "'Memory Usage'"
+msgid "IP (optional)"
 msgstr ""
 
-msgid "'Memory'"
+msgid "IP Address"
 msgstr ""
 
-msgid "'Mode'"
+msgid "IP Range (CIDR)"
 msgstr ""
 
-msgid "'Mount Options'"
+msgid "IPv4 Gateway"
 msgstr ""
 
-msgid "'Mountpoint'"
+msgid "IPv4 gateway address"
 msgstr ""
 
-msgid "'Mounts'"
+msgid "IPv4 Subnet (CIDR)"
 msgstr ""
 
-msgid "'Must be 0 or between 10 and 1000'"
+msgid "IPv4 subnet in CIDR notation"
 msgstr ""
 
-msgid "'Must be between 0 and 262144'"
+msgid "Labels"
 msgstr ""
 
-msgid "'my-container (optional)'"
+msgid "Labels in key=value format, one per line"
 msgstr ""
 
-msgid "'my-network'"
+msgid "Last check: %s"
 msgstr ""
 
-msgid "'my-pod'"
+msgid "Leave empty for automatic IP assignment"
 msgstr ""
 
-msgid "'my-secret'"
+msgid "Leave empty for unlimited."
 msgstr ""
 
-msgid "'my-volume (optional)'"
+msgid "Leave empty to auto-generate"
 msgstr ""
 
-msgid "'N/A'"
+msgid "Lines: "
 msgstr ""
 
-msgid "'Name for the network'"
+msgid "Links"
 msgstr ""
 
-msgid "'Name for the pod'"
+msgid "Live Stream"
 msgstr ""
 
-msgid "'Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it.'"
+msgid "Load Disk Usage Statistics"
 msgstr ""
 
-msgid "'Name'"
+msgid "Loading %s Details"
 msgstr ""
 
-msgid "'Network and OpenWrt integration created successfully'"
+msgid "Loading %s..."
 msgstr ""
 
-msgid "'Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually.'"
+msgid "Loading disk usage data..."
 msgstr ""
 
-msgid "'Network driver'"
+msgid "Loading Init Script"
 msgstr ""
 
-msgid "'Network I/O'"
+msgid "Loading logs..."
 msgstr ""
 
-msgid "'Network interface "%s" already exists with proto "%s"'"
+msgid "Loading process list..."
 msgstr ""
 
-msgid "'Network interface with static IP'"
+msgid "Loading..."
 msgstr ""
 
-msgid "'Network Mode'"
+msgid "Log stream ended with error"
 msgstr ""
 
-msgid "'Network name is required'"
+msgid "Logs"
 msgstr ""
 
-msgid "'Network Name'"
+msgid "Manage Podman %s"
 msgstr ""
 
-msgid "'Network: %s'"
+msgid "Maximum time for health check to complete. Default: 30s"
 msgstr ""
 
-msgid "'Network'"
+msgid "Memory"
 msgstr ""
 
-msgid "'Networks deleted but %d OpenWrt integrations failed to remove'"
+msgid "Memory %"
 msgstr ""
 
-msgid "'Networks'"
+msgid "Memory + Swap Limit"
 msgstr ""
 
-msgid "'Never'"
+msgid "Memory Limit"
 msgstr ""
 
-msgid "'No %s selected'"
+msgid "Memory limit (e.g., 512m, 1g)"
 msgstr ""
 
-msgid "'No auto-start configured'"
+msgid "Memory Usage"
 msgstr ""
 
-msgid "'No container ID in URL'"
+msgid "Mode"
 msgstr ""
 
-msgid "'No containers are configured for auto-update or all containers are up to date.'"
+msgid "Mount Options"
 msgstr ""
 
-msgid "'No data received'"
+msgid "Mountpoint"
 msgstr ""
 
-msgid "'No failures'"
+msgid "Mounts"
 msgstr ""
 
-msgid "'No health check configured. To add a health check, you must recreate the container with health check parameters.'"
+msgid "Must be 0 or between 10 and 1000"
 msgstr ""
 
-msgid "'No I/O'"
+msgid "Must be between 0 and 262144"
 msgstr ""
 
-msgid "'No logs available'"
+msgid "N/A"
 msgstr ""
 
-msgid "'No process data available'"
+msgid "Name"
 msgstr ""
 
-msgid "'No running processes'"
+msgid "Name for the network"
 msgstr ""
 
-msgid "'No selected containers have health checks configured'"
+msgid "Name for the pod"
 msgstr ""
 
-msgid "'No unused resources found'"
+msgid "Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it."
 msgstr ""
 
-msgid "'No'"
+msgid "Network and OpenWrt integration created successfully"
 msgstr ""
 
-msgid "'Not available (no restart policy)'"
+msgid "Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually."
 msgstr ""
 
-msgid "'Not configured'"
+msgid "Network driver"
 msgstr ""
 
-msgid "'Note: %d %s have OpenWrt integration that will also be removed (bridge, firewall zone, and rules).'"
+msgid "Network I/O"
 msgstr ""
 
-msgid "'Number of consecutive failures before marking unhealthy. Default: 3'"
+msgid "Network interface"
 msgstr ""
 
-msgid "'Number of CPUs (e.g., 0.5, 1.0, 2.0)'"
+msgid "Network interface "%s" already exists with proto "%s""
 msgstr ""
 
-msgid "'OK'"
+msgid "Network Mode"
 msgstr ""
 
-msgid "'On Failure'"
+msgid "Network Name"
 msgstr ""
 
-msgid "'Once created, secret data cannot be viewed or retrieved'"
+msgid "Network name is required"
 msgstr ""
 
-msgid "'One per line, format: host:container'"
+msgid "Network: %s"
 msgstr ""
 
-msgid "'One per line, format: key=value'"
+msgid "Networks deleted but OpenWrt integration removal failed for: %s"
 msgstr ""
 
-msgid "'One per line, format: source:destination'"
+msgid "Networks deleted but OpenWrt integration removal failed for: %s (%s)"
 msgstr ""
 
-msgid "'OpenWrt integration for network "%s" created successfully'"
+msgid "Never"
 msgstr ""
 
-msgid "'OpenWrt integration incomplete. Click to setup. Missing: %s'"
+msgid "No"
 msgstr ""
 
-msgid "'OpenWrt integration requires subnet to be specified'"
+msgid "No %s selected"
 msgstr ""
 
-msgid "'Output'"
+msgid "No auto-start configured"
 msgstr ""
 
-msgid "'Overview'"
+msgid "No container ID in URL"
 msgstr ""
 
-msgid "'Paste a docker or podman run command below:'"
+msgid "No containers are configured for auto-update or all containers are up to date."
 msgstr ""
 
-msgid "'PIDs'"
+msgid "No data received"
 msgstr ""
 
-msgid "'Please enter a run command'"
+msgid "No failures"
 msgstr ""
 
-msgid "'Please enter an image name'"
+msgid "No health check configured."
 msgstr ""
 
-msgid "'Please select a network'"
+msgid "No I/O"
 msgstr ""
 
-msgid "'Pod Name'"
+msgid "No logs available"
 msgstr ""
 
-msgid "'pod-hostname'"
+msgid "No process data available"
 msgstr ""
 
-msgid "'Pod'"
+msgid "No running processes"
 msgstr ""
 
-msgid "'Podman Version'"
+msgid "No selected containers have health checks configured"
 msgstr ""
 
-msgid "'Pods'"
+msgid "No suitable interfaces found"
 msgstr ""
 
-msgid "'Port Mappings'"
+msgid "No suitable parent interfaces available on this system"
 msgstr ""
 
-msgid "'Privileged Mode'"
+msgid "No unused resources found"
 msgstr ""
 
-msgid "'Privileged'"
+msgid "Not available (no restart policy)"
 msgstr ""
 
-msgid "'Publish ports, one per line (host:container format)'"
+msgid "Not configured"
 msgstr ""
 
-msgid "'Pull Image'"
+msgid "Not found"
 msgstr ""
 
-msgid "'Pull latest version of %d %s?\n\n%s'"
+msgid "Note: Some %s have OpenWrt integration that will also be removed."
 msgstr ""
 
-msgid "'Pull Latest'"
+msgid "Number of consecutive failures before marking unhealthy. Default: 3"
 msgstr ""
 
-msgid "'Pulling Image'"
+msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0)"
 msgstr ""
 
-msgid "'Pulling Images'"
+msgid "OK"
 msgstr ""
 
-msgid "'Pulling latest version of %d %s...'"
+msgid "On Failure"
 msgstr ""
 
-msgid "'Read: %s / Write: %s'"
+msgid "Once created, secret data cannot be viewed or retrieved"
 msgstr ""
 
-msgid "'Recent Checks (Last 10)'"
+msgid "One per line, format: host:container"
 msgstr ""
 
-msgid "'Reclaimable'"
+msgid "One per line, format: key=value"
 msgstr ""
 
-msgid "'Redirecting to containers list...'"
+msgid "One per line, format: source:destination"
 msgstr ""
 
-msgid "'Refresh'"
+msgid "OpenWrt integration for network "%s" created successfully"
 msgstr ""
 
-msgid "'Refreshing %s...'"
+msgid "OpenWrt integration incomplete. Click to setup. Missing: %s"
 msgstr ""
 
-msgid "'Registries'"
+msgid "OpenWrt integration requires subnet to be specified"
 msgstr ""
 
-msgid "'Registry'"
+msgid "Output"
 msgstr ""
 
-msgid "'Remove all unused images (not just dangling)'"
+msgid "Overview"
 msgstr ""
 
-msgid "'Remove unused volumes'"
+msgid "Parent Interface"
 msgstr ""
 
-msgid "'Remove'"
+msgid "Parent interface is required for macvlan/ipvlan networks"
 msgstr ""
 
-msgid "'Removed %d %s successfully'"
+msgid "Paste a docker or podman run command below:"
 msgstr ""
 
-msgid "'Removed: %s'"
+msgid "PIDs"
 msgstr ""
 
-msgid "'Removing %d %s...'"
+msgid "Please enter a run command"
 msgstr ""
 
-msgid "'Removing %s'"
+msgid "Please enter an image name"
 msgstr ""
 
-msgid "'Removing unused resources, please wait...'"
+msgid "Please select a network"
 msgstr ""
 
-msgid "'Renaming container...'"
+msgid "Pod Name"
 msgstr ""
 
-msgid "'Repository'"
+msgid "Podman Version"
 msgstr ""
 
-msgid "'Resource Limits'"
+msgid "Port Mappings"
 msgstr ""
 
-msgid "'Resource Usage'"
+msgid "Privileged"
 msgstr ""
 
-msgid "'Resources updated successfully'"
+msgid "Privileged Mode"
 msgstr ""
 
-msgid "'Resources'"
+msgid "Publish ports, one per line (host:container format)"
 msgstr ""
 
-msgid "'Restart policy set but no init script. Click to generate.'"
+msgid "Pull Image"
 msgstr ""
 
-msgid "'Restart policy set but no init script'"
+msgid "Pull Latest"
 msgstr ""
 
-msgid "'Restart policy updated successfully'"
+msgid "Pull latest version of %d %s?\n\n%s"
 msgstr ""
 
-msgid "'Restart Policy'"
+msgid "Pulling Image"
 msgstr ""
 
-msgid "'Restart'"
+msgid "Pulling Images"
 msgstr ""
 
-msgid "'Restarted %d %s successfully'"
+msgid "Pulling latest version of %d %s..."
 msgstr ""
 
-msgid "'Restarting %d %s...'"
+msgid "Read: %s / Write: %s"
 msgstr ""
 
-msgid "'Restarting %s'"
+msgid "Recent Checks (Last 10)"
 msgstr ""
 
-msgid "'Restrict external access to the network'"
+msgid "Reclaimable"
 msgstr ""
 
-msgid "'Result'"
+msgid "Redirecting to containers list..."
 msgstr ""
 
-msgid "'Retries'"
+msgid "Refresh"
 msgstr ""
 
-msgid "'RPC call failure: '"
+msgid "Refreshing %s..."
 msgstr ""
 
-msgid "'Run Check'"
+msgid "Registries"
 msgstr ""
 
-msgid "'Run Health Check Now'"
+msgid "Registry"
 msgstr ""
 
-msgid "'Run health checks on selected containers'"
+msgid "Remove"
 msgstr ""
 
-msgid "'Run Root'"
+msgid "Remove all unused images (not just dangling)"
 msgstr ""
 
-msgid "'Running health checks on %d %s...'"
+msgid "Remove unused volumes"
 msgstr ""
 
-msgid "'Running Health Checks'"
+msgid "Removed %d %s successfully"
 msgstr ""
 
-msgid "'Running Processes'"
+msgid "Removed: %s"
 msgstr ""
 
-msgid "'running'"
+msgid "Removing %d %s..."
 msgstr ""
 
-msgid "'Secret data is stored encrypted'"
+msgid "Removing unused resources, please wait..."
 msgstr ""
 
-msgid "'Secret Data'"
+msgid "Renaming container..."
 msgstr ""
 
-msgid "'Secret name can only contain letters, numbers, underscores, and hyphens'"
+msgid "Repository"
 msgstr ""
 
-msgid "'Secret Name'"
+msgid "Resource Limits"
 msgstr ""
 
-msgid "'Secret'"
+msgid "Resource Usage"
 msgstr ""
 
-msgid "'Secrets can only be used by containers, not displayed'"
+msgid "Resources"
 msgstr ""
 
-msgid "'Secrets'"
+msgid "Resources updated successfully"
 msgstr ""
 
-msgid "'Security Notice:'"
+msgid "Restart"
 msgstr ""
 
-msgid "'Select network for the container. User-created networks provide better isolation and DNS resolution between containers.'"
+msgid "Restart Policy"
 msgstr ""
 
-msgid "'Select what to clean up:'"
+msgid "Restart policy set but no init script"
 msgstr ""
 
-msgid "'Sensitive data is hidden for security reasons.'"
+msgid "Restart policy set but no init script. Click to generate."
 msgstr ""
 
-msgid "'Set a restart policy to enable auto-start'"
+msgid "Restart policy updated successfully"
 msgstr ""
 
-msgid "'Setting up auto-start'"
+msgid "Restart selected %s"
 msgstr ""
 
-msgid "'Setting up Integration'"
+msgid "Restarted %d %s successfully"
 msgstr ""
 
-msgid "'Setting up OpenWrt integration...'"
+msgid "Restarting %d %s..."
 msgstr ""
 
-msgid "'Setup OpenWrt integration for network "%s"?'"
+msgid "Restrict external access to the network"
 msgstr ""
 
-msgid "'Setup OpenWrt Integration'"
+msgid "Result"
 msgstr ""
 
-msgid "'Setup'"
+msgid "Retries"
 msgstr ""
 
-msgid "'Show'"
+msgid "RPC call failure: "
 msgstr ""
 
-msgid "'Size'"
+msgid "Run Check"
 msgstr ""
 
-msgid "'Socket Path'"
+msgid "Run Health Check Now"
 msgstr ""
 
-msgid "'Source'"
+msgid "Run health checks on selected containers"
 msgstr ""
 
-msgid "'Space freed: %s'"
+msgid "Run Root"
 msgstr ""
 
-msgid "'Start after creation'"
+msgid "running"
 msgstr ""
 
-msgid "'Start Interval'"
+msgid "Running health checks on %d %s..."
 msgstr ""
 
-msgid "'Start Period'"
+msgid "Running Processes"
 msgstr ""
 
-msgid "'Start selected %s'"
+msgid "Secret Data"
 msgstr ""
 
-msgid "'Start'"
+msgid "Secret data is stored encrypted"
 msgstr ""
 
-msgid "'Started %d %s successfully'"
+msgid "Secret Name"
 msgstr ""
 
-msgid "'Started'"
+msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
 msgstr ""
 
-msgid "'Starting %d %s...'"
+msgid "Secrets can only be used by containers, not displayed"
 msgstr ""
 
-msgid "'Starting %s...'"
+msgid "Security Notice:"
 msgstr ""
 
-msgid "'Starting %s'"
+msgid "Select network for the container. User-created networks provide better isolation and DNS resolution between containers."
 msgstr ""
 
-msgid "'Starting image pull...'"
+msgid "Select what to clean up:"
 msgstr ""
 
-msgid "'Starting selected %s...'"
+msgid "Sensitive data is hidden for security reasons."
 msgstr ""
 
-msgid "'Static IP (Optional)'"
+msgid "Set a restart policy to enable auto-start"
 msgstr ""
 
-msgid "'Stats'"
+msgid "Setting up auto-start"
 msgstr ""
 
-msgid "'Status'"
+msgid "Setting up Integration"
 msgstr ""
 
-msgid "'Stop selected %s'"
+msgid "Setting up OpenWrt integration..."
 msgstr ""
 
-msgid "'Stop'"
+msgid "Setup"
 msgstr ""
 
-msgid "'Stopped %d %s successfully'"
+msgid "Setup OpenWrt Integration"
 msgstr ""
 
-msgid "'Stopping %d %s...'"
+msgid "Setup OpenWrt integration for network "%s"?"
 msgstr ""
 
-msgid "'Stopping %s'"
+msgid "Show"
 msgstr ""
 
-msgid "'Stopping selected %s...'"
+msgid "Size"
 msgstr ""
 
-msgid "'Subnet is required'"
+msgid "Socket Path"
 msgstr ""
 
-msgid "'Subnet must be in CIDR notation (e.g., 10.129.0.0/24)'"
+msgid "Source"
 msgstr ""
 
-msgid "'Subnet: %s'"
+msgid "Space freed: %s"
 msgstr ""
 
-msgid "'Subnet'"
+msgid "Start"
 msgstr ""
 
-msgid "'Success'"
+msgid "Start after creation"
 msgstr ""
 
-msgid "'Successfully deleted %d %s'"
+msgid "Start Interval"
 msgstr ""
 
-msgid "'Successfully pulled %d %s'"
+msgid "Start Period"
 msgstr ""
 
-msgid "'System Maintenance'"
+msgid "Start selected %s"
 msgstr ""
 
-msgid "'Tag'"
+msgid "Started"
 msgstr ""
 
-msgid "'Terminal access coming soon...'"
+msgid "Started %d %s successfully"
 msgstr ""
 
-msgid "'Test Command'"
+msgid "Starting %d %s..."
 msgstr ""
 
-msgid "'The following containers can be updated:'"
+msgid "Starting %s"
 msgstr ""
 
-msgid "'The sensitive data to store securely'"
+msgid "Starting %s..."
 msgstr ""
 
-msgid "'This typically occurs with many containers. The operation may have timed out.'"
+msgid "Starting image pull..."
 msgstr ""
 
-msgid "'This will create:'"
+msgid "Starting selected %s..."
 msgstr ""
 
-msgid "'This will permanently delete unused containers, images, networks, and optionally volumes.'"
+msgid "Static IP (Optional)"
 msgstr ""
 
-msgid "'Time between health checks (e.g., 30s, 1m, 5m). Default: 30s'"
+msgid "Stats"
 msgstr ""
 
-msgid "'Timeout'"
+msgid "Status"
 msgstr ""
 
-msgid "'To enable auto-update, add label io.containers.autoupdate=registry to your containers.'"
+msgid "Stop"
 msgstr ""
 
-msgid "'To update a secret, delete and recreate it'"
+msgid "Stop selected %s"
 msgstr ""
 
-msgid "'Total memory limit (memory + swap). -1 for unlimited swap.'"
+msgid "Stopped %d %s successfully"
 msgstr ""
 
-msgid "'total'"
+msgid "Stopping %d %s..."
 msgstr ""
 
-msgid "'Try Again'"
+msgid "Stopping %s"
 msgstr ""
 
-msgid "'TTY'"
+msgid "Stopping selected %s..."
 msgstr ""
 
-msgid "'Type'"
+msgid "Subnet"
 msgstr ""
 
-msgid "'Unknown error'"
+msgid "Subnet is required"
 msgstr ""
 
-msgid "'Unknown'"
+msgid "Subnet must be in CIDR notation (e.g., 10.129.0.0/24)"
 msgstr ""
 
-msgid "'Unless Stopped'"
+msgid "Subnet: %s"
 msgstr ""
 
-msgid "'Unlimited'"
+msgid "Success"
 msgstr ""
 
-msgid "'Update Now'"
+msgid "Successfully deleted %d %s"
 msgstr ""
 
-msgid "'Update Resources'"
+msgid "Successfully pulled %d %s"
 msgstr ""
 
-msgid "'Update'"
+msgid "System Maintenance"
 msgstr ""
 
-msgid "'Updated %d %s successfully.'"
+msgid "Tag"
 msgstr ""
 
-msgid "'Updated'"
+msgid "Terminal access coming soon..."
 msgstr ""
 
-msgid "'Updating container resources...'"
+msgid "Test Command"
 msgstr ""
 
-msgid "'Updating Container'"
+msgid "The following containers can be updated:"
 msgstr ""
 
-msgid "'Updating containers, please wait...'"
+msgid "The sensitive data to store securely"
 msgstr ""
 
-msgid "'Updating Containers'"
+msgid "This typically occurs with many containers. The operation may have timed out."
 msgstr ""
 
-msgid "'Updating Init Script'"
+msgid "This will permanently delete unused containers, images, networks, and optionally volumes."
 msgstr ""
 
-msgid "'Updating Resources'"
+msgid "Time between health checks (e.g., 30s, 1m, 5m). Default: 30s"
 msgstr ""
 
-msgid "'Updating restart policy...'"
+msgid "Timeout"
 msgstr ""
 
-msgid "'Use: 512m, 1g, or -1 for unlimited swap'"
+msgid "To enable auto-update, add label io.containers.autoupdate=registry to your containers."
 msgstr ""
 
-msgid "'Use: 512m, 1g'"
+msgid "To update a secret, delete and recreate it"
 msgstr ""
 
-msgid "'User'"
+msgid "total"
 msgstr ""
 
-msgid "'Value'"
+msgid "Total memory limit (memory + swap). -1 for unlimited swap."
 msgstr ""
 
-msgid "'Variable'"
+msgid "Try Again"
 msgstr ""
 
-msgid "'Volume driver to use'"
+msgid "TTY"
 msgstr ""
 
-msgid "'Volume imported successfully'"
+msgid "Type"
 msgstr ""
 
-msgid "'Volume name is required'"
+msgid "Unknown"
 msgstr ""
 
-msgid "'Volume name. Leave empty to auto-generate.'"
+msgid "Unknown error"
 msgstr ""
 
-msgid "'Volume Name'"
+msgid "Unless Stopped"
 msgstr ""
 
-msgid "'Volume'"
+msgid "Unlimited"
 msgstr ""
 
-msgid "'Volumes'"
+msgid "Update"
 msgstr ""
 
-msgid "'Warning:'"
+msgid "Update Now"
 msgstr ""
 
-msgid "'Working Directory'"
+msgid "Update Resources"
 msgstr ""
 
-msgid "'Yes'"
+msgid "Updated"
 msgstr ""
 
+msgid "Updated %d %s successfully."
+msgstr ""
+
+msgid "Updating Container"
+msgstr ""
+
+msgid "Updating container resources..."
+msgstr ""
+
+msgid "Updating Containers"
+msgstr ""
+
+msgid "Updating containers, please wait..."
+msgstr ""
+
+msgid "Updating Init Script"
+msgstr ""
+
+msgid "Updating Resources"
+msgstr ""
+
+msgid "Updating restart policy..."
+msgstr ""
+
+msgid "Use: 512m, 1g"
+msgstr ""
+
+msgid "Use: 512m, 1g, or -1 for unlimited swap"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Variable"
+msgstr ""
+
+msgid "Volume driver to use"
+msgstr ""
+
+msgid "Volume imported successfully"
+msgstr ""
+
+msgid "Volume Name"
+msgstr ""
+
+msgid "Volume name is required"
+msgstr ""
+
+msgid "Volume name. Leave empty to auto-generate."
+msgstr ""
+
+msgid "Warning:"
+msgstr ""
+
+msgid "Will be added:"
+msgstr ""
+
+msgid "Working Directory"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
