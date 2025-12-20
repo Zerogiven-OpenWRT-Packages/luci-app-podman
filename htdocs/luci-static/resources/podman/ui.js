@@ -330,8 +330,8 @@ const UITable = baseclass.extend({
 			: value;
 
 		return this.addRow([
-			{ inner: label, options: { 'style': 'width: 33%; font-weight: bold;' } },
-			{ inner: valueContent, options: { 'style': 'word-break: break-word;' } }
+			{ inner: label },
+			{ inner: valueContent }
 		]);
 	},
 

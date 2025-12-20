@@ -64,10 +64,14 @@ return view.extend({
 			view: this
 		});
 
-		this.map = new form.JSONMap(this.listHelper.data, _('Networks'));
+		this.map = new form.JSONMap(this.listHelper.data, N_(2, 'Network', 'Networks'));
 
-		const section = this.map.section(form.TableSection, 'networks', '', _(
-			'Manage Podman %s').format(_('Networks').toLowerCase()));
+		const section = this.map.section(
+			form.TableSection,
+			'networks',
+			'',
+			_('Manage Podman %s').format(N_(2, 'Network', 'Networks'))
+		);
 		section.anonymous = true;
 
 		let o;
@@ -231,9 +235,10 @@ return view.extend({
 			confirmMessage: (networks, checkResults) => {
 				const withOpenwrt = checkResults.filter((c) => c.hasOpenwrt);
 				if (withOpenwrt.length > 0) {
-					return _('Note: Some %s have OpenWrt integration that will also be removed.').format(
-						_('Networks').toLowerCase()
-					);
+					return _('Note: %d %s have OpenWrt integration that will also be removed.').format(
+						withOpenwrt.length,
+						N_(withOpenwrt.length, 'Network', 'Networks'.toLowerCase()
+					));
 				}
 				return null;
 			},
