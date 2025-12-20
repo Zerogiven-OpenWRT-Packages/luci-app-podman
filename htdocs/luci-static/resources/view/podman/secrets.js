@@ -53,10 +53,6 @@ return view.extend({
 	 * @returns {Element} Rendered view element
 	 */
 	render: function(data) {
-		network.getDevices().then((devices) => {
-			console.log('devices', devices);
-		});
-		// console.log(network.getDevices().getPorts());
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
@@ -152,7 +148,7 @@ return view.extend({
 	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	handleRefresh: function (clearSelections) {
-		this.listHelper.refreshTable(clearSelections || false)
+		this.listHelper.refreshTable(clearSelections || false);
 	},
 
 	/**

@@ -182,16 +182,13 @@ return baseclass.extend({
 		 */
 		handleCreate: function () {
 			const ulaPrefix = uci.get('network', 'globals', 'ula_prefix');
-			console.log('before save');
 			this.map.save().then(() => {
-				console.log('save now');
 				const podnetwork = this.map.data.data.network;
 				const setupOpenwrt = podnetwork.setup_openwrt === '1';
 				const driver = podnetwork.driver || 'bridge';
 				const bridgeName = podnetwork.bridge_name || (podnetwork.name + '0');
 
 				// Validate parent for macvlan/ipvlan
-				console.log('driver', driver);
 				if (driver === 'macvlan' || driver === 'ipvlan') {
 					if (!podnetwork.parent) {
 						podmanUI.errorNotification(_(
@@ -205,16 +202,13 @@ return baseclass.extend({
 					}
 				}
 
-				console.log('driver', setupOpenwrt, podnetwork);
-
 				if (setupOpenwrt && !podnetwork.subnet) {
 					podmanUI.errorNotification(_(
 						'OpenWrt integration requires subnet to be specified'));
 					return;
 				}
 
-				console.log('driver', podnetwork.gateway, podnetwork.subnet);
-				// Auto-generate gateway: increment last octet by 1 (e.g., 10.89.0.0 → 10.89.0.1)
+			// Auto-generate gateway: increment last octet by 1 (e.g., 10.89.0.0 → 10.89.0.1)
 				if (!podnetwork.gateway && podnetwork.subnet) {
 					const regex = new RegExp('(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.)(\\d{1,3})',
 						'gm')
@@ -235,8 +229,7 @@ return baseclass.extend({
 					payload.network_interface = podnetwork.parent;
 				}
 
-				console.log('payload', payload);
-				if (podnetwork.subnet) {
+			if (podnetwork.subnet) {
 					payload.subnets = [{
 						subnet: podnetwork.subnet
 					}];
@@ -281,10 +274,7 @@ return baseclass.extend({
 				ui.hideModal();
 				podmanUI.showSpinningModal(_('Creating %s').format(_('Network')), _('Creating %s...').format(_('Network').toLowerCase()));
 
-				console.log('podmanRPC', podmanRPC)
-
 				podmanRPC.network.create(JSON.stringify(payload)).then((result) => {
-					console.log('??');
 					if (result && result.error) {
 						ui.hideModal();
 						podmanUI.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), result.error));

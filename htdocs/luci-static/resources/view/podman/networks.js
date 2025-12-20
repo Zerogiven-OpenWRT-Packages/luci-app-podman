@@ -188,7 +188,7 @@ return view.extend({
 				const iconEl = document.getElementById('integration-icon-' +
 					name);
 				if (iconEl && !result.complete) {
-					iconEl.innerHTML = '';
+					iconEl.textContent = '';
 					// Translate missing component names
 					const translatedMissing = result.missing.map(item => _(item));
 					iconEl.appendChild(E('a', {
@@ -472,7 +472,7 @@ return view.extend({
 			const iconEl = document.getElementById('integration-icon-' + name);
 			if (iconEl) {
 				iconEl.style.display = 'none';
-				iconEl.innerHTML = '';
+				iconEl.textContent = '';
 			}
 		}).catch((err) => {
 			ui.hideModal();

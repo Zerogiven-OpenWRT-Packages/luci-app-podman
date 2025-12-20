@@ -162,7 +162,7 @@ return baseclass.extend({
 
 				if (status.exists && status.enabled) {
 					// Init script exists and enabled
-					initScriptCell.innerHTML = '';
+					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
 						'style': 'color: #5cb85c; margin-right: 10px;'
 					}, '✓ ' + _('Enabled')));
@@ -175,7 +175,7 @@ return baseclass.extend({
 						.render());
 				} else if (status.exists && !status.enabled) {
 					// Init script exists but disabled
-					initScriptCell.innerHTML = '';
+					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
 						'style': 'color: #999; margin-right: 10px;'
 					}, '○ ' + _('Disabled')));
@@ -188,7 +188,7 @@ return baseclass.extend({
 						.render());
 				} else if (hasRestartPolicy) {
 					// No init script but has restart policy - show warning with Generate button
-					initScriptCell.innerHTML = '';
+					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
 						'style': 'color: #f0ad4e; margin-right: 10px;',
 						'title': _('Restart policy set but no init script')
@@ -199,7 +199,7 @@ return baseclass.extend({
 						.render());
 				} else {
 					// No init script and no restart policy - show helper text
-					initScriptCell.innerHTML = '';
+					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
 						'style': 'color: #999;',
 						'title': _(

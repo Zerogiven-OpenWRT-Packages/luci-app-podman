@@ -7,8 +7,8 @@
 'require podman.ui as podmanUI';
 'require podman.format as format';
 'require podman.rpc as podmanRPC';
-'require podman.openwrt-network as openwrtNetwork';
 'require podman.utils as utils';
+'require podman.constants as constants';
 
 return baseclass.extend({
 	render: function (content, containerId) {
@@ -117,8 +117,11 @@ return baseclass.extend({
 			// Strip Docker stream headers (8-byte headers)
 			const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
 
+			// Convert binary string to proper UTF-8
+			const utf8Text = this.binaryToUtf8(withoutHeaders);
+
 			// Strip ANSI escape sequences
-			const cleanText = this.stripAnsi(withoutHeaders);
+			const cleanText = this.stripAnsi(utf8Text);
 
 			if (cleanText && cleanText.trim().length > 0) {
 				output.textContent = cleanText;
@@ -192,6 +195,22 @@ return baseclass.extend({
 	},
 
 	/**
+	 * Convert binary string (from atob) to proper UTF-8 text
+	 * atob() returns a "binary string" where each char is one byte (0-255).
+	 * This function properly decodes UTF-8 encoded bytes.
+	 * @param {string} binaryString - Binary string from atob()
+	 * @returns {string} Properly decoded UTF-8 text
+	 */
+	binaryToUtf8: function (binaryString) {
+		if (!binaryString) return binaryString;
+		const bytes = new Uint8Array(binaryString.length);
+		for (let i = 0; i < binaryString.length; i++) {
+			bytes[i] = binaryString.charCodeAt(i);
+		}
+		return new TextDecoder('utf-8').decode(bytes);
+	},
+
+	/**
 	 * Clear logs display
 	 */
 	clearLogs: function () {
@@ -219,8 +238,15 @@ return baseclass.extend({
 	 * Start log streaming session with backend
 	 */
 	startLogStream: function () {
+		// Prevent race condition from rapid toggling
+		if (this.isStartingStream) return;
+		this.isStartingStream = true;
+
 		const output = document.getElementById('logs-output');
-		if (!output) return;
+		if (!output) {
+			this.isStartingStream = false;
+			return;
+		}
 
 		// Get the number of lines from input
 		const linesInput = document.getElementById('log-lines');
@@ -246,9 +272,10 @@ return baseclass.extend({
 				// Decode base64 to binary string
 				const binaryText = atob(base64Data);
 
-				// Strip Docker headers and ANSI codes
+				// Strip Docker headers, convert to UTF-8, strip ANSI codes
 				const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
-				const cleanText = this.stripAnsi(withoutHeaders);
+				const utf8Text = this.binaryToUtf8(withoutHeaders);
+				const cleanText = this.stripAnsi(utf8Text);
 
 				output.textContent = cleanText || '';
 			}
@@ -266,6 +293,7 @@ return baseclass.extend({
 				console.error('Failed to start stream:', result);
 				const checkbox = document.getElementById('log-stream-toggle');
 				if (checkbox) checkbox.checked = false;
+				this.isStartingStream = false;
 				return;
 			}
 
@@ -275,11 +303,13 @@ return baseclass.extend({
 
 			// Start polling for logs
 			this.pollLogsStatus();
+			this.isStartingStream = false;
 		}).catch((err) => {
 			console.error('Stream error:', err);
 			output.textContent = _('Failed to start log stream: %s').format(err.message);
 			const checkbox = document.getElementById('log-stream-toggle');
 			if (checkbox) checkbox.checked = false;
+			this.isStartingStream = false;
 		});
 	},
 
@@ -344,9 +374,10 @@ return baseclass.extend({
 					// Update file offset BEFORE processing (in case of errors)
 					view.logStreamFileOffset += binaryText.length;
 
-					// Strip Docker headers first, then ANSI codes
+					// Strip Docker headers, convert to UTF-8, strip ANSI codes
 					const withoutHeaders = view.stripDockerStreamHeaders(binaryText);
-					const cleanOutput = view.stripAnsi(withoutHeaders);
+					const utf8Text = view.binaryToUtf8(withoutHeaders);
+					const cleanOutput = view.stripAnsi(utf8Text);
 
 					// Append the new content
 					if (cleanOutput.length > 0) {
@@ -382,6 +413,13 @@ return baseclass.extend({
 		};
 
 		// Add the poll using stored function reference
-		poll.add(this.logPollFn, 1); // Poll every 1 second
+		poll.add(this.logPollFn, constants.POLL_INTERVAL);
 	},
+
+	/**
+	 * Cleanup poll functions when view is destroyed
+	 */
+	cleanup: function () {
+		this.stopLogStream();
+	}
 });

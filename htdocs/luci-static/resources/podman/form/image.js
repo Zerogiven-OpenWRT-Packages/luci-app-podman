@@ -7,6 +7,7 @@
 
 'require podman.ui as podmanUI';
 'require podman.rpc as podmanRPC';
+'require podman.constants as constants';
 
 return baseclass.extend({
 	init: baseclass.extend({
@@ -37,21 +38,11 @@ return baseclass.extend({
 			oReg.value('gcr.io/', 'gcr.io');
 			const oImg = s.option(form.Value, 'image', _('Image'));
 			oImg.placeholder = 'nginx:latest';
-			oImg.rmempty = false;
 
 			const btn = s.option(form.Button, '_pull', ' ');
 			btn.inputstyle = 'add';
 			btn.inputtitle = _('Pull Image');
-			btn.onclick = (ev) => {
-				const button = ev.target;
-				const formContainer = button.closest('.cbi-section, .cbi-map');
-				if (formContainer) {
-					const invalidFields = formContainer.querySelectorAll('.cbi-input-invalid');
-					if (invalidFields.length > 0) {
-						return;
-					}
-				}
-
+			btn.onclick = () => {
 				this.handlePullExecute();
 			};
 
@@ -228,8 +219,13 @@ return baseclass.extend({
 
 						document.querySelector('.spinning.image-pull').remove();
 
-						this.map.reset();
-						this.submit();
+						this.map.data.data.image.image = '';
+						this.map.save().then(() => {
+							console.log(this.map);
+							console.log(this.map.findElement('#cbi-json-image-image'));
+
+							this.submit();
+						});
 					}
 				}).catch((err) => {
 					poll.remove(this.pollFn);
@@ -241,7 +237,7 @@ return baseclass.extend({
 				});
 			};
 
-			poll.add(this.pollFn, 1); // Poll every 1 second
+			poll.add(this.pollFn, constants.POLL_INTERVAL);
 		},
 
 		submit: () => { },

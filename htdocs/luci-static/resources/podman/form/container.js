@@ -6,6 +6,7 @@
 
 'require podman.ui as podmanUI';
 'require podman.rpc as podmanRPC';
+'require podman.run-command-parser as RunCommandParser';
 
 return baseclass.extend({
 	init: baseclass.extend({

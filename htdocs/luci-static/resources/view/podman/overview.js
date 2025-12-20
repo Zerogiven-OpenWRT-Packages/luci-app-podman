@@ -4,7 +4,7 @@
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
 'require podman.format as format';
-'require podman.ui as pui';
+'require podman.ui as podmanUI';
 'require ui';
 
 /**
@@ -63,7 +63,7 @@ return view.extend({
 		]);
 
 		// Create tabs
-		const tabs = new pui.Tabs('overview')
+		const tabs = new podmanUI.Tabs('overview')
 			.addTab('overview', _('Overview'), overviewTabContent, true)
 			.addTab('disk-usage', _('Disk Usage'), diskUsageTabContent)
 			.render();
@@ -100,7 +100,7 @@ return view.extend({
 			// Update Resource Cards section
 			const resourceCardsContainer = document.getElementById('resource-cards-container');
 			if (resourceCardsContainer) {
-				resourceCardsContainer.innerHTML = '';
+				resourceCardsContainer.textContent = '';
 				resourceCardsContainer.appendChild(
 					E('h3', {
 						'style': 'margin-bottom: 15px;'
@@ -114,7 +114,7 @@ return view.extend({
 		}).catch((err) => {
 			const resourceCardsContainer = document.getElementById('resource-cards-container');
 			if (resourceCardsContainer) {
-				resourceCardsContainer.innerHTML = '';
+				resourceCardsContainer.textContent = '';
 				resourceCardsContainer.appendChild(
 					E('p', {
 						'class': 'alert-message error'
@@ -158,7 +158,7 @@ return view.extend({
 				1024)
 			.toFixed(2) : '0';
 
-		const table = new pui.Table()
+		const table = new podmanUI.Table()
 			.addInfoRow(_('Podman Version'), version.Version || _('Unknown'))
 			.addInfoRow(_('API Version'), version.ApiVersion || _('Unknown'))
 			.addInfoRow(_('CPU'), (info.host && info.host.cpus) ? info.host.cpus.toString() : _(
@@ -186,7 +186,7 @@ return view.extend({
 					},
 					this.getRegistries(info)));
 
-		const section = new pui.Section();
+		const section = new podmanUI.Section();
 		section.addNode(_('Information'), '', table.render());
 		return section.render();
 	},
@@ -209,7 +209,7 @@ return view.extend({
 	 * @returns {Element} Container with button to trigger system.df() call
 	 */
 	createDiskUsageLoadButton: function () {
-		const button = new pui.Button(
+		const button = new podmanUI.Button(
 			_('Load Disk Usage Statistics'),
 			() => this.loadDiskUsage(),
 			'action'
@@ -233,7 +233,7 @@ return view.extend({
 		if (!diskUsageTabContent) return;
 
 		// Show loading state
-		diskUsageTabContent.innerHTML = '';
+		diskUsageTabContent.textContent = '';
 		diskUsageTabContent.appendChild(
 			E('div', {
 				'style': 'padding: 20px; text-align: center;'
@@ -246,12 +246,12 @@ return view.extend({
 
 		// Call system.df() with user awareness this may be slow
 		podmanRPC.system.df().then((diskUsage) => {
-			diskUsageTabContent.innerHTML = '';
+			diskUsageTabContent.textContent = '';
 			diskUsageTabContent.appendChild(
 				this.createDiskUsageSection(diskUsage)
 			);
 		}).catch((err) => {
-			diskUsageTabContent.innerHTML = '';
+			diskUsageTabContent.textContent = '';
 
 			const errorMsg = E('div', {
 				'style': 'padding: 20px;'
@@ -265,7 +265,7 @@ return view.extend({
 				E('div', {
 					'style': 'margin-top: 15px;'
 				}, [
-					new pui.Button(
+					new podmanUI.Button(
 						_('Try Again'),
 						() => this.loadDiskUsage(),
 						'action'
@@ -310,7 +310,7 @@ return view.extend({
 		const volumeCount = (diskUsage.Volumes && diskUsage.Volumes[0] && diskUsage.Volumes[0]
 			.Count) || 0;
 
-		const table = new pui.Table()
+		const table = new podmanUI.Table()
 			.addHeader(_('Type'))
 			.addHeader(_('Count'))
 			.addHeader(_('Size'))
@@ -355,7 +355,7 @@ return view.extend({
 				}
 			]);
 
-		const section = new pui.Section({
+		const section = new podmanUI.Section({
 			'style': 'margin-top: 20px;'
 		});
 		section.addNode(_('Disk Usage'), '', table.render());
@@ -484,13 +484,13 @@ return view.extend({
 		const buttons = E('div', {
 			'style': 'display: flex; gap: 10px; flex-wrap: wrap;'
 		}, [
-			new pui.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(),
+			new podmanUI.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(),
 				'action').render(),
-			new pui.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove')
+			new podmanUI.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove')
 			.render()
 		]);
 
-		const section = new pui.Section({
+		const section = new podmanUI.Section({
 			'style': 'margin-bottom: 20px;'
 		});
 		section.addNode(_('System Maintenance'), '', buttons);
@@ -530,7 +530,7 @@ return view.extend({
 							'To enable auto-update, add label io.containers.autoupdate=registry to your containers.'
 						)
 					),
-					new pui.ModalButtons({
+					new podmanUI.ModalButtons({
 						confirmText: _('Close'),
 						onConfirm: ui.hideModal,
 						onCancel: null
@@ -552,7 +552,7 @@ return view.extend({
 						'style': 'margin: 10px 0; padding-left: 20px;'
 					},
 					updateList),
-				new pui.ModalButtons({
+				new podmanUI.ModalButtons({
 					confirmText: _('Update Now'),
 					onConfirm: () => {
 						ui.hideModal();
@@ -564,7 +564,7 @@ return view.extend({
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Failed to check for updates: %s').format(err
 					.message)),
-				new pui.ModalButtons({
+				new podmanUI.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: ui.hideModal,
 					onCancel: null
@@ -597,7 +597,7 @@ return view.extend({
 			ui.showModal(_('Auto-Update Complete'), [
 				E('p', {}, _('Updated %d %s successfully.').format(
 				successful, _('Containers').toLowerCase())),
-				new pui.ModalButtons({
+				new podmanUI.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: () => {
 						ui.hideModal();
@@ -609,7 +609,7 @@ return view.extend({
 		}).catch(function (err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Auto-update failed: %s').format(err.message)),
-				new pui.ModalButtons({
+				new podmanUI.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: ui.hideModal,
 					onCancel: null
@@ -667,7 +667,7 @@ return view.extend({
 						)
 					])
 			]),
-			new pui.ModalButtons({
+			new podmanUI.ModalButtons({
 				confirmText: _('Clean Up Now'),
 				confirmClass: 'remove',
 				onConfirm: () => {
@@ -746,7 +746,7 @@ return view.extend({
 						'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;'
 					},
 					_('Space freed: %s').format(format.bytes(freedSpace))),
-				new pui.ModalButtons({
+				new podmanUI.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: () => {
 						ui.hideModal();
@@ -758,7 +758,7 @@ return view.extend({
 		}).catch(function (err) {
 			ui.showModal(_('Error'), [
 				E('p', {}, _('Cleanup failed: %s').format(err.message)),
-				new pui.ModalButtons({
+				new podmanUI.ModalButtons({
 					confirmText: _('Close'),
 					onConfirm: ui.hideModal,
 					onCancel: null

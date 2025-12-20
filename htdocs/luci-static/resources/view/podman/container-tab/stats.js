@@ -7,8 +7,8 @@
 'require podman.ui as podmanUI';
 'require podman.format as format';
 'require podman.rpc as podmanRPC';
-'require podman.openwrt-network as openwrtNetwork';
 'require podman.utils as utils';
+'require podman.constants as constants';
 
 return baseclass.extend({
 	containerData: {},
@@ -123,7 +123,7 @@ return baseclass.extend({
 
 		const processContainer = document.getElementById('process-list-container');
 		if (processContainer) {
-			processContainer.innerHTML = '';
+			processContainer.textContent = '';
 			processContainer.appendChild(E('p', {
 					'style': 'color: #999;'
 				},
@@ -147,7 +147,7 @@ return baseclass.extend({
 				});
 			};
 
-			poll.add(this.statsPollFn, 3);
+			poll.add(this.statsPollFn, constants.STATS_POLL_INTERVAL / 1000);
 		}
 	},
 
@@ -302,4 +302,18 @@ return baseclass.extend({
 			}
 		});
 	},
+
+	/**
+	 * Cleanup poll functions when view is destroyed
+	 */
+	cleanup: function () {
+		if (this.statsPollFn) {
+			try {
+				poll.remove(this.statsPollFn);
+			} catch (e) {
+				// Ignore errors if poll function was already removed
+			}
+			this.statsPollFn = null;
+		}
+	}
 });
