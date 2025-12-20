@@ -689,7 +689,7 @@ return view.extend({
 	 * @param {boolean} volumes - If true, also remove unused volumes
 	 */
 	performPrune: function (allImages, volumes) {
-		ui.showModal(_('Cleaning Up'), [
+		ui.showModal(_('Clean Up Now'), [
 			E('p', {}, _('Removing unused resources, please wait...')),
 			E('div', {
 				'class': 'center'

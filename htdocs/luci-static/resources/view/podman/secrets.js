@@ -103,7 +103,7 @@ return view.extend({
 			return secret.Spec && secret.Spec.Driver && secret.Spec.Driver.Name ?
 				secret.Spec.Driver.Name
 				:
-				_('file')
+				'file'
 			;
 		};
 

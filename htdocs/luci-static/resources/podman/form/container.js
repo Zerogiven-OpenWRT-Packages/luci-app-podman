@@ -68,12 +68,12 @@ return baseclass.extend({
 				}
 			};
 
-			this.map = new form.JSONMap(this.data, _('Create Container'), '');
+			this.map = new form.JSONMap(this.data, _('Create %s').format(_('Container')), '');
 
 			const section = this.map.section(form.NamedSection, 'container', 'container');
 			let field;
 			field = section.option(form.Value, 'name', _('Container Name'));
-			field.placeholder = _('my-container (optional)');
+			field.placeholder = 'my-container';
 			field.optional = true;
 			field.datatype = 'maxlength(253)';
 			field.description = _('Leave empty to auto-generate');
@@ -110,7 +110,7 @@ return baseclass.extend({
 			field.description = _('One per line, format: key=value');
 
 			field = section.option(form.TextValue, 'volumes', _('Volumes'));
-			field.placeholder = _('/host/path:/container/path\nvolume-name:/data');
+			field.placeholder = '/host/path:/container/path\nvolume-name:/data';
 			field.rows = 4;
 			field.optional = true;
 			field.description = _('One per line, format: source:destination');
@@ -163,7 +163,7 @@ return baseclass.extend({
 			field.datatype = 'hostname';
 
 			field = section.option(form.TextValue, 'labels', _('Labels'));
-			field.placeholder = _('key1=value1\nkey2=value2');
+			field.placeholder = 'key1=value1\nkey2=value2';
 			field.rows = 3;
 			field.optional = true;
 			field.description = _('One per line, format: key=value');
@@ -264,7 +264,7 @@ return baseclass.extend({
 				ui.showModal('', [
 					formElement,
 					new podmanUI.ModalButtons({
-						confirmText: _('Create'),
+						confirmText: _('Create %s').format('').trim(),
 						onConfirm: () => this.handleCreate(),
 						onCancel: () => ui.hideModal()
 					}).render()

@@ -24,11 +24,11 @@ return baseclass.extend({
 
 			let field;
 
-			this.map = new form.JSONMap(this.data, _('Create Volume'), '');
+			this.map = new form.JSONMap(this.data, _('Create %s').format(_('Volume')), '');
 			const section = this.map.section(form.NamedSection, 'volume', 'volume');
 
 			field = section.option(form.Value, 'name', _('Volume Name'));
-			field.placeholder = _('my-volume (optional)');
+			field.placeholder = 'my-volume';
 			field.optional = true;
 			field.datatype = 'maxlength(253)';
 			field.description = _('Volume name. Leave empty to auto-generate.');
@@ -45,7 +45,7 @@ return baseclass.extend({
 				'Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)');
 
 			field = section.option(form.TextValue, 'labels', _('Labels'));
-			field.placeholder = _('key1=value1\nkey2=value2');
+			field.placeholder = 'key1=value1\nkey2=value2';
 			field.rows = 3;
 			field.optional = true;
 			field.description = _('Labels in key=value format, one per line');
@@ -54,7 +54,7 @@ return baseclass.extend({
 				ui.showModal('', [
 					formElement,
 					new podmanUI.ModalButtons({
-						confirmText: _('Create'),
+						confirmText: _('Create %s').format('').trim(),
 						onConfirm: () => this.handleCreate(),
 						onCancel: () => ui.hideModal()
 					}).render()

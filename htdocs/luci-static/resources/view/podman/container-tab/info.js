@@ -247,7 +247,7 @@ return baseclass.extend({
 			if (healthStatus === 'unhealthy' && failingStreak > 0) {
 				healthDetails.push(E('span', {
 					'style': 'color: #ff6b6b;'
-				}, _(' (%d consecutive failures)').format(failingStreak)));
+				}, ' (' + _('%d consecutive failures').format(failingStreak) + ')'));
 			}
 
 			// Add last check time if available

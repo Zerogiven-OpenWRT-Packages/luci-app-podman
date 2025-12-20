@@ -217,7 +217,7 @@ return view.extend({
 		});
 
 		const createButton = new podmanUI.MultiButton({}, 'add')
-			.addItem(_('Create Container'), () => this.handleCreateContainer())
+			.addItem(_('Create %s').format(_('Container')), () => this.handleCreateContainer())
 			.addItem(_('Import from Run Command'), () => this.handleImportFromRunCommand())
 			// .addItem(_('Import from Compose File'), () => this.handleImportFromCompose())
 			.render();
@@ -344,7 +344,7 @@ return view.extend({
 						// Init script exists and enabled
 						autoStartCell.textContent = '✓';
 						autoStartCell.style.color = '#5cb85c';
-						autoStartCell.title = _('Init script enabled');
+						autoStartCell.title = _('Init script enabled for %s').format(containerName);
 					} else if (hasRestartPolicy && !initStatus.exists) {
 						// Has restart policy but no init script - show warning
 						autoStartCell.innerHTML = '⚠️';
@@ -361,7 +361,7 @@ return view.extend({
 						// Init script exists but disabled
 						autoStartCell.textContent = '○';
 						autoStartCell.style.color = '#999';
-						autoStartCell.title = _('Init script disabled');
+						autoStartCell.title = _('Init script disabled for %s').format(containerName);
 					}
 				}
 			}).catch((err) => {

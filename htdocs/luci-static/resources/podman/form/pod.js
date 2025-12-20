@@ -27,18 +27,18 @@ return baseclass.extend({
 				}
 			};
 
-			this.map = new form.JSONMap(this.data, _('Create Pod'), '');
+			this.map = new form.JSONMap(this.data, _('Create %s').format(_('Pod')), '');
 
 			const section = this.map.section(form.NamedSection, 'pod', 'pod');
 			let field;
 
 			field = section.option(form.Value, 'name', _('Pod Name'));
-			field.placeholder = _('my-pod');
+			field.placeholder = 'my-pod';
 			field.datatype = 'maxlength(253)';
 			field.description = _('Name for the pod');
 
 			field = section.option(form.Value, 'hostname', _('Hostname'));
-			field.placeholder = _('pod-hostname');
+			field.placeholder = 'pod-hostname';
 			field.optional = true;
 			field.datatype = 'hostname';
 			field.description = _('Hostname to assign to the pod');
@@ -49,7 +49,7 @@ return baseclass.extend({
 			field.description = _('Publish ports, one per line (host:container format)');
 
 			field = section.option(form.TextValue, 'labels', _('Labels'));
-			field.placeholder = _('key1=value1\nkey2=value2');
+			field.placeholder = 'key1=value1\nkey2=value2';
 			field.rows = 3;
 			field.optional = true;
 			field.description = _('Labels in key=value format, one per line');
@@ -58,7 +58,7 @@ return baseclass.extend({
 				ui.showModal('', [
 					formElement,
 					new podmanUI.ModalButtons({
-						confirmText: _('Create'),
+						confirmText: _('Create %s').format('').trim(),
 						onConfirm: () => this.handleCreate(),
 						onCancel: () => ui.hideModal()
 					}).render()

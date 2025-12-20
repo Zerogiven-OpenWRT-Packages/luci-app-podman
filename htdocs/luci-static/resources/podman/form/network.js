@@ -72,12 +72,12 @@ return baseclass.extend({
 		 * @returns {Promise<HTMLElement>} Rendered form element
 		 */
 		showFormModal: function () {
-			this.map = new form.JSONMap(this.data, _('Create Network'), '');
+			this.map = new form.JSONMap(this.data, _('Create %s').format(_('Network')), '');
 			const section = this.map.section(form.NamedSection, 'network', 'network');
 
 			let field;
 			field = section.option(form.Value, 'name', _('Network Name'));
-			field.placeholder = _('my-network');
+			field.placeholder = 'my-network';
 			field.datatype = 'maxlength(253)';
 			field.description = _('Name for the network');
 			field.rmempty = false;
@@ -155,7 +155,7 @@ return baseclass.extend({
 			);
 
 			field = section.option(form.TextValue, 'labels', _('Labels'));
-			field.placeholder = _('key1=value1\nkey2=value2');
+			field.placeholder = 'key1=value1\nkey2=value2';
 			field.rows = 3;
 			field.optional = true;
 			field.description = _('Labels in key=value format, one per line');
@@ -164,7 +164,7 @@ return baseclass.extend({
 				ui.showModal('', [
 					formElement,
 					new podmanUI.ModalButtons({
-						confirmText: _('Create'),
+						confirmText: _('Create %s').format('').trim(),
 						onConfirm: () => this.handleCreate(),
 						onCancel: () => ui.hideModal()
 					}).render()

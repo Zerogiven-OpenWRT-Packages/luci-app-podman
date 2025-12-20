@@ -26,11 +26,11 @@ return baseclass.extend({
 
 			let field;
 
-			this.map = new form.JSONMap(this.data, _('Create Secret'), '');
+			this.map = new form.JSONMap(this.data, _('Create %s').format('Secret'), '');
 			const section = this.map.section(form.NamedSection, 'secret', 'secret');
 
 			field = section.option(form.Value, 'name', _('Secret Name'));
-			field.placeholder = _('my-secret');
+			field.placeholder = 'my-secret';
 			field.datatype = 'rangelength(1,253)';
 			field.validate = (_section_id, value) => {
 				if (!/^[a-zA-Z0-9_\-]+$/.test(value)) {
@@ -76,7 +76,7 @@ return baseclass.extend({
 					]),
 
 					new podmanUI.ModalButtons({
-						confirmText: _('Create'),
+						confirmText: _('Create %s').format('').trim(),
 						onConfirm: () => this.handleCreate(),
 						onCancel: () => ui.hideModal()
 					}).render()

@@ -95,7 +95,7 @@ return view.extend({
 		o.linktitle = (volume) => volume.Name || _('Unknown');
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Driver', _('Driver'));
-		o.cfgdefault = _('local');
+		o.cfgdefault = 'local';
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Mountpoint', _('Mountpoint'));
 		o.cfgdefault = _('N/A');
@@ -118,7 +118,7 @@ return view.extend({
 		});
 
 		const createButton = new podmanUI.MultiButton({}, 'add')
-			.addItem(_('Create Volume'), () => this.handleCreateVolume())
+			.addItem(_('Create %s').format(_('Volume')), () => this.handleCreateVolume())
 			.addItem(_('Import Volume'), () => this.handleImportVolume())
 			.render();
 		toolbar.prependButton(createButton);

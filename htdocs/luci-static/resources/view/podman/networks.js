@@ -12,34 +12,6 @@
 'require podman.list as List';
 'require podman.openwrt-network as openwrtNetwork';
 
-/**
- * Extract driver from Podman network object
- * @param {Object} network - Network object from Podman API
- * @returns {string} Driver type (bridge, macvlan, ipvlan)
- */
-function getDriver(network) {
-	return network.driver || network.Driver || 'bridge';
-}
-
-/**
- * Extract device name based on driver
- * @param {Object} network - Network object from Podman API
- * @param {string} name - Network name
- * @returns {string} Device name (bridge name or parent interface)
- */
-function getDevice(network, name) {
-	const driver = getDriver(network);
-
-	if (driver === 'bridge') {
-		return network.network_interface || (name + '0');
-	} else {
-		if (network.options && network.options.parent) {
-			return network.options.parent;
-		}
-		return network.network_interface || (name + '0');
-	}
-}
-
 document.querySelector('head').appendChild(E('link', {
 	'rel': 'stylesheet',
 	'type': 'text/css',
@@ -183,7 +155,7 @@ return view.extend({
 		const networks = this.listHelper.getDataArray();
 		(networks || []).forEach((network) => {
 			const name = network.name || network.Name;
-			const driver = getDriver(network);
+			const driver = openwrtNetwork.getDriver(network);
 			openwrtNetwork.isIntegrationComplete(name, driver).then((result) => {
 				const iconEl = document.getElementById('integration-icon-' +
 					name);
@@ -239,8 +211,8 @@ return view.extend({
 			preDeleteCheck: (networks) => {
 				const checkPromises = networks.map((name) => {
 					const network = networkMap[name];
-					const driver = getDriver(network);
-					const deviceName = getDevice(network, name);
+					const driver = openwrtNetwork.getDriver(network);
+					const deviceName = openwrtNetwork.getDevice(network, name);
 
 					return openwrtNetwork.hasIntegration(name).then((exists) => ({
 						name: name,
@@ -326,7 +298,7 @@ return view.extend({
 	 */
 	handleSetupIntegration: function (network) {
 		const name = network.name || network.Name;
-		const driver = getDriver(network);
+		const driver = openwrtNetwork.getDriver(network);
 
 		let subnet, gateway;
 
@@ -346,7 +318,7 @@ return view.extend({
 			return;
 		}
 
-		const deviceName = getDevice(network, name);
+		const deviceName = openwrtNetwork.getDevice(network, name);
 		const deviceLabel = driver === 'bridge' ? _('Bridge') : _('Parent Interface');
 
 		// Check what's missing

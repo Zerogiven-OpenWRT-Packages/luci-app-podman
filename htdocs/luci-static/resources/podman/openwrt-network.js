@@ -47,6 +47,34 @@ function needsBridge(driver) {
 
 return baseclass.extend({
 	/**
+	 * Extract driver from Podman network object.
+	 * @param {Object} network - Network object from Podman API
+	 * @returns {string} Driver type (bridge, macvlan, ipvlan)
+	 */
+	getDriver: function (network) {
+		return network.driver || network.Driver || 'bridge';
+	},
+
+	/**
+	 * Extract device name based on driver.
+	 * @param {Object} network - Network object from Podman API
+	 * @param {string} name - Network name
+	 * @returns {string} Device name (bridge name or parent interface)
+	 */
+	getDevice: function (network, name) {
+		const driver = this.getDriver(network);
+
+		if (driver === 'bridge') {
+			return network.network_interface || (name + '0');
+		}
+
+		if (network.options && network.options.parent) {
+			return network.options.parent;
+		}
+		return network.network_interface || (name + '0');
+	},
+
+	/**
 	 * Create OpenWrt integration for Podman network.
 	 *
 	 * Creates network interface with static IP, and adds to firewall zone.
@@ -708,7 +736,7 @@ return baseclass.extend({
 	 * @param {string} bridgeName - Bridge interface name
 	 * @returns {Promise<boolean>}
 	 */
-	_isDnsmasqExcluded: function (bridgeName) {
+	_isDnsmasqExcluded: async function (bridgeName) {
 		return uci.load('dhcp').then(() => {
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 			if (dnsmasqSections.length === 0) {
@@ -737,7 +765,7 @@ return baseclass.extend({
 	 *
 	 * @returns {Promise<void>}
 	 */
-	_restartDnsmasq: function () {
+	_restartDnsmasq: async function () {
 		return fs.exec('/etc/init.d/dnsmasq', ['restart']).then(() => {
 			// Wait a moment for service to fully restart
 			return new Promise((resolve) => {
