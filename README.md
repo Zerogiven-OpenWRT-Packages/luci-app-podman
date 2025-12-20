@@ -14,7 +14,6 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
   - [From IPK Package](#from-ipk-package)
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
-- [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
 - [Contributing](#contributing)
   - [Key Files](#key-files)
@@ -27,7 +26,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - **Auto-start Support**: Automatic init script generation for containers with restart policies
 - **Image Management**: Pull, remove, inspect images with streaming progress
 - **Volume Management**: Create, delete, export/import volumes with tar backups
-- **Network Management**: Bridge, macvlan, ipvlan with optional OpenWrt firewall integration (create new `podman_<name>` zone or select existing `podman*` zones)
+- **Network Management**: Bridge, macvlan, ipvlan with optional OpenWrt integration (auto-creates bridge devices, network interfaces, and shared `podman` firewall zone with DNS access rules)
 - **Pod Management**: Multi-container pods with shared networking
 - **Secret Management**: Encrypted storage for sensitive data
 - **System Overview**: Resource usage, disk space, system-wide cleanup
@@ -57,8 +56,8 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 ### From IPK Package
 
 ```bash
-wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.3.2/luci-app-podman-1.3.2.ipk
-opkg update && opkg install luci-app-podman-1.3.2.ipk
+wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.4.0/luci-app-podman-1.4.0.ipk
+opkg update && opkg install luci-app-podman-1.4.0.ipk
 ```
 
 ### From Source
