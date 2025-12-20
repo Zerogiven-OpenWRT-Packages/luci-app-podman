@@ -22,11 +22,12 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 
 ## Features
 
-- **Container Management**: Start, stop, restart, create, remove with live logs and stats
+- **Container Management**: Start, stop, restart, create, remove with live logs, stats, and health monitoring
+- **Import from Run Command**: Convert `docker run` or `podman run` commands to container configurations
 - **Auto-start Support**: Automatic init script generation for containers with restart policies
 - **Image Management**: Pull, remove, inspect images with streaming progress
 - **Volume Management**: Create, delete, export/import volumes with tar backups
-- **Network Management**: Bridge, macvlan, ipvlan with optional OpenWrt integration (auto-creates bridge devices, network interfaces, and shared `podman` firewall zone with DNS access rules)
+- **Network Management**: Bridge, macvlan, ipvlan with VLAN support and optional OpenWrt integration (auto-creates bridge devices, network interfaces, dnsmasq exclusion, and shared `podman` firewall zone with DNS access rules)
 - **Pod Management**: Multi-container pods with shared networking
 - **Secret Management**: Encrypted storage for sensitive data
 - **System Overview**: Resource usage, disk space, system-wide cleanup
