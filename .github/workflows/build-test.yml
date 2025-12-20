@@ -60,18 +60,33 @@ jobs:
       - name: Verify package built
         run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | grep .
 
+      - name: Verify languages built
+        run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-i18n-podman-*.ipk' -type f | grep .
+
       - name: Find and prepare artifact
         id: find-ipk
         run: |
           IPK_PATH=$(find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | head -1)
           IPK_NAME=$(basename "$IPK_PATH")
+          IPK_LANG_DE_PATH=$(find ${{ github.workspace }}/artifacts/bin/ -name 'luci-i18n-podman-de*.ipk' -type f | head -1)
+          IPK_LANG_DE_NAME=$(basename "$IPK_LANG_DE_PATH")
           echo "ipk_path=$IPK_PATH" >> $GITHUB_OUTPUT
           echo "ipk_name=$IPK_NAME" >> $GITHUB_OUTPUT
+          echo "ipk_lang_de_path=$IPK_LANG_DE_PATH" >> $GITHUB_OUTPUT
+          echo "ipk_lang_de_name=$IPK_LANG_DE_NAME" >> $GITHUB_OUTPUT
 
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.find-ipk.outputs.ipk_name }}
           path: ${{ steps.find-ipk.outputs.ipk_path }}
+          retention-days: 30
+          compression-level: 0
+
+      - name: Upload IPK artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.find-ipk.outputs.ipk_lang_de_name }}
+          path: ${{ steps.find-ipk.outputs.ipk_lang_de_path }}
           retention-days: 30
           compression-level: 0
