@@ -94,7 +94,7 @@ const FormEditableField = baseclass.extend({
 });
 
 /**
- *
+ * Checkbox column for row selection in GridSection tables
  */
 const FormSelectDummyValue = form.DummyValue.extend({
 	__name__: 'CBI.SelectDummyValue',
@@ -110,7 +110,7 @@ const FormSelectDummyValue = form.DummyValue.extend({
 });
 
 /**
- *
+ * Data display column that extracts and formats a property from row data
  */
 const FormDataDummyValue = form.DummyValue.extend({
 	__name__: 'CBI.DataDummyValue',
@@ -148,7 +148,7 @@ const FormDataDummyValue = form.DummyValue.extend({
 });
 
 /**
- *
+ * Clickable link column that renders data as an anchor element
  */
 const FormLinkDataDummyValue = form.DummyValue.extend({
 	__name__: 'CBI.LinkDataDummyValue',
@@ -176,7 +176,7 @@ const FormLinkDataDummyValue = form.DummyValue.extend({
 });
 
 /**
- *
+ * Form components registry - exports all form modules and custom field types
  */
 const PodmanForm = baseclass.extend({
 	Container: FormContainer,

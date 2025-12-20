@@ -9,11 +9,21 @@
 'require podman.openwrt-network as openwrtNetwork';
 'require podman.utils as utils';
 
+/**
+ * Container info tab - displays basic info, config, network, env vars, and mounts
+ */
 return baseclass.extend({
 	containerId: 0,
 	containerData: {},
 	networksData: [],
 
+	/**
+	 * Render container info tab content
+	 * @param {HTMLElement} content - Container element to append sections to
+	 * @param {string} id - Container ID
+	 * @param {Object} data - Container inspect data
+	 * @param {Array} networks - Available networks list
+	 */
 	render: async function (content, id, data, networks) {
 		this.containerId = id;
 		this.containerData = data;
@@ -45,6 +55,13 @@ return baseclass.extend({
 		});
 	},
 
+	/**
+	 * Build basic information section (name, status, restart policy, health)
+	 * @param {string} status - Container status
+	 * @param {Object} config - Container config
+	 * @param {Object} hostConfig - Container host config
+	 * @returns {Promise<Object>} Section object with render() method
+	 */
 	basicSection: async function (status, config, hostConfig) {
 		// Basic Information - using podmanUI.Table
 		const data = this.containerData;
@@ -284,6 +301,12 @@ return baseclass.extend({
 		return basicSection;
 	},
 
+	/**
+	 * Build configuration section (command, entrypoint, user, tty, etc.)
+	 * @param {Object} config - Container config
+	 * @param {Object} hostConfig - Container host config
+	 * @returns {Promise<Object>} Section object with render() method
+	 */
 	configSection: async function (config, hostConfig) {
 		const cmd = config.Cmd ? config.Cmd.join(' ') : '-';
 		const entrypoint = config.Entrypoint ? config.Entrypoint.join(' ') : '-';
@@ -337,6 +360,13 @@ return baseclass.extend({
 		return configSection;
 	},
 
+	/**
+	 * Build network section (connections, ports, connect/disconnect controls)
+	 * @param {Object} config - Container config
+	 * @param {Object} hostConfig - Container host config
+	 * @param {Object} networkSettings - Container network settings
+	 * @returns {Promise<Object>} Section object with render() method
+	 */
 	networkSection: async function (config, hostConfig, networkSettings) {
 		// Network - using podmanUI.Table
 		const networkTable = new podmanUI.Table({ 'class': 'table table-list' });
@@ -474,6 +504,11 @@ return baseclass.extend({
 		return networkSection;
 	},
 
+	/**
+	 * Build environment variables section with click-to-reveal values
+	 * @param {Array<string>} envs - Environment variables (KEY=value format)
+	 * @returns {Promise<Object>} Section object with render() method
+	 */
 	envSection: async function (envs) {
 		const envTable = new podmanUI.Table({ class: 'table table-env-vars' });
 		envTable
@@ -526,6 +561,11 @@ return baseclass.extend({
 		return envSection;
 	},
 
+	/**
+	 * Build mounts section (volumes, bind mounts)
+	 * @param {Array<Object>} mounts - Mount objects with Type, Source, Destination, RW
+	 * @returns {Promise<Object>} Section object with render() method
+	 */
 	mountsSection: async function (mounts) {
 		const mountsTable = new podmanUI.Table();
 		mountsTable

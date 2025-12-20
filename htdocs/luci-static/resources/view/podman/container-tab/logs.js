@@ -10,7 +10,15 @@
 'require podman.utils as utils';
 'require podman.constants as constants';
 
+/**
+ * Container logs tab - displays container logs with optional live streaming
+ */
 return baseclass.extend({
+	/**
+	 * Render logs tab content with stream controls
+	 * @param {HTMLElement} content - Container element to render into
+	 * @param {string} containerId - Container ID
+	 */
 	render: function (content, containerId) {
 		this.containerId = containerId;
 

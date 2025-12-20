@@ -11,7 +11,16 @@
 'require podman.openwrt-network as openwrtNetwork';
 'require podman.utils as utils';
 
+/**
+ * Container health tab - displays health check config, status, and history
+ */
 return baseclass.extend({
+	/**
+	 * Render health tab content
+	 * @param {HTMLElement} content - Container element to render into
+	 * @param {string} containerId - Container ID
+	 * @param {Object} containerData - Container inspect data
+	 */
 	render: function (content, containerId, containerData) {
 		this.content = content;
 		this.containerId = containerId;

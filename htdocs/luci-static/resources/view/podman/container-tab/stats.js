@@ -10,9 +10,18 @@
 'require podman.utils as utils';
 'require podman.constants as constants';
 
+/**
+ * Container stats tab - displays real-time CPU, memory, network, and process info
+ */
 return baseclass.extend({
 	containerData: {},
 
+	/**
+	 * Render stats tab content with live polling
+	 * @param {HTMLElement} content - Container element to render into
+	 * @param {string} containerId - Container ID
+	 * @param {Object} containerData - Container inspect data
+	 */
 	render: function (content, containerId, containerData) {
 		this.containerId = containerId;
 		this.containerData = containerData;
