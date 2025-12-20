@@ -58,4 +58,33 @@ jobs:
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
       - name: Verify package built
-        run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | grep . 
+        run: find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | grep .
+
+      - name: Find and prepare artifact
+        id: find-ipk
+        run: |
+          IPK_PATH=$(find ${{ github.workspace }}/artifacts/bin/ -name 'luci-app-podman*.ipk' -type f | head -1)
+          IPK_NAME=$(basename "$IPK_PATH")
+          echo "ipk_path=$IPK_PATH" >> $GITHUB_OUTPUT
+          echo "ipk_name=$IPK_NAME" >> $GITHUB_OUTPUT
+
+      - name: Upload IPK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-app-podman-openwrt-${{ matrix.openwrt_version }}
+          path: ${{ steps.find-ipk.outputs.ipk_path }}
+          retention-days: 30
+
+      - name: Write download link to summary
+        run: |
+          echo "## 📦 Build Artifact" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** \`${{ steps.find-ipk.outputs.ipk_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**OpenWrt Version:** ${{ matrix.openwrt_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Download" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. Go to the [Actions run page](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "2. Scroll down to **Artifacts**" >> $GITHUB_STEP_SUMMARY
+          echo "3. Download \`luci-app-podman-openwrt-${{ matrix.openwrt_version }}\`" >> $GITHUB_STEP_SUMMARY
