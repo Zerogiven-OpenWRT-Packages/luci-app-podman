@@ -1,97 +1,111 @@
 msgid ""
-msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
-"Language: fr\n"
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr"
 
-msgid " (%d consecutive failures)"
-msgstr " (%d échecs consécutifs)"
+msgid "Container"
+msgid_plural "Containers"
+msgstr[0] "Conteneur"
+msgstr[1] "Conteneurs"
 
-msgid " containers"
-msgstr " conteneurs"
+msgid "Image"
+msgid_plural "Images"
+msgstr[0] "Image"
+msgstr[1] "Images"
 
-msgid " images"
-msgstr " images"
+msgid "Network"
+msgid_plural "Networks"
+msgstr[0] "Réseau"
+msgstr[1] "Réseaux"
 
-msgid " volumes"
-msgstr " volumes"
+msgid "Pod"
+msgid_plural "Pods"
+msgstr[0] "Pod"
+msgstr[1] "Pods"
 
-msgid "-- Select Image --"
-msgstr "-- Sélectionner une image --"
+msgid "Secret"
+msgid_plural "Secrets"
+msgstr[0] "Secret"
+msgstr[1] "Secrets"
 
-msgid "-- Select Network --"
-msgstr "-- Sélectionner un réseau --"
+msgid "Volume"
+msgid_plural "Volumes"
+msgstr[0] "Volume"
+msgstr[1] "Volumes"
 
-msgid "/host/path:/container/path\nvolume-name:/data"
-msgstr "/chemin/hote:/chemin/conteneur\nnom-volume:/donnees"
+msgid "-- Select %s --"
+msgstr "-- Sélectionner %s --"
 
 msgid "%d consecutive failures"
 msgstr "%d échecs consécutifs"
 
 msgid "%s auto-start for %s"
-msgstr "%s démarrage auto pour %s"
+msgstr "Démarrage automatique %s pour %s"
+
+msgid "%s created successfully"
+msgstr "%s créé avec succès"
 
 msgid "%s Information"
 msgstr "Informations %s"
 
-msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
-msgstr "1-253 caractères : lettres, chiffres, souligné (_) et trait d'union (-) uniquement"
+msgid "%s started successfully"
+msgstr "%s démarré avec succès"
 
-msgid "8080:80\n8443:443"
-msgstr "8080:80\n8443:443"
+msgid "%s stopped successfully"
+msgstr "%s arrêté avec succès"
+
+msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
+msgstr "1-253 caractères : lettres, chiffres, tiret bas (_) et trait d'union (-) uniquement"
 
 msgid "Access via host port mapping"
-msgstr "Accès via le mappage de port de l'hôte"
-
-msgid "Add to shared \"podman\" firewall zone"
-msgstr "Ajouter à la zone pare-feu partagée « podman »"
+msgstr "Accès via mappage de port hôte"
 
 msgid "All volumes exported successfully"
 msgstr "Tous les volumes ont été exportés avec succès"
 
 msgid "Allocate container IP from this range"
-msgstr "Allouer l'IP du conteneur à partir de cette plage"
+msgstr "Allouer l'IP du conteneur dans cette plage"
 
 msgid "Allocate TTY (-t)"
 msgstr "Allouer un TTY (-t)"
 
+msgid "Already configured:"
+msgstr "Déjà configuré :"
+
 msgid "Always"
-msgstr "Toujours"
+msgstr "Toujours (Always)"
 
 msgid "API Version"
-msgstr "Version de l'API"
+msgstr "Version API"
 
-msgid "Are you sure you want to remove %d %s?\n\n%s"
+msgid "Are you sure you want to delete %d %s?\n\n%s"
 msgstr "Êtes-vous sûr de vouloir supprimer %d %s ?\n\n%s"
 
-msgid "Are you sure you want to remove %d network(s)?\n\n%s"
-msgstr "Êtes-vous sûr de vouloir supprimer %d réseau(x) ?\n\n%s"
-
-msgid "Are you sure you want to remove container %s?"
-msgstr "Êtes-vous sûr de vouloir supprimer le conteneur %s ?"
+msgid "Are you sure you want to delete %s?"
+msgstr "Êtes-vous sûr de vouloir supprimer %s ?"
 
 msgid "Auto Remove (--rm)"
-msgstr "Suppression auto (--rm)"
+msgstr "Suppression automatique (--rm)"
 
 msgid "Auto-start"
 msgstr "Démarrage automatique"
 
 msgid "Auto-Update"
-msgstr "Mise à jour auto"
+msgstr "Mise à jour automatique"
 
 msgid "Auto-Update Available"
-msgstr "Mise à jour auto disponible"
+msgstr "Mise à jour automatique disponible"
 
 msgid "Auto-Update Check"
-msgstr "Vérification de mise à jour auto"
+msgstr "Vérification mise à jour auto"
 
 msgid "Auto-Update Complete"
-msgstr "Mise à jour auto terminée"
+msgstr "Mise à jour automatique terminée"
 
 msgid "Auto-Update Containers"
-msgstr "Mise à jour auto des conteneurs"
+msgstr "Mettre à jour les conteneurs automatiquement"
 
 msgid "Auto-update failed: %s"
-msgstr "Échec de la mise à jour auto : %s"
+msgstr "Échec de la mise à jour automatique : %s"
 
 msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
 msgstr "Configurer automatiquement l'interface réseau, le pont et la zone pare-feu OpenWrt. <strong>Hautement recommandé</strong> pour un réseau de conteneurs correct sur OpenWrt."
@@ -100,7 +114,7 @@ msgid "Automatically start the container after it is created"
 msgstr "Démarrer automatiquement le conteneur après sa création"
 
 msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
-msgstr "Mettre à jour automatiquement le conteneur lorsqu'une image plus récente est disponible. Ajoute l'étiquette : io.containers.autoupdate=registry"
+msgstr "Mettre à jour automatiquement le conteneur lorsqu'une nouvelle image est disponible. Ajoute l'étiquette : io.containers.autoupdate=registry"
 
 msgid "Available"
 msgstr "Disponible"
@@ -115,19 +129,22 @@ msgid "Basic Information"
 msgstr "Informations de base"
 
 msgid "Block I/O"
-msgstr "E/S Bloc"
+msgstr "E/S bloc"
 
 msgid "Block IO Weight"
-msgstr "Poids E/S Bloc"
+msgstr "Poids E/S bloc"
 
 msgid "Block IO weight (relative weight), 10-1000. 0 = use default."
-msgstr "Poids E/S Bloc (poids relatif), 10-1000. 0 = valeur par défaut."
+msgstr "Poids E/S bloc (poids relatif), 10-1000. 0 = utiliser la valeur par défaut."
+
+msgid "Bridge"
+msgstr "Pont (Bridge)"
 
 msgid "Bridge \"%s\" is already used by interface \"%s\""
-msgstr "Le pont « %s » est déjà utilisé par l'interface « %s »"
+msgstr "Le pont \"%s\" est déjà utilisé par l'interface \"%s\""
 
-msgid "Bridge device (%s)"
-msgstr "Périphérique pont (%s)"
+msgid "Bridge device"
+msgstr "Périphérique pont"
 
 msgid "Bridge Interface Name"
 msgstr "Nom de l'interface pont"
@@ -135,23 +152,17 @@ msgstr "Nom de l'interface pont"
 msgid "Bridge name is required"
 msgstr "Le nom du pont est requis"
 
-msgid "Bridge: %s"
-msgstr "Pont : %s"
-
 msgid "Cancel"
 msgstr "Annuler"
 
 msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
-msgstr "Impossible de configurer l'intégration OpenWrt : Le réseau « %s » n'a pas de sous-réseau ni de passerelle configurés"
+msgstr "Impossible de configurer l'intégration OpenWrt : Le réseau \"%s\" n'a pas de sous-réseau et de passerelle configurés"
 
 msgid "Checking for container updates..."
-msgstr "Recherche de mises à jour des conteneurs..."
+msgstr "Recherche de mises à jour de conteneurs..."
 
 msgid "Clean Up Now"
 msgstr "Nettoyer maintenant"
-
-msgid "Cleaning Up"
-msgstr "Nettoyage en cours"
 
 msgid "Cleanup / Prune"
 msgstr "Nettoyage / Purge"
@@ -171,14 +182,17 @@ msgstr "Nettoyer les ressources inutilisées"
 msgid "Clear"
 msgstr "Effacer"
 
+msgid "Click to load detailed disk usage information for containers, images, and volumes. This may take several seconds with many resources."
+msgstr "Cliquez pour charger les détails de l'utilisation disque pour les conteneurs, images et volumes. Cela peut prendre plusieurs secondes avec beaucoup de ressources."
+
 msgid "Click to reveal/hide value"
-msgstr "Cliquer pour afficher/masquer la valeur"
+msgstr "Cliquez pour révéler/masquer la valeur"
 
 msgid "Close"
 msgstr "Fermer"
 
 msgid "CMD runs command directly, CMD-SHELL runs command in shell"
-msgstr "CMD exécute la commande directement, CMD-SHELL l'exécute dans un shell"
+msgstr "CMD exécute la commande directement, CMD-SHELL exécute la commande dans un shell"
 
 msgid "Command"
 msgstr "Commande"
@@ -187,13 +201,13 @@ msgid "Command to run (space-separated)"
 msgstr "Commande à exécuter (séparée par des espaces)"
 
 msgid "Command to run for health check. Exit code 0 = healthy, 1 = unhealthy"
-msgstr "Commande pour la vérification de santé. Code de sortie 0 = sain, 1 = malsain"
+msgstr "Commande pour la vérification de l'état. Code de sortie 0 = sain, 1 = malsain"
 
 msgid "Configuration"
 msgstr "Configuration"
 
 msgid "Configure health check to monitor container health status"
-msgstr "Configurer la vérification de santé pour surveiller l'état du conteneur"
+msgstr "Configurer la vérification de l'état pour surveiller la santé du conteneur"
 
 msgid "Configure resource limits for this container. Changes will be applied immediately."
 msgstr "Configurer les limites de ressources pour ce conteneur. Les modifications seront appliquées immédiatement."
@@ -205,7 +219,7 @@ msgid "Connect to"
 msgstr "Se connecter à"
 
 msgid "Connect to Network"
-msgstr "Connecter au réseau"
+msgstr "Se connecter au réseau"
 
 msgid "Connected to network successfully"
 msgstr "Connecté au réseau avec succès"
@@ -228,29 +242,23 @@ msgstr "Conteneur créé et démarré avec succès"
 msgid "Container created but failed to start: %s"
 msgstr "Conteneur créé mais échec du démarrage : %s"
 
-msgid "Container created successfully"
-msgstr "Conteneur créé avec succès"
-
 msgid "Container created, started, and auto-start configured"
-msgstr "Conteneur créé, démarré et configuré pour le démarrage automatique"
+msgstr "Conteneur créé, démarré et démarrage automatique configuré"
 
 msgid "Container image to use"
 msgstr "Image de conteneur à utiliser"
 
+msgid "Container must be running to view processes"
+msgstr "Le conteneur doit être en cours d'exécution pour voir les processus"
+
 msgid "Container Name"
 msgstr "Nom du conteneur"
 
-msgid "Container not found"
-msgstr "Conteneur introuvable"
+msgid "Container not running"
+msgstr "Le conteneur ne fonctionne pas"
 
 msgid "Container renamed successfully"
 msgstr "Conteneur renommé avec succès"
-
-msgid "Container: %s"
-msgstr "Conteneur : %s"
-
-msgid "Containers"
-msgstr "Conteneurs"
 
 msgid "Count"
 msgstr "Nombre"
@@ -262,76 +270,34 @@ msgid "CPU Limit"
 msgstr "Limite CPU"
 
 msgid "CPU shares (relative weight), default is 1024. 0 = use default."
-msgstr "Partages CPU (poids relatif), par défaut 1024. 0 = utiliser la valeur par défaut."
+msgstr "Parts CPU (poids relatif), la valeur par défaut est 1024. 0 = utiliser la valeur par défaut."
 
 msgid "CPU Shares Weight"
-msgstr "Poids des partages CPU"
+msgstr "Poids des parts CPU"
 
 msgid "CPU Usage"
 msgstr "Utilisation CPU"
 
-msgid "Create"
-msgstr "Créer"
-
 msgid "Create %s"
 msgstr "Créer %s"
-
-msgid "Create Container"
-msgstr "Créer un conteneur"
-
-msgid "Create Network"
-msgstr "Créer un réseau"
 
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "Créer une nouvelle zone (sera nommée : podman_<nom-réseau>)"
 
-msgid "Create Pod"
-msgstr "Créer un Pod"
-
-msgid "Create Secret"
-msgstr "Créer un secret"
-
-msgid "Create Volume"
-msgstr "Créer un volume"
-
 msgid "Created"
 msgstr "Créé"
 
-msgid "Creating auto-start configuration for %s"
-msgstr "Création de la configuration de démarrage auto pour %s"
+msgid "Creating %s"
+msgstr "Création de %s"
 
-msgid "Creating Container"
-msgstr "Création du conteneur"
+msgid "Creating %s..."
+msgstr "Création de %s..."
+
+msgid "Creating auto-start configuration for %s"
+msgstr "Création de la configuration de démarrage automatique pour %s"
 
 msgid "Creating container from image %s..."
-msgstr "Création du conteneur depuis l'image %s..."
-
-msgid "Creating Network"
-msgstr "Création du réseau"
-
-msgid "Creating network..."
-msgstr "Création du réseau..."
-
-msgid "Creating OpenWrt integration for network \"%s\"..."
-msgstr "Création de l'intégration OpenWrt pour le réseau « %s »..."
-
-msgid "Creating Pod"
-msgstr "Création du Pod"
-
-msgid "Creating pod..."
-msgstr "Création du pod..."
-
-msgid "Creating Secret"
-msgstr "Création du secret"
-
-msgid "Creating secret..."
-msgstr "Création du secret..."
-
-msgid "Creating Volume"
-msgstr "Création du volume"
-
-msgid "Creating volume..."
-msgstr "Création du volume..."
+msgstr "Création du conteneur à partir de l'image %s..."
 
 msgid "Delete Selected"
 msgstr "Supprimer la sélection"
@@ -339,20 +305,11 @@ msgstr "Supprimer la sélection"
 msgid "Deleting %d selected %s..."
 msgstr "Suppression de %d %s sélectionnés..."
 
-msgid "Deleting %d selected network(s)..."
-msgstr "Suppression de %d réseau(x) sélectionné(s)..."
-
 msgid "Deleting %s"
 msgstr "Suppression de %s"
 
-msgid "Deleting Networks"
-msgstr "Suppression des réseaux"
-
 msgid "Destination"
 msgstr "Destination"
-
-msgid "Details:"
-msgstr "Détails :"
 
 msgid "Direct access to container on OpenWrt-integrated network"
 msgstr "Accès direct au conteneur sur le réseau intégré OpenWrt"
@@ -382,22 +339,25 @@ msgid "Disconnecting from Network"
 msgstr "Déconnexion du réseau"
 
 msgid "Disk Usage"
-msgstr "Utilisation disque"
+msgstr "Utilisation du disque"
 
-msgid "DNS access rule (if first network)"
-msgstr "Règle d'accès DNS (si premier réseau)"
+msgid "dnsmasq exclusion"
+msgstr "exclusion dnsmasq"
 
 msgid "Driver"
-msgstr "Pilote"
+msgstr "Pilote (Driver)"
 
 msgid "Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)"
-msgstr "Options spécifiques au pilote (séparées par virgules, ex: type=tmpfs,o=size=100m)"
+msgstr "Options spécifiques au pilote (séparées par des virgules, ex. type=tmpfs,o=size=100m)"
+
+msgid "Driver: %s"
+msgstr "Pilote : %s"
 
 msgid "Enable"
 msgstr "Activer"
 
 msgid "Enable Health Check"
-msgstr "Activer la vérification de santé"
+msgstr "Activer la vérification de l'état"
 
 msgid "Enable IPv6"
 msgstr "Activer IPv6"
@@ -415,13 +375,13 @@ msgid "Ended"
 msgstr "Terminé"
 
 msgid "Enter secret data (password, token, key, etc.)"
-msgstr "Entrez les données secrètes (mot de passe, jeton, clé, etc.)"
+msgstr "Saisir les données secrètes (mot de passe, jeton, clé, etc.)"
 
 msgid "Enter volume name"
-msgstr "Entrez le nom du volume"
+msgstr "Saisir le nom du volume"
 
 msgid "Entrypoint"
-msgstr "Point d'entrée"
+msgstr "Point d'entrée (Entrypoint)"
 
 msgid "Environment Variables"
 msgstr "Variables d'environnement"
@@ -429,11 +389,14 @@ msgstr "Variables d'environnement"
 msgid "Error"
 msgstr "Erreur"
 
-msgid "Error checking status: %s"
-msgstr "Erreur lors de la vérification de l'état : %s"
+msgid "Error loading details: %s"
+msgstr "Erreur lors du chargement des détails : %s"
 
 msgid "Error polling log stream: %s"
 msgstr "Erreur lors de l'interrogation du flux de logs : %s"
+
+msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
+msgstr "Interface physique existante à utiliser comme parent. Requis pour les réseaux macvlan/ipvlan."
 
 msgid "Export"
 msgstr "Exporter"
@@ -459,20 +422,8 @@ msgstr "Échec de la recherche de mises à jour : %s"
 msgid "Failed to connect to network: %s"
 msgstr "Échec de la connexion au réseau : %s"
 
-msgid "Failed to create container: %s"
-msgstr "Échec de la création du conteneur : %s"
-
-msgid "Failed to create network: %s"
-msgstr "Échec de la création du réseau : %s"
-
-msgid "Failed to create pod: %s"
-msgstr "Échec de la création du pod : %s"
-
-msgid "Failed to create secret: %s"
-msgstr "Échec de la création du secret : %s"
-
-msgid "Failed to create volume: %s"
-msgstr "Échec de la création du volume : %s"
+msgid "Failed to create %s: %s"
+msgstr "Échec de la création de %s : %s"
 
 msgid "Failed to decode logs"
 msgstr "Échec du décodage des logs"
@@ -480,26 +431,17 @@ msgstr "Échec du décodage des logs"
 msgid "Failed to delete %d %s"
 msgstr "Échec de la suppression de %d %s"
 
-msgid "Failed to delete %d network(s)"
-msgstr "Échec de la suppression de %d réseau(x)"
-
-msgid "Failed to delete networks: %s"
-msgstr "Échec de la suppression des réseaux : %s"
-
-msgid "Failed to delete some %s: %s"
-msgstr "Échec de la suppression de certains %s : %s"
-
 msgid "Failed to disconnect from network: %s"
 msgstr "Échec de la déconnexion du réseau : %s"
 
 msgid "Failed to enable init script"
-msgstr "Échec de l'activation du script d'init"
+msgstr "Échec de l'activation du script d'initialisation"
 
 msgid "Failed to export volume %s: %s"
 msgstr "Échec de l'exportation du volume %s : %s"
 
 msgid "Failed to generate init script"
-msgstr "Échec de la génération du script d'init"
+msgstr "Échec de la génération du script d'initialisation"
 
 msgid "Failed to import volume: %s"
 msgstr "Échec de l'importation du volume : %s"
@@ -507,47 +449,29 @@ msgstr "Échec de l'importation du volume : %s"
 msgid "Failed to inspect: %s"
 msgstr "Échec de l'inspection : %s"
 
-msgid "Failed to load container data"
-msgstr "Échec du chargement des données du conteneur"
-
-msgid "Failed to load containers"
-msgstr "Échec du chargement des conteneurs"
-
 msgid "Failed to load data: %s"
 msgstr "Échec du chargement des données : %s"
 
-msgid "Failed to load images"
-msgstr "Échec du chargement des images"
+msgid "Failed to load disk usage: %s"
+msgstr "Échec du chargement de l'utilisation du disque : %s"
 
 msgid "Failed to load init script"
-msgstr "Échec du chargement du script d'init"
-
-msgid "Failed to load init script: %s"
-msgstr "Échec du chargement du script d'init : %s"
+msgstr "Échec du chargement du script d'initialisation"
 
 msgid "Failed to load logs: %s"
 msgstr "Échec du chargement des logs : %s"
 
-msgid "Failed to load networks"
-msgstr "Échec du chargement des réseaux"
-
-msgid "Failed to load pods"
-msgstr "Échec du chargement des pods"
-
 msgid "Failed to load process list: %s"
 msgstr "Échec du chargement de la liste des processus : %s"
 
-msgid "Failed to load secrets"
-msgstr "Échec du chargement des secrets"
-
-msgid "Failed to load volumes"
-msgstr "Échec du chargement des volumes"
+msgid "Failed to load resources: %s"
+msgstr "Échec du chargement des ressources : %s"
 
 msgid "Failed to parse command: %s"
 msgstr "Échec de l'analyse de la commande : %s"
 
-msgid "Failed to pull %d image(s)"
-msgstr "Échec de la récupération de %d image(s)"
+msgid "Failed to pull %d %s"
+msgstr "Échec de la récupération (pull) de %d %s"
 
 msgid "Failed to pull image"
 msgstr "Échec de la récupération de l'image"
@@ -564,38 +488,26 @@ msgstr "Échec de la lecture du fichier"
 msgid "Failed to refresh: %s"
 msgstr "Échec de l'actualisation : %s"
 
-msgid "Failed to remove %d container(s)"
-msgstr "Échec de la suppression de %d conteneur(s)"
-
-msgid "Failed to remove containers: %s"
-msgstr "Échec de la suppression des conteneurs : %s"
+msgid "Failed to remove %d %s"
+msgstr "Échec de la suppression de %d %s"
 
 msgid "Failed to rename container: %s"
 msgstr "Échec du renommage du conteneur : %s"
 
-msgid "Failed to restart %d container(s)"
-msgstr "Échec du redémarrage de %d conteneur(s)"
+msgid "Failed to restart %d %s"
+msgstr "Échec du redémarrage de %d %s"
 
-msgid "Failed to restart containers: %s"
-msgstr "Échec du redémarrage des conteneurs : %s"
-
-msgid "Failed to run health checks on %d container(s)"
-msgstr "Échec de l'exécution des vérifications de santé sur %d conteneur(s)"
-
-msgid "Failed to run health checks: %s"
-msgstr "Échec de l'exécution des vérifications de santé : %s"
+msgid "Failed to run health checks on %d %s"
+msgstr "Échec de l'exécution des vérifications de l'état sur %d %s"
 
 msgid "Failed to setup auto-start: %s"
-msgstr "Échec de la configuration du démarrage auto : %s"
+msgstr "Échec de la configuration du démarrage automatique : %s"
 
 msgid "Failed to setup OpenWrt integration: %s"
 msgstr "Échec de la configuration de l'intégration OpenWrt : %s"
 
-msgid "Failed to start %d container(s)"
-msgstr "Échec du démarrage de %d conteneur(s)"
-
-msgid "Failed to start containers: %s"
-msgstr "Échec du démarrage des conteneurs : %s"
+msgid "Failed to start %d %s"
+msgstr "Échec du démarrage de %d %s"
 
 msgid "Failed to start image pull"
 msgstr "Échec du lancement de la récupération de l'image"
@@ -606,20 +518,14 @@ msgstr "Échec du démarrage du flux de logs : %s"
 msgid "Failed to start some pods: %s"
 msgstr "Échec du démarrage de certains pods : %s"
 
-msgid "Failed to stop %d container(s)"
-msgstr "Échec de l'arrêt de %d conteneur(s)"
-
-msgid "Failed to stop containers: %s"
-msgstr "Échec de l'arrêt des conteneurs : %s"
+msgid "Failed to stop %d %s"
+msgstr "Échec de l'arrêt de %d %s"
 
 msgid "Failed to stop some pods: %s"
 msgstr "Échec de l'arrêt de certains pods : %s"
 
 msgid "Failed to update init script"
-msgstr "Échec de la mise à jour du script d'init"
-
-msgid "Failed to update init script: %s"
-msgstr "Échec de la mise à jour du script d'init : %s"
+msgstr "Échec de la mise à jour du script d'initialisation"
 
 msgid "Failed to update resources: %s"
 msgstr "Échec de la mise à jour des ressources : %s"
@@ -639,17 +545,11 @@ msgstr "Récupérer une image de conteneur avec Podman."
 msgid "Fetching information..."
 msgstr "Récupération des informations..."
 
-msgid "Fetching script for %s"
-msgstr "Récupération du script pour %s"
-
-msgid "file"
-msgstr "fichier"
+msgid "Fetching script"
+msgstr "Récupération du script"
 
 msgid "Firewall Zone"
 msgstr "Zone pare-feu"
-
-msgid "Full container inspect data in JSON format. This is the raw data returned from the Podman API."
-msgstr "Données complètes d'inspection du conteneur au format JSON. Ce sont les données brutes renvoyées par l'API Podman."
 
 msgid "Gateway"
 msgstr "Passerelle"
@@ -667,28 +567,31 @@ msgid "Generate"
 msgstr "Générer"
 
 msgid "Generating Init Script"
-msgstr "Génération du script d'init"
-
-msgid "Generating init script..."
-msgstr "Génération du script d'init..."
+msgstr "Génération du script d'initialisation"
 
 msgid "Grace period before health checks count toward failures. Default: 0s"
-msgstr "Période de grâce avant que les contrôles de santé ne comptent comme échecs. Défaut : 0s"
+msgstr "Période de grâce avant que les vérifications ne comptent comme des échecs. Défaut : 0s"
 
 msgid "Graph Root"
-msgstr "Racine du graphe"
+msgstr "Racine du graphe (Graph Root)"
 
 msgid "Health"
 msgstr "Santé"
 
 msgid "Health Check Command"
-msgstr "Commande de vérification de santé"
+msgstr "Commande de vérification de l'état"
+
+msgid "Health Check Configuration"
+msgstr "Configuration de la vérification de l'état"
+
+msgid "Health check configuration is set at container creation and cannot be modified. To change it, you must recreate the container."
+msgstr "La configuration de la vérification de l'état est définie à la création du conteneur et ne peut être modifiée. Pour la changer, vous devez recréer le conteneur."
 
 msgid "Health Check Type"
-msgstr "Type de vérification de santé"
+msgstr "Type de vérification de l'état"
 
 msgid "Health checks completed successfully"
-msgstr "Vérifications de santé terminées avec succès"
+msgstr "Vérifications de l'état terminées avec succès"
 
 msgid "Health Status"
 msgstr "État de santé"
@@ -702,35 +605,26 @@ msgstr "Nom d'hôte à assigner au pod"
 msgid "Id"
 msgstr "Id"
 
-msgid "ID"
-msgstr "ID"
-
-msgid "Image"
-msgstr "Image"
-
 msgid "Image ID"
 msgstr "ID de l'image"
 
 msgid "Image pulled successfully"
 msgstr "Image récupérée avec succès"
 
-msgid "Images"
-msgstr "Images"
-
 msgid "Import"
 msgstr "Importer"
 
 msgid "Import from Compose File"
-msgstr "Importer depuis fichier Compose"
+msgstr "Importer depuis un fichier Compose"
 
 msgid "Import from Run Command"
-msgstr "Importer depuis commande Run"
+msgstr "Importer depuis une commande Run"
 
 msgid "Import Volume"
 msgstr "Importer un volume"
 
 msgid "Import volume from archive: %s"
-msgstr "Importer le volume depuis l'archive : %s"
+msgstr "Importer un volume depuis l'archive : %s"
 
 msgid "Importing Volume"
 msgstr "Importation du volume"
@@ -742,31 +636,22 @@ msgid "Info"
 msgstr "Info"
 
 msgid "Information"
-msgstr "Information"
+msgstr "Informations"
 
 msgid "Infra ID"
 msgstr "ID Infra"
 
 msgid "Init Script"
-msgstr "Script d'init"
+msgstr "Script d'initialisation"
 
 msgid "Init script created and enabled for %s"
-msgstr "Script d'init créé et activé pour %s"
-
-msgid "Init script disabled"
-msgstr "Script d'init désactivé"
+msgstr "Script d'initialisation créé et activé pour %s"
 
 msgid "Init script disabled for %s"
-msgstr "Script d'init désactivé pour %s"
-
-msgid "Init script enabled"
-msgstr "Script d'init activé"
+msgstr "Script d'initialisation désactivé pour %s"
 
 msgid "Init script enabled for %s"
-msgstr "Script d'init activé pour %s"
-
-msgid "Init Script: %s"
-msgstr "Script d'init : %s"
+msgstr "Script d'initialisation activé pour %s"
 
 msgid "Inspect"
 msgstr "Inspecter"
@@ -786,29 +671,14 @@ msgstr "Intervalle"
 msgid "Interval during start period (podman 4.8+). Default: 5s"
 msgstr "Intervalle pendant la période de démarrage (podman 4.8+). Défaut : 5s"
 
-msgid "Invalid format. Use: 1g, 2g, or -1 for unlimited swap"
-msgstr "Format invalide. Utilisez : 1g, 2g, ou -1 pour un swap illimité"
+msgid "Invalid format."
+msgstr "Format invalide."
 
-msgid "Invalid format. Use: 30s, 1m, 1h, etc."
-msgstr "Format invalide. Utilisez : 30s, 1m, 1h, etc."
+msgid "Invalid format. Use: 5s, 10s, 30s"
+msgstr "Format invalide. Utilisez : 5s, 10s, 30s"
 
-msgid "Invalid format. Use: 30s, 1m, 5m, etc."
-msgstr "Format invalide. Utilisez : 30s, 1m, 5m, etc."
-
-msgid "Invalid format. Use: 512m, 1g, etc."
-msgstr "Format invalide. Utilisez : 512m, 1g, etc."
-
-msgid "Invalid format. Use: 5s, 10s, 30s, etc."
-msgstr "Format invalide. Utilisez : 5s, 10s, 30s, etc."
-
-msgid "Invalid format. Use: 5s, 10s, etc."
-msgstr "Format invalide. Utilisez : 5s, 10s, etc."
-
-msgid "Invalid memory format. Use: 512m, 1g, etc."
-msgstr "Format mémoire invalide. Utilisez : 512m, 1g, etc."
-
-msgid "Invalid memory swap format. Use: 512m, 1g, -1, etc."
-msgstr "Format swap mémoire invalide. Utilisez : 512m, 1g, -1, etc."
+msgid "Invalid format. Use: 5s, 30s, 1m, 1h"
+msgstr "Format invalide. Utilisez : 5s, 30s, 1m, 1h"
 
 msgid "IP (optional)"
 msgstr "IP (optionnel)"
@@ -831,20 +701,20 @@ msgstr "Sous-réseau IPv4 (CIDR)"
 msgid "IPv4 subnet in CIDR notation"
 msgstr "Sous-réseau IPv4 en notation CIDR"
 
-msgid "key1=value1\nkey2=value2"
-msgstr "clé1=valeur1\nclé2=valeur2"
-
 msgid "Labels"
-msgstr "Étiquettes"
+msgstr "Étiquettes (Labels)"
 
 msgid "Labels in key=value format, one per line"
 msgstr "Étiquettes au format clé=valeur, une par ligne"
 
 msgid "Last check: %s"
-msgstr "Dernière vérif. : %s"
+msgstr "Dernière vérification : %s"
 
 msgid "Leave empty for automatic IP assignment"
-msgstr "Laisser vide pour une assignation IP automatique"
+msgstr "Laisser vide pour l'attribution automatique d'IP"
+
+msgid "Leave empty for unlimited."
+msgstr "Laisser vide pour illimité."
 
 msgid "Leave empty to auto-generate"
 msgstr "Laisser vide pour générer automatiquement"
@@ -858,14 +728,20 @@ msgstr "Liens"
 msgid "Live Stream"
 msgstr "Flux en direct"
 
-msgid "Loading %s Details"
-msgstr "Chargement des détails de %s"
+msgid "Load Disk Usage Statistics"
+msgstr "Charger les stats d'utilisation disque"
 
-msgid "Loading health check data..."
-msgstr "Chargement des données de santé..."
+msgid "Loading %s Details"
+msgstr "Chargement des détails %s"
+
+msgid "Loading %s..."
+msgstr "Chargement de %s..."
+
+msgid "Loading disk usage data..."
+msgstr "Chargement des données d'utilisation disque..."
 
 msgid "Loading Init Script"
-msgstr "Chargement du script d'init"
+msgstr "Chargement du script d'initialisation"
 
 msgid "Loading logs..."
 msgstr "Chargement des logs..."
@@ -873,62 +749,38 @@ msgstr "Chargement des logs..."
 msgid "Loading process list..."
 msgstr "Chargement de la liste des processus..."
 
-msgid "Loading stats..."
-msgstr "Chargement des stats..."
-
 msgid "Loading..."
 msgstr "Chargement..."
-
-msgid "local"
-msgstr "local"
 
 msgid "Log stream ended with error"
 msgstr "Le flux de logs s'est terminé avec une erreur"
 
 msgid "Logs"
-msgstr "Logs"
+msgstr "Journaux (Logs)"
 
-msgid "Manage Podman containers"
-msgstr "Gérer les conteneurs Podman"
-
-msgid "Manage Podman images"
-msgstr "Gérer les images Podman"
-
-msgid "Manage Podman networks"
-msgstr "Gérer les réseaux Podman"
-
-msgid "Manage Podman pods"
-msgstr "Gérer les pods Podman"
-
-msgid "Manage Podman secrets"
-msgstr "Gérer les secrets Podman"
-
-msgid "Manage Podman volumes"
-msgstr "Gérer les volumes Podman"
+msgid "Manage Podman %s"
+msgstr "Gérer Podman %s"
 
 msgid "Maximum time for health check to complete. Default: 30s"
-msgstr "Temps maximum pour la vérification de santé. Défaut : 30s"
+msgstr "Temps maximum pour compléter la vérification de l'état. Défaut : 30s"
 
 msgid "Memory"
 msgstr "Mémoire"
 
 msgid "Memory %"
-msgstr "Mémoire %"
+msgstr "% Mémoire"
 
 msgid "Memory + Swap Limit"
 msgstr "Limite Mémoire + Swap"
 
 msgid "Memory Limit"
-msgstr "Limite Mémoire"
-
-msgid "Memory limit (e.g., 512m, 1g, 2g). Leave empty for unlimited."
-msgstr "Limite mémoire (ex: 512m, 1g, 2g). Laisser vide pour illimité."
+msgstr "Limite de mémoire"
 
 msgid "Memory limit (e.g., 512m, 1g)"
-msgstr "Limite mémoire (ex: 512m, 1g)"
+msgstr "Limite de mémoire (ex. 512m, 1g)"
 
 msgid "Memory Usage"
-msgstr "Usage mémoire"
+msgstr "Utilisation mémoire"
 
 msgid "Mode"
 msgstr "Mode"
@@ -948,59 +800,38 @@ msgstr "Doit être 0 ou entre 10 et 1000"
 msgid "Must be between 0 and 262144"
 msgstr "Doit être entre 0 et 262144"
 
-msgid "my-container (optional)"
-msgstr "mon-conteneur (optionnel)"
-
-msgid "my-network"
-msgstr "mon-reseau"
-
-msgid "my-pod"
-msgstr "mon-pod"
-
-msgid "my-secret"
-msgstr "mon-secret"
-
-msgid "my-volume (optional)"
-msgstr "mon-volume (optionnel)"
-
 msgid "N/A"
-msgstr "N/A"
+msgstr "N/D"
 
 msgid "Name"
 msgstr "Nom"
 
 msgid "Name for the network"
-msgstr "Nom du réseau"
+msgstr "Nom pour le réseau"
 
 msgid "Name for the pod"
-msgstr "Nom du pod"
+msgstr "Nom pour le pod"
 
 msgid "Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it."
-msgstr "Nom de l'interface pont (ex: podman0, mynet0). Laisser vide pour : &lt;nom-réseau&gt;0. Note : Si le nom généré est en conflit, OpenWrt l'incrémentera automatiquement."
-
-msgid "Network"
-msgstr "Réseau"
+msgstr "Nom de l'interface pont (ex. podman0, mynet0). Laisser vide pour utiliser : &lt;nom-réseau&gt;0. Note : Si le nom généré est en conflit avec une interface existante, OpenWrt l'incrémentera automatiquement."
 
 msgid "Network and OpenWrt integration created successfully"
 msgstr "Réseau et intégration OpenWrt créés avec succès"
 
 msgid "Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually."
-msgstr "Réseau créé mais échec de l'intégration OpenWrt : %s. Vous devrez peut-être configurer OpenWrt manuellement."
-
-msgid "Network created successfully"
-msgstr "Réseau créé avec succès"
+msgstr "Réseau créé mais l'intégration OpenWrt a échoué : %s. Vous devrez peut-être configurer OpenWrt manuellement."
 
 msgid "Network driver"
 msgstr "Pilote réseau"
 
 msgid "Network I/O"
-msgstr "E/S Réseau"
+msgstr "E/S réseau"
+
+msgid "Network interface"
+msgstr "Interface réseau"
 
 msgid "Network interface \"%s\" already exists with proto \"%s\""
-msgstr "L'interface réseau « %s » existe déjà avec le protocole « %s »"
-
-msgid "Network interface with static IP"
-msgstr "Interface réseau avec IP statique"
+msgstr "L'interface réseau \"%s\" existe déjà avec le protocole \"%s\""
 
 msgid "Network Mode"
 msgstr "Mode réseau"
@@ -1014,14 +845,14 @@ msgstr "Le nom du réseau est requis"
 msgid "Network: %s"
 msgstr "Réseau : %s"
 
-msgid "Networks"
-msgstr "Réseaux"
+msgid "Networks deleted but OpenWrt integration removal failed for: %s"
+msgstr "Réseaux supprimés mais la suppression de l'intégration OpenWrt a échoué pour : %s"
 
-msgid "Networks deleted but %d OpenWrt integration(s) failed to remove"
-msgstr "Réseaux supprimés mais échec de la suppression de %d intégration(s) OpenWrt"
+msgid "Networks deleted but OpenWrt integration removal failed for: %s (%s)"
+msgstr "Réseaux supprimés mais la suppression de l'intégration OpenWrt a échoué pour : %s (%s)"
 
 msgid "Never"
-msgstr "Jamais"
+msgstr "Jamais (Never)"
 
 msgid "No"
 msgstr "Non"
@@ -1030,16 +861,13 @@ msgid "No %s selected"
 msgstr "Aucun %s sélectionné"
 
 msgid "No auto-start configured"
-msgstr "Pas de démarrage auto configuré"
+msgstr "Aucun démarrage automatique configuré"
 
 msgid "No container ID in URL"
-msgstr "Pas d'ID de conteneur dans l'URL"
+msgstr "Aucun ID de conteneur dans l'URL"
 
 msgid "No containers are configured for auto-update or all containers are up to date."
-msgstr "Aucun conteneur n'est configuré pour la mise à jour auto ou tous sont à jour."
-
-msgid "No containers selected"
-msgstr "Aucun conteneur sélectionné"
+msgstr "Aucun conteneur n'est configuré pour la mise à jour automatique ou tous les conteneurs sont à jour."
 
 msgid "No data received"
 msgstr "Aucune donnée reçue"
@@ -1047,38 +875,32 @@ msgstr "Aucune donnée reçue"
 msgid "No failures"
 msgstr "Aucun échec"
 
-msgid "No health check configured"
-msgstr "Pas de vérification de santé configurée"
+msgid "No health check configured."
+msgstr "Aucune vérification de l'état configurée."
 
 msgid "No I/O"
-msgstr "Pas d'E/S"
-
-msgid "No images selected"
-msgstr "Aucune image sélectionnée"
+msgstr "Aucune E/S"
 
 msgid "No logs available"
-msgstr "Aucun log disponible"
-
-msgid "No networks selected"
-msgstr "Aucun réseau sélectionné"
-
-msgid "No pods selected"
-msgstr "Aucun pod sélectionné"
+msgstr "Aucun journal disponible"
 
 msgid "No process data available"
 msgstr "Aucune donnée de processus disponible"
 
 msgid "No running processes"
-msgstr "Aucun processus en cours"
+msgstr "Aucun processus en cours d'exécution"
 
 msgid "No selected containers have health checks configured"
-msgstr "Aucun conteneur sélectionné n'a de vérification de santé configurée"
+msgstr "Aucun des conteneurs sélectionnés n'a de vérification de l'état configurée"
+
+msgid "No suitable interfaces found"
+msgstr "Aucune interface appropriée trouvée"
+
+msgid "No suitable parent interfaces available on this system"
+msgstr "Aucune interface parente appropriée disponible sur ce système"
 
 msgid "No unused resources found"
 msgstr "Aucune ressource inutilisée trouvée"
-
-msgid "No volumes selected"
-msgstr "Aucun volume sélectionné"
 
 msgid "Not available (no restart policy)"
 msgstr "Non disponible (pas de politique de redémarrage)"
@@ -1086,50 +908,56 @@ msgstr "Non disponible (pas de politique de redémarrage)"
 msgid "Not configured"
 msgstr "Non configuré"
 
-msgid "Note: %d network(s) have OpenWrt integration that will also be removed (bridge, firewall zone, and rules)."
-msgstr "Note : %d réseau(x) ont une intégration OpenWrt qui sera aussi supprimée (pont, zone pare-feu et règles)."
+msgid "Not found"
+msgstr "Non trouvé"
+
+msgid "Note: Some %s have OpenWrt integration that will also be removed."
+msgstr "Note : Certains %s ont une intégration OpenWrt qui sera également supprimée."
 
 msgid "Number of consecutive failures before marking unhealthy. Default: 3"
 msgstr "Nombre d'échecs consécutifs avant de marquer comme malsain. Défaut : 3"
 
 msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0)"
-msgstr "Nombre de CPU (ex: 0.5, 1.0, 2.0)"
-
-msgid "Number of CPUs (e.g., 0.5, 1.0, 2.0). Leave empty for unlimited."
-msgstr "Nombre de CPU (ex: 0.5, 1.0, 2.0). Laisser vide pour illimité."
+msgstr "Nombre de CPU (ex. 0.5, 1.0, 2.0)"
 
 msgid "OK"
 msgstr "OK"
 
 msgid "On Failure"
-msgstr "En cas d'échec"
+msgstr "En cas d'échec (On Failure)"
 
 msgid "Once created, secret data cannot be viewed or retrieved"
-msgstr "Une fois créé, les données secrètes ne peuvent être vues ni récupérées"
+msgstr "Une fois créées, les données secrètes ne peuvent être vues ou récupérées"
 
 msgid "One per line, format: host:container"
-msgstr "Un par ligne, format : hote:conteneur"
+msgstr "Une par ligne, format : hôte:conteneur"
 
 msgid "One per line, format: key=value"
-msgstr "Un par ligne, format : clé=valeur"
-
-msgid "One per line, format: KEY=value"
-msgstr "Un par ligne, format : CLÉ=valeur"
+msgstr "Une par ligne, format : clé=valeur"
 
 msgid "One per line, format: source:destination"
-msgstr "Un par ligne, format : source:destination"
+msgstr "Une par ligne, format : source:destination"
 
 msgid "OpenWrt integration for network \"%s\" created successfully"
-msgstr "Intégration OpenWrt pour le réseau « %s » créée avec succès"
+msgstr "Intégration OpenWrt pour le réseau \"%s\" créée avec succès"
 
 msgid "OpenWrt integration incomplete. Click to setup. Missing: %s"
 msgstr "Intégration OpenWrt incomplète. Cliquez pour configurer. Manquant : %s"
 
 msgid "OpenWrt integration requires subnet to be specified"
-msgstr "L'intégration OpenWrt nécessite de spécifier un sous-réseau"
+msgstr "L'intégration OpenWrt nécessite la spécification d'un sous-réseau"
 
 msgid "Output"
 msgstr "Sortie"
+
+msgid "Overview"
+msgstr "Aperçu"
+
+msgid "Parent Interface"
+msgstr "Interface parente"
+
+msgid "Parent interface is required for macvlan/ipvlan networks"
+msgstr "L'interface parente est requise pour les réseaux macvlan/ipvlan"
 
 msgid "Paste a docker or podman run command below:"
 msgstr "Collez une commande docker ou podman run ci-dessous :"
@@ -1138,34 +966,19 @@ msgid "PIDs"
 msgstr "PIDs"
 
 msgid "Please enter a run command"
-msgstr "Veuillez entrer une commande d'exécution"
+msgstr "Veuillez saisir une commande run"
 
 msgid "Please enter an image name"
-msgstr "Veuillez entrer un nom d'image"
+msgstr "Veuillez saisir un nom d'image"
 
 msgid "Please select a network"
 msgstr "Veuillez sélectionner un réseau"
 
-msgid "Pod created successfully"
-msgstr "Pod créé avec succès"
-
 msgid "Pod Name"
-msgstr "Nom du Pod"
-
-msgid "pod-hostname"
-msgstr "pod-nomhote"
+msgstr "Nom du pod"
 
 msgid "Podman Version"
-msgstr "Version Podman"
-
-msgid "Pods"
-msgstr "Pods"
-
-msgid "Pods started successfully"
-msgstr "Pods démarrés avec succès"
-
-msgid "Pods stopped successfully"
-msgstr "Pods arrêtés avec succès"
+msgstr "Version de Podman"
 
 msgid "Port Mappings"
 msgstr "Mappages de ports"
@@ -1180,13 +993,13 @@ msgid "Publish ports, one per line (host:container format)"
 msgstr "Publier les ports, un par ligne (format hôte:conteneur)"
 
 msgid "Pull Image"
-msgstr "Récupérer l'image"
+msgstr "Récupérer l'image (Pull)"
 
 msgid "Pull Latest"
 msgstr "Récupérer la dernière"
 
-msgid "Pull latest version of %d image(s)?\n\n%s"
-msgstr "Récupérer la dernière version de %d image(s) ?\n\n%s"
+msgid "Pull latest version of %d %s?\n\n%s"
+msgstr "Récupérer la dernière version de %d %s ?\n\n%s"
 
 msgid "Pulling Image"
 msgstr "Récupération de l'image"
@@ -1194,8 +1007,11 @@ msgstr "Récupération de l'image"
 msgid "Pulling Images"
 msgstr "Récupération des images"
 
-msgid "Pulling latest version of %d image(s)..."
-msgstr "Récupération de la dernière version de %d image(s)..."
+msgid "Pulling latest version of %d %s..."
+msgstr "Récupération de la dernière version de %d %s..."
+
+msgid "Read: %s / Write: %s"
+msgstr "Lecture : %s / Écriture : %s"
 
 msgid "Recent Checks (Last 10)"
 msgstr "Vérifications récentes (10 dernières)"
@@ -1227,17 +1043,14 @@ msgstr "Supprimer toutes les images inutilisées (pas seulement les orphelines)"
 msgid "Remove unused volumes"
 msgstr "Supprimer les volumes inutilisés"
 
-msgid "Removed %d container(s) successfully"
-msgstr "Suppression de %d conteneur(s) réussie"
+msgid "Removed %d %s successfully"
+msgstr "%d %s supprimés avec succès"
 
 msgid "Removed: %s"
 msgstr "Supprimé : %s"
 
-msgid "Removing %d container(s)..."
-msgstr "Suppression de %d conteneur(s)..."
-
-msgid "Removing Containers"
-msgstr "Suppression des conteneurs"
+msgid "Removing %d %s..."
+msgstr "Suppression de %d %s..."
 
 msgid "Removing unused resources, please wait..."
 msgstr "Suppression des ressources inutilisées, veuillez patienter..."
@@ -1263,26 +1076,26 @@ msgstr "Ressources mises à jour avec succès"
 msgid "Restart"
 msgstr "Redémarrer"
 
-msgid "Restart Containers"
-msgstr "Redémarrer les conteneurs"
-
 msgid "Restart Policy"
 msgstr "Politique de redémarrage"
 
 msgid "Restart policy set but no init script"
-msgstr "Politique de redémarrage définie mais pas de script d'init"
+msgstr "Politique de redémarrage définie mais pas de script d'initialisation"
 
 msgid "Restart policy set but no init script. Click to generate."
-msgstr "Politique de redémarrage définie mais pas de script d'init. Cliquez pour générer."
+msgstr "Politique de redémarrage définie mais pas de script d'initialisation. Cliquez pour générer."
 
 msgid "Restart policy updated successfully"
 msgstr "Politique de redémarrage mise à jour avec succès"
 
-msgid "Restarted %d container(s) successfully"
-msgstr "Redémarrage de %d conteneur(s) réussi"
+msgid "Restart selected %s"
+msgstr "Redémarrer les %s sélectionnés"
 
-msgid "Restarting %d container(s)..."
-msgstr "Redémarrage de %d conteneur(s)..."
+msgid "Restarted %d %s successfully"
+msgstr "%d %s redémarrés avec succès"
+
+msgid "Restarting %d %s..."
+msgstr "Redémarrage de %d %s..."
 
 msgid "Restrict external access to the network"
 msgstr "Restreindre l'accès externe au réseau"
@@ -1291,37 +1104,31 @@ msgid "Result"
 msgstr "Résultat"
 
 msgid "Retries"
-msgstr "Essais"
+msgstr "Tentatives"
 
 msgid "RPC call failure: "
 msgstr "Échec de l'appel RPC : "
 
 msgid "Run Check"
-msgstr "Lancer vérification"
+msgstr "Exécuter la vérification"
 
 msgid "Run Health Check Now"
-msgstr "Lancer la vérification de santé maintenant"
+msgstr "Exécuter la vérification de l'état maintenant"
 
 msgid "Run health checks on selected containers"
-msgstr "Lancer les vérifications de santé sur les conteneurs sélectionnés"
+msgstr "Exécuter les vérifications de l'état sur les conteneurs sélectionnés"
 
 msgid "Run Root"
-msgstr "Racine d'exécution"
+msgstr "Run Root"
 
 msgid "running"
 msgstr "en cours"
 
-msgid "Running Health Checks"
-msgstr "Vérifications de santé en cours"
-
-msgid "Running health checks on %d container(s)..."
-msgstr "Exécution des vérifications de santé sur %d conteneur(s)..."
+msgid "Running health checks on %d %s..."
+msgstr "Exécution des vérifications de l'état sur %d %s..."
 
 msgid "Running Processes"
 msgstr "Processus en cours"
-
-msgid "Secret created successfully"
-msgstr "Secret créé avec succès"
 
 msgid "Secret Data"
 msgstr "Données secrètes"
@@ -1333,10 +1140,7 @@ msgid "Secret Name"
 msgstr "Nom du secret"
 
 msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
-msgstr "Le nom du secret ne peut contenir que des lettres, chiffres, soulignés et traits d'union"
-
-msgid "Secrets"
-msgstr "Secrets"
+msgstr "Le nom du secret ne peut contenir que des lettres, des chiffres, des tirets bas et des traits d'union"
 
 msgid "Secrets can only be used by containers, not displayed"
 msgstr "Les secrets peuvent seulement être utilisés par les conteneurs, pas affichés"
@@ -1345,19 +1149,19 @@ msgid "Security Notice:"
 msgstr "Avis de sécurité :"
 
 msgid "Select network for the container. User-created networks provide better isolation and DNS resolution between containers."
-msgstr "Sélectionnez le réseau pour le conteneur. Les réseaux créés par l'utilisateur offrent une meilleure isolation et résolution DNS entre conteneurs."
+msgstr "Sélectionnez le réseau pour le conteneur. Les réseaux créés par l'utilisateur offrent une meilleure isolation et résolution DNS entre les conteneurs."
 
 msgid "Select what to clean up:"
 msgstr "Sélectionnez ce qu'il faut nettoyer :"
 
 msgid "Sensitive data is hidden for security reasons."
-msgstr "Les données sensibles sont masquées par sécurité."
+msgstr "Les données sensibles sont masquées pour des raisons de sécurité."
 
 msgid "Set a restart policy to enable auto-start"
-msgstr "Définir une politique de redémarrage pour activer le démarrage auto"
+msgstr "Définissez une politique de redémarrage pour activer le démarrage automatique"
 
 msgid "Setting up auto-start"
-msgstr "Configuration du démarrage auto"
+msgstr "Configuration du démarrage automatique"
 
 msgid "Setting up Integration"
 msgstr "Configuration de l'intégration"
@@ -1366,13 +1170,13 @@ msgid "Setting up OpenWrt integration..."
 msgstr "Configuration de l'intégration OpenWrt..."
 
 msgid "Setup"
-msgstr "Configurer"
+msgstr "Configuration"
 
 msgid "Setup OpenWrt Integration"
 msgstr "Configurer l'intégration OpenWrt"
 
 msgid "Setup OpenWrt integration for network \"%s\"?"
-msgstr "Configurer l'intégration OpenWrt pour le réseau « %s » ?"
+msgstr "Configurer l'intégration OpenWrt pour le réseau \"%s\" ?"
 
 msgid "Show"
 msgstr "Afficher"
@@ -1401,38 +1205,29 @@ msgstr "Intervalle de démarrage"
 msgid "Start Period"
 msgstr "Période de démarrage"
 
-msgid "Start selected containers"
-msgstr "Démarrer les conteneurs sélectionnés"
-
-msgid "Start selected pods"
-msgstr "Démarrer les pods sélectionnés"
+msgid "Start selected %s"
+msgstr "Démarrer les %s sélectionnés"
 
 msgid "Started"
 msgstr "Démarré"
 
-msgid "Started %d container(s) successfully"
-msgstr "%d conteneur(s) démarré(s) avec succès"
+msgid "Started %d %s successfully"
+msgstr "%d %s démarrés avec succès"
 
-msgid "Starting %d container(s)..."
-msgstr "Démarrage de %d conteneur(s)..."
+msgid "Starting %d %s..."
+msgstr "Démarrage de %d %s..."
 
-msgid "Starting Container"
-msgstr "Démarrage du conteneur"
+msgid "Starting %s"
+msgstr "Démarrage de %s"
 
-msgid "Starting container..."
-msgstr "Démarrage du conteneur..."
-
-msgid "Starting Containers"
-msgstr "Démarrage des conteneurs"
+msgid "Starting %s..."
+msgstr "Démarrage de %s..."
 
 msgid "Starting image pull..."
 msgstr "Démarrage de la récupération de l'image..."
 
-msgid "Starting Pods"
-msgstr "Démarrage des Pods"
-
-msgid "Starting selected pods..."
-msgstr "Démarrage des pods sélectionnés..."
+msgid "Starting selected %s..."
+msgstr "Démarrage des %s sélectionnés..."
 
 msgid "Static IP (Optional)"
 msgstr "IP statique (Optionnel)"
@@ -1441,31 +1236,25 @@ msgid "Stats"
 msgstr "Stats"
 
 msgid "Status"
-msgstr "État"
+msgstr "Statut"
 
 msgid "Stop"
 msgstr "Arrêter"
 
-msgid "Stop selected containers"
-msgstr "Arrêter les conteneurs sélectionnés"
+msgid "Stop selected %s"
+msgstr "Arrêter les %s sélectionnés"
 
-msgid "Stop selected pods"
-msgstr "Arrêter les pods sélectionnés"
+msgid "Stopped %d %s successfully"
+msgstr "%d %s arrêtés avec succès"
 
-msgid "Stopped %d container(s) successfully"
-msgstr "%d conteneur(s) arrêté(s) avec succès"
+msgid "Stopping %d %s..."
+msgstr "Arrêt de %d %s..."
 
-msgid "Stopping %d container(s)..."
-msgstr "Arrêt de %d conteneur(s)..."
+msgid "Stopping %s"
+msgstr "Arrêt de %s"
 
-msgid "Stopping Containers"
-msgstr "Arrêt des conteneurs"
-
-msgid "Stopping Pods"
-msgstr "Arrêt des Pods"
-
-msgid "Stopping selected pods..."
-msgstr "Arrêt des pods sélectionnés..."
+msgid "Stopping selected %s..."
+msgstr "Arrêt des %s sélectionnés..."
 
 msgid "Subnet"
 msgstr "Sous-réseau"
@@ -1474,7 +1263,7 @@ msgid "Subnet is required"
 msgstr "Le sous-réseau est requis"
 
 msgid "Subnet must be in CIDR notation (e.g., 10.129.0.0/24)"
-msgstr "Le sous-réseau doit être en notation CIDR (ex: 10.129.0.0/24)"
+msgstr "Le sous-réseau doit être en notation CIDR (ex. 10.129.0.0/24)"
 
 msgid "Subnet: %s"
 msgstr "Sous-réseau : %s"
@@ -1485,20 +1274,17 @@ msgstr "Succès"
 msgid "Successfully deleted %d %s"
 msgstr "%d %s supprimés avec succès"
 
-msgid "Successfully deleted %d network(s)"
-msgstr "%d réseau(x) supprimés avec succès"
-
-msgid "Successfully pulled %d image(s)"
-msgstr "%d image(s) récupérée(s) avec succès"
+msgid "Successfully pulled %d %s"
+msgstr "%d %s récupérés avec succès"
 
 msgid "System Maintenance"
 msgstr "Maintenance système"
 
 msgid "Tag"
-msgstr "Tag"
+msgstr "Étiquette (Tag)"
 
 msgid "Terminal access coming soon..."
-msgstr "Accès terminal bientôt disponible..."
+msgstr "Accès au terminal bientôt disponible..."
 
 msgid "Test Command"
 msgstr "Commande de test"
@@ -1507,19 +1293,19 @@ msgid "The following containers can be updated:"
 msgstr "Les conteneurs suivants peuvent être mis à jour :"
 
 msgid "The sensitive data to store securely"
-msgstr "Les données sensibles à stocker de manière sécurisée"
+msgstr "Les données sensibles à stocker en toute sécurité"
 
-msgid "This will create:"
-msgstr "Ceci va créer :"
+msgid "This typically occurs with many containers. The operation may have timed out."
+msgstr "Cela se produit généralement avec de nombreux conteneurs. L'opération a peut-être expiré."
 
 msgid "This will permanently delete unused containers, images, networks, and optionally volumes."
-msgstr "Ceci supprimera définitivement les conteneurs, images et réseaux inutilisés, et optionnellement les volumes."
+msgstr "Cela supprimera définitivement les conteneurs, images, réseaux et optionnellement les volumes inutilisés."
 
 msgid "Time between health checks (e.g., 30s, 1m, 5m). Default: 30s"
-msgstr "Temps entre vérifications de santé (ex: 30s, 1m, 5m). Défaut : 30s"
+msgstr "Temps entre les vérifications de l'état (ex. 30s, 1m, 5m). Défaut : 30s"
 
 msgid "Timeout"
-msgstr "Délai d'attente"
+msgstr "Délai d'attente (Timeout)"
 
 msgid "To enable auto-update, add label io.containers.autoupdate=registry to your containers."
 msgstr "Pour activer la mise à jour auto, ajoutez l'étiquette io.containers.autoupdate=registry à vos conteneurs."
@@ -1530,17 +1316,17 @@ msgstr "Pour mettre à jour un secret, supprimez-le et recréez-le"
 msgid "total"
 msgstr "total"
 
-msgid "Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited."
-msgstr "Limite mémoire totale (mémoire + swap). -1 pour swap illimité. Laisser vide pour illimité."
+msgid "Total memory limit (memory + swap). -1 for unlimited swap."
+msgstr "Limite de mémoire totale (mémoire + swap). -1 pour un swap illimité."
+
+msgid "Try Again"
+msgstr "Réessayer"
 
 msgid "TTY"
 msgstr "TTY"
 
 msgid "Type"
 msgstr "Type"
-
-msgid "type=tmpfs,device=tmpfs,o=size=100m"
-msgstr "type=tmpfs,device=tmpfs,o=size=100m"
 
 msgid "Unknown"
 msgstr "Inconnu"
@@ -1549,7 +1335,7 @@ msgid "Unknown error"
 msgstr "Erreur inconnue"
 
 msgid "Unless Stopped"
-msgstr "Sauf si arrêté"
+msgstr "Sauf si arrêté (Unless Stopped)"
 
 msgid "Unlimited"
 msgstr "Illimité"
@@ -1566,8 +1352,8 @@ msgstr "Mettre à jour les ressources"
 msgid "Updated"
 msgstr "Mis à jour"
 
-msgid "Updated %d container(s) successfully."
-msgstr "%d conteneur(s) mis à jour avec succès."
+msgid "Updated %d %s successfully."
+msgstr "%d %s mis à jour avec succès."
 
 msgid "Updating Container"
 msgstr "Mise à jour du conteneur"
@@ -1582,7 +1368,7 @@ msgid "Updating containers, please wait..."
 msgstr "Mise à jour des conteneurs, veuillez patienter..."
 
 msgid "Updating Init Script"
-msgstr "Mise à jour du script d'init"
+msgstr "Mise à jour du script d'initialisation"
 
 msgid "Updating Resources"
 msgstr "Mise à jour des ressources"
@@ -1590,20 +1376,20 @@ msgstr "Mise à jour des ressources"
 msgid "Updating restart policy..."
 msgstr "Mise à jour de la politique de redémarrage..."
 
+msgid "Use: 512m, 1g"
+msgstr "Utilisez : 512m, 1g"
+
+msgid "Use: 512m, 1g, or -1 for unlimited swap"
+msgstr "Utilisez : 512m, 1g, ou -1 pour un swap illimité"
+
 msgid "User"
 msgstr "Utilisateur"
 
 msgid "Value"
 msgstr "Valeur"
 
-msgid "VAR1=value1\nVAR2=value2"
-msgstr "VAR1=valeur1\nVAR2=valeur2"
-
 msgid "Variable"
 msgstr "Variable"
-
-msgid "Volume created successfully"
-msgstr "Volume créé avec succès"
 
 msgid "Volume driver to use"
 msgstr "Pilote de volume à utiliser"
@@ -1620,191 +1406,14 @@ msgstr "Le nom du volume est requis"
 msgid "Volume name. Leave empty to auto-generate."
 msgstr "Nom du volume. Laisser vide pour générer automatiquement."
 
-msgid "Volumes"
-msgstr "Volumes"
-
 msgid "Warning:"
 msgstr "Avertissement :"
+
+msgid "Will be added:"
+msgstr "Sera ajouté :"
 
 msgid "Working Directory"
 msgstr "Répertoire de travail"
 
 msgid "Yes"
 msgstr "Oui"
-
-msgid " containers"
-msgstr ""
-
-msgid "1-253 characters: letters, numbers, underscore (_), hyphen (-) only"
-msgstr ""
-
-msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
-msgstr ""
-
-msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
-msgstr ""
-
-msgid "Available"
-msgstr ""
-
-msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
-msgstr ""
-
-msgid "Command to run for health check. Exit code 0 = healthy, 1 = unhealthy"
-msgstr ""
-
-msgid "Configure resource limits for this container. Changes will be applied immediately."
-msgstr ""
-
-msgid "Connecting container to network..."
-msgstr ""
-
-msgid "Container created and auto-start configured"
-msgstr ""
-
-msgid "Container created and started successfully"
-msgstr ""
-
-msgid "Container created but failed to start: %s"
-msgstr ""
-
-msgid "Container created, started, and auto-start configured"
-msgstr ""
-
-msgid "Creating OpenWrt integration for network \"%s\"..."
-msgstr ""
-
-msgid "Deleting %d selected %s..."
-msgstr ""
-
-msgid "Deleting %d selected network(s)..."
-msgstr ""
-
-msgid "Disconnected from network successfully"
-msgstr ""
-
-msgid "Disconnecting container from network..."
-msgstr ""
-
-msgid "Driver-specific options (comma-separated, e.g., type=tmpfs,o=size=100m)"
-msgstr ""
-
-msgid "Fetch a container image using Podman."
-msgstr ""
-
-msgid "Grace period before health checks count toward failures. Default: 0s"
-msgstr ""
-
-msgid "Invalid memory swap format. Use: 512m, 1g, -1, etc."
-msgstr ""
-
-msgid "Log stream ended with error"
-msgstr ""
-
-msgid "Manage Podman containers"
-msgstr ""
-
-msgid "Manage Podman images"
-msgstr ""
-
-msgid "Manage Podman networks"
-msgstr ""
-
-msgid "Manage Podman secrets"
-msgstr ""
-
-msgid "Manage Podman volumes"
-msgstr ""
-
-msgid "Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it."
-msgstr ""
-
-msgid "Network and OpenWrt integration created successfully"
-msgstr ""
-
-msgid "Network created but OpenWrt integration failed: %s. You may need to configure OpenWrt manually."
-msgstr ""
-
-msgid "Network created successfully"
-msgstr ""
-
-msgid "Networks deleted but %d OpenWrt integration(s) failed to remove"
-msgstr ""
-
-msgid "No containers are configured for auto-update or all containers are up to date."
-msgstr ""
-
-msgid "No selected containers have health checks configured"
-msgstr ""
-
-msgid "No unused resources found"
-msgstr ""
-
-msgid "Note: %d network(s) have OpenWrt integration that will also be removed (bridge, firewall zone, and rules)."
-msgstr ""
-
-msgid "Number of consecutive failures before marking unhealthy. Default: 3"
-msgstr ""
-
-msgid "Once created, secret data cannot be viewed or retrieved"
-msgstr ""
-
-msgid "OpenWrt integration for network \"%s\" created successfully"
-msgstr ""
-
-msgid "OpenWrt integration incomplete. Click to setup. Missing: %s"
-msgstr ""
-
-msgid "OpenWrt integration requires subnet to be specified"
-msgstr ""
-
-msgid "Pulling latest version of %d image(s)..."
-msgstr ""
-
-msgid "Resources updated successfully"
-msgstr ""
-
-msgid "Secret data is stored encrypted"
-msgstr ""
-
-msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
-msgstr ""
-
-msgid "Secrets can only be used by containers, not displayed"
-msgstr ""
-
-msgid "Select network for the container. User-created networks provide better isolation and DNS resolution between containers."
-msgstr ""
-
-msgid "Setting up OpenWrt integration..."
-msgstr ""
-
-msgid "Starting container..."
-msgstr ""
-
-msgid "Successfully deleted %d network(s)"
-msgstr ""
-
-msgid "This will permanently delete unused containers, images, networks, and optionally volumes."
-msgstr ""
-
-msgid "To enable auto-update, add label io.containers.autoupdate=registry to your containers."
-msgstr ""
-
-msgid "To update a secret, delete and recreate it"
-msgstr ""
-
-msgid "Total memory limit (memory + swap). -1 for unlimited swap. Leave empty for unlimited."
-msgstr ""
-
-msgid "Updating container resources..."
-msgstr ""
-
-msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
-msgstr ""
-
-msgid "Loading view…"
-msgstr ""
-
-msgid "Loading %s..."
-msgstr ""
