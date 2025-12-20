@@ -23,11 +23,29 @@ urlencode() {
 	echo "$encoded"
 }
 
-# URL encode for image references (allows : / @ which are valid in image refs)
-urlencode_image() {
-	# For image references, we only need to escape spaces and special chars
-	# Colons, slashes, and @ are valid in image references
-	echo "$1"
+# Validate container name (alphanumeric, dash, underscore only)
+validate_container_name() {
+	local name="$1"
+	case "$name" in
+		*[!a-zA-Z0-9_-]*)
+			echo '{"error":"Invalid container name format"}'
+			exit 1
+			;;
+	esac
+}
+
+# Validate session ID format for security
+validate_session_id() {
+	local session_id="$1"
+	local prefix="$2"
+	case "$session_id" in
+		${prefix}_[0-9]*_[0-9]*_[0-9]*)
+			;;
+		*)
+			echo '{"error":"Invalid session ID format"}'
+			exit 1
+			;;
+	esac
 }
 
 # Get JSON parameters from input
@@ -280,16 +298,7 @@ EOF
 			container_logs_status)
 				get_json_params session_id offset
 				require_param session_id
-
-				# Validate session_id format for security
-				case "$session_id" in
-					podman_logs_[0-9]*_[0-9]*_[0-9]*)
-						;;
-					*)
-						echo '{"error":"Invalid session ID format"}'
-						exit 1
-						;;
-				esac
+				validate_session_id "$session_id" "podman_logs"
 
 				# Validate offset is numeric
 				case "$offset" in
@@ -334,16 +343,7 @@ EOF
 			container_logs_stop)
 				get_json_params session_id
 				require_param session_id
-
-				# Validate session_id format for security
-				case "$session_id" in
-					podman_logs_[0-9]*_[0-9]*_[0-9]*)
-						;;
-					*)
-						echo '{"error":"Invalid session ID format"}'
-						exit 1
-						;;
-				esac
+				validate_session_id "$session_id" "podman_logs"
 
 				# Kill the background curl process if still running
 				# Find curl process with our session log file
@@ -424,7 +424,7 @@ EOF
 				curl_request "GET" "$path"
 				;;
 			images_list)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/images/json"
 				;;
 			image_inspect)
@@ -443,7 +443,7 @@ EOF
 			image_pull)
 				get_json_params image
 				require_param image
-				image_enc=$(urlencode_image "$image")
+				image_enc=$(urlencode "$image")
 				curl_request "POST" "${API_BASE}/images/pull?reference=${image_enc}"
 				;;
 			image_pull_stream)
@@ -452,7 +452,7 @@ EOF
 
 				# Generate secure session ID
 				session_id="podman_$(date +%s)_$$_${RANDOM}"
-				image_enc=$(urlencode_image "$image")
+				image_enc=$(urlencode "$image")
 
 				# Create a temporary script file to run in background
 				script_file="/tmp/${session_id}.sh"
@@ -473,16 +473,7 @@ EOF
 			image_pull_status)
 				get_json_params session_id offset
 				require_param session_id
-
-				# Validate session_id format for security
-				case "$session_id" in
-					podman_[0-9]*_[0-9]*_[0-9]*)
-						;;
-					*)
-						echo '{"error":"Invalid session ID format"}'
-						exit 1
-						;;
-				esac
+				validate_session_id "$session_id" "podman"
 
 				# Validate offset is numeric
 				case "$offset" in
@@ -519,7 +510,7 @@ EOF
 				echo '{"output":"","complete":false,"success":false}'
 				;;
 			networks_list)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/networks/json"
 				;;
 			network_inspect)
@@ -554,7 +545,7 @@ EOF
 				curl_request "POST" "${API_BASE}/networks/${name_enc}/disconnect" "$data"
 				;;
 			volumes_list)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/volumes/json"
 				;;
 			volume_inspect)
@@ -649,7 +640,7 @@ EOF
 				echo "{\"success\":true}"
 				;;
 			pods_list)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/pods/json"
 				;;
 			pod_inspect)
@@ -706,7 +697,7 @@ EOF
 				curl_request "GET" "${API_BASE}/pods/stats?stream=false&namesOrIDs=${name_enc}"
 				;;
 			secrets_list)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/secrets/json"
 				;;
 			secret_inspect)
@@ -734,7 +725,7 @@ EOF
 				curl_request "DELETE" "${API_BASE}/secrets/${name_enc}"
 				;;
 			system_df)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/system/df"
 				;;
 			system_prune)
@@ -757,24 +748,17 @@ EOF
 				curl_request "GET" "${API_BASE}/auto-update${query}"
 				;;
 			version)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/version"
 				;;
 			info)
-				read -r input
+				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/info"
 				;;
 			init_script_generate)
 				get_json_params name
 				require_param name
-
-				# Validate container name for security (alphanumeric, dash, underscore only)
-				case "$name" in
-					*[!a-zA-Z0-9_-]*)
-						echo '{"error":"Invalid container name format"}'
-						exit 1
-						;;
-				esac
+				validate_container_name "$name"
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
@@ -863,14 +847,7 @@ EOF
 			init_script_show)
 				get_json_params name
 				require_param name
-
-				# Validate container name for security
-				case "$name" in
-					*[!a-zA-Z0-9_-]*)
-						echo '{"error":"Invalid container name format"}'
-						exit 1
-						;;
-				esac
+				validate_container_name "$name"
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
@@ -887,14 +864,7 @@ EOF
 			init_script_status)
 				get_json_params name
 				require_param name
-
-				# Validate container name for security
-				case "$name" in
-					*[!a-zA-Z0-9_-]*)
-						echo '{"error":"Invalid container name format"}'
-						exit 1
-						;;
-				esac
+				validate_container_name "$name"
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
@@ -913,14 +883,7 @@ EOF
 			init_script_set_enabled)
 				get_json_params name enabled
 				require_param name
-
-				# Validate container name for security
-				case "$name" in
-					*[!a-zA-Z0-9_-]*)
-						echo '{"error":"Invalid container name format"}'
-						exit 1
-						;;
-				esac
+				validate_container_name "$name"
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
@@ -954,14 +917,7 @@ EOF
 			init_script_remove)
 				get_json_params name
 				require_param name
-
-				# Validate container name for security
-				case "$name" in
-					*[!a-zA-Z0-9_-]*)
-						echo '{"error":"Invalid container name format"}'
-						exit 1
-						;;
-				esac
+				validate_container_name "$name"
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
