@@ -69,8 +69,9 @@ jobs:
           echo "ipk_name=$IPK_NAME" >> $GITHUB_OUTPUT
 
       - name: Upload IPK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.find-ipk.outputs.ipk_name }}
           path: ${{ steps.find-ipk.outputs.ipk_path }}
           retention-days: 30
+          compression-level: 0
