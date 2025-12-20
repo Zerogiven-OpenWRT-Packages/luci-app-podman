@@ -246,7 +246,13 @@ return view.extend({
 	 * @param {boolean} clearSelections - Clear checkbox selections
 	 */
 	refreshTable: function (clearSelections) {
-		return this.listHelper.refreshTable(clearSelections);
+		return this.listHelper.refreshTable(clearSelections).then(() => {
+			// Re-fetch container details (inspect data, init script status) after table refresh
+			const container = document.querySelector('.podman-view-container');
+			if (container) {
+				this.fetchContainerDetails(container);
+			}
+		});
 	},
 
 	/**
