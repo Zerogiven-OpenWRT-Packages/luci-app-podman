@@ -676,17 +676,6 @@ return baseclass.extend({
 			object: 'luci.podman',
 			method: 'system_prune',
 			params: ['all', 'volumes']
-		}),
-
-		/**
-		 * Run auto-update.
-		 * @param {boolean} dry_run - Only check for updates, don't apply
-		 * @returns {Promise<Object>} Auto-update results
-		 */
-		autoUpdate: rpc.declare({
-			object: 'luci.podman',
-			method: 'auto_update',
-			params: ['dry_run']
 		})
 	},
 
