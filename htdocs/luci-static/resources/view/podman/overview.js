@@ -380,7 +380,7 @@ return view.extend({
 				'style': 'border-left: 4px solid ' + color + ';'
 			}, [
 				E('div', { 'class': 'card-link-header' }, [
-					E('span', { 'class': 'card-link-title' }, title)),
+					E('span', { 'class': 'card-link-title' }, _(title)),
 					this.getIcon(title)
 				]),
 				E('div', {}, [
