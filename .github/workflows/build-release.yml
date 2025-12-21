@@ -7,105 +7,31 @@ on:
 
 jobs:
   build-packages:
-    name: Build OpenWrt ${{ matrix.openwrt_version }} Package
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          # 24.10
           - openwrt_version: '24.10'
             openwrt_build_version: '24.10.3'
             arch: 'x86_64'
       fail-fast: false
 
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      tag_name: ${{ steps.get_version.outputs.version_tag }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          path: ${{ github.workspace }}/feed/luci-app-podman
-          fetch-depth: 0
-
-      - name: Get Version from Tag
-        id: get_version
-        uses: ChrSchu90/GitTagSemanticVersion@v1.1
-
-      - name: Create artifacts directory structure
-        run: |
-          mkdir -p ${{ github.workspace }}/artifacts
-
-      - name: Build OpenWrt ${{ matrix.openwrt_version }}-${{ matrix.arch }} package
-        id: build_package
-        uses: openwrt/gh-action-sdk@v9
-        env:
-          ARCH: ${{ matrix.arch }}-${{ matrix.openwrt_build_version }}
-          PACKAGES: luci-app-podman
-          V: '0'
-          FEED_DIR: ${{ github.workspace }}/feed
-          ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
-
-      - name: Copy files
-        id: package_info
-        uses: Zerogiven/gh-action-owrt-copy-package@main
-        with:
-          artifacts_path: ${{ github.workspace }}/artifacts/bin/
-          files: |
-            [
-              {
-                "search": "luci-app-podman*.ipk",
-                "name": "luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk"
-              }
-            ]
-          output_directory: ${{ github.workspace }}/release-assets
-
-      - name: Upload package artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk
-          path: ${{ github.workspace }}/release-assets/luci-app-podman-${{ steps.get_version.outputs.version }}-${{ matrix.openwrt_version }}.ipk
-          retention-days: 30
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      package_name: 'luci-app-podman'
+      sdk_packages: 'luci-app-podman'
+      artifacts_patterns: |
+        luci-app-podman*.ipk
+        luci-i18n-podman-*.ipk
+      openwrt_version: ${{ matrix.openwrt_version }}
+      openwrt_build_version: ${{ matrix.openwrt_build_version }}
+      arch: ${{ matrix.arch }}
+      verbose: false
 
   create-release:
-    name: Create GitHub Release
     needs: build-packages
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download all package artifacts
-        uses: actions/download-artifact@v6
-        with:
-          path: ${{ github.workspace }}/release-assets/
-          pattern: luci-app-podman-*.ipk
-          merge-multiple: true
-
-      - name: Create GitHub Release & upload assets
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.build-packages.outputs.tag_name }}
-          files: |
-            ${{ github.workspace }}/release-assets/*.ipk
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
-
-      - name: Release Summary
-        run: |
-          # Use tag from build-packages (falls vorhanden), fallback to GITHUB_REF
-          TAG="${{ needs.build-packages.outputs.tag_name }}"
-          if [ -z "$TAG" ]; then
-            TAG="${GITHUB_REF#refs/tags/}"
-          fi
-          CURRENT_VERSION="${TAG#v}"   # remove leading 'v' if present
-          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **Release Created**: v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Release URL**: https://github.com/${{ github.repository }}/releases/tag/v$CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
+    uses: ./.github/workflows/reusable-release.yml
+    with:
+      artifact_pattern: 'luci-app-podman-*'
+      tag_name: ${{ github.ref_name }}
+    secrets:
+      RELEASE_TOKEN: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
