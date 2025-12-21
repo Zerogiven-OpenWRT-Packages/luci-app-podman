@@ -34,17 +34,9 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 
 ## Screenshots
 
-### Container List View
-![Container List](docs/screenshots/containers.png)
-*Manage multiple containers with bulk operations, auto-start indicators, and health status*
+![Container List](docs/screenshots/screenshots.gif)
 
-### Container Detail View
-![Container Detail](docs/screenshots/container-detail.png)
-*Comprehensive container information with tabbed interface for logs, stats, and configuration*
-
-### Network Creation
-![Network Creation](docs/screenshots/network-create.png)
-*Create Podman networks with optional OpenWrt firewall integration*
+See more screenshots in [docs/screenshots/](docs/screenshots/)
 
 ## Requirements
 
