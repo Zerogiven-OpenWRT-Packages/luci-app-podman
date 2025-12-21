@@ -17,6 +17,10 @@
     font-weight: bold;
 }
 
+.table-list-overview > tr > td:last-of-type {
+    word-break: break-word;
+}
+
 .table-env-vars th {
     width: 50%;
 }
@@ -29,6 +33,11 @@
 .table-env-vars td:nth-of-type(2) {
     cursor: pointer;
     user-select: none;
+}
+
+.cli-value {
+    font-family: monospace;
+    font-size: 0.9em;
 }
 
 .tt {
@@ -69,6 +78,69 @@
 
 .loading-gray {
     color: #999;
+}
+
+/**
+ * overview.js
+*/
+
+.overview-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.overview-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+}
+
+.overview-card-link,
+.overview-card-link:hover,
+.overview-card-link:focus {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.overview-card-link > .cbi-section {
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    margin: 0;
+}
+
+.overview-card-link > .cbi-section .card-link-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.overview-card-link .card-link-header .card-link-title {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.overview-card-link .card-link-header .card-link-icon {
+    font-size: 24px;
+    opacity: 0.6;
+}
+
+.overview-card-link .card-link-headline {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.overview-card-link .card-link-text {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 5px;
 }
 
 @media (min-width: 600px) {

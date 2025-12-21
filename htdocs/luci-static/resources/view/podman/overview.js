@@ -7,6 +7,12 @@
 'require podman.ui as podmanUI';
 'require ui';
 
+document.querySelector('head').appendChild(E('link', {
+	'rel': 'stylesheet',
+	'type': 'text/css',
+	'href': L.resource('view/podman/podman.css')
+}));
+
 /**
  * Podman Overview Dashboard View
  */
@@ -155,7 +161,7 @@ return view.extend({
 		const memTotal = (info.host && info.host.memTotal) ? format.bytes(info.host.memTotal) : '0 B';
 		const memFree = (info.host && info.host.memFree) ? format.bytes(info.host.memFree) : '0 B';
 
-		const table = new podmanUI.Table()
+		const table = new podmanUI.Table({ class: 'table table-list table-list-overview' })
 			.addInfoRow(_('Podman Version'), version.Version || _('Unknown'))
 			.addInfoRow(_('API Version'), version.ApiVersion || _('Unknown'))
 			.addInfoRow(
@@ -163,27 +169,23 @@ return view.extend({
 				(info.host && info.host.cpus) ? info.host.cpus.toString() : _('Unknown')
 			)
 			.addInfoRow(_('Memory'), memFree + ' / ' + memTotal)
-			.addInfoRow(_('Socket Path'),
-				E('span', {
-						'style': 'font-family: monospace; font-size: 0.9em;'
-					},
-					(info.host && info.host.remoteSocket && info.host.remoteSocket.path) ||
-					'/run/podman/podman.sock'))
-			.addInfoRow(_('Graph Root'),
-				E('span', {
-						'style': 'font-family: monospace; font-size: 0.9em;'
-					},
-					(info.store && info.store.graphRoot) || _('Unknown')))
-			.addInfoRow(_('Run Root'),
-				E('span', {
-						'style': 'font-family: monospace; font-size: 0.9em;'
-					},
-					(info.store && info.store.runRoot) || _('Unknown')))
+			.addInfoRow(
+				_('Socket Path'),
+				E(
+					'span',
+					{ 'class': 'cli-value' },
+					(info.host && info.host.remoteSocket && info.host.remoteSocket.path) || '/run/podman/podman.sock'
+				)
+			)
+			.addInfoRow(
+				_('Graph Root'),
+				E('span', { 'class': 'cli-value' }, (info.store && info.store.graphRoot) || _('Unknown'))
+			)
+			.addInfoRow(
+				_('Run Root'),
+				E('span', { 'class': 'cli-value' }, (info.store && info.store.runRoot) || _('Unknown')))
 			.addInfoRow(_('Registries'),
-				E('span', {
-						'style': 'font-family: monospace; font-size: 0.9em;'
-					},
-					this.getRegistries(info)));
+				E('span', { 'class': 'cli-value' }, this.getRegistries(info)));
 
 		const section = new podmanUI.Section();
 		section.addNode(_('Information'), '', table.render());
@@ -323,9 +325,7 @@ return view.extend({
 			]);
 		});
 
-		const section = new podmanUI.Section({
-			'style': 'margin-top: 20px;'
-		});
+		const section = new podmanUI.Section({ 'style': 'margin-top: 20px;' });
 		section.addNode(_('Disk Usage'), '', table.render());
 		return section.render();
 	},
@@ -344,18 +344,16 @@ return view.extend({
 	 */
 	createResourceCards: function (containers, pods, images, networks, volumes, runningContainers,
 		runningPods) {
-		return E('div', {
-			'style': 'display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px;'
-		}, [
-			this.createCard('Containers', containers.length, runningContainers,
+		return E('div', { 'class': 'overview-cards' }, [
+			this.createCard('Container', containers.length, runningContainers,
 				'admin/podman/containers', '#3498db'),
-			this.createCard('Pods', pods.length, runningPods, 'admin/podman/pods',
+			this.createCard('Pod', pods.length, runningPods, 'admin/podman/pods',
 				'#2ecc71'),
-			this.createCard('Images', images.length, null, 'admin/podman/images',
+			this.createCard('Image', images.length, null, 'admin/podman/images',
 				'#9b59b6'),
-			this.createCard('Networks', networks.length, null, 'admin/podman/networks',
+			this.createCard('Network', networks.length, null, 'admin/podman/networks',
 				'#e67e22'),
-			this.createCard('Volumes', volumes.length, null, 'admin/podman/volumes',
+			this.createCard('Volume', volumes.length, null, 'admin/podman/volumes',
 				'#34495e')
 		]);
 	},
@@ -375,38 +373,25 @@ return view.extend({
 
 		return E('a', {
 			'href': L.url(url),
-			'style': 'text-decoration: none; color: inherit; display: block;'
+			'class': 'overview-card-link'
 		}, [
 			E('div', {
 				'class': 'cbi-section',
-				'style': 'cursor: pointer; transition: all 0.2s; border-left: 4px solid ' +
-					color +
-					'; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; margin: 0;'
+				'style': 'border-left: 4px solid ' + color + ';'
 			}, [
-				E('div', {
-						'style': 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;'
-					},
-					[
-						E('span', {
-							'style': 'font-size: 14px; opacity: 0.8;'
-						}, _(
-							title)),
-						this.getIcon(title)
-					]),
+				E('div', { 'class': 'card-link-header' }, [
+					E('span', { 'class': 'card-link-title' }, N_(2, title, title + 's')),
+					this.getIcon(title)
+				]),
 				E('div', {}, [
 					E('div', {
-						'style': 'font-size: 32px; font-weight: bold; color: ' +
-							color + ';'
+						'class': 'card-link-headline',
+						'style': 'color: ' + color + ';'
 					}, statsText),
 					running !== null ?
-					E('div', {
-							'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;'
-						},
-						_('running') + ' / ' + _('total')) :
-					E('div', {
-							'style': 'font-size: 12px; opacity: 0.7; margin-top: 5px;'
-						},
-						_('total'))
+					E('div', { 'class': 'card-link-text' }, _('running') + ' / ' + _('total'))
+					:
+					E('div', { 'class': 'card-link-text' }, _('total'))
 				])
 			])
 		]);
@@ -427,9 +412,7 @@ return view.extend({
 			'Volumes': '💾'
 		};
 
-		return E('span', {
-			'style': 'font-size: 24px; opacity: 0.6;'
-		}, icons[type] || '📦');
+		return E('span', { 'class': 'card-link-icon' }, icons[type] || '📦');
 	},
 
 	/**
@@ -437,138 +420,17 @@ return view.extend({
 	 * @returns {Element} System actions section
 	 */
 	createSystemActionsSection: function () {
-		const buttons = E('div', {
-			'style': 'display: flex; gap: 10px; flex-wrap: wrap;'
-		}, [
-			new podmanUI.Button(_('Auto-Update Containers'), () => this.handleAutoUpdate(),
-				'action').render(),
-			new podmanUI.Button(_('Cleanup / Prune'), () => this.handlePrune(), 'remove')
-			.render()
+		const buttons = E('div', { 'class': 'overview-actions' }, [
+			new podmanUI.Button(
+				_('Cleanup / Prune'),
+				() => this.handlePrune(),
+				'remove'
+			).render()
 		]);
 
-		const section = new podmanUI.Section({
-			'style': 'margin-bottom: 20px;'
-		});
+		const section = new podmanUI.Section({ 'style': 'margin-bottom: 20px;' });
 		section.addNode(_('System Maintenance'), '', buttons);
 		return section.render();
-	},
-
-	/**
-	 * Handle container auto-update action
-	 */
-	handleAutoUpdate: function () {
-		// First do dry-run to show what would be updated
-		ui.showModal(_('Auto-Update Check'), [
-			E('p', {}, _('Checking for container updates...')),
-			E('div', {
-				'class': 'center'
-			}, [
-				E('em', {
-					'class': 'spinning'
-				}, _('Loading...'))
-			])
-		]);
-
-		podmanRPC.system.autoUpdate(true).then((result) => {
-			const updates = result.Updates || [];
-
-			if (updates.length === 0) {
-				ui.showModal(_('Auto-Update'), [
-					E('p', {}, _(
-						'No containers are configured for auto-update or all containers are up to date.'
-					)),
-					E('p', {
-							'style': 'margin-top: 10px; font-size: 0.9em; opacity: 0.8;'
-						},
-						_(
-							'To enable auto-update, add label io.containers.autoupdate=registry to your containers.'
-						)
-					),
-					new podmanUI.ModalButtons({
-						confirmText: _('Close'),
-						onConfirm: ui.hideModal,
-						onCancel: null
-					}).render()
-				]);
-				return;
-			}
-
-			// Show updates available
-			const updateList = updates.map((update) => {
-				const status = update.Updated ? '✓ ' + _('Updated') : '○ ' + _('Available');
-				return E('li', {}, update.ContainerName + ' - ' + status);
-			});
-
-			ui.showModal(_('Auto-Update Available'), [
-				E('p', {}, _('The following containers can be updated:')),
-				E('ul', {
-						'style': 'margin: 10px 0; padding-left: 20px;'
-					},
-					updateList),
-				new podmanUI.ModalButtons({
-					confirmText: _('Update Now'),
-					onConfirm: () => {
-						ui.hideModal();
-						this.performAutoUpdate();
-					}
-				}).render()
-			]);
-		}).catch((err) => {
-			ui.showModal(_('Error'), [
-				E('p', {}, _('Failed to check for updates: %s').format(err
-					.message)),
-				new podmanUI.ModalButtons({
-					confirmText: _('Close'),
-					onConfirm: ui.hideModal,
-					onCancel: null
-				}).render()
-			]);
-		});
-	},
-
-	/**
-	 * Perform actual container auto-update
-	 */
-	performAutoUpdate: function () {
-		ui.showModal(_('Updating Containers'), [
-			E('p', {}, _('Updating containers, please wait...')),
-			E('div', {
-				'class': 'center'
-			}, [
-				E('em', {
-					'class': 'spinning'
-				}, _('Loading...'))
-			])
-		]);
-
-		podmanRPC.system.autoUpdate(false).then(function (result) {
-			var updates = result.Updates || [];
-			var successful = updates.filter(function (u) {
-				return u.Updated;
-			}).length;
-
-			ui.showModal(_('Auto-Update Complete'), [
-				E('p', {}, _('Updated %d %s successfully.').format(
-				successful, _('Containers').toLowerCase())),
-				new podmanUI.ModalButtons({
-					confirmText: _('Close'),
-					onConfirm: () => {
-						ui.hideModal();
-						window.location.reload();
-					},
-					onCancel: null
-				}).render()
-			]);
-		}).catch(function (err) {
-			ui.showModal(_('Error'), [
-				E('p', {}, _('Auto-update failed: %s').format(err.message)),
-				new podmanUI.ModalButtons({
-					confirmText: _('Close'),
-					onConfirm: ui.hideModal,
-					onCancel: null
-				}).render()
-			]);
-		});
 	},
 
 	/**
