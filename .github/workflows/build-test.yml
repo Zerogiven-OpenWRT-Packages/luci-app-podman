@@ -6,12 +6,10 @@ on:
       openwrt_version:
         description: 'OpenWrt version to test'
         required: true
-        default: 'both'
+        default: '24.10'
         type: choice
         options:
-        - 'both'
         - '24.10'
-        - '23.05'
       verbose:
         description: 'Verbose build output'
         required: false
