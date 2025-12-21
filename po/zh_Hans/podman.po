@@ -86,21 +86,6 @@ msgstr "自动启动"
 msgid "Auto-Update"
 msgstr "自动更新"
 
-msgid "Auto-Update Available"
-msgstr "可用自动更新"
-
-msgid "Auto-Update Check"
-msgstr "自动更新检查"
-
-msgid "Auto-Update Complete"
-msgstr "自动更新完成"
-
-msgid "Auto-Update Containers"
-msgstr "自动更新容器"
-
-msgid "Auto-update failed: %s"
-msgstr "自动更新失败：%s"
-
 msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
 msgstr "自动配置 OpenWrt 网络接口、网桥和防火墙区域。<strong>强烈推荐</strong>用于在 OpenWrt 上进行正确的容器联网。"
 
@@ -109,9 +94,6 @@ msgstr "创建容器后自动启动"
 
 msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
 msgstr "当有新镜像可用时自动更新容器。添加标签：io.containers.autoupdate=registry"
-
-msgid "Available"
-msgstr "可用"
 
 msgid "Back to Containers"
 msgstr "返回容器列表"

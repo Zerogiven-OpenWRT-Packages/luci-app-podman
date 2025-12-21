@@ -91,21 +91,6 @@ msgstr ""
 msgid "Auto-Update"
 msgstr ""
 
-msgid "Auto-Update Available"
-msgstr ""
-
-msgid "Auto-Update Check"
-msgstr ""
-
-msgid "Auto-Update Complete"
-msgstr ""
-
-msgid "Auto-Update Containers"
-msgstr ""
-
-msgid "Auto-update failed: %s"
-msgstr ""
-
 msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
 msgstr ""
 
@@ -113,9 +98,6 @@ msgid "Automatically start the container after it is created"
 msgstr ""
 
 msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
-msgstr ""
-
-msgid "Available"
 msgstr ""
 
 msgid "Back to Containers"
@@ -155,9 +137,6 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured"
-msgstr ""
-
-msgid "Checking for container updates..."
 msgstr ""
 
 msgid "Clean Up Now"
@@ -413,9 +392,6 @@ msgid "Exposed Ports"
 msgstr ""
 
 msgid "Failed"
-msgstr ""
-
-msgid "Failed to check for updates: %s"
 msgstr ""
 
 msgid "Failed to connect to network: %s"
@@ -778,6 +754,9 @@ msgstr ""
 msgid "Memory limit (e.g., 512m, 1g)"
 msgstr ""
 
+msgid "Memory limit (e.g., 512m, 1g). Use -1 or 0 to remove limit."
+msgstr ""
+
 msgid "Memory Usage"
 msgstr ""
 
@@ -865,9 +844,6 @@ msgstr ""
 msgid "No container ID in URL"
 msgstr ""
 
-msgid "No containers are configured for auto-update or all containers are up to date."
-msgstr ""
-
 msgid "No data received"
 msgstr ""
 
@@ -910,7 +886,7 @@ msgstr ""
 msgid "Not found"
 msgstr ""
 
-msgid "Note: Some %s have OpenWrt integration that will also be removed."
+msgid "Note: %d %s have OpenWrt integration that will also be removed."
 msgstr ""
 
 msgid "Number of consecutive failures before marking unhealthy. Default: 3"
@@ -1288,9 +1264,6 @@ msgstr ""
 msgid "Test Command"
 msgstr ""
 
-msgid "The following containers can be updated:"
-msgstr ""
-
 msgid "The sensitive data to store securely"
 msgstr ""
 
@@ -1304,9 +1277,6 @@ msgid "Time between health checks (e.g., 30s, 1m, 5m). Default: 30s"
 msgstr ""
 
 msgid "Timeout"
-msgstr ""
-
-msgid "To enable auto-update, add label io.containers.autoupdate=registry to your containers."
 msgstr ""
 
 msgid "To update a secret, delete and recreate it"
@@ -1342,28 +1312,13 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
-msgid "Update Now"
-msgstr ""
-
 msgid "Update Resources"
-msgstr ""
-
-msgid "Updated"
-msgstr ""
-
-msgid "Updated %d %s successfully."
 msgstr ""
 
 msgid "Updating Container"
 msgstr ""
 
 msgid "Updating container resources..."
-msgstr ""
-
-msgid "Updating Containers"
-msgstr ""
-
-msgid "Updating containers, please wait..."
 msgstr ""
 
 msgid "Updating Init Script"
@@ -1376,6 +1331,9 @@ msgid "Updating restart policy..."
 msgstr ""
 
 msgid "Use: 512m, 1g"
+msgstr ""
+
+msgid "Use: 512m, 1g, or -1 for unlimited"
 msgstr ""
 
 msgid "Use: 512m, 1g, or -1 for unlimited swap"
@@ -1416,3 +1374,4 @@ msgstr ""
 
 msgid "Yes"
 msgstr ""
+

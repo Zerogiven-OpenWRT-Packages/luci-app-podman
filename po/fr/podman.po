@@ -92,21 +92,6 @@ msgstr "Démarrage automatique"
 msgid "Auto-Update"
 msgstr "Mise à jour automatique"
 
-msgid "Auto-Update Available"
-msgstr "Mise à jour automatique disponible"
-
-msgid "Auto-Update Check"
-msgstr "Vérification mise à jour auto"
-
-msgid "Auto-Update Complete"
-msgstr "Mise à jour automatique terminée"
-
-msgid "Auto-Update Containers"
-msgstr "Mettre à jour les conteneurs automatiquement"
-
-msgid "Auto-update failed: %s"
-msgstr "Échec de la mise à jour automatique : %s"
-
 msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
 msgstr "Configurer automatiquement l'interface réseau, le pont et la zone pare-feu OpenWrt. <strong>Hautement recommandé</strong> pour un réseau de conteneurs correct sur OpenWrt."
 
@@ -115,9 +100,6 @@ msgstr "Démarrer automatiquement le conteneur après sa création"
 
 msgid "Automatically update container when newer image is available. Adds label: io.containers.autoupdate=registry"
 msgstr "Mettre à jour automatiquement le conteneur lorsqu'une nouvelle image est disponible. Ajoute l'étiquette : io.containers.autoupdate=registry"
-
-msgid "Available"
-msgstr "Disponible"
 
 msgid "Back to Containers"
 msgstr "Retour aux conteneurs"
