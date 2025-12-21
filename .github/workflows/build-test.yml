@@ -27,7 +27,7 @@ jobs:
             arch: 'x86_64'
       fail-fast: false
 
-    uses: Zerogiven/gh-action-openwrt-build-package/.github/workflows/reusable-build.yml@main
+    uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-build.yml@main
     with:
       package_name: 'luci-app-podman'
       sdk_packages: 'luci-app-podman'
