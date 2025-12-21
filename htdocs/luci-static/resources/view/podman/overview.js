@@ -345,15 +345,15 @@ return view.extend({
 	createResourceCards: function (containers, pods, images, networks, volumes, runningContainers,
 		runningPods) {
 		return E('div', { 'class': 'overview-cards' }, [
-			this.createCard('Container', containers.length, runningContainers,
+			this.createCard('Containers', containers.length, runningContainers,
 				'admin/podman/containers', '#3498db'),
-			this.createCard('Pod', pods.length, runningPods, 'admin/podman/pods',
+			this.createCard('Pods', pods.length, runningPods, 'admin/podman/pods',
 				'#2ecc71'),
-			this.createCard('Image', images.length, null, 'admin/podman/images',
+			this.createCard('Images', images.length, null, 'admin/podman/images',
 				'#9b59b6'),
-			this.createCard('Network', networks.length, null, 'admin/podman/networks',
+			this.createCard('Networks', networks.length, null, 'admin/podman/networks',
 				'#e67e22'),
-			this.createCard('Volume', volumes.length, null, 'admin/podman/volumes',
+			this.createCard('Volumes', volumes.length, null, 'admin/podman/volumes',
 				'#34495e')
 		]);
 	},
@@ -380,7 +380,7 @@ return view.extend({
 				'style': 'border-left: 4px solid ' + color + ';'
 			}, [
 				E('div', { 'class': 'card-link-header' }, [
-					E('span', { 'class': 'card-link-title' }, N_(2, title, title + 's')),
+					E('span', { 'class': 'card-link-title' }, title)),
 					this.getIcon(title)
 				]),
 				E('div', {}, [

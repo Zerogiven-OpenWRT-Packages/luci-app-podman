@@ -183,15 +183,11 @@ const ListUtil = baseclass.extend({
 	 * Execute bulk delete with optional per-item cleanup.
 	 */
 	_executeBulkDelete: function (selected, checkResults, options) {
-		/** N_(selected.length, 'Network', 'Networks') */
-		/** N_(selected.length, 'Pod', 'Pods') */
-		/** N_(selected.length, 'Secret', 'Secrets') */
-		/** N_(selected.length, 'Volume', 'Volumes') */
 		podmanUI.showSpinningModal(
 			_('Deleting %s').format(this.itemName + 's'),
 			_('Deleting %d selected %s...').format(
 				selected.length,
-				N_(selected.length, this.itemName, this.itemName + 's')
+				utils._n(selected.length, _(this.itemName), _(this.itemName + 's'))
 			)
 		);
 

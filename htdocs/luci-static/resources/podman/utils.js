@@ -146,4 +146,12 @@ return baseclass.extend({
 		return result;
 	},
 
+	_p: function(stringPlurarl) {
+		return this._n(2, '', stringPlurarl);
+	},
+
+	_n: function (length, stringSingular, stringPlural) {
+		return Number.parseInt(length) === 1 ?
+			stringSingular : stringPlural;
+	}
 });

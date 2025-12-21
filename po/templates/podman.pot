@@ -1,36 +1,6 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
-msgid "Container"
-msgid_plural "Containers"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Image"
-msgid_plural "Images"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Network"
-msgid_plural "Networks"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Pod"
-msgid_plural "Pods"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Secret"
-msgid_plural "Secrets"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Volume"
-msgid_plural "Volumes"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "-- Select %s --"
 msgstr ""
 
@@ -211,6 +181,9 @@ msgstr ""
 msgid "Console"
 msgstr ""
 
+msgid "Container"
+msgstr ""
+
 msgid "Container created and auto-start configured"
 msgstr ""
 
@@ -236,6 +209,9 @@ msgid "Container not running"
 msgstr ""
 
 msgid "Container renamed successfully"
+msgstr ""
+
+msgid "Containers"
 msgstr ""
 
 msgid "Count"
@@ -580,10 +556,16 @@ msgstr ""
 msgid "Id"
 msgstr ""
 
+msgid "Image"
+msgstr ""
+
 msgid "Image ID"
 msgstr ""
 
 msgid "Image pulled successfully"
+msgstr ""
+
+msgid "Images"
 msgstr ""
 
 msgid "Import"
@@ -793,6 +775,9 @@ msgstr ""
 msgid "Name of the bridge interface (e.g., podman0, mynet0). Leave empty to use: &lt;network-name&gt;0. Note: If the generated name conflicts with an existing interface, OpenWrt will auto-increment it."
 msgstr ""
 
+msgid "Network"
+msgstr ""
+
 msgid "Network and OpenWrt integration created successfully"
 msgstr ""
 
@@ -821,6 +806,9 @@ msgid "Network name is required"
 msgstr ""
 
 msgid "Network: %s"
+msgstr ""
+
+msgid "Networks"
 msgstr ""
 
 msgid "Networks deleted but OpenWrt integration removal failed for: %s"
@@ -949,10 +937,16 @@ msgstr ""
 msgid "Please select a network"
 msgstr ""
 
+msgid "Pod"
+msgstr ""
+
 msgid "Pod Name"
 msgstr ""
 
 msgid "Podman Version"
+msgstr ""
+
+msgid "Pods"
 msgstr ""
 
 msgid "Port Mappings"
@@ -1105,6 +1099,9 @@ msgstr ""
 msgid "Running Processes"
 msgstr ""
 
+msgid "Secret"
+msgstr ""
+
 msgid "Secret Data"
 msgstr ""
 
@@ -1115,6 +1112,9 @@ msgid "Secret Name"
 msgstr ""
 
 msgid "Secret name can only contain letters, numbers, underscores, and hyphens"
+msgstr ""
+
+msgid "Secrets"
 msgstr ""
 
 msgid "Secrets can only be used by containers, not displayed"
@@ -1348,6 +1348,9 @@ msgstr ""
 msgid "Variable"
 msgstr ""
 
+msgid "Volume"
+msgstr ""
+
 msgid "Volume driver to use"
 msgstr ""
 
@@ -1361,6 +1364,9 @@ msgid "Volume name is required"
 msgstr ""
 
 msgid "Volume name. Leave empty to auto-generate."
+msgstr ""
+
+msgid "Volumes"
 msgstr ""
 
 msgid "Warning:"

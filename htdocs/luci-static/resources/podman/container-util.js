@@ -3,6 +3,7 @@
 'require baseclass';
 'require ui';
 'require podman.ui as podmanUI';
+'require podman.utils as utils';
 'require podman.rpc as podmanRPC';
 
 /**
@@ -101,10 +102,12 @@ return baseclass.extend({
 
 		const removeText = _('Removing %d %s...').format(
 			ids.length,
-			N_(ids.length, 'Container', 'Containers').toLowerCase()
+			utils._n(ids.length, _('Container'), _('Containers')).toLowerCase()
 		);
 
 		podmanUI.showSpinningModal(removeText, removeText);
+
+		const singularPluralText = utils._n(ids.length, _('Container'), _('Containers')).toLowerCase();
 
 		// Delete containers
 		const promises = ids.map((id) => podmanRPC.container.remove(id, forceRemove, removeVolumes));
@@ -120,7 +123,7 @@ return baseclass.extend({
 			if (errors.length > 0) {
 				podmanUI.errorNotification(_('Failed to remove %d %s').format(
 					errors.length,
-					N_(errors.length, 'Container', 'Containers').toLowerCase()
+					utils._n(errors.length, _('Container'), _('Containers')).toLowerCase()
 				));
 				return;
 			}
@@ -135,10 +138,7 @@ return baseclass.extend({
 
 			Promise.all(cleanupPromises).then(() => {
 				podmanUI.successTimeNotification(
-					_('Removed %d %s successfully').format(
-						ids.length,
-						N_(ids.length, 'Container', 'Containers').toLowerCase()
-					)
+					_('Removed %d %s successfully').format(ids.length, singularPluralText)
 				);
 			});
 		}).catch((err) => {
@@ -146,7 +146,7 @@ return baseclass.extend({
 			if (err && err.message && !err.message.match(/session|auth|login/i)) {
 				podmanUI.errorNotification(`${_('Failed to remove %d %s').format(
 					ids.length,
-					N_(ids.length, 'Container', 'Containers').toLowerCase()
+					singularPluralText
 				)}: ${err.message}`);
 			}
 		});
@@ -171,10 +171,9 @@ return baseclass.extend({
 			return;
 		}
 
-		textLoad = textLoad.format(
-			ids.length,
-			N_(ids.length, 'Container', 'Containers').toLowerCase()
-		);
+		const singularPluralText = utils._n(ids.length, _('Container'), _('Containers')).toLowerCase();
+
+		textLoad = textLoad.format(ids.length, singularPluralText);
 
 		podmanUI.showSpinningModal(textLoad, textLoad);
 
@@ -190,25 +189,19 @@ return baseclass.extend({
 			const errors = results.filter((r) => r && r.error);
 			if (errors.length > 0) {
 				podmanUI.errorNotification(textFailed.format(
-					ids.length,
-					N_(ids.length, 'Container', 'Containers').toLowerCase()
+					errors.length,
+					utils._n(errors.length, 'Container', 'Containers').toLowerCase()
 				));
 
 				return;
 			}
 
-			podmanUI.successTimeNotification(textSuccess.format(
-				ids.length,
-				N_(ids.length, 'Container', 'Containers').toLowerCase()
-			));
+			podmanUI.successTimeNotification(textSuccess.format(ids.length, singularPluralText));
 		}).catch((err) => {
 			ui.hideModal();
 			if (err && err.message && !err.message.match(/session|auth|login/i)) {
 				podmanUI.errorNotification(
-					textFailed.format(
-						ids.length,
-						N_(ids.length, 'Container', 'Containers').toLowerCase()
-					) + ': ' + err.message
+					textFailed.format(ids.length, singularPluralText) + ': ' + err.message
 				);
 			}
 		});

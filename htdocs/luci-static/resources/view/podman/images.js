@@ -190,7 +190,7 @@ return view.extend({
 		const imageNames = selected.map((img) => img.name).join(', ');
 		const confirmText = _('Pull latest version of %d %s?\n\n%s').format(
 			selected.length,
-			N_(selected.length, 'Image', 'Images').toLowerCase(),
+			utils._n(selected.length, _('Image'), _('Images')).toLowerCase(),
 			imageNames
 		);
 		if (!confirm(confirmText))
@@ -200,7 +200,7 @@ return view.extend({
 			_('Pulling Images'),
 			_('Pulling latest version of %d %s...').format(
 				selected.length,
-				N_(selected.length, 'Image', 'Images').toLowerCase()
+				utils._n(selected.length, _('Image'), _('Images')).toLowerCase()
 			)
 		);
 
@@ -213,14 +213,14 @@ return view.extend({
 				podmanUI.errorNotification(
 					_('Failed to pull %d %s').format(
 						errors.length,
-						N_(errors.length, 'Image', 'Images').toLowerCase()
+						utils._n(errors.length, _('Image'), _('Images')).toLowerCase()
 					)
 				);
 			} else {
 				podmanUI.successTimeNotification(
 					_('Successfully pulled %d %s').format(
 						selected.length,
-						N_(selected.length, 'Image', 'Images').toLowerCase()
+						utils._n(selected.length, _('Image'), _('Images')).toLowerCase()
 					)
 				);
 			}
