@@ -29,6 +29,8 @@ jobs:
 
   create-release:
     needs: build-packages
+    permissions:
+      contents: write
     uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-release.yml@main
     with:
       artifact_pattern: 'luci-app-podman-*'
