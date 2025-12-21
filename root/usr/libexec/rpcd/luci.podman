@@ -170,7 +170,6 @@ case "$1" in
 	"secret_remove": { "name": "" },
 	"system_df": {},
 	"system_prune": { "all": false, "volumes": false },
-	"auto_update": { "dry_run": false },
 	"version": {},
 	"info": {},
 	"init_script_generate": { "name": "" },
@@ -739,13 +738,6 @@ EOF
 				# Add ? if we have parameters
 				[ -n "$query" ] && query="?${query}"
 				curl_request "POST" "${API_BASE}/system/prune${query}"
-				;;
-			auto_update)
-				get_json_params dry_run
-				# Build query parameter (check for both "true" and "1" since JSON booleans become 1/0)
-				query=""
-				[ "$dry_run" = "true" -o "$dry_run" = "1" ] && query="?dryRun=true"
-				curl_request "GET" "${API_BASE}/auto-update${query}"
 				;;
 			version)
 				read -r input  # consume ubus JSON input
