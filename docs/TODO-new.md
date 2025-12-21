@@ -1,0 +1,2 @@
+- Optimize mobile list
+- Check mobile container details
