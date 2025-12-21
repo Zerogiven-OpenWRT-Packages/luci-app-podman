@@ -150,8 +150,7 @@ return baseclass.extend({
 			}
 			field.depends('setup_openwrt', '1');
 			field.description = _(
-				'Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. ' +
-				'You can customize zone policies later in Firewall settings.'
+				'Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings.'
 			);
 
 			field = section.option(form.TextValue, 'labels', _('Labels'));

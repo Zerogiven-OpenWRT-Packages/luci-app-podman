@@ -110,6 +110,9 @@ msgstr "取消"
 msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
 msgstr "无法设置 OpenWrt 集成：网络 \"%s\" 未配置子网和网关"
 
+msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
+msgstr "为此网络选择防火墙区域。新区域使用安全默认值：输入 DROP，输出 ACCEPT，转发 REJECT。您稍后可以在防火墙设置中自定义区域策略。"
+
 msgid "Clean Up Now"
 msgstr "立即清理"
 

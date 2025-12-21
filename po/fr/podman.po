@@ -110,6 +110,9 @@ msgstr "Annuler"
 msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
 msgstr "Impossible de configurer l'intégration OpenWrt : le réseau \"%s\" n'a pas de sous-réseau ni de passerelle configurés"
 
+msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
+msgstr "Choisissez la zone de pare-feu pour ce réseau. Les nouvelles zones utilisent des valeurs par défaut sécurisées : entrée DROP, sortie ACCEPT, transfert REJECT. Vous pourrez personnaliser les politiques de zone plus tard dans les paramètres du pare-feu."
+
 msgid "Clean Up Now"
 msgstr "Nettoyer maintenant"
 

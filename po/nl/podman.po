@@ -110,6 +110,9 @@ msgstr "Annuleren"
 msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
 msgstr "Kan OpenWrt integratie niet instellen: Netwerk \"%s\" heeft geen geconfigureerd subnet en gateway"
 
+msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
+msgstr "Kies de firewallzone voor dit netwerk. Nieuwe zones gebruiken veilige standaardwaarden: invoer DROP, uitvoer ACCEPT, doorsturen REJECT. U kunt de zone-instellingen later aanpassen in de Firewall-instellingen."
+
 msgid "Clean Up Now"
 msgstr "Nu opruimen"
 
