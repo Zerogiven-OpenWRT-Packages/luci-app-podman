@@ -12,11 +12,6 @@ on:
       artifacts_patterns:
         required: true
         type: string
-        description: "Liste von Mustern (z.B. luci-app-podman*.ipk), getrennt durch Zeilenumbruch"
-      free_disk_space:
-        required: false
-        type: boolean
-        default: false
       openwrt_version:
         required: true
         type: string
@@ -26,29 +21,34 @@ on:
       arch:
         required: true
         type: string
-      verbose:
-        required: false
-        type: boolean
-        default: false
       selected_version:
         required: false
         type: string
         default: 'both'
+      free_disk_space:
+        required: false
+        type: boolean
+        default: false
+      verbose:
+        required: false
+        type: boolean
+        default: false
     outputs:
       tag_name:
-        description: "Der ermittelte Version-Tag"
         value: ${{ jobs.build.outputs.tag_name }}
 
 jobs:
   build:
+    name: Build ${{ inputs.openwrt_version }} - ${{ inputs.arch }}
     runs-on: ubuntu-latest
     if: |
       inputs.selected_version == 'both' ||
       inputs.selected_version == inputs.openwrt_version
     outputs:
-      tag_name: ${{ steps.get_version.outputs.version_tag }}
+      tag_name: ${{ steps.version_logic.outputs.version_tag }}
+
     steps:
-      - name: Checkout
+      - name: Checkout Source
         uses: actions/checkout@v5
         with:
           path: ${{ github.workspace }}/feed/${{ inputs.package_name }}
@@ -64,21 +64,12 @@ jobs:
         id: get_makefile_version
         if: always() && steps.get_tag_version.outcome != 'success'
         run: |
-          # Pfad zum Makefile im gecheckten Feed-Ordner
           MAKEFILE_PATH="${{ github.workspace }}/feed/${{ inputs.package_name }}/Makefile"
-
           if [ -f "$MAKEFILE_PATH" ]; then
-            # Extrahiere PKG_VERSION:=... und entferne evtl. Leerzeichen/Anführungszeichen
             VERSION=$(grep "PKG_VERSION:=" "$MAKEFILE_PATH" | cut -d'=' -f2 | tr -d ' "')
-            if [ -n "$VERSION" ]; then
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "found=true" >> $GITHUB_OUTPUT
-              echo "Found Makefile version: $VERSION"
-            else
-              echo "found=false" >> $GITHUB_OUTPUT
-            fi
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "found=true" >> $GITHUB_OUTPUT
           else
-            echo "Makefile not found at $MAKEFILE_PATH"
             echo "found=false" >> $GITHUB_OUTPUT
           fi
 
@@ -86,21 +77,15 @@ jobs:
         id: version_logic
         run: |
           if [ "${{ steps.get_tag_version.outcome }}" == "success" ]; then
-            # Priorität 1: Git Tag
             FINAL_VER="${{ steps.get_tag_version.outputs.version }}"
           elif [ "${{ steps.get_makefile_version.outputs.found }}" == "true" ]; then
-            # Priorität 2: Makefile (mit Suffix für Test-Builds)
             FINAL_VER="${{ steps.get_makefile_version.outputs.version }}-test"
           else
-            # Priorität 3: Ultima Ratio
             FINAL_VER="0.0.0-unknown"
           fi
-
           echo "version=$FINAL_VER" >> $GITHUB_OUTPUT
           echo "version_tag=v$FINAL_VER" >> $GITHUB_OUTPUT
-          echo "Final determined version: $FINAL_VER"
 
-      # Dieser Schritt wird nur ausgeführt, wenn free_disk_space: true gesetzt ist
       - name: Free Disk Space
         if: ${{ inputs.free_disk_space }}
         uses: jlumbroso/free-disk-space@main
@@ -111,7 +96,12 @@ jobs:
           haskell: true
           large-packages: true
 
-      - name: Build Package
+      - name: Initialize SDK Directories
+        run: |
+          mkdir -p ${{ github.workspace }}/artifacts
+          mkdir -p ${{ github.workspace }}/feed
+
+      - name: Build with OpenWrt SDK
         uses: openwrt/gh-action-sdk@v9
         env:
           ARCH: ${{ inputs.arch }}-${{ inputs.openwrt_build_version }}
@@ -120,30 +110,23 @@ jobs:
           FEED_DIR: ${{ github.workspace }}/feed
           ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
-      - name: Validate and Collect Artifacts
+      - name: Collect and Filter Artifacts
         id: collect
         run: |
           mkdir -p ${{ github.workspace }}/filtered-assets
-
-          # Wir verarbeiten jedes Pattern einzeln
           echo "${{ inputs.artifacts_patterns }}" | while read -r pattern; do
             [ -z "$pattern" ] && continue
-            echo "Suche nach: $pattern"
-
-            # Prüfen ob Dateien vorhanden sind
-            FOUND=$(find ${{ github.workspace }}/artifacts/bin/ -name "$pattern" -type f)
-            if [ -z "$FOUND" ]; then
-              echo "❌ Fehler: Kein Paket gefunden für Muster: $pattern"
+            FILES=$(find ${{ github.workspace }}/artifacts/bin/ -name "$pattern" -type f)
+            if [ -z "$FILES" ]; then
+              echo "❌ Error: No files found for pattern: $pattern"
               exit 1
             fi
-
-            # Dateien kopieren
-            cp -v $FOUND ${{ github.workspace }}/filtered-assets/
+            cp -v $FILES ${{ github.workspace }}/filtered-assets/
           done
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ inputs.package_name }}-${{ inputs.openwrt_version }}-${{ inputs.arch }}
+          name: ${{ inputs.package_name }}-${{ steps.version_logic.outputs.version }}-${{ inputs.openwrt_version }}-${{ inputs.arch }}
           path: ${{ github.workspace }}/filtered-assets/*.ipk
           retention-days: 7
