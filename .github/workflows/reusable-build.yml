@@ -54,9 +54,51 @@ jobs:
           path: ${{ github.workspace }}/feed/${{ inputs.package_name }}
           fetch-depth: 0
 
-      - name: Get Version
-        id: get_version
+      - name: Get Version from Tag
+        id: get_tag_version
+        if: startsWith(github.ref, 'refs/tags/')
         uses: ChrSchu90/GitTagSemanticVersion@v1.1
+        continue-on-error: true
+
+      - name: Get Version from Makefile (Fallback)
+        id: get_makefile_version
+        if: always() && steps.get_tag_version.outcome != 'success'
+        run: |
+          # Pfad zum Makefile im gecheckten Feed-Ordner
+          MAKEFILE_PATH="${{ github.workspace }}/feed/${{ inputs.package_name }}/Makefile"
+
+          if [ -f "$MAKEFILE_PATH" ]; then
+            # Extrahiere PKG_VERSION:=... und entferne evtl. Leerzeichen/Anführungszeichen
+            VERSION=$(grep "PKG_VERSION:=" "$MAKEFILE_PATH" | cut -d'=' -f2 | tr -d ' "')
+            if [ -n "$VERSION" ]; then
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "found=true" >> $GITHUB_OUTPUT
+              echo "Found Makefile version: $VERSION"
+            else
+              echo "found=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Makefile not found at $MAKEFILE_PATH"
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Finalize Version String
+        id: version_logic
+        run: |
+          if [ "${{ steps.get_tag_version.outcome }}" == "success" ]; then
+            # Priorität 1: Git Tag
+            FINAL_VER="${{ steps.get_tag_version.outputs.version }}"
+          elif [ "${{ steps.get_makefile_version.outputs.found }}" == "true" ]; then
+            # Priorität 2: Makefile (mit Suffix für Test-Builds)
+            FINAL_VER="${{ steps.get_makefile_version.outputs.version }}-test"
+          else
+            # Priorität 3: Ultima Ratio
+            FINAL_VER="0.0.0-unknown"
+          fi
+
+          echo "version=$FINAL_VER" >> $GITHUB_OUTPUT
+          echo "version_tag=v$FINAL_VER" >> $GITHUB_OUTPUT
+          echo "Final determined version: $FINAL_VER"
 
       # Dieser Schritt wird nur ausgeführt, wenn free_disk_space: true gesetzt ist
       - name: Free Disk Space
