@@ -15,10 +15,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
 - [Credits](#credits)
-- [Contributing](#contributing)
-  - [Key Files](#key-files)
 - [License](#license)
-- [Support](#support)
 
 ## Features
 
@@ -31,6 +28,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - **Pod Management**: Multi-container pods with shared networking
 - **Secret Management**: Encrypted storage for sensitive data
 - **System Overview**: Resource usage, disk space, system-wide cleanup
+- **Mobile friendly Lists**: Optimized for basic usage
 
 ## Screenshots
 
@@ -49,8 +47,8 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 ### From IPK Package
 
 ```bash
-wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.4.0/luci-app-podman-1.4.0.ipk
-opkg update && opkg install luci-app-podman-1.4.0.ipk
+wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.5.0/luci-app-podman-1.5.0.ipk
+opkg update && opkg install luci-app-podman-1.5.0.ipk
 ```
 
 ### From Source
@@ -82,14 +80,6 @@ Inspired by:
 - [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman) - Docker LuCI design patterns
 - [OpenWrt Podman Guide](https://openwrt.org/docs/guide-user/virtualization/podman) - Official documentation
 
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
-
 ## License
 
 Apache License 2.0 - see [LICENSE](LICENSE) file.
-
-## Support
-
-- [Issues](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/issues)
