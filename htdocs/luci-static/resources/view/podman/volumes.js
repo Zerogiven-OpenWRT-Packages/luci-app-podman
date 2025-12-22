@@ -125,7 +125,7 @@ return view.extend({
 
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', {
-				'class': 'podman-view-container'
+				'class': 'podman-view-list'
 			});
 
 			viewContainer.appendChild(toolbar.container);

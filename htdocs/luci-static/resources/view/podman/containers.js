@@ -151,7 +151,7 @@ return view.extend({
 			}, '...');
 		};
 
-		o = section.option(form.DummyValue, 'Action', '');
+		o = section.option(podmanForm.field.ContainerMobileActionsValue, 'Action', '');
 		o.name = 'mobile-actions'
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
@@ -226,7 +226,7 @@ return view.extend({
 
 		return this.map.render().then((mapRendered) => {
 			const viewContainer = E('div', {
-				'class': 'podman-view-container'
+				'class': 'podman-view-list'
 			});
 
 			viewContainer.appendChild(toolbar.container);
@@ -248,7 +248,7 @@ return view.extend({
 	refreshTable: function (clearSelections) {
 		return this.listHelper.refreshTable(clearSelections).then(() => {
 			// Re-fetch container details (inspect data, init script status) after table refresh
-			const container = document.querySelector('.podman-view-container');
+			const container = document.querySelector('.podman-view-list');
 			if (container) {
 				this.fetchContainerDetails(container);
 			}
@@ -452,32 +452,17 @@ return view.extend({
 	handleRemove: function () {
 		const selected = this.getSelectedContainerIds();
 
-		this.listHelper.bulkDelete({
-			selected: selected,
-			formatItemName: (id) => utils.truncate(id, 12),
-			preDeleteCheck: (ids) => {
-				const checkPromises = ids.map((id) =>
-					podmanRPC.container.inspect(id)
-						.then((data) => ({
-							id: id,
-							name: data.Name ? data.Name.replace(/^\//, '') : null
-						}))
-						.catch(() => ({
-							id: id,
-							name: null
-						}))
-				);
-				return Promise.all(checkPromises);
-			},
-			deletePromiseFn: (id) => podmanRPC.container.remove(id, true, true),
-			afterDeleteEach: (id, checkResult) => {
-				if (checkResult && checkResult.name) {
-					return podmanRPC.initScript.remove(checkResult.name)
-						.catch(() => Promise.resolve()); // Ignore errors if script doesn't exist
-				}
-				return Promise.resolve();
-			},
-			onSuccess: () => this.refreshTable(true)
+		if (selected.length === 0) {
+			podmanUI.warningTimeNotification(_('No %s selected').format('Containers'));
+			return;
+		}
+
+		const confirmDelete = this.listHelper._buildConfirmDeleteMessage(selected, null, {formatItemName: (id) => utils.truncate(id, 12)});
+		if (!confirm(confirmDelete))
+			return;
+
+		ContainerUtil.removeContainers(selected).then(() => {
+			this.refreshTable(true);
 		});
 	},
 

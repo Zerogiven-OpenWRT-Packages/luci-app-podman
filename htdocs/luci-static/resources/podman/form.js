@@ -109,6 +109,10 @@ const FormSelectDummyValue = form.DummyValue.extend({
 	}
 });
 
+const FormContainerMobileActionsValue = form.DummyValue.extend({
+	__name__: 'CBI.ContainerMobileActionsValue',
+});
+
 /**
  * Data display column that extracts and formats a property from row data
  */
@@ -189,6 +193,7 @@ const PodmanForm = baseclass.extend({
 	NetworkConnect: FormNetworkConnect,
 	EditableField: FormEditableField,
 	field: {
+		ContainerMobileActionsValue: FormContainerMobileActionsValue,
 		DataDummyValue: FormDataDummyValue,
 		LinkDataDummyValue: FormLinkDataDummyValue,
 		SelectDummyValue: FormSelectDummyValue,

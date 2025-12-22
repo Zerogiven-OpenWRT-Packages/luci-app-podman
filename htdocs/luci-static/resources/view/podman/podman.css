@@ -80,10 +80,6 @@
     color: #999;
 }
 
-/**
- * overview.js
-*/
-
 .overview-actions {
     display: flex;
     gap: 10px;
@@ -143,16 +139,44 @@
     margin-top: 5px;
 }
 
-@media (min-width: 600px) {
-  .hide-not-mobile {
+.list-toolbar {
+    margin-bottom: 10px;
+}
+
+@media (min-width: 590px) {
+  .hide-not-mobile,
+  [data-widget="CBI.ContainerMobileActionsValue"] {
     display: none !important;
   }
 }
 
-@media screen and (max-device-width: 600px) {
-    [data-page="admin-podman-containers"] td[data-name="State"],
-    [data-page="admin-podman-containers"] td[data-name="Health"] {
+@media screen and (max-device-width: 590px) {
+    .podman-view-list .list-toolbar .cbi-button {
+        margin-top: 5px;
+    }
+
+    .podman-view-list td[data-name="ID"],
+    .podman-view-list td[data-name="Names"],
+    .podman-view-list td[data-name="State"],
+    .podman-view-list td[data-name="Health"] {
         flex-basis: 50% !important;
+    }
+
+    .podman-view-list td[data-name="Names"] > div {
+        font-size: 16px;
+    }
+
+    .podman-view-list td[data-name="Names"] {
+        order: -1;
+    }
+
+    .podman-view-list td[data-name="ID"] .cbi-checkbox {
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    .podman-view-list td[data-name="ID"] input[type="checkbox"] {
+        padding: 10px;
     }
 
     .cbi-section-table td[data-name="Action"] {

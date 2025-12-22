@@ -87,7 +87,7 @@ const ListUtil = baseclass.extend({
 			).render());
 		}
 
-		const container = E('div', { 'style': 'margin-bottom: 10px;' }, buttons);
+		const container = E('div', { 'class': 'list-toolbar' }, buttons);
 
 		return {
 			container: container,
@@ -135,7 +135,7 @@ const ListUtil = baseclass.extend({
 		const selected = options.selected || this.getSelected();
 
 		if (selected.length === 0) {
-			podmanUI.warningTimeNotification(_('No %s selected').format(this.itemName + 's'));
+			podmanUI.warningTimeNotification(_('No %s selected').format(_(this.itemName + 's')));
 			return;
 		}
 
@@ -145,7 +145,7 @@ const ListUtil = baseclass.extend({
 			: Promise.resolve(null);
 
 		checkPromise.then((checkResults) => {
-			const confirmMsg = this._buildConfirmMessage(selected, checkResults, options);
+			const confirmMsg = this._buildConfirmDeleteMessage(selected, checkResults, options);
 
 			if (!confirm(confirmMsg)) {
 				return;
@@ -158,7 +158,7 @@ const ListUtil = baseclass.extend({
 	/**
 	 * Build confirmation message with optional custom message.
 	 */
-	_buildConfirmMessage: function (selected, checkResults, options) {
+	_buildConfirmDeleteMessage: function (selected, checkResults, options) {
 		const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item : item.name || item.Name || item.id || item.Id);
 		const itemNames = selected.map(formatFn).join(', ');
 
@@ -355,7 +355,7 @@ const ListUtil = baseclass.extend({
 
 			return this.view.map.save(null, true);
 		}).then(() => {
-			const container = document.querySelector('.podman-view-container');
+			const container = document.querySelector('.podman-view-list');
 			if (container) {
 				this.setupSelectAll(container);
 				if (clearSelections) {

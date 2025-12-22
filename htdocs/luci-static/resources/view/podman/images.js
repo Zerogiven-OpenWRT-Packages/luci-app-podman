@@ -138,7 +138,7 @@ return view.extend({
 			const formRendered = rendered[0];
 			const mapRendered = rendered[1];
 			const viewContainer = E('div', {
-				'class': 'podman-view-container'
+				'class': 'podman-view-list'
 			});
 
 			viewContainer.appendChild(formRendered);
