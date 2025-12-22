@@ -77,7 +77,7 @@ return view.extend({
 
 		o = section.option(
 			podmanForm.field.SelectDummyValue,
-			'Id',
+			'ID',
 			new ui.Checkbox(0, { hiddenname: 'all' }).render()
 		);
 

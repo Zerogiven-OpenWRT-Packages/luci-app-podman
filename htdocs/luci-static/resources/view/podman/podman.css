@@ -1,8 +1,4 @@
-.container-status {
-    font-size: 0.875rem;
-    vertical-align: middle;
-}
-
+/* --- Base Components & Helper Classes --- */
 .section-container-info {
     margin-bottom: 1.25rem;
 }
@@ -12,6 +8,30 @@
     margin-right: 5px;
 }
 
+.container-status {
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.cli-value {
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.tt {
+    border-bottom: 1px dotted;
+    cursor: help;
+}
+
+.loading-gray {
+    color: #999;
+}
+
+.list-toolbar {
+    margin-bottom: 10px;
+}
+
+/* --- Table Styling --- */
 .table-list > tr > td:first-of-type {
     width: 33%;
     font-weight: bold;
@@ -35,26 +55,19 @@
     user-select: none;
 }
 
-.cli-value {
-    font-family: monospace;
-    font-size: 0.9em;
-}
-
-.tt {
-    border-bottom: 1px dotted;
-    cursor: help;
-}
-
-.code-area, .terminal-area {
+/* --- Code & Terminal Areas --- */
+/* Combined shared styles for code and terminal displays */
+.code-area,
+.terminal-area {
     padding: 1rem;
-    overflow: auto !important;
     max-height: 600px;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
     font-family: monospace;
+    font-size: 0.75rem;
     font-weight: 100;
-    white-space: pre !important;
     line-height: 1.25;
+    white-space: pre !important;
+    overflow: auto !important;
+    border-radius: 0.25rem;
 }
 
 .code-area {
@@ -67,6 +80,7 @@
     color: #0f0;
 }
 
+/* --- Modals --- */
 .modal .terminal-area {
     max-width: 800px;
     min-height: 100px;
@@ -76,10 +90,7 @@
     margin-top: 1rem;
 }
 
-.loading-gray {
-    color: #999;
-}
-
+/* --- Dashboard / Overview Cards --- */
 .overview-actions {
     display: flex;
     gap: 10px;
@@ -95,20 +106,20 @@
 .overview-card-link,
 .overview-card-link:hover,
 .overview-card-link:focus {
+    display: block;
     text-decoration: none;
     color: inherit;
-    display: block;
 }
 
 .overview-card-link > .cbi-section {
-    cursor: pointer;
-    transition: all 0.2s;
-    min-height: 120px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-height: 120px;
     padding: 15px;
     margin: 0;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
 }
 
 .overview-card-link > .cbi-section .card-link-header {
@@ -118,56 +129,61 @@
     margin-bottom: 10px;
 }
 
-.overview-card-link .card-link-header .card-link-title {
+.card-link-title {
     font-size: 14px;
     opacity: 0.8;
 }
 
-.overview-card-link .card-link-header .card-link-icon {
+.card-link-icon {
     font-size: 24px;
     opacity: 0.6;
 }
 
-.overview-card-link .card-link-headline {
+.card-link-headline {
     font-size: 32px;
     font-weight: bold;
 }
 
-.overview-card-link .card-link-text {
+.card-link-text {
     font-size: 12px;
     opacity: 0.7;
     margin-top: 5px;
 }
 
-.list-toolbar {
-    margin-bottom: 10px;
+/* --- Responsive Layouts --- */
+
+/* Desktop / Large Screens */
+@media (min-width: 600px) {
+    .hide-not-mobile,
+    [data-widget="CBI.ContainerMobileActionsValue"] {
+        display: none !important;
+    }
 }
 
-@media (min-width: 590px) {
-  .hide-not-mobile,
-  [data-widget="CBI.ContainerMobileActionsValue"] {
-    display: none !important;
-  }
-}
-
-@media screen and (max-device-width: 590px) {
+/* Mobile / Small Screens */
+@media screen and (max-device-width: 600px) {
     .podman-view-list .list-toolbar .cbi-button {
         margin-top: 5px;
     }
 
-    .podman-view-list td[data-name="ID"],
+    /* Flex-basis adjustments for table cells on mobile */
+    .podman-view-list td[data-name="Name"],
     .podman-view-list td[data-name="Names"],
-    .podman-view-list td[data-name="State"],
-    .podman-view-list td[data-name="Health"] {
-        flex-basis: 50% !important;
+    .podman-view-list td[data-name="VolumeName"],
+    .podman-view-list td[data-name="Repository"] {
+        flex-basis: 80% !important;
+        order: -1;
     }
 
-    .podman-view-list td[data-name="Names"] > div {
+    .podman-view-list td[data-name="Name"] > div,
+    .podman-view-list td[data-name="Names"] > div,
+    .podman-view-list td[data-name="Repository"] > div,
+    .podman-view-list td[data-name="VolumeName"] > div {
         font-size: 16px;
     }
 
-    .podman-view-list td[data-name="Names"] {
-        order: -1;
+    .podman-view-list td[data-name="ID"] {
+        flex-basis: 20% !important;
     }
 
     .podman-view-list td[data-name="ID"] .cbi-checkbox {
@@ -175,11 +191,30 @@
         text-align: right;
     }
 
-    .podman-view-list td[data-name="ID"] input[type="checkbox"] {
-        padding: 10px;
+    .podman-view-list td[data-name="State"],
+    .podman-view-list td[data-name="Health"],
+    .podman-view-list td[data-name="Created"],
+    .podman-view-list td[data-name="CreatedAt"],
+    .podman-view-list td[data-name="InitScript"],
+    .podman-view-list td[data-name="Driver"],
+    .podman-view-list td[data-name="Size"],
+    .podman-view-list td[data-name="Image"],
+    .podman-view-list td[data-name="ImageId"],
+    .podman-view-list td[data-name="Tag"],
+    .podman-view-list td[data-name="Mountpoint"] {
+        flex-basis: 50% !important;
     }
 
     .cbi-section-table td[data-name="Action"] {
         flex-basis: 100% !important;
+    }
+
+    /* Mobile Actions Widget behavior */
+    [data-widget="CBI.ContainerMobileActionsValue"] .list-toolbar {
+        display: flex;
+    }
+
+    [data-widget="CBI.ContainerMobileActionsValue"] .list-toolbar .cbi-button {
+        width: 50%;
     }
 }

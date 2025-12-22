@@ -76,7 +76,7 @@ return view.extend({
 
 		let o;
 
-		o = section.option(podmanForm.field.SelectDummyValue, 'name', new ui.Checkbox(
+		o = section.option(podmanForm.field.SelectDummyValue, 'ID', new ui.Checkbox(
 			0, {
 				hiddenname: 'all'
 			}).render());

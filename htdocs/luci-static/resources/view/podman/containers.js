@@ -160,36 +160,47 @@ return view.extend({
 			const buttons = [];
 
 			if (isRunning) {
-				buttons.push(E('span', {
-					style: 'font-size: 16px;'
-				}, '&#9724;'));
+				buttons.push({
+					text: '&#9724;',
+					handler: () => this.handleStop(),
+					cssClass: 'negative',
+					tooltip: _('Stop selected %s').format(_('Containers').toLowerCase())
+				});
 			} else {
-				buttons.push(E('span', {
-					style: 'font-size: 16px;'
-				}, '&#9658;'));
+				buttons.push({
+					text: '&#9658;',
+					handler: () => this.handleStart(),
+					cssClass: 'positive',
+					tooltip: _('Start selected %s').format(_('Containers').toLowerCase())
+				});
 			}
 
-			buttons.push('');
-			buttons.push(E('span', {
-				style: 'font-size: 16px;'
-				}, '&#8635;'));
+			buttons.push({
+				text: '&#8635;',
+				handler: () => this.handleRestart(),
+				cssClass: '',
+				tooltip: _('Restart selected %s').format(_('Containers').toLowerCase())
+			});
 
-			buttons.push('');
-			buttons.push(E('span', {
-				style: 'font-size: 16px;'
-				}, '&#10010;'));
+			const toolbar = this.listHelper.createToolbar({
+				onDelete: undefined,
+				onRefresh: undefined,
+				onCreate: undefined,
+				customButtons: buttons,
+			});
 
 			return E('span', {
 				'style': 'padding-top: 1rem',
 				'class': 'hide-not-mobile',
-			}, buttons);
+			}, toolbar.container);
 		};
 
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleRemove(),
 			onRefresh: () => this.refreshTable(false),
 			onCreate: undefined,
-			customButtons: [{
+			customButtons: [
+				{
 					text: '&#9658;',
 					handler: () => this.handleStart(),
 					cssClass: 'positive',
@@ -213,7 +224,7 @@ return view.extend({
 					cssClass: 'apply',
 					tooltip: _('Run health checks on selected containers')
 				}
-			]
+			],
 		});
 
 		const createButton = new podmanUI.MultiButton({}, 'add')
