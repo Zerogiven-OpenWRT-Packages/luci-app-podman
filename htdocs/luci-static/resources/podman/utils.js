@@ -146,6 +146,14 @@ return baseclass.extend({
 		return result;
 	},
 
+	addPodmanCss: function() {
+		document.querySelector('head').appendChild(E('link', {
+			'rel': 'stylesheet',
+			'type': 'text/css',
+			'href': L.resource('view/podman/podman.css')
+		}));
+	},
+
 	_p: function(stringPlurarl) {
 		return this._n(2, '', stringPlurarl);
 	},

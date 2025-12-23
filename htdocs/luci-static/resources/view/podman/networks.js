@@ -12,11 +12,7 @@
 'require podman.list as List';
 'require podman.openwrt-network as openwrtNetwork';
 
-document.querySelector('head').appendChild(E('link', {
-	'rel': 'stylesheet',
-	'type': 'text/css',
-	'href': L.resource('view/podman/podman.css')
-}));
+utils.addPodmanCss();
 
 /**
  * Network management view with create, inspect, delete, and OpenWrt integration setup

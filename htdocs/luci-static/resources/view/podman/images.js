@@ -11,11 +11,7 @@
 'require podman.form as podmanForm';
 'require podman.list as List';
 
-document.querySelector('head').appendChild(E('link', {
-	'rel': 'stylesheet',
-	'type': 'text/css',
-	'href': L.resource('view/podman/podman.css')
-}));
+utils.addPodmanCss();
 
 /**
  * Image management view with pull, inspect, and delete operations

@@ -11,11 +11,7 @@
 'require podman.ui as podmanUI';
 'require podman.form as podmanForm';
 
-document.querySelector('head').appendChild(E('link', {
-	'rel': 'stylesheet',
-	'type': 'text/css',
-	'href': L.resource('view/podman/podman.css')
-}));
+utils.addPodmanCss();
 
 /**
  * Pod management view with create, start, stop, inspect, and delete operations

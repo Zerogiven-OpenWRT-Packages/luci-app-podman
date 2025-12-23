@@ -19,11 +19,7 @@
 'require view.podman.container-tab.logs as containerLogs';
 'require view.podman.container-tab.health as containerHealth';
 
-document.querySelector('head').appendChild(E('link', {
-	'rel': 'stylesheet',
-	'type': 'text/css',
-	'href': L.resource('view/podman/podman.css')
-}));
+utils.addPodmanCss();
 
 /**
  * Container detail view with tabbed interface

@@ -12,11 +12,7 @@
 'require podman.list as List';
 'require podman.container-util as ContainerUtil';
 
-document.querySelector('head').appendChild(E('link', {
-	'rel': 'stylesheet',
-	'type': 'text/css',
-	'href': L.resource('view/podman/podman.css')
-}));
+utils.addPodmanCss();
 
 /**
  * Container management view with create, start, stop, health check, and delete operations

@@ -7,11 +7,7 @@
 'require podman.ui as podmanUI';
 'require ui';
 
-document.querySelector('head').appendChild(E('link', {
-	'rel': 'stylesheet',
-	'type': 'text/css',
-	'href': L.resource('view/podman/podman.css')
-}));
+utils.addPodmanCss();
 
 /**
  * Podman Overview Dashboard View
