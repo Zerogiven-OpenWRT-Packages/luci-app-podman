@@ -47,8 +47,8 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 ### From IPK Package
 
 ```bash
-wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.5.0/luci-app-podman-1.5.0.ipk
-opkg update && opkg install luci-app-podman-1.5.0.ipk
+wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.5.0/luci-app-podman_1.5.0-r1_all.ipk
+opkg update && opkg install luci-app-podman_1.5.0-r1_all.ipk
 ```
 
 ### From Source
