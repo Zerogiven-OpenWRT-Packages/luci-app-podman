@@ -11,6 +11,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Installation](#installation)
+  - [From Package Feed](#from-package-feed)
   - [From IPK Package](#from-ipk-package)
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
