@@ -68,7 +68,8 @@
 					"system_prune",
 					"init_script_generate",
 					"init_script_set_enabled",
-					"init_script_remove"
+					"init_script_remove",
+					"container_recreate"
 				]
 			},
 			"uci": ["podman"]

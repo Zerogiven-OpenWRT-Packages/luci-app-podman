@@ -2,221 +2,187 @@
 
 ## Overview
 
-Implement container auto-update functionality in the web UI without relying on Podman's systemd-dependent auto-update API.
+Implement container auto-update functionality in the web UI using `podman generate spec` to preserve container configuration.
 
 ## Background
 
-Podman's built-in `auto-update` requires systemd integration which OpenWrt doesn't have (uses procd). This feature implements the same functionality using existing Podman APIs.
+Podman's built-in `auto-update` API requires systemd integration which OpenWrt doesn't have (uses procd). This feature implements the same functionality using `podman generate spec` which provides the exact container create command.
 
 ## How It Works
 
-### Update Detection
-1. Find containers with `io.containers.autoupdate=registry` label
-2. Get current container's image digest
-3. Pull latest image from registry
-4. Compare digests to detect available updates
+### Key Insight
+
+`podman generate spec --name <container>` returns JSON with `containerCreateCommand` array - the exact `podman run` command to recreate the container. This eliminates complex config extraction.
 
 ### Update Process
-1. Inspect container to save full configuration
-2. Stop container
-3. Remove container (volumes preserved)
-4. Create new container with same config + new image
-5. Start container
-6. Reconnect networks if needed
+
+1. **Pull latest image** for containers with `io.containers.autoupdate` label
+2. **Check if update available** by comparing image digests
+3. **Generate spec** to get `containerCreateCommand`
+4. **Stop & remove** old container
+5. **Recreate** container using the exact same command
+6. **Start** if it was running before
+
+> **Note**: Init scripts use container name, not ID. Same name = init script still works. No regeneration needed.
 
 ---
 
 ## Implementation Tasks
 
-### Phase 1: Check for Updates (Dry Run)
+### Phase 1: Backend - Add generate spec RPC
 
-- [ ] **1.1** Add "Check for Updates" button to Overview page
-- [ ] **1.2** Create `getContainersWithAutoUpdate()` helper
+- [ ] **1.1** Add `container_generate_spec` method to `luci.podman`
+  ```sh
+  podman generate spec --name "$name"
+  ```
+- [ ] **1.2** Add RPC declaration in `podman/rpc.js`
+  ```javascript
+  generateSpec: rpc.declare({
+    object: 'luci.podman',
+    method: 'container_generate_spec',
+    params: ['name']
+  })
+  ```
+- [ ] **1.3** Add ACL permission for new method
+
+### Phase 2: Update Check Logic
+
+- [ ] **2.1** Create `podman/auto-update.js` module
+- [ ] **2.2** Implement `getAutoUpdateContainers()`
   - Filter containers by `io.containers.autoupdate` label
-  - Return list with container name, image, current digest
-- [ ] **1.3** Create `checkImageUpdate(imageName)` function
-  - Pull latest image (or check manifest)
-  - Compare pulled digest vs container's image digest
-  - Return: `{hasUpdate: bool, currentDigest, newDigest}`
-- [ ] **1.4** Create UI modal for update check results
-  - Show list of containers with available updates
-  - Show containers already up-to-date
-  - Button to proceed with update
+  - Return list with name, image, running state
+- [ ] **2.3** Implement `checkForUpdates(containers)`
+  - For each container: pull latest image
+  - Compare current vs pulled image digest
+  - Return list of containers with available updates
 
-### Phase 2: Perform Updates
+### Phase 3: Update Execution
 
-- [ ] **2.1** Create `extractContainerSpec(inspectData)` function
-  - Extract all config needed to recreate container:
-    - Name, Image, Command, Entrypoint
-    - Environment variables
-    - Port mappings
-    - Volume mounts
-    - Labels
-    - Network mode/connections
-    - Restart policy
-    - Resource limits (CPU, memory)
-    - Privileged, capabilities
-    - Hostname, working directory
-    - Health check config
-- [ ] **2.2** Create `updateContainer(containerId)` function
-  - Step 1: Inspect and save config
-  - Step 2: Pull latest image (if not already pulled)
-  - Step 3: Stop container
-  - Step 4: Remove container
-  - Step 5: Create container with saved config + new image
-  - Step 6: Reconnect to networks
-  - Step 7: Start container
-  - Handle errors at each step with rollback info
-- [ ] **2.3** Create progress modal UI
-  - Show step-by-step progress
-  - Show success/failure for each container
+- [ ] **3.1** Implement `updateContainer(name, wasRunning)`
+  ```
+  1. Generate spec → get containerCreateCommand
+  2. Stop container (if running)
+  3. Remove container
+  4. Execute create command (exact same command)
+  5. Start container (if wasRunning)
+  ```
+- [ ] **3.2** Implement `parseCreateCommand(commandArray)`
+  - Convert command array to create spec object
+  - Use command exactly as returned by Podman
+- [ ] **3.3** Implement `executeUpdate(containers)`
+  - Batch update with progress tracking
+  - Handle errors per-container
+
+### Phase 4: UI Integration
+
+- [ ] **4.1** Add "Check for Updates" button to Overview
+- [ ] **4.2** Create update check modal
+  - Show progress while checking
+  - List containers with updates available
+  - Checkboxes to select which to update
+- [ ] **4.3** Create update progress modal
+  - Step-by-step progress per container
+  - Success/failure status
   - Final summary
 
-### Phase 3: Batch Operations
+### Phase 5: Error Handling
 
-- [ ] **3.1** Add "Update All" functionality
-  - Update all containers with available updates
-  - Sequential updates (safer) or parallel (faster)
-- [ ] **3.2** Add "Update Selected" functionality
-  - Checkbox selection in update list
-  - Update only selected containers
-- [ ] **3.3** Add update status to container list view
-  - Column or icon showing update available
-  - Click to update single container
-
-### Phase 4: Error Handling & Rollback
-
-- [ ] **4.1** Implement pre-update validation
-  - Check image can be pulled before removing container
-  - Verify network exists before reconnect
-- [ ] **4.2** Save rollback information
-  - Store old image ID
-  - Store original container config
-- [ ] **4.3** Add manual rollback option
-  - If update fails, offer to recreate with old image
-- [ ] **4.4** Handle partial failures
-  - If container won't start after update, show clear error
-  - Don't break other containers in batch update
+- [ ] **5.1** Pre-update validation
+  - Verify image pulled successfully before removing container
+- [ ] **5.2** Rollback info
+  - Save old image reference
+  - If new container fails to start, show recovery instructions
+- [ ] **5.3** Partial failure handling
+  - Continue with other containers if one fails
+  - Clear error reporting
 
 ---
 
-## API Calls Required
+## API Calls
 
-All APIs already exist in `podman/rpc.js`:
+### Existing (in rpc.js)
+| Method | Purpose |
+|--------|---------|
+| `container.list()` | Find containers with label |
+| `container.inspect()` | Get current image digest |
+| `container.stop()` | Stop before remove |
+| `container.remove()` | Remove old container |
+| `container.create()` | Create with new image |
+| `container.start()` | Start new container |
+| `image.pull()` | Pull latest image |
+| `image.inspect()` | Get image digest |
 
-| Function | RPC Method | Purpose |
-|----------|------------|---------|
-| List containers | `container.list()` | Find containers with label |
-| Inspect container | `container.inspect()` | Get full config |
-| Pull image | `image.pull()` | Get latest image |
-| Inspect image | `image.inspect()` | Get image digest |
-| Stop container | `container.stop()` | Stop before remove |
-| Remove container | `container.remove()` | Remove old container |
-| Create container | `container.create()` | Create with new image |
-| Start container | `container.start()` | Start new container |
-| Connect network | `network.connect()` | Reconnect networks |
+### New (to add)
+| Method | Purpose |
+|--------|---------|
+| `container.generateSpec()` | Get containerCreateCommand |
 
 ---
 
-## Container Spec Fields to Preserve
+## Example: Generate Spec Output
 
-```javascript
+```json
 {
-  // Basic
-  name: string,
-  image: string,  // Updated to new image
-  command: string[],
-  entrypoint: string[],
-
-  // Environment
-  env: {key: value},
-
-  // Networking
-  portmappings: [{host_port, container_port, protocol}],
-  hostname: string,
-  dns_server: string[],
-  dns_search: string[],
-
-  // Storage
-  mounts: [{source, destination, type, options}],
-
-  // Labels
-  labels: {key: value},  // Preserve all including autoupdate
-
-  // Runtime
-  privileged: boolean,
-  cap_add: string[],
-  cap_drop: string[],
-  user: string,
-  work_dir: string,
-
-  // Resources
-  resource_limits: {
-    cpu: {quota, period},
-    memory: {limit}
-  },
-
-  // Health
-  healthconfig: {Test, Interval, Timeout, Retries},
-
-  // Restart
-  restart_policy: string,
-  restart_tries: number,
-
-  // Other
-  stdin: boolean,
-  terminal: boolean
+  "containerCreateCommand": [
+    "podman",
+    "run",
+    "-d",
+    "--name", "grafana",
+    "--hostname", "mon.example.com",
+    "--network", "podlan",
+    "--ip", "192.168.20.14",
+    "--restart", "unless-stopped",
+    "--label", "io.containers.autoupdate=registry",
+    "-e", "TZ=Europe/Vienna",
+    "-v", "grafana_data:/var/lib/grafana:Z",
+    "--health-cmd", "wget -qO- http://localhost:3000/api/health || exit 1",
+    "docker.io/grafana/grafana:12.2.1"
+  ]
 }
 ```
+
+To update:
+1. Pull the image (same tag as in command)
+2. If digest changed, execute the exact same create command
+3. Podman uses the freshly pulled image automatically
 
 ---
 
 ## UI Mockups
 
-### Check for Updates Modal
+### Check for Updates Result
 ```
 ┌─────────────────────────────────────────┐
-│ Check for Container Updates             │
+│ Container Updates                       │
 ├─────────────────────────────────────────┤
 │                                         │
-│ Checking 5 containers...                │
-│ [████████████░░░░░░░░] 3/5              │
+│ Updates available:                      │
+│ ☑ grafana      grafana:12.2.1 → 12.3.0  │
+│ ☑ nginx        nginx:1.25 → 1.27        │
 │                                         │
-└─────────────────────────────────────────┘
-```
-
-### Updates Available Modal
-```
-┌─────────────────────────────────────────┐
-│ Updates Available                       │
-├─────────────────────────────────────────┤
-│                                         │
-│ ☑ nginx        nginx:latest    → new    │
-│ ☑ grafana      grafana:latest  → new    │
-│ ☐ mariadb      mariadb:10      → new    │
-│                                         │
-│ ─────────────────────────────────────── │
 │ Already up-to-date:                     │
-│   homeassistant, mosquitto              │
+│   mariadb, homeassistant, mosquitto     │
 │                                         │
 ├─────────────────────────────────────────┤
-│ [Update Selected]  [Update All] [Close] │
+│      [Update Selected]  [Cancel]        │
 └─────────────────────────────────────────┘
 ```
 
-### Update Progress Modal
+### Update Progress
 ```
 ┌─────────────────────────────────────────┐
-│ Updating Containers (1/2)               │
+│ Updating Containers                     │
 ├─────────────────────────────────────────┤
 │                                         │
-│ nginx:                                  │
-│   ✓ Pulling image                       │
-│   ✓ Stopping container                  │
-│   ✓ Removing old container              │
-│   ● Creating new container...           │
-│   ○ Starting container                  │
-│   ○ Reconnecting networks               │
+│ grafana (1/2):                          │
+│   ✓ Generated spec                      │
+│   ✓ Stopped container                   │
+│   ✓ Removed container                   │
+│   ✓ Created new container               │
+│   ✓ Started container                   │
+│                                         │
+│ nginx (2/2):                            │
+│   ● Generating spec...                  │
 │                                         │
 └─────────────────────────────────────────┘
 ```
@@ -226,35 +192,36 @@ All APIs already exist in `podman/rpc.js`:
 ## File Changes
 
 ### New Files
-- `htdocs/luci-static/resources/podman/auto-update.js` - Core update logic
+- `htdocs/luci-static/resources/podman/auto-update.js`
 
 ### Modified Files
-- `htdocs/luci-static/resources/view/podman/overview.js` - Add button & UI
-- `po/templates/podman.pot` - New translation strings
+- `root/usr/libexec/rpcd/luci.podman` - Add generate_spec method
+- `root/usr/share/rpcd/acl.d/luci-app-podman.json` - Add ACL
+- `htdocs/luci-static/resources/podman/rpc.js` - Add RPC declaration
+- `htdocs/luci-static/resources/view/podman/overview.js` - Add UI button
 
 ---
 
 ## Testing Checklist
 
-- [ ] Container with simple config (image only)
+- [ ] Simple container (image only)
 - [ ] Container with port mappings
 - [ ] Container with volume mounts
 - [ ] Container with environment variables
-- [ ] Container with custom network
-- [ ] Container with resource limits
+- [ ] Container with custom network + static IP
 - [ ] Container with health check
 - [ ] Container with restart policy
-- [ ] Batch update (multiple containers)
-- [ ] Failed pull (network error)
-- [ ] Failed start (config error)
-- [ ] Rollback after failure
+- [ ] Container that was stopped (should stay stopped after update)
+- [ ] Container with init script (should still work after update)
+- [ ] Multiple containers batch update
+- [ ] Network error during pull
+- [ ] Container fails to start after update
 
 ---
 
-## Notes
+## Advantages of This Approach
 
-- Updates are opt-in via `io.containers.autoupdate=registry` label
-- Container name is preserved (required for init scripts)
-- Volumes are not deleted (data persists)
-- Networks are reconnected after recreation
-- Init scripts continue to work (same container name)
+1. **Simple** - No complex config extraction, Podman gives us the exact command
+2. **Reliable** - Uses Podman's own spec generation, guaranteed accurate
+3. **Complete** - All options preserved (capabilities, security, health checks, etc.)
+4. **Maintainable** - Less code, fewer edge cases

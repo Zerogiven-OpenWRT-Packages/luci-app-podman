@@ -5,6 +5,7 @@
 'require podman.utils as utils';
 'require podman.format as format';
 'require podman.ui as podmanUI';
+'require podman.auto-update as autoUpdate';
 'require ui';
 
 utils.addPodmanCss();
@@ -418,6 +419,11 @@ return view.extend({
 	createSystemActionsSection: function () {
 		const buttons = E('div', { 'class': 'overview-actions' }, [
 			new podmanUI.Button(
+				_('Check for Updates'),
+				() => this.handleCheckUpdates(),
+				'positive'
+			).render(),
+			new podmanUI.Button(
 				_('Cleanup / Prune'),
 				() => this.handlePrune(),
 				'remove'
@@ -427,6 +433,272 @@ return view.extend({
 		const section = new podmanUI.Section({ 'style': 'margin-bottom: 20px;' });
 		section.addNode(_('System Maintenance'), '', buttons);
 		return section.render();
+	},
+
+	/**
+	 * Handle check for container updates action
+	 */
+	handleCheckUpdates: function () {
+		const view = this;
+
+		// Show initial loading modal
+		ui.showModal(_('Check for Updates'), [
+			E('p', {}, _('Finding containers with auto-update label...')),
+			E('div', { 'class': 'center' }, [
+				E('em', { 'class': 'spinning' }, _('Loading...'))
+			])
+		]);
+
+		// Get containers with auto-update label
+		autoUpdate.getAutoUpdateContainers().then((containers) => {
+			if (!containers || containers.length === 0) {
+				ui.showModal(_('Check for Updates'), [
+					E('p', {}, _('No containers with auto-update label found.')),
+					E('p', { 'style': 'margin-top: 10px; font-size: 0.9em; color: #666;' },
+						_('To enable auto-update for a container, add the label: io.containers.autoupdate=registry')),
+					new podmanUI.ModalButtons({
+						confirmText: _('Close'),
+						onConfirm: ui.hideModal,
+						onCancel: null
+					}).render()
+				]);
+				return;
+			}
+
+			// Update modal to show checking progress
+			ui.showModal(_('Check for Updates'), [
+				E('p', {}, _('Checking %d containers for updates...').format(containers.length)),
+				E('div', { 'id': 'update-check-progress' }, [
+					E('em', { 'class': 'spinning' }, _('Pulling images and comparing digests...'))
+				])
+			]);
+
+			// Check for updates
+			return autoUpdate.checkForUpdates(containers, (container, idx, total) => {
+				const progressDiv = document.getElementById('update-check-progress');
+				if (progressDiv) {
+					progressDiv.innerHTML = '';
+					progressDiv.appendChild(E('em', { 'class': 'spinning' },
+						_('Checking %s (%d/%d)...').format(container.name, idx, total)));
+				}
+			}).then((results) => {
+				view.showUpdateResults(results);
+			});
+		}).catch((err) => {
+			ui.showModal(_('Error'), [
+				E('p', {}, _('Failed to check for updates: %s').format(err.message)),
+				new podmanUI.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: ui.hideModal,
+					onCancel: null
+				}).render()
+			]);
+		});
+	},
+
+	/**
+	 * Show update check results modal
+	 * @param {Array} results - Update check results
+	 */
+	showUpdateResults: function (results) {
+		const view = this;
+		const hasUpdates = results.filter((r) => r.hasUpdate);
+		const upToDate = results.filter((r) => !r.hasUpdate && !r.error);
+		const errors = results.filter((r) => r.error);
+
+		const content = [E('div', { 'class': 'cbi-section' })];
+		const section = content[0];
+
+		// Show containers with updates available
+		if (hasUpdates.length > 0) {
+			section.appendChild(E('p', { 'style': 'margin-bottom: 10px; font-weight: bold;' },
+				_('Updates available:')));
+
+			const updateList = E('div', { 'style': 'margin-bottom: 15px;' });
+			hasUpdates.forEach((r, idx) => {
+				updateList.appendChild(E('label', { 'style': 'display: block; margin: 8px 0;' }, [
+					E('input', {
+						'type': 'checkbox',
+						'id': 'update-container-' + idx,
+						'data-name': r.name,
+						'data-running': r.running ? '1' : '0',
+						'checked': ''
+					}),
+					' ',
+					E('strong', {}, r.name),
+					' (',
+					r.image,
+					')'
+				]));
+			});
+			section.appendChild(updateList);
+		}
+
+		// Show up-to-date containers
+		if (upToDate.length > 0) {
+			section.appendChild(E('p', { 'style': 'margin-top: 15px; color: #27ae60;' },
+				_('Already up-to-date: %s').format(upToDate.map((r) => r.name).join(', '))));
+		}
+
+		// Show errors
+		if (errors.length > 0) {
+			section.appendChild(E('p', { 'style': 'margin-top: 15px; color: #e74c3c;' },
+				_('Errors checking: %s').format(errors.map((r) => r.name + ' (' + r.error + ')').join(', '))));
+		}
+
+		// Show modal with results
+		if (hasUpdates.length > 0) {
+			content.push(new podmanUI.ModalButtons({
+				confirmText: _('Update Selected'),
+				confirmClass: 'positive',
+				onConfirm: () => {
+					// Get selected containers
+					const selected = [];
+					hasUpdates.forEach((r, idx) => {
+						const checkbox = document.getElementById('update-container-' + idx);
+						if (checkbox && checkbox.checked) {
+							selected.push({
+								name: checkbox.dataset.name,
+								running: checkbox.dataset.running === '1'
+							});
+						}
+					});
+
+					if (selected.length === 0) {
+						ui.addTimeLimitedNotification(null, E('p', _('No containers selected')), 3000, 'warning');
+						return;
+					}
+
+					ui.hideModal();
+					view.performUpdates(selected);
+				}
+			}).render());
+		} else {
+			content.push(new podmanUI.ModalButtons({
+				confirmText: _('Close'),
+				onConfirm: ui.hideModal,
+				onCancel: null
+			}).render());
+		}
+
+		ui.showModal(_('Update Check Results'), content);
+	},
+
+	/**
+	 * Perform container updates
+	 * @param {Array} containers - Containers to update
+	 */
+	performUpdates: function (containers) {
+		const view = this;
+		let currentContainer = null;
+
+		// Show progress modal
+		ui.showModal(_('Updating Containers'), [
+			E('div', { 'id': 'update-progress-container' }, [
+				E('em', { 'class': 'spinning' }, _('Starting updates...'))
+			])
+		]);
+
+		const updateProgressUI = (container, step, msg, idx, total) => {
+			const progressContainer = document.getElementById('update-progress-container');
+			if (!progressContainer) return;
+
+			progressContainer.innerHTML = '';
+			progressContainer.appendChild(E('p', { 'style': 'font-weight: bold; margin-bottom: 10px;' },
+				_('%s (%d/%d):').format(container.name, idx, total)));
+			progressContainer.appendChild(E('div', { 'style': 'margin-left: 20px;' }, [
+				E('em', { 'class': 'spinning' }, msg)
+			]));
+		};
+
+		autoUpdate.updateContainers(
+			containers,
+			(container, idx, total) => {
+				currentContainer = container;
+				updateProgressUI(container, 0, _('Starting...'), idx, total);
+			},
+			(container, step, msg) => {
+				const idx = containers.indexOf(container) + 1;
+				updateProgressUI(container, step, msg, idx, containers.length);
+			},
+			null
+		).then((summary) => {
+			view.showUpdateSummary(summary);
+		}).catch((err) => {
+			ui.showModal(_('Error'), [
+				E('p', {}, _('Update failed: %s').format(err.message)),
+				new podmanUI.ModalButtons({
+					confirmText: _('Close'),
+					onConfirm: () => {
+						ui.hideModal();
+						window.location.reload();
+					},
+					onCancel: null
+				}).render()
+			]);
+		});
+	},
+
+	/**
+	 * Show update summary modal
+	 * @param {Object} summary - Update summary with successes and failures
+	 */
+	showUpdateSummary: function (summary) {
+		const content = [E('div', { 'class': 'cbi-section' })];
+		const section = content[0];
+
+		// Show successes
+		if (summary.successes.length > 0) {
+			section.appendChild(E('p', { 'style': 'color: #27ae60; margin-bottom: 10px;' },
+				_('Successfully updated: %s').format(summary.successes.map((r) => r.name).join(', '))));
+		}
+
+		// Show failures with recovery information
+		if (summary.failures.length > 0) {
+			section.appendChild(E('p', { 'style': 'color: #e74c3c; margin-bottom: 10px;' },
+				_('Failed to update:')));
+
+			summary.failures.forEach((failure) => {
+				const failureDiv = E('div', {
+					'style': 'margin: 10px 0; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;'
+				});
+
+				failureDiv.appendChild(E('p', { 'style': 'font-weight: bold;' }, failure.name));
+				failureDiv.appendChild(E('p', { 'style': 'color: #721c24;' }, failure.error));
+
+				// Show CreateCommand for manual recovery
+				if (failure.createCommand) {
+					const cmdStr = autoUpdate.formatCreateCommand(failure.createCommand);
+					failureDiv.appendChild(E('p', { 'style': 'margin-top: 10px;' },
+						_('To manually recreate, run:')));
+					failureDiv.appendChild(E('pre', {
+						'style': 'background: #f4f4f4; padding: 10px; overflow-x: auto; font-size: 0.85em; margin-top: 5px;'
+					}, cmdStr));
+					failureDiv.appendChild(E('button', {
+						'class': 'cbi-button',
+						'style': 'margin-top: 5px;',
+						'click': () => {
+							navigator.clipboard.writeText(cmdStr).then(() => {
+								ui.addTimeLimitedNotification(null, E('p', _('Command copied to clipboard')), 2000, 'info');
+							});
+						}
+					}, _('Copy Command')));
+				}
+
+				section.appendChild(failureDiv);
+			});
+		}
+
+		content.push(new podmanUI.ModalButtons({
+			confirmText: _('Close'),
+			onConfirm: () => {
+				ui.hideModal();
+				window.location.reload();
+			},
+			onCancel: null
+		}).render());
+
+		ui.showModal(_('Update Complete'), content);
 	},
 
 	/**

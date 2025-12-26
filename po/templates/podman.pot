@@ -7,6 +7,9 @@ msgstr ""
 msgid "%d consecutive failures"
 msgstr ""
 
+msgid "%s (%d/%d):"
+msgstr ""
+
 msgid "%s auto-start for %s"
 msgstr ""
 
@@ -38,6 +41,9 @@ msgid "Allocate TTY (-t)"
 msgstr ""
 
 msgid "Already configured:"
+msgstr ""
+
+msgid "Already up-to-date: %s"
 msgstr ""
 
 msgid "Always"
@@ -109,6 +115,15 @@ msgstr ""
 msgid "Cannot setup OpenWrt integration: Network "%s" does not have subnet and gateway configured"
 msgstr ""
 
+msgid "Check for Updates"
+msgstr ""
+
+msgid "Checking %d containers for updates..."
+msgstr ""
+
+msgid "Checking %s (%d/%d)..."
+msgstr ""
+
 msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
 msgstr ""
 
@@ -146,6 +161,9 @@ msgid "CMD runs command directly, CMD-SHELL runs command in shell"
 msgstr ""
 
 msgid "Command"
+msgstr ""
+
+msgid "Command copied to clipboard"
 msgstr ""
 
 msgid "Command to run (space-separated)"
@@ -199,6 +217,9 @@ msgstr ""
 msgid "Container created, started, and auto-start configured"
 msgstr ""
 
+msgid "Container does not have CreateCommand"
+msgstr ""
+
 msgid "Container image to use"
 msgstr ""
 
@@ -215,6 +236,9 @@ msgid "Container renamed successfully"
 msgstr ""
 
 msgid "Containers"
+msgstr ""
+
+msgid "Copy Command"
 msgstr ""
 
 msgid "Count"
@@ -254,6 +278,9 @@ msgid "Creating auto-start configuration for %s"
 msgstr ""
 
 msgid "Creating container from image %s..."
+msgstr ""
+
+msgid "Creating new container..."
 msgstr ""
 
 msgid "Delete Selected"
@@ -352,6 +379,9 @@ msgstr ""
 msgid "Error polling log stream: %s"
 msgstr ""
 
+msgid "Errors checking: %s"
+msgstr ""
+
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr ""
 
@@ -371,6 +401,9 @@ msgid "Exposed Ports"
 msgstr ""
 
 msgid "Failed"
+msgstr ""
+
+msgid "Failed to check for updates: %s"
 msgstr ""
 
 msgid "Failed to connect to network: %s"
@@ -487,6 +520,9 @@ msgstr ""
 msgid "Failed to update restart policy: %s"
 msgstr ""
 
+msgid "Failed to update:"
+msgstr ""
+
 msgid "Failed to validate: %s"
 msgstr ""
 
@@ -500,6 +536,9 @@ msgid "Fetching information..."
 msgstr ""
 
 msgid "Fetching script"
+msgstr ""
+
+msgid "Finding containers with auto-update label..."
 msgstr ""
 
 msgid "Firewall Zone"
@@ -521,6 +560,9 @@ msgid "Generate"
 msgstr ""
 
 msgid "Generating Init Script"
+msgstr ""
+
+msgid "Getting container configuration..."
 msgstr ""
 
 msgid "Grace period before health checks count toward failures. Default: 0s"
@@ -835,6 +877,12 @@ msgstr ""
 msgid "No container ID in URL"
 msgstr ""
 
+msgid "No containers selected"
+msgstr ""
+
+msgid "No containers with auto-update label found."
+msgstr ""
+
 msgid "No data received"
 msgstr ""
 
@@ -979,6 +1027,9 @@ msgstr ""
 msgid "Pulling Images"
 msgstr ""
 
+msgid "Pulling images and comparing digests..."
+msgstr ""
+
 msgid "Pulling latest version of %d %s..."
 msgstr ""
 
@@ -1022,6 +1073,9 @@ msgid "Removed: %s"
 msgstr ""
 
 msgid "Removing %d %s..."
+msgstr ""
+
+msgid "Removing old container..."
 msgstr ""
 
 msgid "Removing unused resources, please wait..."
@@ -1201,10 +1255,19 @@ msgstr ""
 msgid "Starting %s..."
 msgstr ""
 
+msgid "Starting container..."
+msgstr ""
+
 msgid "Starting image pull..."
 msgstr ""
 
 msgid "Starting selected %s..."
+msgstr ""
+
+msgid "Starting updates..."
+msgstr ""
+
+msgid "Starting..."
 msgstr ""
 
 msgid "Static IP (Optional)"
@@ -1231,6 +1294,9 @@ msgstr ""
 msgid "Stopping %s"
 msgstr ""
 
+msgid "Stopping container..."
+msgstr ""
+
 msgid "Stopping selected %s..."
 msgstr ""
 
@@ -1253,6 +1319,9 @@ msgid "Successfully deleted %d %s"
 msgstr ""
 
 msgid "Successfully pulled %d %s"
+msgstr ""
+
+msgid "Successfully updated: %s"
 msgstr ""
 
 msgid "System Maintenance"
@@ -1280,6 +1349,12 @@ msgid "Time between health checks (e.g., 30s, 1m, 5m). Default: 30s"
 msgstr ""
 
 msgid "Timeout"
+msgstr ""
+
+msgid "To enable auto-update for a container, add the label: io.containers.autoupdate=registry"
+msgstr ""
+
+msgid "To manually recreate, run:"
 msgstr ""
 
 msgid "To update a secret, delete and recreate it"
@@ -1315,13 +1390,34 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
+msgid "Update Check Results"
+msgstr ""
+
+msgid "Update complete"
+msgstr ""
+
+msgid "Update Complete"
+msgstr ""
+
+msgid "Update failed: %s"
+msgstr ""
+
 msgid "Update Resources"
+msgstr ""
+
+msgid "Update Selected"
+msgstr ""
+
+msgid "Updates available:"
 msgstr ""
 
 msgid "Updating Container"
 msgstr ""
 
 msgid "Updating container resources..."
+msgstr ""
+
+msgid "Updating Containers"
 msgstr ""
 
 msgid "Updating Init Script"

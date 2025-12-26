@@ -176,7 +176,8 @@ case "$1" in
 	"init_script_show": { "name": "" },
 	"init_script_status": { "name": "" },
 	"init_script_set_enabled": { "name": "", "enabled": false },
-	"init_script_remove": { "name": "" }
+	"init_script_remove": { "name": "" },
+	"container_recreate": { "command": [] }
 }
 EOF
 		;;
@@ -928,6 +929,45 @@ EOF
 
 				if [ -f "$script_path" ]; then
 					echo '{"error":"Failed to remove init script"}'
+					exit 1
+				fi
+
+				echo '{"success":true}'
+				;;
+			container_recreate)
+				get_json_params command
+				require_param command
+
+				# Security check: first argument must be "podman"
+				first_arg=$(echo "$command" | jsonfilter -e '@[0]' 2>/dev/null)
+				if [ "$first_arg" != "podman" ]; then
+					echo '{"error":"Invalid command: must start with podman"}'
+					exit 1
+				fi
+
+				# Create temp script with properly quoted command
+				temp_script="/tmp/podman_cmd_$$_${RANDOM}.sh"
+				printf '#!/bin/sh\n/usr/bin/podman' > "$temp_script"
+
+				# Skip first element ("podman"), quote all remaining arguments
+				echo "$command" | jsonfilter -e '@[*]' | tail -n +2 | while IFS= read -r arg; do
+					# Escape single quotes for shell safety
+					escaped=$(printf '%s' "$arg" | sed "s/'/'\\\\''/g")
+					printf " '%s'" "$escaped" >> "$temp_script"
+				done
+
+				printf '\n' >> "$temp_script"
+				chmod +x "$temp_script"
+
+				# Execute and capture output
+				result=$("$temp_script" 2>&1)
+				exit_code=$?
+				rm -f "$temp_script"
+
+				if [ $exit_code -ne 0 ]; then
+					# Escape result for JSON
+					result_escaped=$(printf '%s' "$result" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
+					echo "{\"error\":\"Command failed\",\"details\":\"${result_escaped}\",\"exit_code\":${exit_code}}"
 					exit 1
 				fi
 

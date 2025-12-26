@@ -197,6 +197,18 @@ return baseclass.extend({
 			object: 'luci.podman',
 			method: 'container_top',
 			params: ['id', 'ps_args']
+		}),
+
+		/**
+		 * Recreate container from its original create command.
+		 * Used for auto-update feature to recreate containers with updated images.
+		 * @param {string} command - JSON string of command array (e.g., '["podman","run",...]')
+		 * @returns {Promise<Object>} Result with success flag or error
+		 */
+		recreate: rpc.declare({
+			object: 'luci.podman',
+			method: 'container_recreate',
+			params: ['command']
 		})
 	},
 
