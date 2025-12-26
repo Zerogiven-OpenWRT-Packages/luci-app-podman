@@ -44,6 +44,12 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 
 ## Installation
 
+### From Package Feed
+
+You can setup this package feed to install and update it with opkg:
+
+[https://github.com/Zerogiven-OpenWRT-Packages/package-feed](https://github.com/Zerogiven-OpenWRT-Packages/package-feed)
+
 ### From IPK Package
 
 ```bash
