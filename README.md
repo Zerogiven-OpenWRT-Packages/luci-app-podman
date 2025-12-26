@@ -15,12 +15,14 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
   - [From IPK Package](#from-ipk-package)
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
+- [Container Auto-Update](#container-auto-update)
 - [Credits](#credits)
 - [License](#license)
 
 ## Features
 
 - **Container Management**: Start, stop, restart, create, remove with live logs, stats, and health monitoring
+- **Container Auto-Update**: Check for image updates and recreate containers with latest images (see [Auto-Update](#container-auto-update))
 - **Import from Run Command**: Convert `docker run` or `podman run` commands to container configurations
 - **Auto-start Support**: Automatic init script generation for containers with restart policies
 - **Image Management**: Pull, remove, inspect images with streaming progress
@@ -79,6 +81,43 @@ If encountering socket errors:
 /etc/init.d/podman start
 /etc/init.d/podman enable
 ```
+
+## Container Auto-Update
+
+The auto-update feature checks for newer container images and recreates containers with the updated images while preserving all configuration.
+
+### Setup
+
+To enable auto-update for a container, add the label when creating it:
+
+```bash
+podman run -d --name mycontainer \
+  --label io.containers.autoupdate=registry \
+  nginx:latest
+```
+
+Or add via the LuCI interface in the container creation form under "Labels".
+
+### Usage
+
+1. Go to **Podman → Overview**
+2. Click **"Check for Updates"** in the System Maintenance section
+3. The system pulls latest images and compares digests
+4. Select which containers to update
+5. Click **"Update Selected"** to recreate containers with new images
+
+### How it Works
+
+1. Finds containers with `io.containers.autoupdate` label
+2. Pulls the latest image for each container
+3. Compares image digests to detect changes
+4. For containers with updates:
+   - Extracts original create command from container config
+   - Stops and removes the old container
+   - Recreates with the exact same configuration
+   - Starts if it was running before
+
+Container names and init scripts are preserved - no manual reconfiguration needed.
 
 ## Credits
 
