@@ -11,10 +11,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Installation](#installation)
-  - [From Package Feed](#from-package-feed)
-  - [From IPK Package](#from-ipk-package)
-  - [From Source](#from-source)
-- [Getting Started](#getting-started)
+- [Usage](#usage)
 - [Container Auto-Update](#container-auto-update)
 - [Credits](#credits)
 - [License](#license)
@@ -31,7 +28,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - **Pod Management**: Multi-container pods with shared networking
 - **Secret Management**: Encrypted storage for sensitive data
 - **System Overview**: Resource usage, disk space, system-wide cleanup
-- **Mobile friendly Lists**: Optimized for basic usage
+- **Mobile Friendly Lists**: Optimized for basic usage
 
 ## Screenshots
 
@@ -63,20 +60,21 @@ opkg update && opkg install luci-app-podman_1.5.0-r1_all.ipk
 ### From Source
 
 ```bash
-# Clone openwrt repository and prepare build environment. Next:
 git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git package/luci-app-podman
-# In OpenWrt build environment:
+make menuconfig  # Navigate to: LuCI → Applications → luci-app-podman
 make package/luci-app-podman/compile V=s
 ```
 
-## Getting Started
+## Usage
 
 Access via **Podman** in LuCI, or directly at:
+
 ```
 http://your-router-ip/cgi-bin/luci/admin/podman
 ```
 
 If encountering socket errors:
+
 ```bash
 /etc/init.d/podman start
 /etc/init.d/podman enable
@@ -98,7 +96,7 @@ podman run -d --name mycontainer \
 
 Or add via the LuCI interface in the container creation form under "Labels".
 
-### Usage
+### How to Update
 
 1. Go to **Podman → Overview**
 2. Click **"Check for Updates"** in the System Maintenance section
@@ -122,10 +120,7 @@ Container names and init scripts are preserved - no manual reconfiguration neede
 ## Credits
 
 Inspired by:
+
 - [openwrt-podman](https://github.com/breeze303/openwrt-podman/) - Podman on OpenWrt
 - [luci-app-dockerman](https://github.com/lisaac/luci-app-dockerman) - Docker LuCI design patterns
 - [OpenWrt Podman Guide](https://openwrt.org/docs/guide-user/virtualization/podman) - Official documentation
-
-## License
-
-Apache License 2.0 - see [LICENSE](LICENSE) file.
