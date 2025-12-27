@@ -14,7 +14,6 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - [Usage](#usage)
 - [Container Auto-Update](#container-auto-update)
 - [Credits](#credits)
-- [License](#license)
 
 ## Features
 
