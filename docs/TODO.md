@@ -3,5 +3,4 @@
 - Smart Pod Stop with Kill Fallback
 - Image Search
 - Pod Detail Page
-- Auto update feature
 - Optimize Container Detail Mobile View
