@@ -163,7 +163,8 @@ return baseclass.extend({
 
 						if (!status.success) {
 							if (outputEl) {
-								outputEl.textContent += '\n\nPull failed!';
+								outputEl.textContent += '\n\n';
+								outputEl.textContent += _('Failed to pull image')
 							}
 
 							const modalContent = document.querySelector('.modal');

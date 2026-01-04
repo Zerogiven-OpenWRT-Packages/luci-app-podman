@@ -113,16 +113,15 @@ return baseclass.extend({
 
 			// Pull the image using streaming API to avoid timeout
 			return self.pullImageStreaming(container.image, (pullOutput) => {
-				// Optional: pass pull progress to callback
 				if (onProgress) {
 					onProgress(container, idx, total, pullOutput);
 				}
 			})
 				.then((success) => {
 					if (!success) {
-						throw new Error(_('Pull failed'));
+						throw new Error(_('Failed to pull image'));
 					}
-					// Inspect the pulled image to get new digest
+
 					return podmanRPC.image.inspect(container.image);
 				})
 				.then((newImage) => {
