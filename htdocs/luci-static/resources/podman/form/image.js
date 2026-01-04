@@ -241,6 +241,14 @@ return baseclass.extend({
 			poll.add(this.pollFn, constants.POLL_INTERVAL);
 		},
 
-		submit: () => { },
+		/**
+		 * Intentionally left as a no-op.
+		 * This form performs actions via dedicated handlers (e.g. handlePullExecute)
+		 * and does not use the standard submit pipeline.
+		 * @returns {Promise<void>} Resolved promise to satisfy form interface
+		 */
+		submit: function () {
+			return Promise.resolve();
+		},
 	})
 });
