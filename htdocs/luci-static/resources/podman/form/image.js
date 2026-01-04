@@ -129,6 +129,11 @@ return baseclass.extend({
 									hasValidJson = true;
 								}
 							} catch (e2) {
+								// Intentionally ignore JSON parse errors for individual parts;
+								// malformed fragments are expected when splitting concatenated JSON.
+								if (typeof console !== 'undefined' && console.debug) {
+									console.debug('Ignoring malformed JSON part in parseJsonStream:', e2);
+								}
 							}
 						});
 					}
@@ -164,7 +169,7 @@ return baseclass.extend({
 						if (!status.success) {
 							if (outputEl) {
 								outputEl.textContent += '\n\n';
-								outputEl.textContent += _('Failed to pull image')
+								outputEl.textContent += _('Failed to pull image');
 							}
 
 							const modalContent = document.querySelector('.modal');
@@ -222,9 +227,6 @@ return baseclass.extend({
 
 						this.map.data.data.image.image = '';
 						this.map.save().then(() => {
-							console.log(this.map);
-							console.log(this.map.findElement('#cbi-json-image-image'));
-
 							this.submit();
 						});
 					}
@@ -241,6 +243,14 @@ return baseclass.extend({
 			poll.add(this.pollFn, constants.POLL_INTERVAL);
 		},
 
-		submit: () => { },
+		/**
+		 * Intentionally left as a no-op.
+		 * This form performs actions via dedicated handlers (e.g. handlePullExecute)
+		 * and does not use the standard submit pipeline.
+		 * @returns {Promise<void>} Resolved promise to satisfy form interface
+		 */
+		submit: function () {
+			return Promise.resolve();
+		},
 	})
 });
