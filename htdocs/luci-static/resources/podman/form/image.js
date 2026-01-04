@@ -129,6 +129,11 @@ return baseclass.extend({
 									hasValidJson = true;
 								}
 							} catch (e2) {
+								// Intentionally ignore JSON parse errors for individual parts;
+								// malformed fragments are expected when splitting concatenated JSON.
+								if (typeof console !== 'undefined' && console.debug) {
+									console.debug('Ignoring malformed JSON part in parseJsonStream:', e2);
+								}
 							}
 						});
 					}
