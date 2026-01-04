@@ -61,7 +61,8 @@ return baseclass.extend({
 					podmanUI.errorNotification(_('Please enter an image name'));
 					return;
 				}
-				const imageName = registry ? registry + image : 'docker.io/library/' + image;
+				const imageName = registry ? registry + image :
+					'docker.io/library/' + image;
 
 				ui.showModal(_('Pulling Image'), [
 					E('p', {
@@ -76,14 +77,16 @@ return baseclass.extend({
 				podmanRPC.image.pullStream(imageName).then((result) => {
 					if (!result || !result.session_id) {
 						ui.hideModal();
-						podmanUI.errorNotification(_('Failed to start image pull'));
+						podmanUI.errorNotification(_(
+							'Failed to start image pull'));
 						return;
 					}
 
 					this.pollPullStatus(result.session_id);
 				}).catch((err) => {
 					ui.hideModal();
-					podmanUI.errorNotification(_('Failed to pull image: %s').format(err
+					podmanUI.errorNotification(_(
+						'Failed to pull image: %s').format(err
 						.message));
 				});
 			});
@@ -124,15 +127,20 @@ return baseclass.extend({
 								if (obj.stream) {
 									cleanOutput += obj.stream;
 									hasValidJson = true;
-								} else if (obj.images && obj.images.length > 0) {
-									cleanOutput += 'Image ID: ' + obj.id + '\n';
+								} else if (obj.images && obj.images
+									.length > 0) {
+									cleanOutput += 'Image ID: ' + obj.id +
+										'\n';
 									hasValidJson = true;
 								}
 							} catch (e2) {
 								// Intentionally ignore JSON parse errors for individual parts;
 								// malformed fragments are expected when splitting concatenated JSON.
-								if (typeof console !== 'undefined' && console.debug) {
-									console.debug('Ignoring malformed JSON part in parseJsonStream:', e2);
+								if (typeof console !== 'undefined' &&
+									console.debug) {
+									console.debug(
+										'Ignoring malformed JSON part in parseJsonStream:',
+										e2);
 								}
 							}
 						});
@@ -155,9 +163,11 @@ return baseclass.extend({
 			let offset = 0;
 
 			this.pollFn = () => {
-				return podmanRPC.image.pullStatus(sessionId, offset).then((status) => {
+				return podmanRPC.image.pullStatus(sessionId, offset).then((
+				status) => {
 					if (status.output && outputEl) {
-						const cleanOutput = this.parseJsonStream(status.output);
+						const cleanOutput = this.parseJsonStream(status
+							.output);
 						outputEl.textContent += cleanOutput;
 						outputEl.scrollTop = outputEl.scrollHeight;
 						offset += status.output.length;
@@ -169,44 +179,52 @@ return baseclass.extend({
 						if (!status.success) {
 							if (outputEl) {
 								outputEl.textContent += '\n\n';
-								outputEl.textContent += _('Failed to pull image');
+								outputEl.textContent += _(
+									'Failed to pull image');
 							}
 
-							const modalContent = document.querySelector('.modal');
+							const modalContent = document.querySelector(
+								'.modal');
 							if (modalContent) {
 								const closeBtn = modalContent.querySelector(
 									'.cbi-button');
 								if (!closeBtn) {
 									const btnContainer = E(
 										'div', {
-										'class': 'right',
-										'style': 'margin-top: 10px;'
-									},
+											'class': 'right',
+											'style': 'margin-top: 10px;'
+										},
 										[
-											new podmanUI.Button(_('Close'), () => {
-												ui
-													.hideModal();
-											}).render()
+											new podmanUI.Button(_(
+												'Close'), () => {
+													ui
+														.hideModal();
+												}).render()
 										]);
 									modalContent.appendChild(btnContainer);
 								}
 							}
 
-							podmanUI.errorNotification(_('Failed to pull image'));
+							podmanUI.errorNotification(_(
+								'Failed to pull image'));
 
 							return;
 						}
 
 						if (outputEl) {
-							outputEl.textContent += '\n\nImage pulled successfully!';
+							outputEl.textContent +=
+								'\n\nImage pulled successfully!';
 						}
 
 						const modalContent = document.querySelector('.modal');
 						if (modalContent) {
-							const closeBtn = modalContent.querySelector('.cbi-button');
+							const closeBtn = modalContent.querySelector(
+								'.cbi-button');
 							if (!closeBtn) {
 								const btnContainer = E(
-									'div', { 'class': 'right modal-buttons' },
+									'div', {
+										'class': 'right modal-buttons'
+									},
 									[
 										new podmanUI.Button(
 											_('Close'),
@@ -221,9 +239,11 @@ return baseclass.extend({
 							}
 						}
 
-						podmanUI.successTimeNotification(_('Image pulled successfully'));
+						podmanUI.successTimeNotification(_(
+							'Image pulled successfully'));
 
-						document.querySelector('.spinning.image-pull').remove();
+						document.querySelector('.spinning.image-pull')
+						.remove();
 
 						this.map.data.data.image.image = '';
 						this.map.save().then(() => {
@@ -235,8 +255,9 @@ return baseclass.extend({
 					if (outputEl) {
 						outputEl.textContent += '\n\nError: ' + err.message;
 					}
-					podmanUI.errorNotification(_('Failed to pull image: %s').format(err
-						.message));
+					podmanUI.errorNotification(_('Failed to pull image: %s')
+						.format(err
+							.message));
 				});
 			};
 
