@@ -3,7 +3,9 @@
 
 . /usr/share/libubox/jshn.sh
 
-SOCKET="/run/podman/podman.sock"
+# Read socket path from UCI config, fallback to default
+SOCKET=$(uci -q get podman.globals.socket_path 2>/dev/null)
+SOCKET="${SOCKET:-/run/podman/podman.sock}"
 API_BASE="/v5.0.0/libpod"
 
 # URL encode a string (preserves : / @ for image references)

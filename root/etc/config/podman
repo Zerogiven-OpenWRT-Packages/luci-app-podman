@@ -1,5 +1,2 @@
 config podman 'globals'
 	option socket_path '/run/podman/podman.sock'
-	option remote_endpoint ''
-	option daemon_ea '0'
-	option daemon_debug '0'
