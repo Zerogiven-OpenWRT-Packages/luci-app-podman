@@ -222,9 +222,6 @@ return baseclass.extend({
 
 						this.map.data.data.image.image = '';
 						this.map.save().then(() => {
-							console.log(this.map);
-							console.log(this.map.findElement('#cbi-json-image-image'));
-
 							this.submit();
 						});
 					}
