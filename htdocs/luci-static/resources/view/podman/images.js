@@ -47,7 +47,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Rendered view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
@@ -74,7 +74,9 @@ return view.extend({
 		o = section.option(
 			podmanForm.field.SelectDummyValue,
 			'ID',
-			new ui.Checkbox(0, { hiddenname: 'all' }).render()
+			new ui.Checkbox(0, {
+				hiddenname: 'all'
+			}).render()
 		);
 
 		o = section.option(form.DummyValue, 'Repository', _('Repository'));
@@ -94,8 +96,10 @@ return view.extend({
 
 			if (tagValue.length > 14) {
 				return E(
-					'span',
-					{ 'title': tagValue, 'class': 'tt' },
+					'span', {
+						'title': tagValue,
+						'class': 'tt'
+					},
 					tagValue.substring(0, 14) + '...'
 				);
 			}
@@ -179,7 +183,8 @@ return view.extend({
 		const selected = this.getSelectedImages();
 
 		if (selected.length === 0) {
-			podmanUI.simpleTimeNotification(_('No %s selected').format(_('Images').toLowerCase()), 'warning');
+			podmanUI.simpleTimeNotification(_('No %s selected').format(_('Images').toLowerCase()),
+				'warning');
 			return;
 		}
 
@@ -216,7 +221,8 @@ return view.extend({
 				podmanUI.successTimeNotification(
 					_('Successfully pulled %d %s').format(
 						selected.length,
-						utils._n(selected.length, _('Image'), _('Images')).toLowerCase()
+						utils._n(selected.length, _('Image'), _('Images'))
+						.toLowerCase()
 					)
 				);
 			}
