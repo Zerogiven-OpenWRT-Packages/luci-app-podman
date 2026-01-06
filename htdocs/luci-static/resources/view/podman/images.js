@@ -166,7 +166,7 @@ return view.extend({
 	handleDeleteSelected: function () {
 		this.listHelper.bulkDelete({
 			selected: this.getSelectedImages(),
-			deletePromiseFn: (img) => podmanRPC.image.remove(img.name, false),
+			deletePromiseFn: (img) => podmanRPC.image.remove(img.id, false),
 			formatItemName: (img) => img.name,
 			onSuccess: () => this.handleRefresh(true)
 		});
