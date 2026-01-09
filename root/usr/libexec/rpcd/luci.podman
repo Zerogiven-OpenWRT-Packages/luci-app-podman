@@ -794,6 +794,10 @@ EOF
 				require_param name
 				validate_container_name "$name"
 
+				# Read start priority from UCI, default to 90
+				start_priority=$(uci -q get podman.globals.init_start_priority 2>/dev/null)
+				start_priority="${start_priority:-90}"
+
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
 
@@ -804,7 +808,7 @@ EOF
 # Note: This init script is a "boot-time starter" only, not a supervisor
 # Podman's restart policy handles runtime restarts to avoid conflicts
 
-START=99
+START=${start_priority}
 STOP=20
 USE_PROCD=1
 
