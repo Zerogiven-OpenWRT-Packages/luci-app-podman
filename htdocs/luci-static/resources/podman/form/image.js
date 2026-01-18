@@ -105,15 +105,15 @@ return baseclass.extend({
 				line = line.trim();
 				if (!line) return;
 
-				let hasValidJson = false;
+				let processedJson = false;
 				try {
 					const obj = JSON.parse(line);
 					if (obj.stream) {
 						cleanOutput += obj.stream;
-						hasValidJson = true;
-					} else if (obj.images && obj.images.length > 0) {
+						processedJson = true;
+					} else if (obj.id && obj.images && obj.images.length > 0) {
 						cleanOutput += 'Image ID: ' + obj.id + '\n';
-						hasValidJson = true;
+						processedJson = true;
 					}
 				} catch (e) {
 					const parts = line.split(/\}\s*\{/);
@@ -126,12 +126,12 @@ return baseclass.extend({
 								const obj = JSON.parse(part);
 								if (obj.stream) {
 									cleanOutput += obj.stream;
-									hasValidJson = true;
-								} else if (obj.images && obj.images
+									processedJson = true;
+								} else if (obj.id && obj.images && obj.images
 									.length > 0) {
 									cleanOutput += 'Image ID: ' + obj.id +
 										'\n';
-									hasValidJson = true;
+									processedJson = true;
 								}
 							} catch (e2) {
 								// Intentionally ignore JSON parse errors for individual parts;
@@ -146,7 +146,7 @@ return baseclass.extend({
 						});
 					}
 				}
-				if (!hasValidJson) {
+				if (!processedJson) {
 					cleanOutput += line + '\n';
 				}
 			});
@@ -239,11 +239,14 @@ return baseclass.extend({
 							}
 						}
 
-						podmanUI.successTimeNotification(_(
-							'Image pulled successfully'));
+						podmanUI.successTimeNotification(
+							_('Image pulled successfully')
+						);
 
-						document.querySelector('.spinning.image-pull')
-						.remove();
+						const spinnerEl = document.querySelector('.spinning.image-pull');
+						if (spinnerEl) {
+							spinnerEl.remove();
+						}
 
 						this.map.data.data.image.image = '';
 						this.map.save().then(() => {
