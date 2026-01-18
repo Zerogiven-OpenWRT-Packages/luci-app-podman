@@ -16,7 +16,7 @@ msgstr ""
 #: htdocs/luci-static/resources/podman/auto-update.js:47
 #: htdocs/luci-static/resources/podman/form/image.js:81
 msgid "Failed to start image pull"
-msgstr "無法啟動映像擋獲取"
+msgstr "無法啟動映像檔獲取"
 
 #: htdocs/luci-static/resources/podman/auto-update.js:122
 #: htdocs/luci-static/resources/podman/form/image.js:183
@@ -70,7 +70,7 @@ msgstr "無法啟動 %d 個 %s"
 #: htdocs/luci-static/resources/podman/container-util.js:37
 #, javascript-format
 msgid "Stopping %d %s..."
-msgstr "正在停止%d 個 %s…"
+msgstr "正在停止 %d 個 %s…"
 
 #: htdocs/luci-static/resources/podman/container-util.js:38
 #, javascript-format
@@ -807,7 +807,7 @@ msgid ""
 "zone. <strong>Highly recommended</strong> for proper container networking on "
 "OpenWrt."
 msgstr ""
-"自動設定 OpenWrt 網路界面、橋接器、以及防火牆區域。<string>強烈建議</strong>"
+"自動設定 OpenWrt 網路界面、橋接器、以及防火牆區域。<strong>強烈建議</strong>"
 "啟用，在 OpenWrt 上建立合適的容器網路。"
 
 #: htdocs/luci-static/resources/podman/form/network.js:134
@@ -1018,7 +1018,7 @@ msgstr "私密資料會加密儲存"
 
 #: htdocs/luci-static/resources/podman/form/secret.js:66
 msgid "Once created, secret data cannot be viewed or retrieved"
-msgstr "一旦建立，私密資料無法再被檢視獲取回"
+msgstr "一旦建立，私密資料無法再被檢視或獲取"
 
 #: htdocs/luci-static/resources/podman/form/secret.js:69
 msgid "Secrets can only be used by containers, not displayed"
@@ -1670,7 +1670,7 @@ msgstr "日誌資料流以錯誤結束"
 #: htdocs/luci-static/resources/view/podman/container-tab/logs.js:414
 #, javascript-format
 msgid "Error polling log stream: %s"
-msgstr "讀取日誌資料劉錯誤：%s"
+msgstr "讀取日誌資料流錯誤：%s"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/stats.js:36
 msgid "CPU Usage"
