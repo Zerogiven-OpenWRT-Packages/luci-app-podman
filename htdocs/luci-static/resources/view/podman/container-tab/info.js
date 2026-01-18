@@ -19,10 +19,11 @@ return baseclass.extend({
 
 	/**
 	 * Render container info tab content
+	 * Networks are loaded asynchronously for faster initial render
 	 * @param {HTMLElement} content - Container element to append sections to
 	 * @param {string} id - Container ID
 	 * @param {Object} data - Container inspect data
-	 * @param {Array} networks - Available networks list
+	 * @param {Array} networks - Available networks list (may be null for async loading)
 	 */
 	render: async function (content, id, data, networks) {
 		this.containerId = id;
@@ -34,12 +35,22 @@ return baseclass.extend({
 		const networkSettings = data.NetworkSettings || {};
 		const status = data.State ? data.State.Status : 'unknown';
 
-		// Build info sections
+		// Build info sections - basic sections render immediately
 		const sections = [];
 
 		sections.push((await this.basicSection(status, config, hostConfig)).render());
 		sections.push((await this.configSection(config, hostConfig)).render());
-		sections.push((await this.networkSection(config, hostConfig, networkSettings)).render());
+
+		// Network section placeholder - will be populated async
+		const networkPlaceholder = E('div', { 'id': 'network-section-placeholder' }, [
+			E('div', { 'class': 'cbi-section section-container-info' }, [
+				E('h3', {}, _('Network')),
+				E('div', { 'style': 'padding: 20px; text-align: center;' }, [
+					E('em', { 'class': 'spinning' }, _('Loading network information...'))
+				])
+			])
+		]);
+		sections.push(networkPlaceholder);
 
 		if (config.Env && config.Env.length > 0) {
 			sections.push((await this.envSection(config.Env)).render());
@@ -53,6 +64,43 @@ return baseclass.extend({
 		sections.forEach(function (section) {
 			content.appendChild(section);
 		});
+
+		// Load networks asynchronously and update network section
+		this.loadNetworkSectionAsync(config, hostConfig, networkSettings);
+	},
+
+	/**
+	 * Load networks and render network section asynchronously
+	 * @param {Object} config - Container config
+	 * @param {Object} hostConfig - Container host config
+	 * @param {Object} networkSettings - Container network settings
+	 */
+	loadNetworkSectionAsync: function (config, hostConfig, networkSettings) {
+		podmanRPC.network.list()
+			.then((networks) => {
+				this.networksData = networks || [];
+				return this.networkSection(config, hostConfig, networkSettings);
+			})
+			.then((networkSection) => {
+				const placeholder = document.getElementById('network-section-placeholder');
+				if (placeholder) {
+					placeholder.replaceWith(networkSection.render());
+				}
+			})
+			.catch((err) => {
+				const placeholder = document.getElementById('network-section-placeholder');
+				if (placeholder) {
+					// Clear placeholder and show error using DOM methods
+					while (placeholder.firstChild) {
+						placeholder.removeChild(placeholder.firstChild);
+					}
+					placeholder.appendChild(E('div', { 'class': 'cbi-section section-container-info' }, [
+						E('h3', {}, _('Network')),
+						E('div', { 'class': 'alert-message error' },
+							_('Failed to load network information: %s').format(err.message))
+					]));
+				}
+			});
 	},
 
 	/**
@@ -311,8 +359,36 @@ return baseclass.extend({
 		const cmd = config.Cmd ? config.Cmd.join(' ') : '-';
 		const entrypoint = config.Entrypoint ? config.Entrypoint.join(' ') : '-';
 
+		// Format CreateCommand for display
+		const createCommand = utils.formatCreateCommand(config.CreateCommand);
+		const createCommandElement = createCommand ? E('div', {
+			'style': 'display: flex; align-items: flex-start; gap: 10px;'
+		}, [
+			E('code', {
+				'style': 'flex: 1; word-break: break-all; white-space: pre-wrap; ' +
+					'background: #f5f5f5; padding: 8px; border-radius: 4px; ' +
+					'font-size: 12px; max-height: 200px; overflow-y: auto;'
+			}, createCommand),
+			E('button', {
+				'class': 'cbi-button',
+				'click': () => {
+					navigator.clipboard.writeText(createCommand).then(() => {
+						ui.addTimeLimitedNotification(null,
+							E('p', _('Command copied to clipboard')), 2000);
+					});
+				}
+			}, _('Copy'))
+		]) : '-';
+
 		const configTable = new podmanUI.Table({ 'class': 'table table-list' });
 		configTable
+			.addRow([
+				{ inner: _('Create Command') },
+				{
+					inner: createCommandElement,
+					options: { 'style': 'word-break: break-word;' }
+				}
+			])
 			.addRow([
 				{ inner: _('Command') },
 				{
@@ -900,8 +976,7 @@ return baseclass.extend({
 			if (result && result.success) {
 				podmanUI.successTimeNotification(
 					_('Init script created and enabled for %s').format(containerName));
-				// Refresh the info tab to show updated status
-				this.renderInfoTab();
+				window.location.reload();
 			} else {
 				throw new Error(result.error || _('Failed to enable init script'));
 			}
@@ -969,8 +1044,7 @@ return baseclass.extend({
 					_('Init script enabled for %s').format(containerName) :
 					_('Init script disabled for %s').format(containerName);
 				podmanUI.successTimeNotification(msg);
-				// Refresh the info tab to show updated status
-				this.renderInfoTab();
+				window.location.reload();
 			} else {
 				throw new Error(result.error || _('Failed to update init script'));
 			}

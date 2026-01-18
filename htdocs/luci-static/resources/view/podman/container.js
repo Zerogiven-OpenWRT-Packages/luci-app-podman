@@ -31,7 +31,8 @@ return view.extend({
 
 	/**
 	 * Load container data on view initialization
-	 * @returns {Promise<Object>} Container inspect data and networks
+	 * Networks are loaded asynchronously in info tab for faster initial render
+	 * @returns {Promise<Object>} Container inspect data
 	 */
 	load: async function () {
 		// Extract container ID from URL path
@@ -47,20 +48,18 @@ return view.extend({
 
 		const containerId = matches[1];
 
-		return Promise.all([
-			podmanRPC.container.inspect(containerId),
-			podmanRPC.network.list(),
-		]).then((results) => {
-			return {
-				containerId,
-				container: results[0],
-				networks: results[1] || []
-			};
-		}).catch((err) => {
-			return {
-				error: err.message || _('Failed')
-			};
-		});
+		return podmanRPC.container.inspect(containerId)
+			.then((container) => {
+				return {
+					containerId,
+					container,
+					networks: null // Loaded async in info tab
+				};
+			}).catch((err) => {
+				return {
+					error: err.message || _('Failed')
+				};
+			});
 	},
 
 	/**

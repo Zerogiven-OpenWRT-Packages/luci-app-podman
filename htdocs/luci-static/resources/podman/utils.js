@@ -161,5 +161,26 @@ return baseclass.extend({
 	_n: function (length, stringSingular, stringPlural) {
 		return Number.parseInt(length) === 1 ?
 			stringSingular : stringPlural;
+	},
+
+	/**
+	 * Format CreateCommand array for display (copyable shell command).
+	 * @param {Array} command - CreateCommand array from container inspect
+	 * @returns {string} Formatted command string
+	 */
+	formatCreateCommand: function(command) {
+		if (!command || !Array.isArray(command)) {
+			return '';
+		}
+
+		// Join with proper escaping for shell
+		return command.map((arg) => {
+			// If arg contains spaces or special chars, quote it
+			if (/[\s"'\\$`!]/.test(arg)) {
+				// Use single quotes and escape any single quotes in the arg
+				return "'" + arg.replace(/'/g, "'\\''") + "'";
+			}
+			return arg;
+		}).join(' ');
 	}
 });
