@@ -32,7 +32,12 @@
 					"init_script_show"
 				]
 			},
-			"uci": ["podman"]
+			"uci": [
+				"podman",
+				"firewall",
+				"network",
+				"dhcp"
+			]
 		},
 		"write": {
 			"ubus": {
@@ -72,7 +77,12 @@
 					"container_recreate"
 				]
 			},
-			"uci": ["podman"]
+			"uci": [
+				"podman",
+				"firewall",
+				"network",
+				"dhcp"
+			]
 		}
 	}
 }
