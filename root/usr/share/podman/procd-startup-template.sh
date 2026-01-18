@@ -52,7 +52,7 @@ start_service() {
 			logger -t ${NAME} 'Starting container {name}'
 			$PROG start {name} || exit 1
 		else
-			logger -t ${NAME} 'Container {name} already running'
+			logger -t ${NAME} 'Container "{name}" already running'
 		fi
 		exec $PROG wait {name}
 	"
