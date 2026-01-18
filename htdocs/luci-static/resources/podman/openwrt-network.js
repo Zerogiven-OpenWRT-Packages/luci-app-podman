@@ -101,7 +101,8 @@ return baseclass.extend({
 		const prefix = cidrToPrefix(options.subnet);
 		const netmask = network.prefixToMask(prefix);
 		const requestedZone = options.zoneName || '_create_new_';
-		const ZONE_NAME = requestedZone === '_create_new_' ? 'podman_' + networkName : requestedZone;
+		const ZONE_NAME = requestedZone === '_create_new_' ? 'podman_' + networkName :
+			requestedZone;
 
 		return Promise.all([
 			uci.load('network'),
@@ -258,7 +259,8 @@ return baseclass.extend({
 
 					const dnsRuleName = 'Allow-' + zoneName + '-DNS';
 					const dnsRule = uci.sections('firewall', 'rule').find((s) => {
-						return uci.get('firewall', s['.name'], 'name') === dnsRuleName;
+						return uci.get('firewall', s['.name'], 'name') ===
+							dnsRuleName;
 					});
 					if (dnsRule) {
 						uci.remove('firewall', dnsRule['.name']);
@@ -278,8 +280,10 @@ return baseclass.extend({
 			// Remove bridge device ONLY for bridge networks and if not used by others
 			let shouldRemoveBridge = false;
 			if (needsBridge(driver)) {
-				const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
-					return uci.get('network', s['.name'], 'device') === deviceName &&
+				const otherInterfaces = uci.sections('network', 'interface').filter((
+				s) => {
+					return uci.get('network', s['.name'], 'device') ===
+						deviceName &&
 						s['.name'] !== networkName;
 				});
 
@@ -293,7 +297,9 @@ return baseclass.extend({
 				}
 			}
 
-			return { shouldRemoveBridge: shouldRemoveBridge };
+			return {
+				shouldRemoveBridge: shouldRemoveBridge
+			};
 		}).then((result) => {
 			return uci.save().then(() => result);
 		}).then((result) => {
@@ -366,7 +372,7 @@ return baseclass.extend({
 					} else {
 						const deviceType = uci.get('network', deviceName, 'type');
 						if (deviceType !== 'bridge') {
-							missing.push('device');  // Device exists but not a bridge
+							missing.push('device'); // Device exists but not a bridge
 						} else {
 							details.hasDevice = true;
 
@@ -374,7 +380,8 @@ return baseclass.extend({
 							const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 							if (dnsmasqSections.length > 0) {
 								const mainSection = dnsmasqSections[0]['.name'];
-								const notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
+								const notinterfaces = uci.get('dhcp', mainSection,
+									'notinterface');
 
 								let isExcluded = false;
 								if (Array.isArray(notinterfaces)) {
@@ -399,7 +406,8 @@ return baseclass.extend({
 					// We can't easily verify if parent is a real physical interface,
 					// so assume if deviceName is set, it's OK
 					details.hasDevice = true;
-					details.hasDnsmasqExclusion = true;  // Not applicable for macvlan/ipvlan
+					details.hasDnsmasqExclusion =
+					true; // Not applicable for macvlan/ipvlan
 				}
 			} else {
 				missing.push('device');
@@ -535,8 +543,10 @@ return baseclass.extend({
 
 			// Check device conflicts only for bridge networks
 			if (needsBridge(driver) && options.bridgeName) {
-				const otherInterfaces = uci.sections('network', 'interface').filter((s) => {
-					return uci.get('network', s['.name'], 'device') === options.bridgeName &&
+				const otherInterfaces = uci.sections('network', 'interface').filter((
+				s) => {
+					return uci.get('network', s['.name'], 'device') === options
+						.bridgeName &&
 						s['.name'] !== networkName;
 				});
 
@@ -676,7 +686,9 @@ return baseclass.extend({
 			// Skip if dnsmasq is not configured (e.g., router uses odhcpd only)
 			if (dnsmasqSections.length === 0) {
 				console.log('dnsmasq not configured, skipping exclusion setup');
-				return { skip: true };
+				return {
+					skip: true
+				};
 			}
 
 			let mainSection = dnsmasqSections[0]['.name'];
@@ -699,7 +711,8 @@ return baseclass.extend({
 				}
 			} else {
 				// Remove from exclusion list
-				const filtered = notinterfaceList.filter(iface => iface !== interfaceName);
+				const filtered = notinterfaceList.filter(iface => iface !==
+				interfaceName);
 				if (filtered.length > 0) {
 					uci.set('dhcp', mainSection, 'notinterface', filtered);
 				} else {
@@ -708,7 +721,9 @@ return baseclass.extend({
 				}
 			}
 
-			return { skip: false };
+			return {
+				skip: false
+			};
 		}).then((result) => {
 			if (result.skip) {
 				return result;
