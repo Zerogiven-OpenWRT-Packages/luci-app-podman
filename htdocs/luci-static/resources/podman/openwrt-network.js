@@ -645,10 +645,20 @@ return baseclass.extend({
 				skipped.push('interface');
 			}
 
+			// No changes
+			if (added.length <= 0) {
+				return;
+			}
 			return uci.save();
 		}).then(() => {
+			if (added.length <= 0) {
+				return;
+			}
 			return uci.apply(true);
 		}).then(() => {
+			if (added.length <= 0) {
+				return;
+			}
 			return network.flushCache();
 		}).then(() => {
 			// Repair dnsmasq ONLY for bridge networks if missing
@@ -656,9 +666,8 @@ return baseclass.extend({
 				return this._configureDnsmasq(networkName, true).then(() => {
 					added.push('dnsmasq');
 				});
-			} else {
-				skipped.push('dnsmasq');
 			}
+			skipped.push('dnsmasq');
 		}).then(() => {
 			return {
 				added: added,
@@ -733,7 +742,6 @@ return baseclass.extend({
 			if (result.skip) {
 				return result;
 			}
-
 			return uci.apply(true);
 		});
 	},
