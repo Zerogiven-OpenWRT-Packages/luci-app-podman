@@ -38,8 +38,8 @@ start_service() {
 
 	# Check if container exists (unless IGNORE_MISSING=1)
 	if [ "$IGNORE_MISSING" != "1" ]; then
-		if ! $PROG container exists {name} 2>/dev/null; then
-			logger -t ${NAME} "Container does not exist"
+		if ! $PROG container exists "{name}" 2>/dev/null; then
+			logger -t ${NAME} "Container \"{name}\" does not exist"
 			return 1
 		fi
 	fi
@@ -48,13 +48,13 @@ start_service() {
 	# If container is not running, start it first, then wait
 	procd_open_instance "${NAME}"
 	procd_set_param command sh -c "
-		if ! $PROG container inspect {name} --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
-			logger -t ${NAME} 'Starting container {name}'
-			$PROG start {name} || exit 1
+		if ! $PROG container inspect "{name}" --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
+			logger -t ${NAME} 'Starting container "{name}"'
+			$PROG start \"{name}\" || exit 1
 		else
 			logger -t ${NAME} 'Container {name} already running'
 		fi
-		exec $PROG wait {name}
+		exec $PROG wait \"{name}\"
 	"
 
 	# NOTE: No respawn - Podman restart policy handles runtime restarts
@@ -63,6 +63,6 @@ start_service() {
 }
 
 stop_service() {
-	logger -t ${NAME} "Stopping container {name}"
-	$PROG stop {name} 2>/dev/null || true
+	logger -t ${NAME} "Stopping container \"{name}\""
+	$PROG stop "{name}" 2>/dev/null || true
 }
