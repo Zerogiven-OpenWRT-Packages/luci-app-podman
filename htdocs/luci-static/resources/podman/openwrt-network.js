@@ -281,7 +281,7 @@ return baseclass.extend({
 			let shouldRemoveBridge = false;
 			if (needsBridge(driver)) {
 				const otherInterfaces = uci.sections('network', 'interface').filter((
-				s) => {
+					s) => {
 					return uci.get('network', s['.name'], 'device') ===
 						deviceName &&
 						s['.name'] !== networkName;
@@ -407,7 +407,7 @@ return baseclass.extend({
 					// so assume if deviceName is set, it's OK
 					details.hasDevice = true;
 					details.hasDnsmasqExclusion =
-					true; // Not applicable for macvlan/ipvlan
+						true; // Not applicable for macvlan/ipvlan
 				}
 			} else {
 				missing.push('device');
@@ -544,7 +544,7 @@ return baseclass.extend({
 			// Check device conflicts only for bridge networks
 			if (needsBridge(driver) && options.bridgeName) {
 				const otherInterfaces = uci.sections('network', 'interface').filter((
-				s) => {
+					s) => {
 					return uci.get('network', s['.name'], 'device') === options
 						.bridgeName &&
 						s['.name'] !== networkName;
@@ -721,7 +721,7 @@ return baseclass.extend({
 			} else {
 				// Remove from exclusion list
 				const filtered = notinterfaceList.filter(iface => iface !==
-				interfaceName);
+					interfaceName);
 				if (filtered.length > 0) {
 					uci.set('dhcp', mainSection, 'notinterface', filtered);
 				} else {
