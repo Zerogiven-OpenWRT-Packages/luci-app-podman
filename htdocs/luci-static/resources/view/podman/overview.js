@@ -548,19 +548,30 @@ return view.extend({
 
 		// Show modal with results
 		if (hasUpdates.length > 0) {
+			// Collect old image IDs that became dangling during check
+			const danglingImageIds = hasUpdates
+				.filter((r) => r.currentImageId && r.currentImageId !== r.newImageId)
+				.map((r) => r.currentImageId);
+
 			content.push(new podmanUI.ModalButtons({
 				confirmText: _('Update Selected'),
 				confirmClass: 'positive',
 				onConfirm: () => {
 					// Get selected containers
 					const selected = [];
+					const notSelectedImageIds = [];
+
 					hasUpdates.forEach((r, idx) => {
 						const checkbox = document.getElementById('update-container-' + idx);
 						if (checkbox && checkbox.checked) {
 							selected.push({
-								name: checkbox.dataset.name,
-								running: checkbox.dataset.running === '1'
+								name: r.name,
+								running: r.running,
+								currentImageId: r.currentImageId
 							});
+						} else if (r.currentImageId && r.currentImageId !== r.newImageId) {
+							// Track unselected containers' old images for cleanup
+							notSelectedImageIds.push(r.currentImageId);
 						}
 					});
 
@@ -569,8 +580,20 @@ return view.extend({
 						return;
 					}
 
+					// Clean up old images for containers NOT being updated
+					notSelectedImageIds.forEach((imageId) => {
+						podmanRPC.image.remove(imageId, false).catch(() => {});
+					});
+
 					ui.hideModal();
 					view.performUpdates(selected);
+				},
+				onCancel: () => {
+					// User cancelled - clean up all dangling images created during check
+					danglingImageIds.forEach((imageId) => {
+						podmanRPC.image.remove(imageId, false).catch(() => {});
+					});
+					ui.hideModal();
 				}
 			}).render());
 		} else {

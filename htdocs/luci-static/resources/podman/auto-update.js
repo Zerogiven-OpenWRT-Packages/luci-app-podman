@@ -156,10 +156,11 @@ return baseclass.extend({
 	 * Update a single container.
 	 * @param {string} name - Container name
 	 * @param {boolean} wasRunning - Whether container was running before update
+	 * @param {string} oldImageId - Image ID before update (to remove after successful update)
 	 * @param {Function} onStep - Step callback (step, message)
 	 * @returns {Promise<Object>} Update result with success flag and createCommand
 	 */
-	updateContainer: function(name, wasRunning, onStep) {
+	updateContainer: async function(name, wasRunning, oldImageId, onStep) {
 		let createCommand = null;
 
 		const step = (stepNum, msg) => {
@@ -206,7 +207,17 @@ return baseclass.extend({
 				return Promise.resolve();
 			})
 			.then(() => {
-				step(6, _('Update complete'));
+				// Step 6: Remove old image (cleanup dangling image)
+				if (oldImageId) {
+					step(6, _('Cleaning up old image...'));
+					return podmanRPC.image.remove(oldImageId, false).catch(() => {
+						// Ignore errors - image might be used by another container
+					});
+				}
+				return Promise.resolve();
+			})
+			.then(() => {
+				step(7, _('Update complete'));
 				return {
 					success: true,
 					name: name,
@@ -225,7 +236,7 @@ return baseclass.extend({
 
 	/**
 	 * Update multiple containers.
-	 * @param {Array} containers - Containers to update (with name, running properties)
+	 * @param {Array} containers - Containers to update (with name, running, currentImageId properties)
 	 * @param {Function} onContainerStart - Callback when starting a container update
 	 * @param {Function} onContainerStep - Callback for container step progress
 	 * @param {Function} onContainerComplete - Callback when container update completes
@@ -255,6 +266,7 @@ return baseclass.extend({
 			return this.updateContainer(
 				container.name,
 				container.running,
+				container.currentImageId,
 				(step, msg) => {
 					if (onContainerStep) {
 						onContainerStep(container, step, msg);
