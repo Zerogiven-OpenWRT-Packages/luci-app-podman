@@ -209,8 +209,7 @@ return baseclass.extend({
 
 			// Auto-generate gateway: increment last octet by 1 (e.g., 10.89.0.0 → 10.89.0.1)
 				if (!podnetwork.gateway && podnetwork.subnet) {
-					const regex = new RegExp('(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.)(\\d{1,3})',
-						'gm')
+					const regex = new RegExp('(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.)(\\d{1,3})', 'gm');
 					podnetwork.gateway = podnetwork.subnet.replace(regex, (m, g1, g2) => g1 +
 						(Number(g2) + 1)).replace(/\/\d+$/, '');
 				}

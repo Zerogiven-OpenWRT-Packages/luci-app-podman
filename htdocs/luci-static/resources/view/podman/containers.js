@@ -148,7 +148,7 @@ return view.extend({
 		};
 
 		o = section.option(podmanForm.field.ContainerMobileActionsValue, 'Action', '');
-		o.name = 'mobile-actions'
+		o.name = 'mobile-actions';
 		o.cfgvalue = (sectionId) => {
 			const container = this.map.data.data[sectionId];
 			const isRunning = container.State === 'running';
