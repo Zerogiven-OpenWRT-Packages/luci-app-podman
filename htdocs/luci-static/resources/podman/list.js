@@ -199,6 +199,9 @@ const ListUtil = baseclass.extend({
 				if (result && result.error) {
 					return { item: item, checkResult: checkResult, error: result.error };
 				}
+				if (result && result.response && result.response >= 400) {
+					return { item: item, checkResult: checkResult, error: result.message || result.cause || _('Request failed') };
+				}
 				return { item: item, checkResult: checkResult, success: true };
 			}).catch((err) => {
 				return { item: item, checkResult: checkResult, error: err.message };
