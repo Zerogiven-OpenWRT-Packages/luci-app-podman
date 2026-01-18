@@ -4,6 +4,7 @@
 - Image Search
 - Pod Detail Page
 - Optimize Container Detail Mobile View
+- Use uclient fetch in favor of curl
 - Repair network with IPv6 configured creates this uci config:
       config device 'podman0'
         option type 'bridge'
