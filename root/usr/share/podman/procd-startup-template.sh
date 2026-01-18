@@ -22,9 +22,9 @@ start_service() {
 
 	logger -t ${NAME} "Waiting for Podman socket..."
 
-	while [ $count -lt $max_wait ]; do
+	while [ "$count" -lt "$max_wait" ]; do
 		if [ -S /run/podman/podman.sock ]; then
-			logger -t ${NAME} "Podman socket available after ${count}s"
+			logger -t ${NAME} "Podman socket available after \"${count}s\""
 			break
 		fi
 		sleep 1
@@ -32,7 +32,7 @@ start_service() {
 	done
 
 	if [ ! -S /run/podman/podman.sock ]; then
-		logger -t ${NAME} "Timeout: Podman socket not available after ${max_wait}s"
+		logger -t ${NAME} "Timeout: Podman socket not available after \"${max_wait}s\""
 		return 1
 	fi
 
