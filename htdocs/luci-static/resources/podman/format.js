@@ -171,7 +171,6 @@ return baseclass.extend({
 
 				// If there's a significant remainder, show decimal
 				if (remainder > 0 && i < units.length - 1) {
-					const nextUnit = units[i + 1];
 					const decimalValue = (ns / unit.value).toFixed(1);
 					return decimalValue + unit.name;
 				}

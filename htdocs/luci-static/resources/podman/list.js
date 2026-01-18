@@ -295,7 +295,6 @@ const ListUtil = baseclass.extend({
 
 		const mainErrors = results.filter((r) => r.error);
 		const cleanupErrors = results.filter((r) => r.cleanupError);
-		const successes = results.filter((r) => r.success && !r.cleanupError);
 
 		// Priority: Main errors > Cleanup errors > Success
 		if (mainErrors.length > 0) {
