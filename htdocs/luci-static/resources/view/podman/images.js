@@ -11,6 +11,9 @@
 'require podman.form as podmanForm';
 'require podman.list as List';
 
+const IMAGE_ID_SUBSTR_START = 7;
+const IMAGE_ID_SUBSTR_END = 19;
+
 utils.addPodmanCss();
 
 /**
@@ -28,7 +31,7 @@ return view.extend({
 	 * Load image data and expand multi-tag images
 	 * @returns {Promise<Object>} Image data or error
 	 */
-	load: async () => {
+	load: async function() {
 		return podmanRPC.image.list()
 			.then((images) => {
 				return {
@@ -109,7 +112,7 @@ return view.extend({
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'ImageId', _('Image ID'));
 		o.click = (image) => this.handleInspect(image.Id);
-		o.text = (image) => utils.truncate(image.Id ? image.Id.substring(7, 19) : '', 10);
+		o.text = (image) => utils.truncate(image.Id ? image.Id.substring(IMAGE_ID_SUBSTR_START, IMAGE_ID_SUBSTR_END) : '', 10);
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Size', _('Size'));
 		o.cfgformatter = format.bytes;
