@@ -49,7 +49,7 @@ start_service() {
 	procd_open_instance "${NAME}"
 	procd_set_param command sh -c "
 		if ! $PROG container inspect {name} --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
-			logger -t ${NAME} 'Starting container {name}'
+			logger -t ${NAME} 'Starting container "{name}"'
 			$PROG start {name} || exit 1
 		else
 			logger -t ${NAME} 'Container "{name}" already running'
