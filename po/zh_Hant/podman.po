@@ -1,17 +1,18 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: luci-app-podman"
-"POT-Creation-Date: 2026-01-18 17:49+0800"
-"PO-Revision-Date: "
-"Last-Translator: "
-"Language-Team: Victor Tseng <palatis@palatis.pro>"
-"Language: zh_TW"
-"MIME-Version: 1.0"
-"Content-Type: text/plain; charset=UTF-8"
+"Project-Id-Version: luci-app-podman\n"
+"POT-Creation-Date: 2026-01-19 02:16+0800\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Victor Tseng <palatis@gmail.com>\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.7"
-"X-Poedit-Basepath: ../.."
-"X-Poedit-SearchPath-0: ."
+"X-Generator: Poedit 3.7\n"
+"X-Poedit-Basepath: ../..\n"
+"X-Poedit-SearchPath-0: htdocs\n"
+"X-Poedit-SearchPath-1: root\n"
 
 #: htdocs/luci-static/resources/podman/auto-update.js:47
 #: htdocs/luci-static/resources/podman/form/image.js:81
@@ -24,31 +25,35 @@ msgstr "無法啟動映像檔獲取"
 msgid "Failed to pull image"
 msgstr "無法獲取映像檔"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:170
+#: htdocs/luci-static/resources/podman/auto-update.js:171
 msgid "Getting container configuration..."
 msgstr "取得容器設定…"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:175
+#: htdocs/luci-static/resources/podman/auto-update.js:176
 msgid "Container does not have CreateCommand"
 msgstr "容器沒有 CreateCommand"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:181
+#: htdocs/luci-static/resources/podman/auto-update.js:182
 msgid "Stopping container..."
 msgstr "正在停止容器…"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:188
+#: htdocs/luci-static/resources/podman/auto-update.js:189
 msgid "Removing old container..."
 msgstr "正在移除舊容器…"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:193
+#: htdocs/luci-static/resources/podman/auto-update.js:194
 msgid "Creating new container..."
 msgstr "建立新的容器…"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:203
+#: htdocs/luci-static/resources/podman/auto-update.js:204
 msgid "Starting container..."
 msgstr "正在啟動容器…"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:209
+#: htdocs/luci-static/resources/podman/auto-update.js:212
+msgid "Cleaning up old image..."
+msgstr "正在清理舊的映像檔…"
+
+#: htdocs/luci-static/resources/podman/auto-update.js:220
 msgid "Update complete"
 msgstr "更新完成"
 
@@ -115,7 +120,7 @@ msgstr "無法在 %d 個 %s 上執行健康檢查"
 #: htdocs/luci-static/resources/podman/container-util.js:170
 #: htdocs/luci-static/resources/podman/list.js:138
 #: htdocs/luci-static/resources/view/podman/containers.js:463
-#: htdocs/luci-static/resources/view/podman/images.js:186
+#: htdocs/luci-static/resources/view/podman/images.js:189
 #: htdocs/luci-static/resources/view/podman/pods.js:209
 #: htdocs/luci-static/resources/view/podman/pods.js:245
 #: htdocs/luci-static/resources/view/podman/volumes.js:180
@@ -138,7 +143,7 @@ msgstr "沒有 %s 被選擇"
 #: htdocs/luci-static/resources/view/podman/containers.js:209
 #: htdocs/luci-static/resources/view/podman/containers.js:215
 #: htdocs/luci-static/resources/view/podman/overview.js:314
-#: htdocs/luci-static/resources/view/podman/overview.js:789
+#: htdocs/luci-static/resources/view/podman/overview.js:812
 #: htdocs/luci-static/resources/view/podman/pods.js:88
 msgid "Containers"
 msgstr "容器"
@@ -181,14 +186,14 @@ msgid "Removed %d %s successfully"
 msgstr "成功移除 %d 個 %s"
 
 #: htdocs/luci-static/resources/podman/form.js:75
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:83
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:151
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:131
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:199
 msgid "Update"
 msgstr "更新"
 
 #: htdocs/luci-static/resources/podman/form.js:123
 #: htdocs/luci-static/resources/podman/format.js:52
-#: htdocs/luci-static/resources/view/podman/container.js:93
+#: htdocs/luci-static/resources/view/podman/container.js:92
 #: htdocs/luci-static/resources/view/podman/networks.js:83
 #: htdocs/luci-static/resources/view/podman/overview.js:162
 #: htdocs/luci-static/resources/view/podman/overview.js:163
@@ -238,18 +243,18 @@ msgstr "留空會自動產生"
 #: htdocs/luci-static/resources/podman/form/container.js:80
 #: htdocs/luci-static/resources/podman/form/container.js:81
 #: htdocs/luci-static/resources/podman/form/image.js:39
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:102
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:150
 #: htdocs/luci-static/resources/view/podman/containers.js:112
-#: htdocs/luci-static/resources/view/podman/images.js:194
-#: htdocs/luci-static/resources/view/podman/images.js:204
-#: htdocs/luci-static/resources/view/podman/images.js:217
-#: htdocs/luci-static/resources/view/podman/images.js:224
+#: htdocs/luci-static/resources/view/podman/images.js:197
+#: htdocs/luci-static/resources/view/podman/images.js:207
+#: htdocs/luci-static/resources/view/podman/images.js:220
+#: htdocs/luci-static/resources/view/podman/images.js:227
 msgid "Image"
 msgstr "映像檔"
 
 #: htdocs/luci-static/resources/podman/form/container.js:81
 #: htdocs/luci-static/resources/podman/form/network-connect.js:41
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:440
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:516
 #, javascript-format
 msgid "-- Select %s --"
 msgstr "-- 選擇 %s --"
@@ -259,17 +264,17 @@ msgid "Container image to use"
 msgstr "要使用的容器映像檔"
 
 #: htdocs/luci-static/resources/podman/form/container.js:95
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:317
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:393
 msgid "Command"
-msgstr "命令"
+msgstr "指令"
 
 #: htdocs/luci-static/resources/podman/form/container.js:98
 msgid "Command to run (space-separated)"
-msgstr "要執行的命令（使用空格字元分隔）"
+msgstr "要執行的指令（使用空格字元分隔）"
 
 #: htdocs/luci-static/resources/podman/form/container.js:100
 #: htdocs/luci-static/resources/podman/form/pod.js:45
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:704
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:780
 msgid "Port Mappings"
 msgstr "連接埠對應"
 
@@ -278,7 +283,7 @@ msgid "One per line, format: host:container"
 msgstr "一行一個，格式：host:container"
 
 #: htdocs/luci-static/resources/podman/form/container.js:106
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:559
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:635
 msgid "Environment Variables"
 msgstr "環境變數"
 
@@ -289,12 +294,12 @@ msgstr "一行一個，格式 key=value"
 
 #: htdocs/luci-static/resources/podman/form/container.js:112
 #: htdocs/luci-static/resources/view/podman/overview.js:315
-#: htdocs/luci-static/resources/view/podman/overview.js:791
+#: htdocs/luci-static/resources/view/podman/overview.js:814
 #: htdocs/luci-static/resources/view/podman/volumes.js:70
 #: htdocs/luci-static/resources/view/podman/volumes.js:76
 #: htdocs/luci-static/resources/view/podman/volumes.js:180
 msgid "Volumes"
-msgstr "容量"
+msgstr "儲存區"
 
 #: htdocs/luci-static/resources/podman/form/container.js:116
 msgid "One per line, format: source:destination"
@@ -303,15 +308,17 @@ msgstr "一行一個，格式：source:destination"
 #: htdocs/luci-static/resources/podman/form/container.js:118
 #: htdocs/luci-static/resources/podman/form/network-connect.js:41
 #: htdocs/luci-static/resources/podman/form/network.js:75
-#: htdocs/luci-static/resources/podman/form/network.js:274
-#: htdocs/luci-static/resources/podman/form/network.js:279
-#: htdocs/luci-static/resources/podman/form/network.js:285
-#: htdocs/luci-static/resources/podman/form/network.js:291
-#: htdocs/luci-static/resources/podman/form/network.js:298
-#: htdocs/luci-static/resources/podman/form/network.js:349
-#: htdocs/luci-static/resources/podman/form/network.js:356
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:440
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:502
+#: htdocs/luci-static/resources/podman/form/network.js:273
+#: htdocs/luci-static/resources/podman/form/network.js:278
+#: htdocs/luci-static/resources/podman/form/network.js:284
+#: htdocs/luci-static/resources/podman/form/network.js:290
+#: htdocs/luci-static/resources/podman/form/network.js:297
+#: htdocs/luci-static/resources/podman/form/network.js:348
+#: htdocs/luci-static/resources/podman/form/network.js:355
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:47
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:98
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:516
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:578
 #: htdocs/luci-static/resources/view/podman/networks.js:236
 msgid "Network"
 msgstr "網路"
@@ -323,30 +330,30 @@ msgid ""
 msgstr "選擇容器的網路。使用者建立的網路能為容器提供更加的隔離與 DNS 解析。"
 
 #: htdocs/luci-static/resources/podman/form/container.js:134
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:143
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:191
 msgid "Restart Policy"
 msgstr "重新啟動原則"
 
 #: htdocs/luci-static/resources/podman/form/container.js:135
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:128
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:344
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:348
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:352
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:176
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:420
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:424
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:428
 msgid "No"
 msgstr "否"
 
 #: htdocs/luci-static/resources/podman/form/container.js:136
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:129
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:177
 msgid "Always"
 msgstr "總是"
 
 #: htdocs/luci-static/resources/podman/form/container.js:137
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:130
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:178
 msgid "On Failure"
 msgstr "於錯誤發生時"
 
 #: htdocs/luci-static/resources/podman/form/container.js:138
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:131
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:179
 msgid "Unless Stopped"
 msgstr "除非停止"
 
@@ -367,7 +374,7 @@ msgid "Auto Remove (--rm)"
 msgstr "自動移除（--rm）"
 
 #: htdocs/luci-static/resources/podman/form/container.js:148
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:160
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:208
 msgid "Auto-Update"
 msgstr "自動更新"
 
@@ -387,13 +394,13 @@ msgid "Automatically start the container after it is created"
 msgstr "建立容器後自動啟動"
 
 #: htdocs/luci-static/resources/podman/form/container.js:156
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:331
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:407
 msgid "Working Directory"
 msgstr "工作目錄"
 
 #: htdocs/luci-static/resources/podman/form/container.js:160
 #: htdocs/luci-static/resources/podman/form/pod.js:40
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:339
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:415
 msgid "Hostname"
 msgstr "主機名稱"
 
@@ -450,7 +457,7 @@ msgstr "健康檢查類型"
 
 #: htdocs/luci-static/resources/podman/form/container.js:196
 msgid "CMD runs command directly, CMD-SHELL runs command in shell"
-msgstr "CMD 直接執行命令，CMD-SHELL 在殼層中執行命令"
+msgstr "CMD 直接執行指令，CMD-SHELL 在殼層中執行指令"
 
 #: htdocs/luci-static/resources/podman/form/container.js:198
 msgid "Health Check Command"
@@ -458,7 +465,7 @@ msgstr "健康檢查指令"
 
 #: htdocs/luci-static/resources/podman/form/container.js:203
 msgid "Command to run for health check. Exit code 0 = healthy, 1 = unhealthy"
-msgstr "檢查健康度使用的命令。退出回應碼：0 = 健康、1 = 有毛病"
+msgstr "檢查健康度使用的指令。退出回應碼：0 = 健康、1 = 有毛病"
 
 #: htdocs/luci-static/resources/podman/form/container.js:205
 #: htdocs/luci-static/resources/view/podman/container-tab/health.js:51
@@ -516,8 +523,8 @@ msgstr "判斷為不健康之前的連續健康檢查失敗。預設：3"
 
 #: htdocs/luci-static/resources/podman/form/container.js:426
 #: htdocs/luci-static/resources/podman/form/container.js:563
-#: htdocs/luci-static/resources/podman/form/network.js:274
-#: htdocs/luci-static/resources/podman/form/network.js:298
+#: htdocs/luci-static/resources/podman/form/network.js:273
+#: htdocs/luci-static/resources/podman/form/network.js:297
 #: htdocs/luci-static/resources/podman/form/pod.js:119
 #: htdocs/luci-static/resources/podman/form/secret.js:111
 #: htdocs/luci-static/resources/podman/form/volume.js:105
@@ -535,10 +542,10 @@ msgstr "正在從映像檔 %s 建立容器…"
 #: htdocs/luci-static/resources/podman/form/container.js:510
 #: htdocs/luci-static/resources/podman/form/container.js:569
 #: htdocs/luci-static/resources/podman/form/container.js:604
-#: htdocs/luci-static/resources/podman/form/network.js:279
-#: htdocs/luci-static/resources/podman/form/network.js:285
-#: htdocs/luci-static/resources/podman/form/network.js:291
-#: htdocs/luci-static/resources/podman/form/network.js:356
+#: htdocs/luci-static/resources/podman/form/network.js:278
+#: htdocs/luci-static/resources/podman/form/network.js:284
+#: htdocs/luci-static/resources/podman/form/network.js:290
+#: htdocs/luci-static/resources/podman/form/network.js:355
 #: htdocs/luci-static/resources/podman/form/pod.js:124
 #: htdocs/luci-static/resources/podman/form/pod.js:132
 #: htdocs/luci-static/resources/podman/form/secret.js:117
@@ -572,10 +579,10 @@ msgid "Setting up auto-start"
 msgstr "正在設定自動執行"
 
 #: htdocs/luci-static/resources/podman/form/container.js:470
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:889
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:965
 #: htdocs/luci-static/resources/view/podman/containers.js:506
 msgid "Generating Init Script"
-msgstr "產生初始化命令稿"
+msgstr "產生初始化指令稿"
 
 #: htdocs/luci-static/resources/podman/form/container.js:495
 msgid "Container created, started, and auto-start configured"
@@ -592,7 +599,7 @@ msgstr "容器已建立，且設定了自動啟動"
 
 #: htdocs/luci-static/resources/podman/form/container.js:504
 #: htdocs/luci-static/resources/podman/form/container.js:599
-#: htdocs/luci-static/resources/podman/form/network.js:349
+#: htdocs/luci-static/resources/podman/form/network.js:348
 #: htdocs/luci-static/resources/podman/form/pod.js:127
 #: htdocs/luci-static/resources/podman/form/secret.js:129
 #: htdocs/luci-static/resources/podman/form/volume.js:113
@@ -654,22 +661,22 @@ msgid "Starting image pull..."
 msgstr "正在獲取映像檔…"
 
 #: htdocs/luci-static/resources/podman/form/image.js:89
-#: htdocs/luci-static/resources/podman/form/image.js:258
+#: htdocs/luci-static/resources/podman/form/image.js:261
 #, javascript-format
 msgid "Failed to pull image: %s"
 msgstr "無法拉回映像檔：%s"
 
 #: htdocs/luci-static/resources/podman/form/image.js:199
 #: htdocs/luci-static/resources/podman/form/image.js:230
-#: htdocs/luci-static/resources/podman/list.js:435
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:942
+#: htdocs/luci-static/resources/podman/list.js:437
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1017
 #: htdocs/luci-static/resources/view/podman/overview.js:460
 #: htdocs/luci-static/resources/view/podman/overview.js:491
-#: htdocs/luci-static/resources/view/podman/overview.js:578
-#: htdocs/luci-static/resources/view/podman/overview.js:631
-#: htdocs/luci-static/resources/view/podman/overview.js:693
-#: htdocs/luci-static/resources/view/podman/overview.js:820
-#: htdocs/luci-static/resources/view/podman/overview.js:832
+#: htdocs/luci-static/resources/view/podman/overview.js:601
+#: htdocs/luci-static/resources/view/podman/overview.js:654
+#: htdocs/luci-static/resources/view/podman/overview.js:716
+#: htdocs/luci-static/resources/view/podman/overview.js:843
+#: htdocs/luci-static/resources/view/podman/overview.js:855
 msgid "Close"
 msgstr "關閉"
 
@@ -690,7 +697,7 @@ msgid "Leave empty for automatic IP assignment"
 msgstr "留空會自動配置 IP 地址"
 
 #: htdocs/luci-static/resources/podman/form/network-connect.js:58
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:469
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:545
 msgid "Connect"
 msgstr "連線"
 
@@ -699,25 +706,25 @@ msgid "Please select a network"
 msgstr "請選擇網路"
 
 #: htdocs/luci-static/resources/podman/form/network-connect.js:77
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:825
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:901
 msgid "Connecting to Network"
 msgstr "正在連線至網路"
 
 #: htdocs/luci-static/resources/podman/form/network-connect.js:78
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:826
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:902
 msgid "Connecting container to network..."
 msgstr "將容器連線至網路…"
 
 #: htdocs/luci-static/resources/podman/form/network-connect.js:89
 #: htdocs/luci-static/resources/podman/form/network-connect.js:98
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:839
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:847
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:915
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:923
 #, javascript-format
 msgid "Failed to connect to network: %s"
 msgstr "無法連線至網路：%s"
 
 #: htdocs/luci-static/resources/podman/form/network-connect.js:93
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:842
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:918
 msgid "Connected to network successfully"
 msgstr "成功連線至網路"
 
@@ -847,7 +854,7 @@ msgid "Labels in key=value format, one per line"
 msgstr "使用 key=value 格式的標籤，一行一個"
 
 #: htdocs/luci-static/resources/podman/form/network.js:194
-#: htdocs/luci-static/resources/podman/openwrt-network.js:497
+#: htdocs/luci-static/resources/podman/openwrt-network.js:496
 msgid "Parent interface is required for macvlan/ipvlan networks"
 msgstr "macvlan/ipvlan 網路需要母界面"
 
@@ -859,7 +866,7 @@ msgstr "系統上沒有適合的母界面"
 msgid "OpenWrt integration requires subnet to be specified"
 msgstr "OpenWrt 整合需要指定子網路"
 
-#: htdocs/luci-static/resources/podman/form/network.js:274
+#: htdocs/luci-static/resources/podman/form/network.js:273
 #: htdocs/luci-static/resources/podman/form/pod.js:119
 #: htdocs/luci-static/resources/podman/form/secret.js:111
 #: htdocs/luci-static/resources/podman/form/volume.js:105
@@ -867,16 +874,16 @@ msgstr "OpenWrt 整合需要指定子網路"
 msgid "Creating %s..."
 msgstr "正在建立 %s…"
 
-#: htdocs/luci-static/resources/podman/form/network.js:299
+#: htdocs/luci-static/resources/podman/form/network.js:298
 #: htdocs/luci-static/resources/view/podman/networks.js:410
 msgid "Setting up OpenWrt integration..."
 msgstr "正在設定 OpenWrt 整合…"
 
-#: htdocs/luci-static/resources/podman/form/network.js:340
+#: htdocs/luci-static/resources/podman/form/network.js:339
 msgid "Network and OpenWrt integration created successfully"
 msgstr "成功建立網路與 OpenWrt 整合"
 
-#: htdocs/luci-static/resources/podman/form/network.js:345
+#: htdocs/luci-static/resources/podman/form/network.js:344
 #, javascript-format
 msgid ""
 "Network created but OpenWrt integration failed: %s. You may need to "
@@ -889,11 +896,11 @@ msgstr "網路成功建立，但 OpenWrt 整合失敗：%s。您可能必須手�
 #: htdocs/luci-static/resources/podman/form/pod.js:127
 #: htdocs/luci-static/resources/podman/form/pod.js:132
 msgid "Pod"
-msgstr ""
+msgstr "容器群組"
 
 #: htdocs/luci-static/resources/podman/form/pod.js:35
 msgid "Pod Name"
-msgstr "Pod 名稱"
+msgstr "容器群組名稱"
 
 #: htdocs/luci-static/resources/podman/form/pod.js:38
 msgid "Name for the pod"
@@ -930,7 +937,7 @@ msgstr "CPU 分享（相對權重），預設為 1024，0 = 使用預設值。"
 #: htdocs/luci-static/resources/podman/form/resource.js:69
 #: htdocs/luci-static/resources/podman/form/resource.js:130
 msgid "Use: 512m, 1g, or -1 for unlimited"
-msgstr "使用：512m、1g、或 -1表示無限制"
+msgstr "使用：512m、1g、或 -1 表示無限制"
 
 #: htdocs/luci-static/resources/podman/form/resource.js:73
 msgid "Memory limit (e.g., 512m, 1g). Use -1 or 0 to remove limit."
@@ -938,7 +945,7 @@ msgstr "記憶體限制（例如 512m、1g）。使用 -1 或 0 移除限制。"
 
 #: htdocs/luci-static/resources/podman/form/resource.js:75
 msgid "Memory + Swap Limit"
-msgstr "記憶體 + 置換分區限制"
+msgstr "記憶體 + 置換區限制"
 
 #: htdocs/luci-static/resources/podman/form/resource.js:82
 #: htdocs/luci-static/resources/podman/form/resource.js:135
@@ -1008,7 +1015,7 @@ msgid "The sensitive data to store securely"
 msgstr "要被安全保存的敏感資料"
 
 #: htdocs/luci-static/resources/podman/form/secret.js:59
-#: htdocs/luci-static/resources/podman/list.js:427
+#: htdocs/luci-static/resources/podman/list.js:429
 msgid "Security Notice:"
 msgstr "安全性警告："
 
@@ -1044,20 +1051,20 @@ msgstr "私密資料"
 #: htdocs/luci-static/resources/podman/form/volume.js:117
 #: htdocs/luci-static/resources/view/podman/volumes.js:117
 msgid "Volume"
-msgstr "容量"
+msgstr "儲存區"
 
 #: htdocs/luci-static/resources/podman/form/volume.js:30
 #: htdocs/luci-static/resources/view/podman/volumes.js:251
 msgid "Volume Name"
-msgstr "容量名稱"
+msgstr "儲存區名稱"
 
 #: htdocs/luci-static/resources/podman/form/volume.js:34
 msgid "Volume name. Leave empty to auto-generate."
-msgstr "容量名稱。留空會自動產生。"
+msgstr "儲存區名稱。留空會自動產生。"
 
 #: htdocs/luci-static/resources/podman/form/volume.js:39
 msgid "Volume driver to use"
-msgstr "要使用的容量驅動器"
+msgstr "要使用的儲存區驅動器"
 
 #: htdocs/luci-static/resources/podman/form/volume.js:41
 msgid "Mount Options"
@@ -1073,12 +1080,12 @@ msgstr "驅動程式相關選項（逗號分隔，例如 type=tmpfs,o=size=100m�
 msgid "Never"
 msgstr "永不"
 
-#: htdocs/luci-static/resources/podman/format.js:241
+#: htdocs/luci-static/resources/podman/format.js:240
 #, javascript-format
 msgid "Read: %s / Write: %s"
 msgstr "讀取：%s / 寫入：%s"
 
-#: htdocs/luci-static/resources/podman/format.js:245
+#: htdocs/luci-static/resources/podman/format.js:244
 msgid "No I/O"
 msgstr "沒有 I/O"
 
@@ -1117,88 +1124,92 @@ msgstr "刪除 %s"
 msgid "Deleting %d selected %s..."
 msgstr "正在刪除 %d 個選擇的 %s…"
 
-#: htdocs/luci-static/resources/podman/list.js:300
+#: htdocs/luci-static/resources/podman/list.js:203
+msgid "Request failed"
+msgstr "請求失敗"
+
+#: htdocs/luci-static/resources/podman/list.js:302
 #, javascript-format
 msgid "Failed to delete %d %s"
 msgstr "無法刪除 %d 個 %s"
 
-#: htdocs/luci-static/resources/podman/list.js:313
+#: htdocs/luci-static/resources/podman/list.js:315
 #, javascript-format
 msgid "Successfully deleted %d %s"
 msgstr "成功刪除 %d 個 %s"
 
-#: htdocs/luci-static/resources/podman/list.js:338
+#: htdocs/luci-static/resources/podman/list.js:340
 #, javascript-format
 msgid "Refreshing %s..."
 msgstr "正在更新 %s…"
 
-#: htdocs/luci-static/resources/podman/list.js:368
+#: htdocs/luci-static/resources/podman/list.js:370
 #, javascript-format
 msgid "Failed to refresh: %s"
 msgstr "無法更新：%s"
 
-#: htdocs/luci-static/resources/podman/list.js:379
+#: htdocs/luci-static/resources/podman/list.js:381
 msgid "Fetching information..."
 msgstr "獲取資訊…"
 
-#: htdocs/luci-static/resources/podman/list.js:379
+#: htdocs/luci-static/resources/podman/list.js:381
 #, javascript-format
 msgid "Loading %s Details"
 msgstr "正在載入 %s 詳細內容"
 
-#: htdocs/luci-static/resources/podman/list.js:386
+#: htdocs/luci-static/resources/podman/list.js:388
 msgid "No data received"
 msgstr "沒有收到資料"
 
-#: htdocs/luci-static/resources/podman/list.js:392
+#: htdocs/luci-static/resources/podman/list.js:394
 #, javascript-format
 msgid "%s Information"
 msgstr "%s 資訊"
 
-#: htdocs/luci-static/resources/podman/list.js:399
+#: htdocs/luci-static/resources/podman/list.js:401
 #, javascript-format
 msgid "Failed to inspect: %s"
 msgstr "無法檢視：%s"
 
-#: htdocs/luci-static/resources/podman/list.js:427
+#: htdocs/luci-static/resources/podman/list.js:429
 msgid "Sensitive data is hidden for security reasons."
 msgstr "敏感資料因安全緣故隱藏。"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:487
+#: htdocs/luci-static/resources/podman/openwrt-network.js:486
 msgid "Network name is required"
 msgstr "網路名稱為必要項"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:493
+#: htdocs/luci-static/resources/podman/openwrt-network.js:492
 msgid "Bridge name is required"
 msgstr "橋接名稱為必要項目"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:502
+#: htdocs/luci-static/resources/podman/openwrt-network.js:501
 msgid "Subnet is required"
 msgstr "子網路為必要項"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:505
+#: htdocs/luci-static/resources/podman/openwrt-network.js:504
 msgid "Gateway is required"
 msgstr "閘道器為必要項"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:509
+#: htdocs/luci-static/resources/podman/openwrt-network.js:508
 msgid "Subnet must be in CIDR notation (e.g., 10.129.0.0/24)"
 msgstr "子網路必須是 CIDR 註記（如 10.129.0.0/24）"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:513
+#: htdocs/luci-static/resources/podman/openwrt-network.js:512
 msgid "Gateway must be a valid IP address"
 msgstr "閘道器必須有有效的 IP 地址"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:532
+#: htdocs/luci-static/resources/podman/openwrt-network.js:531
 #, javascript-format
 msgid "Network interface \"%s\" already exists with proto \"%s\""
 msgstr "網路界面「%s」（目前協定為「%s」）已經存在"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:545
+#: htdocs/luci-static/resources/podman/openwrt-network.js:544
 #, javascript-format
 msgid "Bridge \"%s\" is already used by interface \"%s\""
 msgstr "橋接「%s」已經被界面「%s」使用"
 
-#: htdocs/luci-static/resources/podman/openwrt-network.js:557
+#: htdocs/luci-static/resources/podman/openwrt-network.js:556
 #, javascript-format
 msgid "Failed to validate: %s"
 msgstr "無法驗證：%s"
@@ -1236,7 +1247,7 @@ msgid "No health check configured."
 msgstr "沒有設定健康檢查。"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/health.js:99
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:108
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:156
 #: htdocs/luci-static/resources/view/podman/containers.js:113
 #: htdocs/luci-static/resources/view/podman/pods.js:79
 msgid "Status"
@@ -1247,7 +1258,7 @@ msgid "Failing Streak"
 msgstr "一再失敗"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/health.js:119
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:267
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:315
 #, javascript-format
 msgid "%d consecutive failures"
 msgstr "%d 連續的失敗"
@@ -1261,7 +1272,7 @@ msgid "Health Status"
 msgstr "健康狀況"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/health.js:140
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:118
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:166
 msgid "Started"
 msgstr "已啟動"
 
@@ -1282,9 +1293,9 @@ msgid "Success"
 msgstr "成功"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/health.js:147
-#: htdocs/luci-static/resources/view/podman/container.js:61
+#: htdocs/luci-static/resources/view/podman/container.js:60
 #: htdocs/luci-static/resources/view/podman/containers.js:57
-#: htdocs/luci-static/resources/view/podman/images.js:40
+#: htdocs/luci-static/resources/view/podman/images.js:43
 #: htdocs/luci-static/resources/view/podman/networks.js:41
 #: htdocs/luci-static/resources/view/podman/pods.js:40
 #: htdocs/luci-static/resources/view/podman/secrets.js:41
@@ -1300,7 +1311,16 @@ msgstr "最近的檢查（最後 10 次）"
 msgid "Run Health Check Now"
 msgstr "立刻執行健康檢查"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:73
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:49
+msgid "Loading network information..."
+msgstr "載入網路資訊…"
+
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:100
+#, javascript-format
+msgid "Failed to load network information: %s"
+msgstr "無法載入網路資訊：%s"
+
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:121
 #: htdocs/luci-static/resources/view/podman/containers.js:96
 #: htdocs/luci-static/resources/view/podman/networks.js:80
 #: htdocs/luci-static/resources/view/podman/pods.js:75
@@ -1309,14 +1329,14 @@ msgstr "立刻執行健康檢查"
 msgid "Name"
 msgstr "名稱"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:96
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:144
 #: htdocs/luci-static/resources/view/podman/containers.js:98
 msgid "Id"
 msgstr "Id"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:112
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:160
 #: htdocs/luci-static/resources/view/podman/containers.js:133
-#: htdocs/luci-static/resources/view/podman/images.js:117
+#: htdocs/luci-static/resources/view/podman/images.js:120
 #: htdocs/luci-static/resources/view/podman/networks.js:127
 #: htdocs/luci-static/resources/view/podman/pods.js:118
 #: htdocs/luci-static/resources/view/podman/secrets.js:106
@@ -1324,307 +1344,320 @@ msgstr "Id"
 msgid "Created"
 msgstr "已建立"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:162
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:198
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:210
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:246
 msgid "Disabled"
 msgstr "已停用"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:185
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:233
 msgid "Enabled"
 msgstr "已啟用"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:187
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:200
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:235
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:248
 msgid "Show"
 msgstr "顯示"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:190
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:238
 msgid "Disable"
 msgstr "停用"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:203
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:251
 msgid "Enable"
 msgstr "啟用"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:211
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:259
 msgid "Restart policy set but no init script"
-msgstr "設定了重新啟動原則，但沒有初始化命令稿"
+msgstr "設定了重新啟動原則，但沒有初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:212
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:260
 msgid "Not configured"
 msgstr "未設定"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:214
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:262
 msgid "Generate"
 msgstr "產生"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:223
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:271
 msgid "Set a restart policy to enable auto-start"
 msgstr "設定重新啟動原則來啟用自動啟動"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:224
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:272
 msgid "Not available (no restart policy)"
 msgstr "不可用（沒有重新啟動原則）"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:235
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:283
 #: htdocs/luci-static/resources/view/podman/overview.js:488
-#: htdocs/luci-static/resources/view/podman/overview.js:628
-#: htdocs/luci-static/resources/view/podman/overview.js:829
+#: htdocs/luci-static/resources/view/podman/overview.js:651
+#: htdocs/luci-static/resources/view/podman/overview.js:852
 msgid "Error"
 msgstr "錯誤"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:244
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:937
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:292
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1012
 msgid "Init Script"
-msgstr "初始化命令稿"
+msgstr "初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:275
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:323
 #, javascript-format
 msgid "Last check: %s"
 msgstr "最後檢查：%s"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:281
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:329
 msgid "Run Check"
 msgstr "執行檢查"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:286
-#: htdocs/luci-static/resources/view/podman/container.js:127
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:334
+#: htdocs/luci-static/resources/view/podman/container.js:126
 #: htdocs/luci-static/resources/view/podman/containers.js:115
 msgid "Health"
 msgstr "健康度"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:299
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:347
 msgid "Basic Information"
 msgstr "基本資訊"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:324
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:377
+#: htdocs/luci-static/resources/view/podman/overview.js:705
+msgid "Command copied to clipboard"
+msgstr "指令已經複製到剪貼簿"
+
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:380
+msgid "Copy"
+msgstr "複製"
+
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:386
+msgid "Create Command"
+msgstr "建立指令"
+
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:400
 msgid "Entrypoint"
 msgstr "進入點"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:335
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:411
 msgid "User"
 msgstr "使用者"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:343
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:419
 msgid "Privileged"
 msgstr "有特權的"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:344
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:348
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:352
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:420
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:424
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:428
 msgid "Yes"
 msgstr "是"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:347
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:423
 msgid "TTY"
 msgstr "TTY"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:351
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:427
 msgid "Interactive"
 msgstr "互動式"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:358
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:434
 msgid "Configuration"
 msgstr "設定"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:375
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:451
 msgid "Network Mode"
 msgstr "網路模式"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:418
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:494
 msgid "Disconnect"
 msgstr "斷線"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:431
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:507
 msgid "IP Address"
 msgstr "IP 地址"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:454
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:530
 msgid "Connect to"
 msgstr "連線至"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:466
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:542
 msgid "IP (optional)"
 msgstr "IP（可選）"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:495
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:571
 msgid "Links"
 msgstr "連結"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:515
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:591
 msgid "Variable"
 msgstr "變數"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:516
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:592
 msgid "Value"
 msgstr "值"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:531
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:607
 msgid "Click to reveal/hide value"
 msgstr "點擊以顯示/隱藏數值"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:572
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:648
 #: htdocs/luci-static/resources/view/podman/overview.js:307
 msgid "Type"
 msgstr "類型"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:573
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:649
 msgid "Source"
 msgstr "來源"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:574
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:650
 msgid "Destination"
 msgstr "目標"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:575
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:651
 msgid "Mode"
 msgstr "模式"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:599
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:675
 msgid "Mounts"
 msgstr "掛載"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:650
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:726
 msgid "Direct access to container on OpenWrt-integrated network"
 msgstr "從 OpenWrt 整合網路中直接操作容器"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:678
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:754
 msgid "Access via host port mapping"
 msgstr "透過主機埠口對應操作"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:704
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:780
 msgid "Exposed Ports"
 msgstr "暴露的連接埠"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:718
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:742
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:794
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:818
 msgid "Updating Container"
 msgstr "正在更新容器"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:718
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:794
 msgid "Renaming container..."
 msgstr "重新命名容器…"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:724
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:732
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:800
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:808
 #, javascript-format
 msgid "Failed to rename container: %s"
 msgstr "無法重新命名容器：%s"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:727
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:803
 msgid "Container renamed successfully"
 msgstr "容器成功更名"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:742
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:818
 msgid "Updating restart policy..."
 msgstr "正在更新重新啟動原則…"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:810
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:886
 msgid "Restart policy updated successfully"
 msgstr "重新啟動原則成功更新"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:814
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:890
 #, javascript-format
 msgid "Failed to update restart policy: %s"
 msgstr "無法更新重新啟動原則：%s"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:857
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:933
 #, javascript-format
 msgid "Disconnect from network %s?"
 msgstr "要從 %s 網路斷線？"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:860
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:936
 msgid "Disconnecting from Network"
 msgstr "從網路斷線"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:861
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:937
 msgid "Disconnecting container from network..."
 msgstr "正在將容器從網路斷線…"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:870
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:879
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:946
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:955
 #, javascript-format
 msgid "Failed to disconnect from network: %s"
 msgstr "無法從網路斷線：%s"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:874
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:950
 msgid "Disconnected from network successfully"
 msgstr "成功從網路斷線"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:890
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:966
 #: htdocs/luci-static/resources/view/podman/containers.js:507
 #, javascript-format
 msgid "Creating auto-start configuration for %s"
 msgstr "正在為 %s 建立自動啟動設定"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:896
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:972
 #: htdocs/luci-static/resources/view/podman/containers.js:514
 msgid "Failed to generate init script"
-msgstr "無法產生初始化命令稿"
+msgstr "無法產生初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:902
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:978
 #: htdocs/luci-static/resources/view/podman/containers.js:520
 #, javascript-format
 msgid "Init script created and enabled for %s"
-msgstr "已經為 %s 建立並啟用初始化命令稿"
+msgstr "已經為 %s 建立並啟用初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:906
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:981
 #: htdocs/luci-static/resources/view/podman/containers.js:524
 msgid "Failed to enable init script"
-msgstr "無法啟用初始化命令稿"
+msgstr "無法啟用初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:911
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:986
 #: htdocs/luci-static/resources/view/podman/containers.js:529
 #, javascript-format
 msgid "Failed to setup auto-start: %s"
 msgstr "無法設定自動啟動：%s"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:921
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:996
 msgid "Loading Init Script"
-msgstr "正在載入初始化命令稿"
+msgstr "正在載入初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:922
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:997
 msgid "Fetching script"
-msgstr "獲取命令稿"
+msgstr "獲取指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:947
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:951
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1022
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1026
 msgid "Failed to load init script"
-msgstr "無法載入初始化命令稿"
+msgstr "無法載入初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:961
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1036
 msgid "Enabling"
 msgstr "正在啟用"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:961
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1036
 msgid "Disabling"
 msgstr "正在停用"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:962
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1037
 msgid "Updating Init Script"
-msgstr "正在更新初始化命令稿"
+msgstr "正在更新初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:963
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1038
 #, javascript-format
 msgid "%s auto-start for %s"
 msgstr "%s 自動啟動，關於 %s"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:969
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1044
 #: htdocs/luci-static/resources/view/podman/containers.js:360
 #, javascript-format
 msgid "Init script enabled for %s"
-msgstr "已為 %s 啟用初始化命令稿"
+msgstr "已為 %s 啟用初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:970
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1045
 #: htdocs/luci-static/resources/view/podman/containers.js:377
 #, javascript-format
 msgid "Init script disabled for %s"
-msgstr "已為 %s 停用初始化命令稿"
+msgstr "已為 %s 停用初始化指令稿"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:975
-#: htdocs/luci-static/resources/view/podman/container-tab/info.js:979
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1049
+#: htdocs/luci-static/resources/view/podman/container-tab/info.js:1053
 msgid "Failed to update init script"
-msgstr "無法更新初始化命令稿"
+msgstr "無法更新初始化指令稿"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/logs.js:50
 msgid "Live Stream"
@@ -1737,94 +1770,94 @@ msgstr "無法載入執行中程序清單：%s"
 msgid "Unknown error"
 msgstr "未知的錯誤"
 
-#: htdocs/luci-static/resources/view/podman/container.js:44
+#: htdocs/luci-static/resources/view/podman/container.js:45
 msgid "No container ID in URL"
 msgstr "URL 中沒有容器 ID"
 
-#: htdocs/luci-static/resources/view/podman/container.js:75
+#: htdocs/luci-static/resources/view/podman/container.js:74
 msgid "Not found"
 msgstr "找不到"
 
-#: htdocs/luci-static/resources/view/podman/container.js:79
+#: htdocs/luci-static/resources/view/podman/container.js:78
 msgid "Redirecting to containers list..."
 msgstr "重新導向至容器清單…"
 
-#: htdocs/luci-static/resources/view/podman/container.js:115
+#: htdocs/luci-static/resources/view/podman/container.js:114
 msgid "Info"
 msgstr "資訊"
 
-#: htdocs/luci-static/resources/view/podman/container.js:116
+#: htdocs/luci-static/resources/view/podman/container.js:115
 #: htdocs/luci-static/resources/view/podman/overview.js:56
 #: htdocs/luci-static/resources/view/podman/overview.js:57
 #: htdocs/luci-static/resources/view/podman/overview.js:110
 msgid "Resources"
 msgstr "資源"
 
-#: htdocs/luci-static/resources/view/podman/container.js:117
+#: htdocs/luci-static/resources/view/podman/container.js:116
 msgid "Stats"
 msgstr "狀態"
 
-#: htdocs/luci-static/resources/view/podman/container.js:120
-#: htdocs/luci-static/resources/view/podman/container.js:125
-#: htdocs/luci-static/resources/view/podman/container.js:130
+#: htdocs/luci-static/resources/view/podman/container.js:119
+#: htdocs/luci-static/resources/view/podman/container.js:124
+#: htdocs/luci-static/resources/view/podman/container.js:129
 #: htdocs/luci-static/resources/view/podman/overview.js:448
-#: htdocs/luci-static/resources/view/podman/overview.js:780
+#: htdocs/luci-static/resources/view/podman/overview.js:803
 msgid "Loading..."
 msgstr "正在載入…"
 
-#: htdocs/luci-static/resources/view/podman/container.js:122
+#: htdocs/luci-static/resources/view/podman/container.js:121
 msgid "Logs"
 msgstr "日誌"
 
-#: htdocs/luci-static/resources/view/podman/container.js:132
+#: htdocs/luci-static/resources/view/podman/container.js:131
 msgid "Inspect"
 msgstr "檢視"
 
-#: htdocs/luci-static/resources/view/podman/container.js:133
+#: htdocs/luci-static/resources/view/podman/container.js:132
 msgid "Console"
 msgstr "終端機"
 
-#: htdocs/luci-static/resources/view/podman/container.js:136
+#: htdocs/luci-static/resources/view/podman/container.js:135
 msgid "Terminal access coming soon..."
 msgstr "終端存取馬上來…"
 
-#: htdocs/luci-static/resources/view/podman/container.js:166
+#: htdocs/luci-static/resources/view/podman/container.js:165
 msgid "Stop"
 msgstr "停止"
 
-#: htdocs/luci-static/resources/view/podman/container.js:169
+#: htdocs/luci-static/resources/view/podman/container.js:168
 msgid "Start"
 msgstr "啟動"
 
-#: htdocs/luci-static/resources/view/podman/container.js:174
+#: htdocs/luci-static/resources/view/podman/container.js:173
 msgid "Restart"
 msgstr "重新啟動"
 
-#: htdocs/luci-static/resources/view/podman/container.js:177
+#: htdocs/luci-static/resources/view/podman/container.js:176
 msgid "Remove"
 msgstr "移除"
 
-#: htdocs/luci-static/resources/view/podman/container.js:186
+#: htdocs/luci-static/resources/view/podman/container.js:185
 msgid "Back to Containers"
 msgstr "回到容器"
 
-#: htdocs/luci-static/resources/view/podman/container.js:190
+#: htdocs/luci-static/resources/view/podman/container.js:189
 msgid "Back to Pods"
 msgstr "回到 Pods"
 
-#: htdocs/luci-static/resources/view/podman/container.js:223
+#: htdocs/luci-static/resources/view/podman/container.js:222
 msgid ""
 "Configure resource limits for this container. Changes will be applied "
 "immediately."
 msgstr "設定這個容器的資源限制。修改會立即套用。"
 
-#: htdocs/luci-static/resources/view/podman/container.js:316
+#: htdocs/luci-static/resources/view/podman/container.js:315
 #, javascript-format
 msgid "Are you sure you want to delete %s?"
 msgstr "您確定要刪除 %s？"
 
 #: htdocs/luci-static/resources/view/podman/containers.js:85
-#: htdocs/luci-static/resources/view/podman/images.js:68
+#: htdocs/luci-static/resources/view/podman/images.js:71
 #: htdocs/luci-static/resources/view/podman/networks.js:69
 #: htdocs/luci-static/resources/view/podman/pods.js:64
 #: htdocs/luci-static/resources/view/podman/secrets.js:69
@@ -1867,7 +1900,7 @@ msgstr "沒有自動啟動設定"
 
 #: htdocs/luci-static/resources/view/podman/containers.js:367
 msgid "Restart policy set but no init script. Click to generate."
-msgstr "設定了重新啟動原則，但沒有初始化命令稿。點擊自動產生。"
+msgstr "設定了重新啟動原則，但沒有初始化指令稿。點擊自動產生。"
 
 #: htdocs/luci-static/resources/view/podman/containers.js:385
 #, javascript-format
@@ -1878,40 +1911,40 @@ msgstr "載入詳細資訊錯誤：%s"
 msgid "No selected containers have health checks configured"
 msgstr "選擇的容器沒有健康檢查設定"
 
-#: htdocs/luci-static/resources/view/podman/images.js:62
-#: htdocs/luci-static/resources/view/podman/images.js:68
-#: htdocs/luci-static/resources/view/podman/images.js:186
-#: htdocs/luci-static/resources/view/podman/images.js:194
-#: htdocs/luci-static/resources/view/podman/images.js:204
-#: htdocs/luci-static/resources/view/podman/images.js:217
-#: htdocs/luci-static/resources/view/podman/images.js:224
+#: htdocs/luci-static/resources/view/podman/images.js:65
+#: htdocs/luci-static/resources/view/podman/images.js:71
+#: htdocs/luci-static/resources/view/podman/images.js:189
+#: htdocs/luci-static/resources/view/podman/images.js:197
+#: htdocs/luci-static/resources/view/podman/images.js:207
+#: htdocs/luci-static/resources/view/podman/images.js:220
+#: htdocs/luci-static/resources/view/podman/images.js:227
 #: htdocs/luci-static/resources/view/podman/overview.js:313
-#: htdocs/luci-static/resources/view/podman/overview.js:790
+#: htdocs/luci-static/resources/view/podman/overview.js:813
 msgid "Images"
 msgstr "映像檔"
 
-#: htdocs/luci-static/resources/view/podman/images.js:82
+#: htdocs/luci-static/resources/view/podman/images.js:85
 msgid "Repository"
 msgstr "儲存庫"
 
-#: htdocs/luci-static/resources/view/podman/images.js:90
+#: htdocs/luci-static/resources/view/podman/images.js:93
 msgid "Tag"
 msgstr "標籤"
 
-#: htdocs/luci-static/resources/view/podman/images.js:110
+#: htdocs/luci-static/resources/view/podman/images.js:113
 msgid "Image ID"
 msgstr "映像檔 ID"
 
-#: htdocs/luci-static/resources/view/podman/images.js:114
+#: htdocs/luci-static/resources/view/podman/images.js:117
 #: htdocs/luci-static/resources/view/podman/overview.js:309
 msgid "Size"
 msgstr "大小"
 
-#: htdocs/luci-static/resources/view/podman/images.js:124
+#: htdocs/luci-static/resources/view/podman/images.js:127
 msgid "Pull Latest"
 msgstr "獲取最新"
 
-#: htdocs/luci-static/resources/view/podman/images.js:192
+#: htdocs/luci-static/resources/view/podman/images.js:195
 #, javascript-format
 msgid ""
 "Pull latest version of %d %s?\n"
@@ -1922,26 +1955,26 @@ msgstr ""
 "\n"
 "%s"
 
-#: htdocs/luci-static/resources/view/podman/images.js:201
+#: htdocs/luci-static/resources/view/podman/images.js:204
 msgid "Pulling Images"
 msgstr "正在獲取映像檔"
 
-#: htdocs/luci-static/resources/view/podman/images.js:202
+#: htdocs/luci-static/resources/view/podman/images.js:205
 #, javascript-format
 msgid "Pulling latest version of %d %s..."
 msgstr "正在獲取 %d 個 %s 的最新版…"
 
-#: htdocs/luci-static/resources/view/podman/images.js:215
+#: htdocs/luci-static/resources/view/podman/images.js:218
 #, javascript-format
 msgid "Failed to pull %d %s"
 msgstr "無法拉回 %d 個 %s"
 
-#: htdocs/luci-static/resources/view/podman/images.js:222
+#: htdocs/luci-static/resources/view/podman/images.js:225
 #, javascript-format
 msgid "Successfully pulled %d %s"
 msgstr "成功獲取 %d 個 %s"
 
-#: htdocs/luci-static/resources/view/podman/images.js:233
+#: htdocs/luci-static/resources/view/podman/images.js:236
 #, javascript-format
 msgid "Failed to pull some images: %s"
 msgstr "無法拉回某些映像檔：%s"
@@ -2108,12 +2141,14 @@ msgid "Socket Path"
 msgstr "通訊端路徑"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:178
+#, fuzzy
 msgid "Graph Root"
-msgstr "頂點"
+msgstr "根節點"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:182
+#, fuzzy
 msgid "Run Root"
-msgstr ""
+msgstr "執行根節點"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:184
 msgid "Registries"
@@ -2132,8 +2167,8 @@ msgid ""
 "Click to load detailed disk usage information for containers, images, and "
 "volumes. This may take several seconds with many resources."
 msgstr ""
-"點擊以載入詳細的容器、映像檔、容量的磁碟使用資訊。如果資源很多可能會耗費幾秒"
-"鐘。"
+"點擊以載入詳細的容器、映像檔、儲存區的磁碟使用資訊。如果資源很多可能會耗費幾"
+"秒鐘。"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:241
 msgid "Loading disk usage data..."
@@ -2232,123 +2267,119 @@ msgstr "已經是最新的：%s"
 msgid "Errors checking: %s"
 msgstr "檢查時錯誤：%s"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:552
+#: htdocs/luci-static/resources/view/podman/overview.js:557
 msgid "Update Selected"
 msgstr "更新選擇的項目"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:568
+#: htdocs/luci-static/resources/view/podman/overview.js:579
 msgid "No containers selected"
 msgstr "沒有選擇容器"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:584
+#: htdocs/luci-static/resources/view/podman/overview.js:607
 msgid "Update Check Results"
 msgstr "更新檢查結果"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:596
+#: htdocs/luci-static/resources/view/podman/overview.js:619
 msgid "Updating Containers"
 msgstr "正在更新容器"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:598
+#: htdocs/luci-static/resources/view/podman/overview.js:621
 msgid "Starting updates..."
 msgstr "正在啟動更新…"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:608
+#: htdocs/luci-static/resources/view/podman/overview.js:631
 #, javascript-format
 msgid "%s (%d/%d):"
 msgstr "%s（%d/%d）"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:618
+#: htdocs/luci-static/resources/view/podman/overview.js:641
 msgid "Starting..."
 msgstr "正在啟動…"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:629
+#: htdocs/luci-static/resources/view/podman/overview.js:652
 #, javascript-format
 msgid "Update failed: %s"
 msgstr "更新失敗：%s"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:653
+#: htdocs/luci-static/resources/view/podman/overview.js:676
 #, javascript-format
 msgid "Successfully updated: %s"
 msgstr "成功更新了：%s"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:659
+#: htdocs/luci-static/resources/view/podman/overview.js:682
 msgid "Failed to update:"
 msgstr "無法更新："
 
-#: htdocs/luci-static/resources/view/podman/overview.js:673
+#: htdocs/luci-static/resources/view/podman/overview.js:696
 msgid "To manually recreate, run:"
 msgstr "要手動重新建立，執行："
 
-#: htdocs/luci-static/resources/view/podman/overview.js:682
-msgid "Command copied to clipboard"
-msgstr "命令已經複製到剪貼簿"
-
-#: htdocs/luci-static/resources/view/podman/overview.js:685
+#: htdocs/luci-static/resources/view/podman/overview.js:708
 msgid "Copy Command"
 msgstr "複製指令"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:701
+#: htdocs/luci-static/resources/view/podman/overview.js:724
 msgid "Update Complete"
 msgstr "更新完成"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:708
+#: htdocs/luci-static/resources/view/podman/overview.js:731
 msgid "Cleanup Unused Resources"
 msgstr "清理非使用中的資源"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:712
+#: htdocs/luci-static/resources/view/podman/overview.js:735
 msgid "Select what to clean up:"
 msgstr "選擇要清理的項目："
 
-#: htdocs/luci-static/resources/view/podman/overview.js:726
+#: htdocs/luci-static/resources/view/podman/overview.js:749
 msgid "Remove all unused images (not just dangling)"
 msgstr "移除所有未使用的映像檔（而非只是空懸的）"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:737
+#: htdocs/luci-static/resources/view/podman/overview.js:760
 msgid "Remove unused volumes"
-msgstr "移除未使用的容量"
+msgstr "移除未使用的儲存區"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:744
+#: htdocs/luci-static/resources/view/podman/overview.js:767
 msgid "Warning:"
 msgstr "警告："
 
-#: htdocs/luci-static/resources/view/podman/overview.js:747
+#: htdocs/luci-static/resources/view/podman/overview.js:770
 msgid ""
 "This will permanently delete unused containers, images, networks, and "
 "optionally volumes."
-msgstr "這將永遠刪除未使用的容器、映像檔、網路、及（有選取的話）容量。"
+msgstr "這將永遠刪除未使用的容器、映像檔、網路、及（有選取的話）儲存區。"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:752
-#: htdocs/luci-static/resources/view/podman/overview.js:773
+#: htdocs/luci-static/resources/view/podman/overview.js:775
+#: htdocs/luci-static/resources/view/podman/overview.js:796
 msgid "Clean Up Now"
 msgstr "現在清理"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:774
+#: htdocs/luci-static/resources/view/podman/overview.js:797
 msgid "Removing unused resources, please wait..."
 msgstr "正在移除未使用的資源，請稍候…"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:804
+#: htdocs/luci-static/resources/view/podman/overview.js:827
 msgid "Cleanup Complete"
 msgstr "清理完成"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:805
+#: htdocs/luci-static/resources/view/podman/overview.js:828
 msgid "Cleanup successful!"
 msgstr "清理成功！"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:809
+#: htdocs/luci-static/resources/view/podman/overview.js:832
 #, javascript-format
 msgid "Removed: %s"
 msgstr "移除了：%s"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:814
+#: htdocs/luci-static/resources/view/podman/overview.js:837
 msgid "No unused resources found"
 msgstr "沒有非使用中的資源"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:818
+#: htdocs/luci-static/resources/view/podman/overview.js:841
 #, javascript-format
 msgid "Space freed: %s"
 msgstr "釋放的空間：%s"
 
-#: htdocs/luci-static/resources/view/podman/overview.js:830
+#: htdocs/luci-static/resources/view/podman/overview.js:853
 #, javascript-format
 msgid "Cleanup failed: %s"
 msgstr "清理失敗：%s"
@@ -2364,7 +2395,7 @@ msgstr "清理失敗：%s"
 #: htdocs/luci-static/resources/view/podman/pods.js:249
 #: htdocs/luci-static/resources/view/podman/pods.js:268
 msgid "Pods"
-msgstr ""
+msgstr "容器群組"
 
 #: htdocs/luci-static/resources/view/podman/pods.js:112
 msgid "Infra ID"
@@ -2420,61 +2451,61 @@ msgstr "匯出"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:112
 msgid "Export selected volumes"
-msgstr "匯出選定的容量"
+msgstr "匯出選定的儲存區"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:118
 #: htdocs/luci-static/resources/view/podman/volumes.js:248
 msgid "Import Volume"
-msgstr "匯入容量"
+msgstr "匯入儲存區"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:184
 msgid "Exporting Volumes"
-msgstr "匯出容量"
+msgstr "匯出儲存區"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:184
 msgid "Exporting selected volumes..."
-msgstr "正在匯出選定的容量…"
+msgstr "正在匯出選定的儲存區…"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:190
 msgid "All volumes exported successfully"
-msgstr "所有容量成功匯出"
+msgstr "所有儲存區都成功匯出"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:200
 #: htdocs/luci-static/resources/view/podman/volumes.js:223
 #, javascript-format
 msgid "Failed to export volume %s: %s"
-msgstr "無法匯出容量 %s：%s"
+msgstr "無法匯出儲存區 %s：%s"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:249
 #, javascript-format
 msgid "Import volume from archive: %s"
-msgstr "從封存檔匯入容量：%s"
+msgstr "從封存檔匯入儲存區：%s"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:258
 msgid "Enter volume name"
-msgstr "輸入容量名稱"
+msgstr "輸入儲存區名稱"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:273
 msgid "Volume name is required"
-msgstr "容量名稱為必要項"
+msgstr "儲存區名稱為必要項"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:278
 msgid "Importing Volume"
-msgstr "正在匯入容量"
+msgstr "正在匯入儲存區"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:278
 msgid "Importing volume..."
-msgstr "正在匯入容量…"
+msgstr "正在匯入儲存區…"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:295
 #: htdocs/luci-static/resources/view/podman/volumes.js:302
 #, javascript-format
 msgid "Failed to import volume: %s"
-msgstr "無法匯入容量：%s"
+msgstr "無法匯入儲存區：%s"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:297
 msgid "Volume imported successfully"
-msgstr "容量成功匯入"
+msgstr "儲存區成功匯入"
 
 #: htdocs/luci-static/resources/view/podman/volumes.js:307
 msgid "Failed to read file"
