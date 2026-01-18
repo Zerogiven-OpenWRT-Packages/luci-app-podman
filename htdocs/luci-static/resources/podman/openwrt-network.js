@@ -3,7 +3,6 @@
 'require baseclass';
 'require network';
 'require uci';
-'require fs';
 
 /**
  * OpenWrt network/firewall integration for Podman networks.
@@ -187,7 +186,7 @@ return baseclass.extend({
 
 			return uci.save();
 		}).then(() => {
-			return uci.apply(90);
+			return uci.apply(true);
 		}).then(() => {
 			return network.flushCache();
 		}).then(() => {
@@ -210,7 +209,7 @@ return baseclass.extend({
 	 * @param {string} [driver] - Network driver (bridge, macvlan, ipvlan) - defaults to 'bridge'
 	 * @returns {Promise<void>} Resolves when complete
 	 */
-	removeIntegration: function (networkName, deviceName, driver) {
+	removeIntegration: async function (networkName, deviceName, driver) {
 		driver = driver || 'bridge';
 		return Promise.all([
 			uci.load('network'),
@@ -298,7 +297,7 @@ return baseclass.extend({
 		}).then((result) => {
 			return uci.save().then(() => result);
 		}).then((result) => {
-			return uci.apply(90).then(() => result);
+			return uci.apply(true).then(() => result);
 		}).then((result) => {
 			return network.flushCache().then(() => result);
 		}).then((result) => {
@@ -638,7 +637,7 @@ return baseclass.extend({
 
 			return uci.save();
 		}).then(() => {
-			return uci.apply(90);
+			return uci.apply(true);
 		}).then(() => {
 			return network.flushCache();
 		}).then(() => {
@@ -716,17 +715,13 @@ return baseclass.extend({
 			if (result.skip) {
 				return result;
 			}
-			return uci.apply(90).then(() => result);
+			return uci.save().then(() => result);
 		}).then((result) => {
 			if (result.skip) {
 				return result;
 			}
-			return uci.save().then(() => result);
-		}).then((result) => {
-			if (result.skip) {
-				return Promise.resolve();
-			}
-			return this._restartDnsmasq();
+
+			return uci.apply(true);
 		});
 	},
 
@@ -755,26 +750,6 @@ return baseclass.extend({
 			return false;
 		}).catch(() => {
 			return false;
-		});
-	},
-
-	/**
-	 * Restart dnsmasq service.
-	 *
-	 * Uses fs.exec to call init script.
-	 *
-	 * @returns {Promise<void>}
-	 */
-	_restartDnsmasq: async function () {
-		return fs.exec('/etc/init.d/dnsmasq', ['restart']).then(() => {
-			// Wait a moment for service to fully restart
-			return new Promise((resolve) => {
-				setTimeout(resolve, 1000);
-			});
-		}).catch((err) => {
-			console.warn('Failed to restart dnsmasq:', err.message);
-			// Don't fail the integration if dnsmasq restart fails
-			return Promise.resolve();
 		});
 	}
 });
