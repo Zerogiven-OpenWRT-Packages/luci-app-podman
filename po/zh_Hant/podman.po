@@ -2141,14 +2141,12 @@ msgid "Socket Path"
 msgstr "通訊端路徑"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:178
-#, fuzzy
 msgid "Graph Root"
-msgstr "根節點"
+msgstr "儲存圖根目錄"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:182
-#, fuzzy
 msgid "Run Root"
-msgstr "執行根節點"
+msgstr "執行時根目錄"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:184
 msgid "Registries"
