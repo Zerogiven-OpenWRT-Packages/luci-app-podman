@@ -192,7 +192,7 @@ return baseclass.extend({
 		}).then(() => {
 			// Configure dnsmasq ONLY for bridge networks
 			if (needsBridge(driver)) {
-				return this._configureDnsmasq(deviceName, true);
+				return this._configureDnsmasq(networkName, true);
 			}
 		});
 	},
@@ -303,7 +303,7 @@ return baseclass.extend({
 		}).then((result) => {
 			// Remove dnsmasq exclusion ONLY for bridge networks if bridge was deleted
 			if (needsBridge(driver) && result.shouldRemoveBridge) {
-				return this._configureDnsmasq(deviceName, false);
+				return this._configureDnsmasq(networkName, false);
 			}
 		});
 	},
@@ -378,9 +378,9 @@ return baseclass.extend({
 
 								let isExcluded = false;
 								if (Array.isArray(notinterfaces)) {
-									isExcluded = notinterfaces.includes(deviceName);
+									isExcluded = notinterfaces.includes(networkName);
 								} else if (notinterfaces) {
-									isExcluded = notinterfaces === deviceName;
+									isExcluded = notinterfaces === networkName;
 								}
 
 								if (isExcluded) {
@@ -643,7 +643,7 @@ return baseclass.extend({
 		}).then(() => {
 			// Repair dnsmasq ONLY for bridge networks if missing
 			if (!status.details.hasDnsmasqExclusion && needsBridge(driver)) {
-				return this._configureDnsmasq(deviceName, true).then(() => {
+				return this._configureDnsmasq(networkName, true).then(() => {
 					added.push('dnsmasq');
 				});
 			} else {
@@ -659,18 +659,16 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Configure dnsmasq to exclude (or include) a bridge interface.
+	 * Configure dnsmasq to exclude (or include) an interface.
 	 *
 	 * Prevents dnsmasq from binding to port 53 on Podman bridges, allowing
 	 * Podman's aardvark-dns service to handle container DNS resolution.
 	 *
-	 * This is optional - if dnsmasq is not installed, this step is skipped.
-	 *
-	 * @param {string} bridgeName - Bridge interface name (e.g., 'podman0')
+	 * @param {string} interfaceName - UCI interface name (e.g., 'podman')
 	 * @param {boolean} enable - true to exclude, false to remove exclusion
 	 * @returns {Promise<void>}
 	 */
-	_configureDnsmasq: async function (bridgeName, enable) {
+	_configureDnsmasq: async function (interfaceName, enable) {
 		return uci.load('dhcp').then(() => {
 			// Get main dnsmasq config section
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
@@ -695,13 +693,13 @@ return baseclass.extend({
 
 			if (enable) {
 				// Add to exclusion list if not present
-				if (!notinterfaceList.includes(bridgeName)) {
-					notinterfaceList.push(bridgeName);
+				if (!notinterfaceList.includes(interfaceName)) {
+					notinterfaceList.push(interfaceName);
 					uci.set('dhcp', mainSection, 'notinterface', notinterfaceList);
 				}
 			} else {
 				// Remove from exclusion list
-				const filtered = notinterfaceList.filter(iface => iface !== bridgeName);
+				const filtered = notinterfaceList.filter(iface => iface !== interfaceName);
 				if (filtered.length > 0) {
 					uci.set('dhcp', mainSection, 'notinterface', filtered);
 				} else {
@@ -726,12 +724,12 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Check if bridge interface is excluded from dnsmasq.
+	 * Check if interface is excluded from dnsmasq.
 	 *
-	 * @param {string} bridgeName - Bridge interface name
+	 * @param {string} interfaceName - UCI interface name (e.g., 'podman')
 	 * @returns {Promise<boolean>}
 	 */
-	_isDnsmasqExcluded: async function (bridgeName) {
+	_isDnsmasqExcluded: async function (interfaceName) {
 		return uci.load('dhcp').then(() => {
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 			if (dnsmasqSections.length === 0) {
@@ -742,9 +740,9 @@ return baseclass.extend({
 			const notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
 
 			if (Array.isArray(notinterfaces)) {
-				return notinterfaces.includes(bridgeName);
+				return notinterfaces.includes(interfaceName);
 			} else if (notinterfaces) {
-				return notinterfaces === bridgeName;
+				return notinterfaces === interfaceName;
 			}
 
 			return false;
