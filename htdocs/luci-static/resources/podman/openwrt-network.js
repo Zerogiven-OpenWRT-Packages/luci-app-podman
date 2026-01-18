@@ -187,7 +187,7 @@ return baseclass.extend({
 
 			return uci.save();
 		}).then(() => {
-			return uci.apply(true);
+			return uci.apply();
 		}).then(() => {
 			return network.flushCache();
 		}).then(() => {
@@ -303,7 +303,7 @@ return baseclass.extend({
 		}).then((result) => {
 			return uci.save().then(() => result);
 		}).then((result) => {
-			return uci.apply(true).then(() => result);
+			return uci.apply().then(() => result);
 		}).then((result) => {
 			return network.flushCache().then(() => result);
 		}).then((result) => {
@@ -654,7 +654,7 @@ return baseclass.extend({
 			if (added.length <= 0) {
 				return;
 			}
-			return uci.apply(true);
+			return uci.apply();
 		}).then(() => {
 			if (added.length <= 0) {
 				return;
@@ -742,7 +742,7 @@ return baseclass.extend({
 			if (result.skip) {
 				return result;
 			}
-			return uci.apply(true);
+			return uci.apply();
 		});
 	},
 
