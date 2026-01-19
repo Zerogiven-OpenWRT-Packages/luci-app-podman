@@ -794,9 +794,12 @@ EOF
 				require_param name
 				validate_container_name "$name"
 
-				# Read start priority from UCI
+				# Read start priority from UCI and validate it's numeric (1-99)
 				start_priority=$(uci -q get podman.globals.init_start_priority 2>/dev/null)
-				start_priority="${start_priority:-99}"
+				case "$start_priority" in
+					[1-9]|[1-9][0-9]) ;;
+					*) start_priority="99" ;;
+				esac
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
@@ -953,6 +956,20 @@ EOF
 						exit 1
 						;;
 				esac
+
+				# Security: Limit argument count to prevent abuse (256 is generous for any real container)
+				arg_count=$(echo "$command" | jsonfilter -e '@[*]' 2>/dev/null | wc -l)
+				if [ "$arg_count" -gt 256 ]; then
+					echo '{"error":"Invalid command: too many arguments"}'
+					exit 1
+				fi
+
+				# Security: Check for shell metacharacters that should never appear in podman args
+				# Reject backticks, $(), and other command substitution patterns
+				if echo "$command" | grep -qE '`|\$\(|&&|\|\||[;<>]'; then
+					echo '{"error":"Invalid command: contains forbidden shell characters"}'
+					exit 1
+				fi
 
 				# Create temp script with properly quoted command
 				temp_script="/tmp/podman_cmd_$$_${RANDOM}.sh"
