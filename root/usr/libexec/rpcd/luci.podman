@@ -839,15 +839,16 @@ EOF
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
-				symlink_path="/etc/rc.d/S99${script_name}"
 
 				# Check if script exists
 				exists="false"
 				[ -f "$script_path" ] && exists="true"
 
-				# Check if enabled (symlink exists)
+				# Check if enabled using the script's enabled command
 				enabled="false"
-				[ -L "$symlink_path" ] && enabled="true"
+				if [ -f "$script_path" ] && "${script_path}" enabled >/dev/null 2>&1; then
+					enabled="true"
+				fi
 
 				echo "{\"exists\":${exists},\"enabled\":${enabled}}"
 				;;
