@@ -13,6 +13,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Container Auto-Update](#container-auto-update)
+- [Container Auto-Start](#container-auto-start)
 - [Credits](#credits)
 
 ## Features
@@ -77,6 +78,14 @@ If encountering socket errors:
 ```bash
 /etc/init.d/podman start
 /etc/init.d/podman enable
+```
+
+## Container Auto-Start
+
+If you want save startup scripts during an upgrade you have to config your `/etc/sysupgrade.conf` with `/etc/init.d/container-*`.
+
+```bash
+echo "/etc/init.d/container-*" >> /etc/sysupgrade.conf
 ```
 
 ## Container Auto-Update
