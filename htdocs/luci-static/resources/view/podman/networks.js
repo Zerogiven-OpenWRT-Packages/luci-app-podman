@@ -301,15 +301,35 @@ return view.extend({
 		const name = network.name || network.Name;
 		const driver = openwrtNetwork.getDriver(network);
 
-		let subnet, gateway;
+		let subnet, gateway, ipv6subnet, ipv6gateway;
 
+		// Extract IPv4 and IPv6 from subnets array
 		if (network.subnets && network.subnets.length > 0) {
-			subnet = network.subnets[0].subnet;
-			gateway = network.subnets[0].gateway;
+			for (const s of network.subnets) {
+				if (s.subnet && s.subnet.includes(':')) {
+					// IPv6
+					ipv6subnet = s.subnet;
+					ipv6gateway = s.gateway;
+				} else if (s.subnet) {
+					// IPv4
+					subnet = s.subnet;
+					gateway = s.gateway;
+				}
+			}
 		}
+		// Fallback to IPAM format (Docker compatibility)
 		else if (network.IPAM && network.IPAM.Config && network.IPAM.Config.length > 0) {
-			subnet = network.IPAM.Config[0].Subnet;
-			gateway = network.IPAM.Config[0].Gateway;
+			for (const c of network.IPAM.Config) {
+				const sub = c.Subnet || c.subnet;
+				const gw = c.Gateway || c.gateway;
+				if (sub && sub.includes(':')) {
+					ipv6subnet = sub;
+					ipv6gateway = gw;
+				} else if (sub) {
+					subnet = sub;
+					gateway = gw;
+				}
+			}
 		}
 
 		if (!subnet || !gateway) {
@@ -335,10 +355,13 @@ return view.extend({
 					missingItems.push(_('Bridge device'));
 				}
 
-				if (status.details.hasDnsmasqExclusion) {
-					existingItems.push(_('dnsmasq exclusion'));
-				} else {
-					missingItems.push(_('dnsmasq exclusion'));
+				// Only show dnsmasq status if dnsmasq is installed
+				if (status.details.dnsmasqInstalled) {
+					if (status.details.hasDnsmasqExclusion) {
+						existingItems.push(_('dnsmasq exclusion'));
+					} else {
+						missingItems.push(_('dnsmasq exclusion'));
+					}
 				}
 			}
 
@@ -348,15 +371,23 @@ return view.extend({
 				missingItems.push(_('Network interface'));
 			}
 
+			const networkInfo = [
+				E('strong', {}, _('Network: %s').format(name)), E('br'),
+				_('Driver: %s').format(driver), E('br'),
+				_('Subnet: %s').format(subnet), E('br'),
+				_('Gateway: %s').format(gateway)
+			];
+			if (ipv6subnet) {
+				networkInfo.push(E('br'), _('IPv6 Subnet: %s').format(ipv6subnet));
+			}
+			if (ipv6gateway) {
+				networkInfo.push(E('br'), _('IPv6 Gateway: %s').format(ipv6gateway));
+			}
+			networkInfo.push(E('br'), deviceLabel + ': ' + deviceName);
+
 			const modalContent = [
 				E('p', {}, _('Setup OpenWrt integration for network "%s"?').format(name)),
-				E('p', {}, [
-					E('strong', {}, _('Network: %s').format(name)), E('br'),
-					_('Driver: %s').format(driver), E('br'),
-					_('Subnet: %s').format(subnet), E('br'),
-					_('Gateway: %s').format(gateway), E('br'),
-					deviceLabel + ': ' + deviceName
-				])
+				E('p', {}, networkInfo)
 			];
 
 			// Show existing components (if any)
@@ -388,7 +419,7 @@ return view.extend({
 					confirmText: _('Setup'),
 					onConfirm: () => {
 						ui.hideModal();
-						this.executeSetupIntegration(name, driver, deviceName, subnet, gateway);
+						this.executeSetupIntegration(name, driver, deviceName, subnet, gateway, ipv6subnet, ipv6gateway);
 					}
 				}).render()
 			);
@@ -404,8 +435,10 @@ return view.extend({
 	 * @param {string} deviceName - Device name (bridge or parent)
 	 * @param {string} subnet - Network subnet
 	 * @param {string} gateway - Gateway IP
+	 * @param {string} [ipv6subnet] - IPv6 subnet (optional)
+	 * @param {string} [ipv6gateway] - IPv6 gateway (optional)
 	 */
-	executeSetupIntegration: function (name, driver, deviceName, subnet, gateway) {
+	executeSetupIntegration: function (name, driver, deviceName, subnet, gateway, ipv6subnet, ipv6gateway) {
 		podmanUI.showSpinningModal(_('Setting up Integration'), _(
 			'Setting up OpenWrt integration...'));
 
@@ -420,6 +453,14 @@ return view.extend({
 				subnet: subnet,
 				gateway: gateway
 			};
+
+			// Add IPv6 if available
+			if (ipv6subnet) {
+				options.ipv6subnet = ipv6subnet;
+			}
+			if (ipv6gateway) {
+				options.ipv6gateway = ipv6gateway;
+			}
 
 			// Set device based on driver
 			if (driver === 'bridge') {
