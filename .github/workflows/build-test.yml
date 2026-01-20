@@ -27,7 +27,7 @@ jobs:
             openwrt_build_version: '24.10.3'
             arch: 'x86_64'
           - openwrt_version: '25.12'
-            openwrt_build_version: '25.12.0'
+            openwrt_build_version: '25.12-SNAPSHOT'
             arch: 'x86_64'
       fail-fast: false
 
