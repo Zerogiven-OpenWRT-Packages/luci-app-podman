@@ -10,6 +10,7 @@ on:
         type: choice
         options:
         - '24.10'
+        - '25.12'
       verbose:
         description: 'Verbose build output'
         required: false
@@ -25,6 +26,9 @@ jobs:
           - openwrt_version: '24.10'
             openwrt_build_version: '24.10.3'
             arch: 'x86_64'
+          - openwrt_version: '25.12'
+            openwrt_build_version: '25.12-SNAPSHOT'
+            arch: 'x86_64'
       fail-fast: false
 
     permissions: {}
@@ -35,6 +39,8 @@ jobs:
       artifacts_patterns: |
         luci-app-podman*.ipk
         luci-i18n-podman-*.ipk
+        luci-app-podman*.apk
+        luci-i18n-podman-*.apk
       openwrt_version: ${{ matrix.openwrt_version }}
       openwrt_build_version: ${{ matrix.openwrt_build_version }}
       arch: ${{ matrix.arch }}
