@@ -794,11 +794,11 @@ EOF
 				require_param name
 				validate_container_name "$name"
 
-				# Read start priority from UCI and validate it's numeric (1-99)
+				# Read start priority from UCI and validate it's numeric (1-100)
 				start_priority=$(uci -q get podman.globals.init_start_priority 2>/dev/null)
 				case "$start_priority" in
-					[1-9]|[1-9][0-9]) ;;
-					*) start_priority="99" ;;
+					[1-9]|[1-9][0-9]|100) ;;
+					*) start_priority="100" ;;
 				esac
 
 				script_name="container-${name}"
