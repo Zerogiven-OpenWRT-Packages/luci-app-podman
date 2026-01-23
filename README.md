@@ -39,7 +39,8 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 ## Requirements
 
 - OpenWrt 24.10.x or later
-- Podman 4.0+ with REST API enabled
+- Podman
+- Curl
 - Sufficient storage for images/containers
 
 ## Installation
@@ -64,6 +65,8 @@ git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git pack
 make menuconfig  # Navigate to: LuCI → Applications → luci-app-podman
 make package/luci-app-podman/compile V=s
 ```
+
+**Note:** You mabye have to select curl and podman yourself if you build it yourself. This is because they are declared as runtime dependencies to fasten build time for luci app alone.
 
 ## Usage
 
