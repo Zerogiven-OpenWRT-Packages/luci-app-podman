@@ -11,7 +11,7 @@ jobs:
       matrix:
         include:
           - openwrt_version: '24.10'
-            openwrt_build_version: '24.10.3'
+            openwrt_build_version: '24.10.5'
             arch: 'x86_64'
       fail-fast: false
     permissions: {}
