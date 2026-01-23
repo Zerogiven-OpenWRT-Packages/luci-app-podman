@@ -24,7 +24,7 @@ jobs:
       matrix:
         include:
           - openwrt_version: '24.10'
-            openwrt_build_version: '24.10.4'
+            openwrt_build_version: '24.10.5'
             arch: 'x86_64'
           - openwrt_version: '25.12'
             openwrt_build_version: '25.12-SNAPSHOT'
@@ -45,5 +45,5 @@ jobs:
       openwrt_build_version: ${{ matrix.openwrt_build_version }}
       arch: ${{ matrix.arch }}
       selected_version: ${{ github.event.inputs.openwrt_version }}
-      free_disk_space: true
+      free_disk_space: false
       verbose: ${{ github.event.inputs.verbose == 'true' }}
