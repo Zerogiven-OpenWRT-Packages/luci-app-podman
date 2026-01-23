@@ -12,7 +12,8 @@ PKG_LICENSE_FILES := LICENSE
 
 LUCI_TITLE         := LuCI Support for Podman
 LUCI_DESCRIPTION   := Modern web interface for managing Podman containers with auto-update, auto-start, images, volumes, networks, pods, and secrets
-LUCI_DEPENDS       := +rpcd +rpcd-mod-file +podman +curl
+#LUCI_DEPENDS       := +rpcd +rpcd-mod-file +podman +curl
+LUCI_EXTRA_DEPENDS       := +rpcd +rpcd-mod-file +podman +curl
 LUCI_PKGARCH       := all
 
 include $(TOPDIR)/feeds/luci/luci.mk
