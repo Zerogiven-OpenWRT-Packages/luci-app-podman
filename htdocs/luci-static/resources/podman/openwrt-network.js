@@ -83,6 +83,84 @@ function createNetworkInterface(networkName, deviceName, options) {
 	}
 }
 
+/**
+ * Wrapper for uci.save() with detailed error reporting.
+ * @returns {Promise}
+ */
+function uciSave() {
+	return uci.save().catch((err) => {
+		const msg = err.message || String(err);
+		throw new Error('uci.save() failed: ' + msg);
+	});
+}
+
+/**
+ * Wrapper for uci.apply() with detailed error reporting.
+ * @returns {Promise}
+ */
+function uciApply() {
+	return uci.apply().catch((err) => {
+		const msg = err.message || String(err);
+		throw new Error('uci.apply() failed: ' + msg);
+	});
+}
+
+/**
+ * Wrapper for uci.load() with detailed error reporting.
+ * @param {string|Array} configs - Config name(s) to load
+ * @returns {Promise}
+ */
+function uciLoad(configs) {
+	const configList = Array.isArray(configs) ? configs : [configs];
+	return Promise.all(configList.map((c) => uci.load(c))).catch((err) => {
+		const msg = err.message || String(err);
+		throw new Error('uci.load(' + configList.join(', ') + ') failed: ' + msg);
+	});
+}
+
+/**
+ * Setup dnsmasq exclusion (UCI changes only, no save/apply).
+ * Must call uci.load('dhcp') before and uciSave()/uciApply() after.
+ * @param {string} interfaceName - UCI interface name
+ * @param {boolean} enable - Add (true) or remove (false) from exclusion
+ * @returns {boolean} True if changes were made
+ */
+function setupDnsmasqExclusion(interfaceName, enable) {
+	const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
+	if (dnsmasqSections.length === 0) {
+		return false;
+	}
+
+	const mainSection = dnsmasqSections[0]['.name'];
+	let notinterfaces = uci.get('dhcp', mainSection, 'notinterface');
+	let notinterfaceList = [];
+
+	if (Array.isArray(notinterfaces)) {
+		notinterfaceList = notinterfaces;
+	} else if (notinterfaces) {
+		notinterfaceList = [notinterfaces];
+	}
+
+	if (enable) {
+		if (!notinterfaceList.includes(interfaceName)) {
+			notinterfaceList.push(interfaceName);
+			uci.set('dhcp', mainSection, 'notinterface', notinterfaceList);
+			return true;
+		}
+	} else {
+		const filtered = notinterfaceList.filter(iface => iface !== interfaceName);
+		if (filtered.length !== notinterfaceList.length) {
+			if (filtered.length > 0) {
+				uci.set('dhcp', mainSection, 'notinterface', filtered);
+			} else {
+				uci.unset('dhcp', mainSection, 'notinterface');
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 return baseclass.extend({
 	/**
 	 * Extract driver from Podman network object.
@@ -140,10 +218,8 @@ return baseclass.extend({
 		const ZONE_NAME = requestedZone === '_create_new_' ? 'podman_' + networkName :
 			requestedZone;
 
-		return Promise.all([
-			uci.load('network'),
-			uci.load('firewall')
-		]).then(() => {
+		// Load ALL configs at start to batch all changes with ONE final apply
+		return uciLoad(['network', 'firewall', 'dhcp']).then(() => {
 			// Create bridge device ONLY for bridge networks
 			if (needsBridge(driver)) {
 				const existingDevice = uci.get('network', deviceName);
@@ -203,16 +279,16 @@ return baseclass.extend({
 				uci.set('firewall', ruleId, 'target', 'ACCEPT');
 			}
 
-			return uci.save();
+			// Configure dnsmasq exclusion ONLY for bridge networks (batched, no separate apply)
+			if (needsBridge(driver)) {
+				setupDnsmasqExclusion(networkName, true);
+			}
+
+			return uciSave();
 		}).then(() => {
-			return uci.apply();
+			return uciApply();
 		}).then(() => {
 			return network.flushCache();
-		}).then(() => {
-			// Configure dnsmasq ONLY for bridge networks
-			if (needsBridge(driver)) {
-				return this._configureDnsmasq(networkName, true);
-			}
 		});
 	},
 
@@ -230,10 +306,8 @@ return baseclass.extend({
 	 */
 	removeIntegration: async function (networkName, deviceName, driver) {
 		driver = driver || 'bridge';
-		return Promise.all([
-			uci.load('network'),
-			uci.load('firewall')
-		]).then(() => {
+		// Load ALL configs at start to batch all changes with ONE final apply
+		return uciLoad(['network', 'firewall', 'dhcp']).then(() => {
 			// Find which zone this network belongs to
 			const zones = uci.sections('firewall', 'zone');
 			let networkZone = null;
@@ -315,20 +389,16 @@ return baseclass.extend({
 				}
 			}
 
-			return {
-				shouldRemoveBridge: shouldRemoveBridge
-			};
-		}).then((result) => {
-			return uci.save().then(() => result);
-		}).then((result) => {
-			return uci.apply().then(() => result);
-		}).then((result) => {
-			return network.flushCache().then(() => result);
-		}).then((result) => {
-			// Remove dnsmasq exclusion ONLY for bridge networks if bridge was deleted
-			if (needsBridge(driver) && result.shouldRemoveBridge) {
-				return this._configureDnsmasq(networkName, false);
+			// Remove dnsmasq exclusion ONLY for bridge networks (batched, no separate apply)
+			if (needsBridge(driver) && shouldRemoveBridge) {
+				setupDnsmasqExclusion(networkName, false);
 			}
+
+			return uciSave();
+		}).then(() => {
+			return uciApply();
+		}).then(() => {
+			return network.flushCache();
 		});
 	},
 
@@ -339,7 +409,7 @@ return baseclass.extend({
 	 * @returns {Promise<boolean>} True if interface exists
 	 */
 	hasIntegration: async function (networkName) {
-		return uci.load('network').then(() => {
+		return uciLoad('network').then(() => {
 			const iface = uci.get('network', networkName);
 			return !!iface;
 		}).catch(() => {
@@ -353,7 +423,7 @@ return baseclass.extend({
 	 * @returns {Promise<boolean>} True if dnsmasq section exists
 	 */
 	_isDnsmasqInstalled: async function () {
-		return uci.load('dhcp').then(() => {
+		return uciLoad('dhcp').then(() => {
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 			return dnsmasqSections.length > 0;
 		}).catch(() => {
@@ -382,10 +452,7 @@ return baseclass.extend({
 			driver: driver
 		};
 
-		return Promise.all([
-			uci.load('network'),
-			uci.load('dhcp')
-		]).then(() => {
+		return uciLoad(['network', 'dhcp']).then(() => {
 			// Check if dnsmasq is installed (early check for all paths)
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 			details.dnsmasqInstalled = dnsmasqSections.length > 0;
@@ -469,7 +536,7 @@ return baseclass.extend({
 	 * @returns {Promise<Object|null>} {networkName, deviceName, gateway, netmask, proto} or null
 	 */
 	getIntegration: async function (networkName) {
-		return uci.load('network').then(() => {
+		return uciLoad('network').then(() => {
 			const iface = uci.get('network', networkName);
 			if (!iface) {
 				return null;
@@ -495,7 +562,7 @@ return baseclass.extend({
 	 * @returns {Promise<Array<string>>} Array of zone names
 	 */
 	listPodmanZones: async function () {
-		return uci.load('firewall').then(() => {
+		return uciLoad('firewall').then(() => {
 			const zones = uci.sections('firewall', 'zone');
 			const podmanZones = [];
 
@@ -562,10 +629,7 @@ return baseclass.extend({
 			});
 		}
 
-		return Promise.all([
-			uci.load('network'),
-			uci.load('firewall')
-		]).then(() => {
+		return uciLoad(['network', 'firewall']).then(() => {
 			const existingInterface = uci.get('network', networkName);
 			if (existingInterface) {
 				const existingProto = uci.get('network', networkName, 'proto');
@@ -640,10 +704,8 @@ return baseclass.extend({
 			};
 		}
 
-		return Promise.all([
-			uci.load('network'),
-			uci.load('dhcp')
-		]).then(() => {
+		// Load ALL configs at start to batch all changes with ONE final apply
+		return uciLoad(['network', 'dhcp']).then(() => {
 			// Repair device ONLY for bridge networks if missing
 			if (!status.details.hasDevice && needsBridge(driver)) {
 				const existingDevice = uci.get('network', deviceName);
@@ -670,35 +732,32 @@ return baseclass.extend({
 				skipped.push('interface');
 			}
 
-			// No changes
-			if (added.length <= 0) {
-				return;
-			}
-			return uci.save();
-		}).then(() => {
-			if (added.length <= 0) {
-				return;
-			}
-			return uci.apply();
-		}).then(() => {
-			if (added.length <= 0) {
-				return;
-			}
-			return network.flushCache();
-		}).then(() => {
-			// Repair dnsmasq ONLY for bridge networks if missing
+			// Repair dnsmasq ONLY for bridge networks if missing (batched, no separate apply)
 			if (!status.details.hasDnsmasqExclusion && needsBridge(driver)) {
-				return this._configureDnsmasq(networkName, true).then(() => {
+				if (setupDnsmasqExclusion(networkName, true)) {
 					added.push('dnsmasq');
-				});
+				} else {
+					skipped.push('dnsmasq');
+				}
+			} else {
+				skipped.push('dnsmasq');
 			}
-			skipped.push('dnsmasq');
-		}).then(() => {
-			return {
-				added: added,
-				skipped: skipped,
-				details: status.details
-			};
+
+			// No changes needed
+			if (added.length <= 0) {
+				return { added, skipped, details: status.details };
+			}
+			return uciSave().then(() => ({ added, skipped, details: status.details }));
+		}).then((result) => {
+			if (added.length <= 0) {
+				return result;
+			}
+			return uciApply().then(() => result);
+		}).then((result) => {
+			if (added.length <= 0) {
+				return result;
+			}
+			return network.flushCache().then(() => result);
 		});
 	},
 
@@ -713,7 +772,7 @@ return baseclass.extend({
 	 * @returns {Promise<void>}
 	 */
 	_configureDnsmasq: async function (interfaceName, enable) {
-		return uci.load('dhcp').then(() => {
+		return uciLoad('dhcp').then(() => {
 			// Get main dnsmasq config section
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 
@@ -762,12 +821,12 @@ return baseclass.extend({
 			if (result.skip) {
 				return result;
 			}
-			return uci.save().then(() => result);
+			return uciSave().then(() => result);
 		}).then((result) => {
 			if (result.skip) {
 				return result;
 			}
-			return uci.apply();
+			return uciApply();
 		});
 	},
 
@@ -778,7 +837,7 @@ return baseclass.extend({
 	 * @returns {Promise<boolean>}
 	 */
 	_isDnsmasqExcluded: async function (interfaceName) {
-		return uci.load('dhcp').then(() => {
+		return uciLoad('dhcp').then(() => {
 			const dnsmasqSections = uci.sections('dhcp', 'dnsmasq');
 			if (dnsmasqSections.length === 0) {
 				return false;
