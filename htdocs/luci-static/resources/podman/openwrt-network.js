@@ -745,9 +745,17 @@ return baseclass.extend({
 
 			// No changes needed
 			if (added.length <= 0) {
-				return { added, skipped, details: status.details };
+				return {
+					added,
+					skipped,
+					details: status.details
+				};
 			}
-			return uciSave().then(() => ({ added, skipped, details: status.details }));
+			return uciSave().then(() => ({
+				added,
+				skipped,
+				details: status.details
+			}));
 		}).then((result) => {
 			if (added.length <= 0) {
 				return result;
