@@ -25,6 +25,7 @@ jobs:
       openwrt_version: ${{ matrix.openwrt_version }}
       openwrt_build_version: ${{ matrix.openwrt_build_version }}
       arch: ${{ matrix.arch }}
+      free_disk_space: true
       verbose: false
 
   create-release:
