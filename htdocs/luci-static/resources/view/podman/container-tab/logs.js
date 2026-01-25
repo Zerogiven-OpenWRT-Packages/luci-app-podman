@@ -63,7 +63,8 @@ return baseclass.extend({
 							'style': 'width: 80px; margin-left: 5px;'
 						})
 					]),
-					new podmanUI.Button(_('Clear'), () => this.clearLogs()).render(),
+					new podmanUI.Button(_('Clear'), () => this.clearLogs())
+					.render(),
 					' ',
 					new podmanUI.Button(_('Refresh'), () => this.refreshLogs())
 					.render()
@@ -143,7 +144,7 @@ return baseclass.extend({
 		});
 	},
 
-		/**
+	/**
 	 * Strip Docker stream format headers (8-byte headers before each frame)
 	 * Docker/Podman logs use multiplexed stream format:
 	 * - Byte 0: Stream type (1=stdout, 2=stderr, 3=stdin)
