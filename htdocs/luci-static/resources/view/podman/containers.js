@@ -12,7 +12,7 @@
 'require podman.list as List';
 'require podman.container-util as ContainerUtil';
 
-utils.addPodmanCss();
+utils.addPodmanCss().addCss('view/podman/containers.css');
 
 /**
  * Container management view with create, start, stop, health check, and delete operations

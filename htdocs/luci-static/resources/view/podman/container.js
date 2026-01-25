@@ -19,7 +19,7 @@
 'require view.podman.container-tab.logs as containerLogs';
 'require view.podman.container-tab.health as containerHealth';
 
-utils.addPodmanCss();
+utils.addPodmanCss().addCss('view/podman/container.css');
 
 /**
  * Container detail view with tabbed interface

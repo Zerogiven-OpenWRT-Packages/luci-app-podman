@@ -1,0 +1,63 @@
+.overview-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.overview-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+}
+
+.overview-card-link,
+.overview-card-link:hover,
+.overview-card-link:focus {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.overview-card-link > .cbi-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+    padding: 15px;
+    margin: 0;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.overview-card-link > .cbi-section .card-link-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.card-link-title {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.card-link-icon {
+    font-size: 24px;
+    opacity: 0.6;
+}
+
+.card-link-headline {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.card-link-text {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.cli-value {
+    font-family: monospace;
+    font-size: 0.9em;
+}

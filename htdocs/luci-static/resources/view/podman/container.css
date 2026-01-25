@@ -1,0 +1,27 @@
+.container-status {
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.edit-container-name {
+    width: 60%;
+    margin-right: 5px;
+}
+
+.section-container-info {
+    margin-bottom: 1.25rem;
+}
+
+.table-env-vars th {
+    width: 50%;
+}
+
+.table-env-vars td {
+    font-family: monospace;
+    word-break: break-all;
+}
+
+.table-env-vars td:nth-of-type(2) {
+    cursor: pointer;
+    user-select: none;
+}

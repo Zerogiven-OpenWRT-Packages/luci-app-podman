@@ -8,7 +8,7 @@
 'require podman.auto-update as autoUpdate';
 'require ui';
 
-utils.addPodmanCss();
+utils.addPodmanCss().addCss('view/podman/overview.css');
 
 /**
  * Podman Overview Dashboard View

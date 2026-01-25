@@ -93,7 +93,7 @@ return view.extend({
 				' ',
 				E('span', {
 					'id': 'integration-icon-' + name,
-					'style': 'display: none;'
+					'class': 'hidden'
 				})
 			]);
 		};

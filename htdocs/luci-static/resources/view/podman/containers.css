@@ -1,0 +1,58 @@
+/* Mobile / Small Screens */
+@media screen and (max-device-width: 600px) {
+    .podman-view-list .list-toolbar .cbi-button {
+        margin-top: 5px;
+    }
+
+    /* Flex-basis adjustments for table cells on mobile */
+    .podman-view-list td[data-name="Name"],
+    .podman-view-list td[data-name="Names"],
+    .podman-view-list td[data-name="VolumeName"],
+    .podman-view-list td[data-name="Repository"] {
+        flex-basis: 80% !important;
+        order: -1;
+    }
+
+    .podman-view-list td[data-name="Name"] > div,
+    .podman-view-list td[data-name="Names"] > div,
+    .podman-view-list td[data-name="Repository"] > div,
+    .podman-view-list td[data-name="VolumeName"] > div {
+        font-size: 16px;
+    }
+
+    .podman-view-list td[data-name="ID"] {
+        flex-basis: 20% !important;
+    }
+
+    .podman-view-list td[data-name="ID"] .cbi-checkbox {
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    .podman-view-list td[data-name="State"],
+    .podman-view-list td[data-name="Health"],
+    .podman-view-list td[data-name="Created"],
+    .podman-view-list td[data-name="CreatedAt"],
+    .podman-view-list td[data-name="InitScript"],
+    .podman-view-list td[data-name="Driver"],
+    .podman-view-list td[data-name="Size"],
+    .podman-view-list td[data-name="Image"],
+    .podman-view-list td[data-name="ImageId"],
+    .podman-view-list td[data-name="Tag"],
+    .podman-view-list td[data-name="Mountpoint"] {
+        flex-basis: 50% !important;
+    }
+
+    .cbi-section-table td[data-name="Action"] {
+        flex-basis: 100% !important;
+    }
+
+    /* Mobile Actions Widget behavior */
+    [data-widget="CBI.ContainerMobileActionsValue"] .list-toolbar {
+        display: flex;
+    }
+
+    [data-widget="CBI.ContainerMobileActionsValue"] .list-toolbar .cbi-button {
+        width: 50%;
+    }
+}
