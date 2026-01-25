@@ -309,6 +309,14 @@ return baseclass.extend({
 			this.logStreamSessionId = result.session_id;
 			this.logStreamFileOffset = 0; // Start reading from beginning of stream file
 
+			// Register beforeunload handler for cleanup on page close/navigation
+			this._beforeUnloadHandler = () => {
+				if (this.logStreamSessionId) {
+					podmanRPC.container.logsStop(this.logStreamSessionId);
+				}
+			};
+			window.addEventListener('beforeunload', this._beforeUnloadHandler);
+
 			// Start polling for logs
 			this.pollLogsStatus();
 			this.isStartingStream = false;
@@ -330,6 +338,12 @@ return baseclass.extend({
 
 		// Clear session ID first to prevent poll function from running again
 		this.logStreamSessionId = null;
+
+		// Remove beforeunload handler
+		if (this._beforeUnloadHandler) {
+			window.removeEventListener('beforeunload', this._beforeUnloadHandler);
+			this._beforeUnloadHandler = null;
+		}
 
 		// Remove poll function if registered
 		if (this.logPollFn) {

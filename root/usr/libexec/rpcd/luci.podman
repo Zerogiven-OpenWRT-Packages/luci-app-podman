@@ -317,7 +317,9 @@ EOF
 				script_file="/tmp/${session_id}.sh"
 				cat > "$script_file" <<EOF
 #!/bin/sh
-curl -s -N --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "/tmp/${session_id}.log" 2>&1
+curl -s -N --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "/tmp/${session_id}.log" 2>&1 &
+echo \$! > "/tmp/${session_id}.pid"
+wait \$!
 echo \$? > "/tmp/${session_id}.status"
 rm -f "$script_file"
 EOF
@@ -333,6 +335,9 @@ EOF
 				get_json_params session_id offset
 				require_param session_id
 				validate_session_id "$session_id" "podman_logs"
+
+				# Track activity for orphan cleanup
+				touch "/tmp/${session_id}.activity"
 
 				# Validate offset is numeric
 				case "$offset" in
@@ -379,15 +384,14 @@ EOF
 				require_param session_id
 				validate_session_id "$session_id" "podman_logs"
 
-				# Kill the background curl process if still running
-				# Find curl process with our session log file
-				curl_pid=$(ps | grep "curl.*${session_id}.log" | grep -v grep | awk '{print $1}')
-				if [ -n "$curl_pid" ]; then
-					kill "$curl_pid" 2>/dev/null
+				# Kill the background curl process using stored PID
+				pid_file="/tmp/${session_id}.pid"
+				if [ -f "$pid_file" ]; then
+					kill "$(cat "$pid_file")" 2>/dev/null
 				fi
 
-				# Cleanup temp files
-				rm -f "/tmp/${session_id}.log" "/tmp/${session_id}.status" "/tmp/${session_id}.sh" 2>/dev/null
+				# Cleanup all session files
+				rm -f "/tmp/${session_id}."* 2>/dev/null
 
 				echo '{"success":true}'
 				;;
