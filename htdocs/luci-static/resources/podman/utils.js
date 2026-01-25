@@ -147,12 +147,18 @@ return baseclass.extend({
 	},
 
 	addPodmanCss: function() {
+		return this.addCss('view/podman/podman.css');
+	},
+
+	addCss: function(path) {
 		document.querySelector('head').appendChild(E('link', {
 			'rel': 'stylesheet',
 			'type': 'text/css',
-			'href': L.resource('view/podman/podman.css')
+			'href': L.resource(path)
 		}));
-	},
+
+		return this;
+	}
 
 	_p: function(stringPlurarl) {
 		return this._n(2, '', stringPlurarl);
