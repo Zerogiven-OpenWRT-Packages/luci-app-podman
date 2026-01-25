@@ -158,7 +158,7 @@ return baseclass.extend({
 		}));
 
 		return this;
-	}
+	},
 
 	_p: function(stringPlurarl) {
 		return this._n(2, '', stringPlurarl);
