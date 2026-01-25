@@ -27,7 +27,7 @@ define Package/$(PKG_NAME)/postinst
 	killall -HUP rpcd 2>/dev/null
 	# Add cron job for orphaned session cleanup (idempotent)
 	grep -q podman-cleanup /etc/crontabs/root 2>/dev/null || \
-		echo '* * * * * /usr/libexec/podman-cleanup' >> /etc/crontabs/root
+		echo '*/2 * * * * /usr/libexec/podman-cleanup' >> /etc/crontabs/root
 	/etc/init.d/cron restart 2>/dev/null
 }
 exit 0
