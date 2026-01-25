@@ -45,4 +45,5 @@ jobs:
       openwrt_build_version: ${{ matrix.openwrt_build_version }}
       arch: ${{ matrix.arch }}
       selected_version: ${{ github.event.inputs.openwrt_version }}
+      free_disk_space: true
       verbose: ${{ github.event.inputs.verbose == 'true' }}
