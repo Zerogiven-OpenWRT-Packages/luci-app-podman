@@ -1,7 +1,7 @@
 [![OpenWrt](https://img.shields.io/badge/OpenWrt-24.10.x-darkgreen.svg)](https://openwrt.org/)
 [![GitHub Release](https://img.shields.io/github/v/release/Zerogiven-OpenWRT-Packages/luci-app-podman)](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases)
 [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Zerogiven-OpenWRT-Packages/luci-app-podman/total?color=blue)](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/Zerogiven-OpenWRT-Packages/luci-app-podman)](https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/issues)
 
 # LuCI App Podman
 
