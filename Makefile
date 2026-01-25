@@ -3,7 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME          := luci-app-podman
-PKG_VERSION       := 1.8.3
+PKG_VERSION       := 1.9.0
 PKG_RELEASE       := 1
 PKG_MAINTAINER    := Christopher Söllinger <christopher.soellinger@gmail.com>
 PKG_URL           := https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman
@@ -21,15 +21,15 @@ define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 [ -n "$${IPKG_INSTROOT}" ] || {
 	# Run uci-defaults scripts
-	(. /etc/uci-defaults/luci-app-podman) && rm -f /etc/uci-defaults/luci-app-podman 2>/dev/null
+	[ -f /etc/uci-defaults/luci-app-podman ] && (. /etc/uci-defaults/luci-app-podman) && rm -f /etc/uci-defaults/luci-app-podman 2>/dev/null
 	# Clear LuCI cache
 	rm -f /tmp/luci-indexcache
 	rm -rf /tmp/luci-modulecache/
 	# Restart rpcd
 	killall -HUP rpcd 2>/dev/null
-	# Add cron job for log stream cleanup (idempotent)
-	grep -q podman-cleanup-streams /etc/crontabs/root 2>/dev/null || \
-		echo '* * * * * /usr/libexec/podman-cleanup-streams' >> /etc/crontabs/root
+	# Add cron job for orphaned session cleanup (idempotent)
+	grep -q podman-cleanup /etc/crontabs/root 2>/dev/null || \
+		echo '* * * * * /usr/libexec/podman-cleanup' >> /etc/crontabs/root
 	/etc/init.d/cron restart 2>/dev/null
 }
 exit 0
@@ -39,7 +39,7 @@ define Package/$(PKG_NAME)/prerm
 #!/bin/sh
 [ -n "$${IPKG_INSTROOT}" ] || {
 	# Remove cron job
-	sed -i '/podman-cleanup-streams/d' /etc/crontabs/root 2>/dev/null
+	sed -i '/podman-cleanup/d' /etc/crontabs/root 2>/dev/null
 	/etc/init.d/cron restart 2>/dev/null
 }
 exit 0
