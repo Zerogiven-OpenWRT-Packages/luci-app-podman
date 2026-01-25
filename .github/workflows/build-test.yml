@@ -46,4 +46,5 @@ jobs:
       arch: ${{ matrix.arch }}
       selected_version: ${{ github.event.inputs.openwrt_version }}
       free_disk_space: true
+      create_swap: true
       verbose: ${{ github.event.inputs.verbose == 'true' }}
