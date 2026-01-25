@@ -146,11 +146,11 @@ return baseclass.extend({
 		return result;
 	},
 
-	addPodmanCss: function() {
+	addPodmanCss: function () {
 		return this.addCss('view/podman/podman.css');
 	},
 
-	addCss: function(path) {
+	addCss: function (path) {
 		document.querySelector('head').appendChild(E('link', {
 			'rel': 'stylesheet',
 			'type': 'text/css',
@@ -160,7 +160,7 @@ return baseclass.extend({
 		return this;
 	},
 
-	_p: function(stringPlurarl) {
+	_p: function (stringPlurarl) {
 		return this._n(2, '', stringPlurarl);
 	},
 
@@ -174,7 +174,7 @@ return baseclass.extend({
 	 * @param {Array} command - CreateCommand array from container inspect
 	 * @returns {string} Formatted command string
 	 */
-	formatCreateCommand: function(command) {
+	formatCreateCommand: function (command) {
 		if (!command || !Array.isArray(command)) {
 			return '';
 		}
