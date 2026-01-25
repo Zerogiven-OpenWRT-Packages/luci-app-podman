@@ -20,7 +20,6 @@ on:
 jobs:
   build-test:
     name: Build Test - OpenWrt ${{ matrix.openwrt_version }}
-    runs-on: ubuntu-slim
     strategy:
       matrix:
         include:
@@ -33,28 +32,19 @@ jobs:
       fail-fast: false
 
     permissions: {}
-    steps:
-      - name: Remove unused Android SDK, .NET, Swift, GHC
-        run: |
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/share/swift
-
-      - name: Build test
-        uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-build.yml@main
-        with:
-          package_name: 'luci-app-podman'
-          sdk_packages: 'luci-app-podman'
-          artifacts_patterns: |
-            luci-app-podman*.ipk
-            luci-i18n-podman-*.ipk
-            luci-app-podman*.apk
-            luci-i18n-podman-*.apk
-          openwrt_version: ${{ matrix.openwrt_version }}
-          openwrt_build_version: ${{ matrix.openwrt_build_version }}
-          arch: ${{ matrix.arch }}
-          selected_version: ${{ github.event.inputs.openwrt_version }}
-          free_disk_space: false
-          create_swap: false
-          verbose: ${{ github.event.inputs.verbose == 'true' }}
+    uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-build.yml@main
+    with:
+      package_name: 'luci-app-podman'
+      sdk_packages: 'luci-app-podman'
+      artifacts_patterns: |
+        luci-app-podman*.ipk
+        luci-i18n-podman-*.ipk
+        luci-app-podman*.apk
+        luci-i18n-podman-*.apk
+      openwrt_version: ${{ matrix.openwrt_version }}
+      openwrt_build_version: ${{ matrix.openwrt_build_version }}
+      arch: ${{ matrix.arch }}
+      selected_version: ${{ github.event.inputs.openwrt_version }}
+      free_disk_space: false
+      create_swap: false
+      verbose: ${{ github.event.inputs.verbose == 'true' }}
