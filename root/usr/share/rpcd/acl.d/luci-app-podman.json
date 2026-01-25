@@ -54,6 +54,7 @@
 					"image_remove",
 					"image_pull",
 					"image_pull_stream",
+					"image_pull_stop",
 					"network_create",
 					"network_remove",
 					"network_connect",

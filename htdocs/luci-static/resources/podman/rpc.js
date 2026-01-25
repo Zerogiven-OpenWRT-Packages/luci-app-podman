@@ -306,6 +306,17 @@ return baseclass.extend({
 			object: 'luci.podman',
 			method: 'image_pull_status',
 			params: ['session_id', 'offset']
+		}),
+
+		/**
+		 * Stop image pull stream.
+		 * @param {string} session_id - Pull session ID
+		 * @returns {Promise<Object>} Success result
+		 */
+		pullStop: rpc.declare({
+			object: 'luci.podman',
+			method: 'image_pull_stop',
+			params: ['session_id']
 		})
 	},
 

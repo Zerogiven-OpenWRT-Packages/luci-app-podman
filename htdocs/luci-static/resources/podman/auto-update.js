@@ -80,6 +80,12 @@ return baseclass.extend({
 						checkStatus().then(resolve).catch(reject);
 					}, self.POLL_INTERVAL);
 				});
+			}).catch((err) => {
+				// Cleanup orphaned pull session on error
+				podmanRPC.image.pullStop(sessionId).catch(() => {
+					// Ignore cleanup errors
+				});
+				throw err;
 			});
 		};
 

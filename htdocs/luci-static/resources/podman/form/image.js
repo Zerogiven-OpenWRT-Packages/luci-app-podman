@@ -14,6 +14,8 @@ return baseclass.extend({
 		__name__: 'FormImage',
 		map: null,
 		pollFn: null,
+		currentSessionId: null,
+		beforeUnloadHandler: null,
 
 		/**
 		 * Render the image pull form
@@ -155,12 +157,57 @@ return baseclass.extend({
 		},
 
 		/**
+		 * Register beforeunload handler to cleanup pull session on page close
+		 * @param {string} sessionId - Pull session ID
+		 */
+		registerCleanupHandler: function(sessionId) {
+			this.currentSessionId = sessionId;
+			this.beforeUnloadHandler = () => {
+				if (this.currentSessionId) {
+					// Use sendBeacon for reliable cleanup on page unload
+					// Fall back to sync XHR if sendBeacon unavailable
+					const url = L.url('admin/ubus');
+					const payload = JSON.stringify({
+						jsonrpc: '2.0',
+						id: 1,
+						method: 'call',
+						params: [
+							L.env.sessionid,
+							'luci.podman',
+							'image_pull_stop',
+							{ session_id: this.currentSessionId }
+						]
+					});
+
+					if (navigator.sendBeacon) {
+						navigator.sendBeacon(url, payload);
+					}
+				}
+			};
+			window.addEventListener('beforeunload', this.beforeUnloadHandler);
+		},
+
+		/**
+		 * Unregister beforeunload handler after pull completes
+		 */
+		unregisterCleanupHandler: function() {
+			if (this.beforeUnloadHandler) {
+				window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+				this.beforeUnloadHandler = null;
+			}
+			this.currentSessionId = null;
+		},
+
+		/**
 		 * Poll image pull status and update progress using poll.add()
 		 * @param {string} sessionId - Pull session ID
 		 */
 		pollPullStatus: function (sessionId) {
 			const outputEl = document.getElementById('pull-output');
 			let offset = 0;
+
+			// Register cleanup handler for page close
+			this.registerCleanupHandler(sessionId);
 
 			this.pollFn = () => {
 				return podmanRPC.image.pullStatus(sessionId, offset).then((
@@ -175,6 +222,7 @@ return baseclass.extend({
 
 					if (status.complete) {
 						poll.remove(this.pollFn);
+						this.unregisterCleanupHandler();
 
 						if (!status.success) {
 							if (outputEl) {
@@ -255,6 +303,7 @@ return baseclass.extend({
 					}
 				}).catch((err) => {
 					poll.remove(this.pollFn);
+					this.unregisterCleanupHandler();
 					if (outputEl) {
 						outputEl.textContent += '\n\nError: ' + err.message;
 					}

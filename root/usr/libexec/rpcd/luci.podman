@@ -167,6 +167,7 @@ case "$1" in
 	"image_pull": { "image": "" },
 	"image_pull_stream": { "image": "" },
 	"image_pull_status": { "session_id": "", "offset": 0 },
+	"image_pull_stop": { "session_id": "" },
 	"networks_list": {},
 	"network_inspect": { "name": "" },
 	"network_remove": { "name": "", "force": false },
@@ -364,7 +365,7 @@ EOF
 					fi
 
 					echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
-					rm -f "$log_file" "$status_file"
+					rm -f "/tmp/${session_id}."* 2>/dev/null
 					exit 0
 				fi
 
@@ -491,15 +492,18 @@ EOF
 				get_json_params image
 				require_param image
 
-				# Generate secure session ID
-				session_id="podman_$(date +%s)_$$_${RANDOM}"
+				# Generate secure session ID with pull prefix
+				current_timestamp=$(date +%s)
+				session_id="podman_pull_${current_timestamp}_$$_${RANDOM}"
 				image_enc=$(urlencode "$image")
 
 				# Create a temporary script file to run in background
 				script_file="/tmp/${session_id}.sh"
 				cat > "$script_file" <<EOF
 #!/bin/sh
-curl -s --unix-socket "$SOCKET" -X POST "http://localhost${API_BASE}/images/pull?reference=${image_enc}" > "/tmp/${session_id}.log" 2>&1
+curl -s --unix-socket "$SOCKET" -X POST "http://localhost${API_BASE}/images/pull?reference=${image_enc}" > "/tmp/${session_id}.log" 2>&1 &
+echo \$! > "/tmp/${session_id}.pid"
+wait \$!
 echo \$? > "/tmp/${session_id}.status"
 rm -f "$script_file"
 EOF
@@ -514,7 +518,10 @@ EOF
 			image_pull_status)
 				get_json_params session_id offset
 				require_param session_id
-				validate_session_id "$session_id" "podman"
+				validate_session_id "$session_id" "podman_pull"
+
+				# Track activity for orphan cleanup
+				touch "/tmp/${session_id}.activity"
 
 				# Validate offset is numeric
 				case "$offset" in
@@ -549,6 +556,22 @@ EOF
 
 				# Job not started yet
 				echo '{"output":"","complete":false,"success":false}'
+				;;
+			image_pull_stop)
+				get_json_params session_id
+				require_param session_id
+				validate_session_id "$session_id" "podman_pull"
+
+				# Kill the background curl process using stored PID
+				pid_file="/tmp/${session_id}.pid"
+				if [ -f "$pid_file" ]; then
+					kill "$(cat "$pid_file")" 2>/dev/null
+				fi
+
+				# Cleanup all session files
+				rm -f "/tmp/${session_id}."* 2>/dev/null
+
+				echo '{"success":true}'
 				;;
 			networks_list)
 				read -r input  # consume ubus JSON input

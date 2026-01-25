@@ -1,8 +1,9 @@
 #!/bin/sh
-# Cleanup orphaned Podman log stream sessions with no activity for 2+ minutes
+# Cleanup orphaned Podman sessions with no activity for 2+ minutes
+# Handles: log streams (podman_logs_*) and image pulls (podman_pull_*)
 # Called by cron every minute
 
-for f in /tmp/podman_logs_*.pid; do
+for f in /tmp/podman_logs_*.pid /tmp/podman_pull_*.pid; do
 	[ -f "$f" ] || continue
 	s="${f%.pid}"
 	# Skip if activity file exists and is recent (< 2 minutes old)
