@@ -234,7 +234,7 @@ return view.extend({
 		const fileInput = E('input', {
 			'type': 'file',
 			'accept': '.tar,.tgz,application/x-tar,application/gzip',
-			'style': 'display: none'
+			'class': 'hidden'
 		});
 
 		fileInput.addEventListener('change', (ev) => {
