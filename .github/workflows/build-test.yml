@@ -37,8 +37,10 @@ jobs:
       package_name: 'luci-app-podman'
       sdk_packages: 'luci-app-podman'
       artifacts_patterns: |
-        luci-app-podman*.{apk,ipk}
-        luci-i18n-podman-*.{apk,ipk}
+        luci-app-podman*.ipk
+        luci-i18n-podman-*.ipk
+        luci-app-podman*.apk
+        luci-i18n-podman-*.apk
       openwrt_version: ${{ matrix.openwrt_version }}
       openwrt_build_version: ${{ matrix.openwrt_build_version }}
       arch: ${{ matrix.arch }}
