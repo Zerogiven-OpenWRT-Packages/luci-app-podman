@@ -68,8 +68,6 @@ make menuconfig  # Navigate to: LuCI → Applications → luci-app-podman
 make package/luci-app-podman/compile V=s
 ```
 
-**Note:** You mabye have to select curl and podman yourself if you build it yourself. This is because they are declared as runtime dependencies to fasten build time for luci app alone.
-
 ## Usage
 
 Access via **Podman** in LuCI, or directly at:
@@ -87,11 +85,13 @@ If encountering socket errors:
 
 ## Container Auto-Start
 
-If you want save startup scripts during an upgrade you have to config your `/etc/sysupgrade.conf` with `/etc/init.d/container-*`.
+You can generate a startup script which respects the restart policy set in the container.
 
-```bash
-echo "/etc/init.d/container-*" >> /etc/sysupgrade.conf
-```
+> [!TIP]
+> If you want save startup scripts during an upgrade you have to config your `/etc/sysupgrade.conf` with `/etc/init.d/container-*`.
+> ```bash
+> echo "/etc/init.d/container-*" >> /etc/sysupgrade.conf
+> ```
 
 ## Container Auto-Update
 
@@ -116,17 +116,6 @@ Or add via the LuCI interface in the container creation form under "Labels".
 3. The system pulls latest images and compares digests
 4. Select which containers to update
 5. Click **"Update Selected"** to recreate containers with new images
-
-### How it Works
-
-1. Finds containers with `io.containers.autoupdate` label
-2. Pulls the latest image for each container
-3. Compares image digests to detect changes
-4. For containers with updates:
-   - Extracts original create command from container config
-   - Stops and removes the old container
-   - Recreates with the exact same configuration
-   - Starts if it was running before
 
 Container names and init scripts are preserved - no manual reconfiguration needed.
 
