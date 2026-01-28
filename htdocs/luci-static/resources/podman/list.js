@@ -425,7 +425,7 @@ const ListUtil = baseclass.extend({
 		];
 
 		if (hiddenFields && hiddenFields.length > 0) {
-			content.unshift(E('p', { 'style': 'margin-bottom: 10px; color: #e74c3c;' }, [
+			content.unshift(E('p', { 'class': 'mb-sm text-error' }, [
 				E('strong', {}, _('Security Notice:')), ' ', _('Sensitive data is hidden for security reasons.')
 			]));
 		}

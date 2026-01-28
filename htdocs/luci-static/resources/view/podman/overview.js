@@ -49,10 +49,10 @@ return view.extend({
 			this.createInfoSection(version, info),
 			E('div', {
 				'id': 'resource-cards-container',
-				'style': 'margin-top: 30px;'
+				'class': 'resources-section'
 			}, [
 				E('h3', {
-					'style': 'margin-bottom: 15px;'
+					'class': 'resources-heading'
 				}, _('Resources')),
 				this.createLoadingPlaceholder(_('Resources'))
 			])
@@ -106,7 +106,7 @@ return view.extend({
 				resourceCardsContainer.textContent = '';
 				resourceCardsContainer.appendChild(
 					E('h3', {
-						'style': 'margin-bottom: 15px;'
+						'class': 'resources-heading'
 					}, _('Resources'))
 				);
 				resourceCardsContainer.appendChild(
@@ -135,8 +135,7 @@ return view.extend({
 	 */
 	createLoadingPlaceholder: function (title) {
 		return E('div', {
-			'class': 'cbi-section',
-			'style': 'text-align: center; padding: 30px;'
+			'class': 'cbi-section loading-placeholder'
 		}, [
 			E('em', {
 				'class': 'spinning'
@@ -214,12 +213,10 @@ return view.extend({
 		).render();
 
 		const description = E('p', {
-			'style': 'margin: 15px 0 10px 0; color: #666; font-size: 0.9em;'
+			'class': 'overview-description'
 		}, _('Click to load detailed disk usage information for containers, images, and volumes. This may take several seconds with many resources.'));
 
-		return E('div', {
-			'style': 'padding: 20px;'
-		}, [description, button]);
+		return E('div', {}, [description, button]);
 	},
 
 	/**
@@ -234,7 +231,7 @@ return view.extend({
 		diskUsageTabContent.textContent = '';
 		diskUsageTabContent.appendChild(
 			E('div', {
-				'style': 'padding: 20px; text-align: center;'
+				'class': 'loading-placeholder'
 			}, [
 				E('em', {
 					'class': 'spinning'
@@ -252,16 +249,16 @@ return view.extend({
 			diskUsageTabContent.textContent = '';
 
 			const errorMsg = E('div', {
-				'style': 'padding: 20px;'
+				'class': 'p-md'
 			}, [
 				E('p', {
 					'class': 'alert-message error'
 				}, _('Failed to load disk usage: %s').format(err.message)),
 				E('p', {
-					'style': 'margin-top: 10px; font-size: 0.9em;'
+					'class': 'mt-sm text-sm'
 				}, _('This typically occurs with many containers. The operation may have timed out.')),
 				E('div', {
-					'style': 'margin-top: 15px;'
+					'class': 'mt-md'
 				}, [
 					new podmanUI.Button(
 						_('Try Again'),
@@ -322,7 +319,7 @@ return view.extend({
 			]);
 		});
 
-		const section = new podmanUI.Section({ 'style': 'margin-top: 20px;' });
+		const section = new podmanUI.Section({ 'class': 'mt-lg' });
 		section.addNode(_('Disk Usage'), '', table.render());
 		return section.render();
 	},
@@ -430,7 +427,7 @@ return view.extend({
 			).render()
 		]);
 
-		const section = new podmanUI.Section({ 'style': 'margin-bottom: 20px;' });
+		const section = new podmanUI.Section({ 'class': 'mb-lg' });
 		section.addNode(_('System Maintenance'), '', buttons);
 		return section.render();
 	},
@@ -454,7 +451,7 @@ return view.extend({
 			if (!containers || containers.length === 0) {
 				ui.showModal(_('Check for Updates'), [
 					E('p', {}, _('No containers with auto-update label found.')),
-					E('p', { 'style': 'margin-top: 10px; font-size: 0.9em; color: #666;' },
+					E('p', { 'class': 'overview-hint mt-sm' },
 						_('To enable auto-update for a container, add the label: io.containers.autoupdate=registry')),
 					new podmanUI.ModalButtons({
 						confirmText: _('Close'),
@@ -511,12 +508,12 @@ return view.extend({
 
 		// Show containers with updates available
 		if (hasUpdates.length > 0) {
-			section.appendChild(E('p', { 'style': 'margin-bottom: 10px; font-weight: bold;' },
+			section.appendChild(E('p', { 'class': 'modal-heading' },
 				_('Updates available:')));
 
-			const updateList = E('div', { 'style': 'margin-bottom: 15px;' });
+			const updateList = E('div', { 'class': 'mb-md' });
 			hasUpdates.forEach((r, idx) => {
-				updateList.appendChild(E('label', { 'style': 'display: block; margin: 8px 0;' }, [
+				updateList.appendChild(E('label', { 'class': 'checkbox-item' }, [
 					E('input', {
 						'type': 'checkbox',
 						'id': 'update-container-' + idx,
@@ -536,13 +533,13 @@ return view.extend({
 
 		// Show up-to-date containers
 		if (upToDate.length > 0) {
-			section.appendChild(E('p', { 'style': 'margin-top: 15px; color: #27ae60;' },
+			section.appendChild(E('p', { 'class': 'mt-md text-success' },
 				_('Already up-to-date: %s').format(upToDate.map((r) => r.name).join(', '))));
 		}
 
 		// Show errors
 		if (errors.length > 0) {
-			section.appendChild(E('p', { 'style': 'margin-top: 15px; color: #e74c3c;' },
+			section.appendChild(E('p', { 'class': 'mt-md text-error' },
 				_('Errors checking: %s').format(errors.map((r) => r.name + ' (' + r.error + ')').join(', '))));
 		}
 
@@ -626,10 +623,10 @@ return view.extend({
 			const progressContainer = document.getElementById('update-progress-container');
 			if (!progressContainer) return;
 
-			progressContainer.innerHTML = '';
-			progressContainer.appendChild(E('p', { 'style': 'font-weight: bold; margin-bottom: 10px;' },
+			progressContainer.textContent = '';
+			progressContainer.appendChild(E('p', { 'class': 'modal-heading' },
 				_('%s (%d/%d):').format(container.name, idx, total)));
-			progressContainer.appendChild(E('div', { 'style': 'margin-left: 20px;' }, [
+			progressContainer.appendChild(E('div', { 'class': 'ml-md' }, [
 				E('em', { 'class': 'spinning' }, msg)
 			]));
 		};
@@ -672,34 +669,33 @@ return view.extend({
 
 		// Show successes
 		if (summary.successes.length > 0) {
-			section.appendChild(E('p', { 'style': 'color: #27ae60; margin-bottom: 10px;' },
+			section.appendChild(E('p', { 'class': 'text-success mb-sm' },
 				_('Successfully updated: %s').format(summary.successes.map((r) => r.name).join(', '))));
 		}
 
 		// Show failures with recovery information
 		if (summary.failures.length > 0) {
-			section.appendChild(E('p', { 'style': 'color: #e74c3c; margin-bottom: 10px;' },
+			section.appendChild(E('p', { 'class': 'text-error mb-sm' },
 				_('Failed to update:')));
 
 			summary.failures.forEach((failure) => {
 				const failureDiv = E('div', {
-					'style': 'margin: 10px 0; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;'
+					'class': 'failure-box'
 				});
 
-				failureDiv.appendChild(E('p', { 'style': 'font-weight: bold;' }, failure.name));
-				failureDiv.appendChild(E('p', { 'style': 'color: #721c24;' }, failure.error));
+				failureDiv.appendChild(E('p', { 'class': 'text-bold' }, failure.name));
+				failureDiv.appendChild(E('p', { 'class': 'text-error' }, failure.error));
 
 				// Show CreateCommand for manual recovery
 				if (failure.createCommand) {
 					const cmdStr = autoUpdate.formatCreateCommand(failure.createCommand);
-					failureDiv.appendChild(E('p', { 'style': 'margin-top: 10px;' },
+					failureDiv.appendChild(E('p', { 'class': 'mt-sm' },
 						_('To manually recreate, run:')));
 					failureDiv.appendChild(E('pre', {
-						'style': 'background: #f4f4f4; padding: 10px; overflow-x: auto; font-size: 0.85em; margin-top: 5px;'
+						'class': 'recovery-command'
 					}, cmdStr));
 					failureDiv.appendChild(E('button', {
-						'class': 'cbi-button',
-						'style': 'margin-top: 5px;',
+						'class': 'cbi-button mt-sm',
 						'click': () => {
 							navigator.clipboard.writeText(cmdStr).then(() => {
 								ui.addTimeLimitedNotification(null, E('p', _('Command copied to clipboard')), 2000, 'info');
@@ -734,10 +730,10 @@ return view.extend({
 			}, [
 				E('p', {}, _('Select what to clean up:')),
 				E('div', {
-					'style': 'margin: 15px 0;'
+					'class': 'prune-options'
 				}, [
 					E('label', {
-						'style': 'display: block; margin: 8px 0;'
+						'class': 'checkbox-item'
 					}, [
 						E(
 							'input', {
@@ -749,7 +745,7 @@ return view.extend({
 						_('Remove all unused images (not just dangling)')
 					]),
 					E('label', {
-						'style': 'display: block; margin: 8px 0;'
+						'class': 'checkbox-item'
 					}, [
 						E(
 							'input', {
@@ -761,7 +757,7 @@ return view.extend({
 					])
 				]),
 				E('p', {
-						'style': 'margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107;'
+						'class': 'warning-box mt-md'
 					},
 					[
 						E('strong', {}, _('Warning:')),
@@ -828,15 +824,15 @@ return view.extend({
 				E('p', {}, _('Cleanup successful!')),
 				deletedItems.length > 0 ?
 				E('p', {
-					'style': 'margin-top: 10px;'
+					'class': 'mt-sm'
 				}, _('Removed: %s').format(
 					deletedItems.join(', '))) :
 				E('p', {
-					'style': 'margin-top: 10px;'
+					'class': 'mt-sm'
 				}, _(
 					'No unused resources found')),
 				E('p', {
-						'style': 'margin-top: 10px; font-weight: bold; color: #27ae60;'
+						'class': 'mt-sm text-success text-bold'
 					},
 					_('Space freed: %s').format(format.bytes(freedSpace))),
 				new podmanUI.ModalButtons({

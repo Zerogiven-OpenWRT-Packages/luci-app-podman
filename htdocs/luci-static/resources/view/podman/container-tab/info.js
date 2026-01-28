@@ -45,7 +45,7 @@ return baseclass.extend({
 		const networkPlaceholder = E('div', { 'id': 'network-section-placeholder' }, [
 			E('div', { 'class': 'cbi-section section-container-info' }, [
 				E('h3', {}, _('Network')),
-				E('div', { 'style': 'padding: 20px; text-align: center;' }, [
+				E('div', { 'class': 'p-md text-center' }, [
 					E('em', { 'class': 'spinning' }, _('Loading network information...'))
 				])
 			])
@@ -193,8 +193,7 @@ return baseclass.extend({
 				inner: [
 					E('select', {
 						'id': selectId,
-						'class': 'cbi-input-select',
-						'style': 'width: 60%; margin-right: 5px;'
+						'class': 'cbi-input-select input-lg mr-xs'
 					}, policyOptions),
 					new podmanUI.Button(_('Update'), () => this.handleUpdateRestartPolicy(
 						document.getElementById(selectId).value), 'apply').render()
@@ -229,7 +228,7 @@ return baseclass.extend({
 					// Init script exists and enabled
 					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
-						'style': 'color: #5cb85c; margin-right: 10px;'
+						'class': 'text-success mr-sm'
 					}, '✓ ' + _('Enabled')));
 
 					buttons.push(new podmanUI.Button(_('Show'), () => this
@@ -242,7 +241,7 @@ return baseclass.extend({
 					// Init script exists but disabled
 					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
-						'style': 'color: #999; margin-right: 10px;'
+						'class': 'text-muted mr-sm'
 					}, '○ ' + _('Disabled')));
 
 					buttons.push(new podmanUI.Button(_('Show'), () => this
@@ -255,9 +254,9 @@ return baseclass.extend({
 					// No init script but has restart policy - show warning with Generate button
 					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
-						'style': 'color: #f0ad4e; margin-right: 10px;',
+						'class': 'text-warning mr-sm',
 						'title': _('Restart policy set but no init script')
-					}, '⚠️ ' + _('Not configured')));
+					}, '⚠ ' + _('Not configured')));
 
 					buttons.push(new podmanUI.Button(_('Generate'), () => this
 							.handleGenerateInitScript(containerName), 'positive')
@@ -266,7 +265,7 @@ return baseclass.extend({
 					// No init script and no restart policy - show helper text
 					initScriptCell.textContent = '';
 					initScriptCell.appendChild(E('span', {
-						'style': 'color: #999;',
+						'class': 'text-muted',
 						'title': _(
 							'Set a restart policy to enable auto-start')
 					}, '— ' + _('Not available (no restart policy)')));
@@ -281,7 +280,7 @@ return baseclass.extend({
 				});
 			}).catch((err) => {
 				initScriptCell.textContent = '✗ ' + _('Error');
-				initScriptCell.style.color = '#d9534f';
+				initScriptCell.className = 'text-error';
 				initScriptCell.title = err.message;
 			});
 		} else {
@@ -302,8 +301,7 @@ return baseclass.extend({
 
 			// Build health status display with badge
 			const healthBadge = E('span', {
-				'class': 'badge status-' + healthStatus.toLowerCase(),
-				'style': 'margin-right: 10px;'
+				'class': 'badge status-' + healthStatus.toLowerCase() + ' mr-sm'
 			}, healthStatus);
 
 			const healthDetails = [healthBadge];
@@ -311,7 +309,7 @@ return baseclass.extend({
 			// Add failing streak if unhealthy
 			if (healthStatus === 'unhealthy' && failingStreak > 0) {
 				healthDetails.push(E('span', {
-					'style': 'color: #ff6b6b;'
+					'class': 'text-error'
 				}, ' (' + _('%d consecutive failures').format(failingStreak) + ')'));
 			}
 
@@ -319,7 +317,7 @@ return baseclass.extend({
 			if (lastCheck && lastCheck.End) {
 				healthDetails.push(E('br'));
 				healthDetails.push(E('small', {
-					'style': 'color: #666;'
+					'class': 'text-secondary'
 				}, _('Last check: %s').format(format.date(lastCheck.End))));
 			}
 
@@ -335,14 +333,14 @@ return baseclass.extend({
 				{
 					inner: healthDetails,
 					options: {
-						'style': 'word-break: break-word;'
+						'class': 'text-break'
 					}
 				}
 			]);
 		}
 
 		const basicSection = new podmanUI.Section({
-			'style': 'margin-bottom: 20px;'
+			'class': 'mb-lg'
 		});
 		basicSection.addNode(_('Basic Information'), '', basicTable.render());
 
@@ -362,12 +360,10 @@ return baseclass.extend({
 		// Format CreateCommand for display
 		const createCommand = utils.formatCreateCommand(config.CreateCommand);
 		const createCommandElement = createCommand ? E('div', {
-			'style': 'display: flex; align-items: flex-start; gap: 10px;'
+			'class': 'command-display'
 		}, [
 			E('code', {
-				'style': 'flex: 1; word-break: break-all; white-space: pre-wrap; ' +
-					'background: #f5f5f5; padding: 8px; border-radius: 4px; ' +
-					'font-size: 12px; max-height: 200px; overflow-y: auto;'
+				'class': 'command-code'
 			}, createCommand),
 			E('button', {
 				'class': 'cbi-button',
@@ -386,21 +382,21 @@ return baseclass.extend({
 				{ inner: _('Create Command') },
 				{
 					inner: createCommandElement,
-					options: { 'style': 'word-break: break-word;' }
+					options: { 'class': 'text-break' }
 				}
 			])
 			.addRow([
 				{ inner: _('Command') },
 				{
 					inner: cmd,
-					options: { 'style': 'word-break: break-word;' }
+					options: { 'class': 'text-break' }
 				}
 			])
 			.addRow([
 				{ inner: _('Entrypoint') },
 				{
 					inner: entrypoint,
-					options: { 'style': 'word-break: break-word;' }
+					options: { 'class': 'text-break' }
 				}
 			])
 			.addRow([
@@ -480,7 +476,7 @@ return baseclass.extend({
 				networkTable.addRow([{
 						inner: netName,
 						options: {
-							'style': 'cursor: help;',
+							'class': 'tt',
 							'title': tooltip
 						}
 					},
@@ -489,7 +485,7 @@ return baseclass.extend({
 							net.IPAddress || '-',
 							' ',
 							E('span', {
-								'style': 'margin-left: 10px;'
+								'class': 'ml-sm'
 							}, [
 								new podmanUI.Button(_('Disconnect'), () => this
 									.handleNetworkDisconnect(netName),
@@ -532,15 +528,13 @@ return baseclass.extend({
 				inner: [
 					E('select', {
 						'id': networkSelectId,
-						'class': 'cbi-input-select',
-						'style': 'width: 40%; margin-right: 5px;'
+						'class': 'cbi-input-select input-md mr-xs'
 					}, networkOptions),
 					E('input', {
 						'type': 'text',
 						'id': ipInputId,
-						'class': 'cbi-input-text',
-						'placeholder': _('IP (optional)'),
-						'style': 'width: 30%; margin-right: 5px;'
+						'class': 'cbi-input-text input-sm mr-xs',
+						'placeholder': _('IP (optional)')
 					}),
 					new podmanUI.Button(_('Connect'), () => {
 						const netName = document.getElementById(networkSelectId)

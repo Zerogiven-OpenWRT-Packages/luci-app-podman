@@ -120,7 +120,7 @@ return view.extend({
 			if (!status || !['healthy', 'unhealthy', 'starting'].includes(status
 				.toLowerCase())) {
 				return E('span', {
-					'style': 'color: #999;'
+					'class': 'text-muted'
 				}, '—');
 			}
 
@@ -140,10 +140,9 @@ return view.extend({
 				null;
 
 			return E('span', {
-				'class': 'autostart-status',
+				'class': 'autostart-status autostart-disabled',
 				'data-container-id': container.Id,
-				'data-container-name': containerName,
-				'style': 'color: #999;'
+				'data-container-name': containerName
 			}, '...');
 		};
 
@@ -350,19 +349,18 @@ return view.extend({
 						inspectData.HostConfig.RestartPolicy.Name !== 'no';
 
 					autoStartCell.textContent = '—';
-					autoStartCell.style.color = '#999';
+					autoStartCell.className = 'autostart-status autostart-disabled';
 					autoStartCell.title = _('No auto-start configured');
 
 					if (initStatus.exists && initStatus.enabled) {
 						// Init script exists and enabled
 						autoStartCell.textContent = '✓';
-						autoStartCell.style.color = '#5cb85c';
+						autoStartCell.className = 'autostart-status autostart-enabled';
 						autoStartCell.title = _('Init script enabled for %s').format(containerName);
 					} else if (hasRestartPolicy && !initStatus.exists) {
 						// Has restart policy but no init script - show warning
-						autoStartCell.innerHTML = '⚠️';
-						autoStartCell.style.color = '#f0ad4e';
-						autoStartCell.style.cursor = 'pointer';
+						autoStartCell.textContent = '⚠';
+						autoStartCell.className = 'autostart-status autostart-warning';
 						autoStartCell.title = _(
 							'Restart policy set but no init script. Click to generate.'
 							);
@@ -373,7 +371,7 @@ return view.extend({
 					} else if (initStatus.exists && !initStatus.enabled) {
 						// Init script exists but disabled
 						autoStartCell.textContent = '○';
-						autoStartCell.style.color = '#999';
+						autoStartCell.className = 'autostart-status autostart-disabled';
 						autoStartCell.title = _('Init script disabled for %s').format(containerName);
 					}
 				}
@@ -381,7 +379,7 @@ return view.extend({
 				// On error, show error state in auto-start column
 				if (autoStartCell) {
 					autoStartCell.textContent = '✗';
-					autoStartCell.style.color = '#d9534f';
+					autoStartCell.className = 'autostart-status autostart-error';
 					autoStartCell.title = _('Error loading details: %s').format(
 						err.message);
 				}

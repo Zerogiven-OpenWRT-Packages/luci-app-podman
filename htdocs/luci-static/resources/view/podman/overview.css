@@ -61,3 +61,50 @@
     font-family: monospace;
     font-size: 0.9em;
 }
+
+/* --- Overview-specific --- */
+.overview-description {
+    margin: 15px 0 10px 0;
+    color: var(--text-color-high);
+    font-size: 0.9em;
+}
+
+.overview-hint {
+    font-size: 0.9em;
+    color: var(--text-color-high);
+}
+
+/* Warning/Error box for update failures */
+.failure-box {
+    margin: 10px 0;
+    padding: 10px;
+    background: var(--warn-color-low);
+    border-left: 4px solid var(--warn-color-high);
+}
+
+[data-darkmode="true"] .failure-box {
+    background: rgba(166, 141, 69, 0.2);
+}
+
+.recovery-command {
+    background: var(--background-color-low);
+    padding: 10px;
+    overflow-x: auto;
+    font-size: 0.85em;
+    margin-top: 5px;
+    font-family: monospace;
+}
+
+/* --- Overview Layout --- */
+.resources-section {
+    margin-top: 30px;
+}
+
+.resources-heading {
+    margin-bottom: 15px;
+}
+
+/* --- Prune/Cleanup Modal --- */
+.prune-options {
+    margin: 15px 0;
+}

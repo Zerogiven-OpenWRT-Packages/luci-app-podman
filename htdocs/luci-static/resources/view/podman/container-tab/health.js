@@ -44,7 +44,7 @@ return baseclass.extend({
 
 			const testCmd = healthConfig.Test.join(' ');
 			configTable.addInfoRow(_('Test Command'), E('code', {
-				'style': 'font-family: monospace; background: #f5f5f5; padding: 2px 6px; border-radius: 3px;'
+				'class': 'code-inline'
 			}, testCmd));
 
 			if (healthConfig.Interval) {
@@ -65,11 +65,11 @@ return baseclass.extend({
 			}
 
 			const configSection = new podmanUI.Section({
-				'style': 'margin-bottom: 20px;'
+				'class': 'mb-sm'
 			});
 			configSection.addNode(_('Health Check Configuration'),
 				E('div', {
-						'style': 'font-size: 0.9em; color: #666; margin-top: 5px;'
+						'class': 'text-secondary mt-sm'
 					},
 					_(
 						'Health check configuration is set at container creation and cannot be modified. To change it, you must recreate the container.')
@@ -79,7 +79,7 @@ return baseclass.extend({
 		} else {
 			// No health check configured
 			const noHealthSection = new podmanUI.Section({
-				'style': 'margin-bottom: 20px;'
+				'class': 'mb-sm'
 			});
 			noHealthSection.addNode(
 				_('Health Check Configuration'),
@@ -98,13 +98,12 @@ return baseclass.extend({
 			statusTable.addRow([{
 					inner: _('Status'),
 					options: {
-						'style': 'width: 33%; font-weight: bold;'
+						'class': 'text-bold col-third'
 					}
 				},
 				{
 					inner: E('span', {
-						'class': 'badge status-' + status.toLowerCase(),
-						'style': 'font-size: 16px;'
+						'class': 'badge status-' + status.toLowerCase()
 					}, status)
 				}
 			]);
@@ -112,21 +111,20 @@ return baseclass.extend({
 			statusTable.addRow([{
 					inner: _('Failing Streak'),
 					options: {
-						'style': 'width: 33%; font-weight: bold;'
+						'class': 'text-bold col-third'
 					}
 				},
 				{
 					inner: failingStreak > 0 ? _('%d consecutive failures').format(
 						failingStreak) : _('No failures'),
 					options: {
-						'style': failingStreak > 0 ?
-							'color: #ff6b6b; font-weight: bold;' : ''
+						'class': failingStreak > 0 ? 'text-error text-bold' : ''
 					}
 				}
 			]);
 
 			const statusSection = new podmanUI.Section({
-				'style': 'margin-bottom: 20px;'
+				'class': 'mb-lg'
 			});
 			statusSection.addNode(_('Health Status'), '', statusTable.render());
 			sections.push(statusSection.render());
@@ -172,7 +170,7 @@ return baseclass.extend({
 					{
 						inner: outputSpan,
 						options: {
-							'style': 'font-family: monospace; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
+							'class': 'text-mono text-truncate',
 							'title': outputText
 						}
 					}
@@ -180,7 +178,7 @@ return baseclass.extend({
 			});
 
 			const historySection = new podmanUI.Section({
-				'style': 'margin-bottom: 20px;'
+				'class': 'mb-lg'
 			});
 			historySection.addNode(_('Recent Checks (Last 10)'), '', historyTable.render());
 			sections.push(historySection.render());
@@ -194,7 +192,7 @@ return baseclass.extend({
 		// Add manual health check button (only if health check is configured)
 		if (health) {
 			content.appendChild(E('div', {
-				'style': 'margin-top: 20px;'
+				'class': 'mt-lg'
 			}, [
 				new podmanUI.Button(_('Run Health Check Now'), () => this
 					.handleHealthCheck(),

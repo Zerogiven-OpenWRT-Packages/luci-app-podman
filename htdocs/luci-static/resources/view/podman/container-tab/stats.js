@@ -102,7 +102,7 @@ return baseclass.extend({
 		const statsDisplay = statsSection.render();
 
 		const processSection = new podmanUI.Section({
-			'style': 'margin-top: 20px;'
+			'class': 'mt-lg'
 		});
 		processSection.addNode(_('Running Processes'), '', E('div', {
 			'id': 'process-list-container'
@@ -134,7 +134,7 @@ return baseclass.extend({
 		if (processContainer) {
 			processContainer.textContent = '';
 			processContainer.appendChild(E('p', {
-					'style': 'color: #999;'
+					'class': 'text-muted'
 				},
 				_('Container must be running to view processes')));
 		}
@@ -302,7 +302,7 @@ return baseclass.extend({
 					content.removeChild(content.firstChild);
 				}
 				content.appendChild(E('p', {
-						'style': 'color: #999;'
+						'class': 'text-muted'
 					},
 					_('Failed to load process list: %s').format(
 						err.message || _('Unknown error')

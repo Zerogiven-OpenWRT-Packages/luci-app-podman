@@ -520,9 +520,8 @@ return baseclass.extend({
 				E('p', {}, _('Paste a docker or podman run command below:')),
 				E('textarea', {
 					'id': 'run-command-input',
-					'class': 'cbi-input-textarea',
+					'class': 'cbi-input-textarea input-full text-mono',
 					'rows': 8,
-					'style': 'width: 100%; font-family: monospace;',
 					'placeholder': 'docker run -d --name my-container -p 8080:80 -e ENV_VAR=value nginx:latest'
 				}),
 				new podmanUI.ModalButtons({

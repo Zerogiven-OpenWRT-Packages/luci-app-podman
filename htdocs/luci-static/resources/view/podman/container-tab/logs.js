@@ -36,31 +36,30 @@ return baseclass.extend({
 			}, [
 				// Controls
 				E('div', {
-					'style': 'margin-bottom: 10px;'
+					'class': 'mb-sm'
 				}, [
 					E('label', {
-						'style': 'margin-right: 15px;'
+						'class': 'mr-md'
 					}, [
 						E('input', {
 							'type': 'checkbox',
 							'id': 'log-stream-toggle',
-							'style': 'margin-right: 5px;',
+							'class': 'mr-xs',
 							'change': (ev) => this.toggleLogStream(ev)
 						}),
 						_('Live Stream')
 					]),
 					E('label', {
-						'style': 'margin-right: 15px;'
+						'class': 'mr-md'
 					}, [
 						_('Lines: '),
 						E('input', {
 							'type': 'number',
 							'id': 'log-lines',
-							'class': 'cbi-input-text',
+							'class': 'cbi-input-text input-xs ml-xs',
 							'value': '100',
 							'min': '10',
-							'max': '150',
-							'style': 'width: 80px; margin-left: 5px;'
+							'max': '150'
 						})
 					]),
 					new podmanUI.Button(_('Clear'), () => this.clearLogs())
@@ -72,7 +71,7 @@ return baseclass.extend({
 				// Logs container
 				E('pre', {
 					'id': 'logs-output',
-					'style': 'background: #000; color: #0f0; padding: 10px; height: 600px; overflow: auto; font-family: monospace; font-size: 12px; white-space: pre; resize: vertical;'
+					'class': 'logs-output'
 				}, _('Loading logs...'))
 			])
 		]);

@@ -165,8 +165,7 @@ return view.extend({
 					const translatedMissing = result.missing.map(item => _(item));
 					iconEl.appendChild(E('a', {
 						'href': '#',
-						'class': 'alert-icon',
-						'style': 'color: #f90; text-decoration: none; cursor: pointer;',
+						'class': 'alert-link',
 						'title': _(
 							'OpenWrt integration incomplete. Click to setup. Missing: %s'
 						).format(translatedMissing.join(', ')),
@@ -393,10 +392,10 @@ return view.extend({
 			// Show existing components (if any)
 			if (existingItems.length > 0) {
 				modalContent.push(
-					E('p', { 'style': 'margin-top: 15px;' }, [
-						E('strong', { 'style': 'color: #28a745;' }, '✓ ' + _('Already configured:'))
+					E('p', { 'class': 'mt-md' }, [
+						E('strong', { 'class': 'text-success' }, '✓ ' + _('Already configured:'))
 					]),
-					E('ul', { 'style': 'margin: 5px 0;' },
+					E('ul', {},
 						existingItems.map(item => E('li', {}, item))
 					)
 				);
@@ -405,10 +404,10 @@ return view.extend({
 			// Show missing components
 			if (missingItems.length > 0) {
 				modalContent.push(
-					E('p', { 'style': 'margin-top: 15px;' }, [
-						E('strong', { 'style': 'color: #f90;' }, '⚠ ' + _('Will be added:'))
+					E('p', { 'class': 'mt-md' }, [
+						E('strong', { 'class': 'text-warning' }, '⚠ ' + _('Will be added:'))
 					]),
-					E('ul', { 'style': 'margin: 5px 0;' },
+					E('ul', {},
 						missingItems.map(item => E('li', {}, item))
 					)
 				);

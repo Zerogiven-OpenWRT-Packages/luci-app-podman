@@ -54,11 +54,11 @@ return baseclass.extend({
 					formElement,
 
 					E('div', { 'class': 'cbi-section' }, [
-						E('div', { 'style': 'background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; border-radius: 4px; margin-top: 10px;' },
+						E('div', { 'class': 'warning-box mt-sm' },
 							[
 								E('strong', {}, _('Security Notice:')),
 								E('ul', {
-									'style': 'margin: 10px 0 0 20px;'
+									'class': 'ml-md mt-sm'
 								}, [
 									E('li', {}, _(
 										'Secret data is stored encrypted')),

@@ -239,8 +239,7 @@ return baseclass.extend({
 								if (!closeBtn) {
 									const btnContainer = E(
 										'div', {
-											'class': 'right',
-											'style': 'margin-top: 10px;'
+											'class': 'right mt-sm'
 										},
 										[
 											new podmanUI.Button(_(
