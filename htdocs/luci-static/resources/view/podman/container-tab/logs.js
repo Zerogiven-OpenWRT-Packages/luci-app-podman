@@ -1,6 +1,7 @@
 'use strict';
 
 'require baseclass';
+'require dom';
 'require ui';
 'require poll';
 
@@ -23,9 +24,7 @@ return baseclass.extend({
 		this.containerId = containerId;
 
 		// Clear existing content
-		while (content.firstChild) {
-			content.removeChild(content.firstChild);
-		}
+		dom.content(content, null);
 
 		// Create logs display
 		const logsDisplay = E('div', {

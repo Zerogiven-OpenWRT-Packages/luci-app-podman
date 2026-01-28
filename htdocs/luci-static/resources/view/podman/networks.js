@@ -1,5 +1,6 @@
 'use strict';
 
+'require dom';
 'require view';
 'require form';
 'require ui';
@@ -160,10 +161,9 @@ return view.extend({
 				const iconEl = document.getElementById('integration-icon-' +
 					name);
 				if (iconEl && !result.complete) {
-					iconEl.textContent = '';
 					// Translate missing component names
 					const translatedMissing = result.missing.map(item => _(item));
-					iconEl.appendChild(E('a', {
+					dom.content(iconEl, E('a', {
 						'href': '#',
 						'class': 'alert-link',
 						'title': _(

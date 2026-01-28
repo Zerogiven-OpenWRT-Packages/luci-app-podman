@@ -1,6 +1,7 @@
 'use strict';
 
 'require baseclass';
+'require dom';
 'require ui';
 'require poll';
 
@@ -26,9 +27,7 @@ return baseclass.extend({
 		this.containerId = containerId;
 		this.containerData = containerData;
 
-		while (content.firstChild) {
-			content.removeChild(content.firstChild);
-		}
+		dom.content(content, null);
 
 		const statsTable = new podmanUI.Table({ 'class': 'table table-list' });
 		statsTable
@@ -132,8 +131,7 @@ return baseclass.extend({
 
 		const processContainer = document.getElementById('process-list-container');
 		if (processContainer) {
-			processContainer.textContent = '';
-			processContainer.appendChild(E('p', {
+			dom.content(processContainer, E('p', {
 					'class': 'text-muted'
 				},
 				_('Container must be running to view processes')));
@@ -238,12 +236,8 @@ return baseclass.extend({
 			const content = document.getElementById('process-list-container');
 			if (!content) return;
 
-			while (content.firstChild) {
-				content.removeChild(content.firstChild);
-			}
-
 			if (!result || !result.Titles || !result.Processes) {
-				content.appendChild(E('p', {}, _('No process data available')));
+				dom.content(content, E('p', {}, _('No process data available')));
 				return;
 			}
 
@@ -251,7 +245,7 @@ return baseclass.extend({
 			const processes = result.Processes || [];
 
 			if (titles.length === 0 || processes.length === 0) {
-				content.appendChild(E('p', {}, _('No running processes')));
+				dom.content(content, E('p', {}, _('No running processes')));
 				return;
 			}
 
@@ -292,16 +286,13 @@ return baseclass.extend({
 				processTable.addRow(cells);
 			});
 
-			content.appendChild(processTable.render());
+			dom.content(content, processTable.render());
 
 		}).catch((err) => {
 			console.error('Process list error:', err);
 			const content = document.getElementById('process-list-container');
 			if (content) {
-				while (content.firstChild) {
-					content.removeChild(content.firstChild);
-				}
-				content.appendChild(E('p', {
+				dom.content(content, E('p', {
 						'class': 'text-muted'
 					},
 					_('Failed to load process list: %s').format(

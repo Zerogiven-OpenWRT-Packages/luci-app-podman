@@ -1,6 +1,7 @@
 'use strict';
 
 'require baseclass';
+'require dom';
 'require ui';
 'require poll';
 
@@ -27,9 +28,7 @@ return baseclass.extend({
 		this.containerData = containerData;
 
 		// Clear existing content
-		while (content.firstChild) {
-			content.removeChild(content.firstChild);
-		}
+		dom.content(content, null);
 
 		const data = this.containerData;
 		const health = data.State && data.State.Health;

@@ -1,5 +1,6 @@
 'use strict';
 
+'require dom';
 'require view';
 'require podman.rpc as podmanRPC';
 'require podman.utils as utils';
@@ -103,22 +104,18 @@ return view.extend({
 			// Update Resource Cards section
 			const resourceCardsContainer = document.getElementById('resource-cards-container');
 			if (resourceCardsContainer) {
-				resourceCardsContainer.textContent = '';
-				resourceCardsContainer.appendChild(
+				dom.content(resourceCardsContainer, [
 					E('h3', {
 						'class': 'resources-heading'
-					}, _('Resources'))
-				);
-				resourceCardsContainer.appendChild(
+					}, _('Resources')),
 					this.createResourceCards(containers, pods, images, networks, volumes,
 						runningContainers, runningPods)
-				);
+				]);
 			}
 		}).catch((err) => {
 			const resourceCardsContainer = document.getElementById('resource-cards-container');
 			if (resourceCardsContainer) {
-				resourceCardsContainer.textContent = '';
-				resourceCardsContainer.appendChild(
+				dom.content(resourceCardsContainer,
 					E('p', {
 						'class': 'alert-message error'
 					}, _('Failed to load resources: %s').format(err.message))
@@ -228,8 +225,7 @@ return view.extend({
 		if (!diskUsageTabContent) return;
 
 		// Show loading state
-		diskUsageTabContent.textContent = '';
-		diskUsageTabContent.appendChild(
+		dom.content(diskUsageTabContent,
 			E('div', {
 				'class': 'loading-placeholder'
 			}, [
@@ -241,13 +237,10 @@ return view.extend({
 
 		// Call system.df() with user awareness this may be slow
 		podmanRPC.system.df().then((diskUsage) => {
-			diskUsageTabContent.textContent = '';
-			diskUsageTabContent.appendChild(
+			dom.content(diskUsageTabContent,
 				this.createDiskUsageSection(diskUsage)
 			);
 		}).catch((err) => {
-			diskUsageTabContent.textContent = '';
-
 			const errorMsg = E('div', {
 				'class': 'p-md'
 			}, [
@@ -268,7 +261,7 @@ return view.extend({
 				])
 			]);
 
-			diskUsageTabContent.appendChild(errorMsg);
+			dom.content(diskUsageTabContent, errorMsg);
 		});
 	},
 
@@ -623,12 +616,13 @@ return view.extend({
 			const progressContainer = document.getElementById('update-progress-container');
 			if (!progressContainer) return;
 
-			progressContainer.textContent = '';
-			progressContainer.appendChild(E('p', { 'class': 'modal-heading' },
-				_('%s (%d/%d):').format(container.name, idx, total)));
-			progressContainer.appendChild(E('div', { 'class': 'ml-md' }, [
-				E('em', { 'class': 'spinning' }, msg)
-			]));
+			dom.content(progressContainer, [
+				E('p', { 'class': 'modal-heading' },
+					_('%s (%d/%d):').format(container.name, idx, total)),
+				E('div', { 'class': 'ml-md' }, [
+					E('em', { 'class': 'spinning' }, msg)
+				])
+			]);
 		};
 
 		autoUpdate.updateContainers(

@@ -1,6 +1,7 @@
 'use strict';
 
 'require baseclass';
+'require dom';
 'require ui';
 
 'require podman.ui as podmanUI';
@@ -91,10 +92,7 @@ return baseclass.extend({
 				const placeholder = document.getElementById('network-section-placeholder');
 				if (placeholder) {
 					// Clear placeholder and show error using DOM methods
-					while (placeholder.firstChild) {
-						placeholder.removeChild(placeholder.firstChild);
-					}
-					placeholder.appendChild(E('div', { 'class': 'cbi-section section-container-info' }, [
+					dom.content(placeholder, E('div', { 'class': 'cbi-section section-container-info' }, [
 						E('h3', {}, _('Network')),
 						E('div', { 'class': 'alert-message error' },
 							_('Failed to load network information: %s').format(err.message))
@@ -226,8 +224,7 @@ return baseclass.extend({
 
 				if (status.exists && status.enabled) {
 					// Init script exists and enabled
-					initScriptCell.textContent = '';
-					initScriptCell.appendChild(E('span', {
+					dom.content(initScriptCell, E('span', {
 						'class': 'text-success mr-sm'
 					}, '✓ ' + _('Enabled')));
 
@@ -239,8 +236,7 @@ return baseclass.extend({
 						.render());
 				} else if (status.exists && !status.enabled) {
 					// Init script exists but disabled
-					initScriptCell.textContent = '';
-					initScriptCell.appendChild(E('span', {
+					dom.content(initScriptCell, E('span', {
 						'class': 'text-muted mr-sm'
 					}, '○ ' + _('Disabled')));
 
@@ -252,8 +248,7 @@ return baseclass.extend({
 						.render());
 				} else if (hasRestartPolicy) {
 					// No init script but has restart policy - show warning with Generate button
-					initScriptCell.textContent = '';
-					initScriptCell.appendChild(E('span', {
+					dom.content(initScriptCell, E('span', {
 						'class': 'text-warning mr-sm',
 						'title': _('Restart policy set but no init script')
 					}, '⚠ ' + _('Not configured')));
@@ -263,8 +258,7 @@ return baseclass.extend({
 						.render());
 				} else {
 					// No init script and no restart policy - show helper text
-					initScriptCell.textContent = '';
-					initScriptCell.appendChild(E('span', {
+					dom.content(initScriptCell, E('span', {
 						'class': 'text-muted',
 						'title': _(
 							'Set a restart policy to enable auto-start')
