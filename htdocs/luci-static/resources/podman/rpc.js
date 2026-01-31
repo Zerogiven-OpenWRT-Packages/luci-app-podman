@@ -275,6 +275,17 @@ return baseclass.extend({
 		}),
 
 		/**
+		 * Inspect remote image manifest without pulling.
+		 * @param {string} image - Image name (e.g., 'docker.io/library/nginx:latest')
+		 * @returns {Promise<Object>} Manifest with architecture entries
+		 */
+		manifestInspect: rpc.declare({
+			object: 'luci.podman',
+			method: 'image_manifest_inspect',
+			params: ['image']
+		}),
+
+		/**
 		 * Pull image (blocking).
 		 * @param {string} image - Image name (e.g., 'nginx:latest')
 		 * @returns {Promise<Object>} Pull result

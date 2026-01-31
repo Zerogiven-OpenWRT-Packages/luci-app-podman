@@ -14,6 +14,7 @@
 					"container_healthcheck_run",
 					"images_list",
 					"image_inspect",
+					"image_manifest_inspect",
 					"image_pull_status",
 					"networks_list",
 					"network_inspect",

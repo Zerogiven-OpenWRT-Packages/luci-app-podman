@@ -164,6 +164,7 @@ case "$1" in
 	"images_list": {},
 	"image_inspect": { "id": "" },
 	"image_remove": { "id": "", "force": false },
+	"image_manifest_inspect": { "image": "" },
 	"image_pull": { "image": "" },
 	"image_pull_stream": { "image": "" },
 	"image_pull_status": { "session_id": "", "offset": 0 },
@@ -481,6 +482,12 @@ EOF
 				id_enc=$(urlencode "$id")
 				path=$(add_force "${API_BASE}/images/${id_enc}" "$force")
 				curl_request "DELETE" "$path"
+				;;
+			image_manifest_inspect)
+				get_json_params image
+				require_param image
+				image_enc=$(urlencode "$image")
+				curl_request "GET" "${API_BASE}/manifests/${image_enc}/json"
 				;;
 			image_pull)
 				get_json_params image

@@ -93,80 +93,116 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Check for updates for the given containers.
-	 * Uses streaming pull to avoid XHR timeouts.
+	 * Check for updates by comparing manifests (without pulling images).
 	 * @param {Array} containers - Containers to check
-	 * @param {Function} onProgress - Progress callback (container, idx, total, pullProgress)
+	 * @param {Function} onProgress - Progress callback (container, idx, total, status)
 	 * @returns {Promise<Array>} Containers with update status
 	 */
-	checkForUpdates: function(containers, onProgress) {
-		const self = this;
+	checkForUpdates: async function(containers, onProgress) {
 		const results = [];
-		let idx = 0;
-		const total = containers.length;
 
-		const checkNext = () => {
-			if (idx >= containers.length) {
-				return Promise.resolve(results);
-			}
-
+		for (let idx = 0; idx < containers.length; idx++) {
 			const container = containers[idx];
-			idx++;
 
 			if (onProgress) {
-				onProgress(container, idx, total, null);
+				onProgress(container, idx + 1, containers.length, null);
 			}
 
-			// Pull the image using streaming API to avoid timeout
-			return self.pullImageStreaming(container.image, (pullOutput) => {
-				if (onProgress) {
-					onProgress(container, idx, total, pullOutput);
-				}
-			})
-				.then((success) => {
-					if (!success) {
-						throw new Error(_('Failed to pull image'));
-					}
+			try {
+				// Step 1: Get local image info (includes Architecture and Digest)
+				const localImage = await podmanRPC.image.inspect(container.image);
+				const localDigest = this.extractDigest(localImage);
+				const localArch = localImage.Architecture || 'amd64';
+				const localOs = localImage.Os || 'linux';
 
-					return podmanRPC.image.inspect(container.image);
-				})
-				.then((newImage) => {
-					const hasUpdate = container.imageId !== newImage.Id;
-					results.push({
-						name: container.name,
-						image: container.image,
-						running: container.running,
-						currentImageId: container.imageId,
-						newImageId: newImage.Id,
-						hasUpdate: hasUpdate
-					});
-					return checkNext();
-				})
-				.catch((err) => {
-					// Pull failed - record error but continue
-					results.push({
-						name: container.name,
-						image: container.image,
-						running: container.running,
-						hasUpdate: false,
-						error: err.message || String(err)
-					});
-					return checkNext();
+				// Step 2: Fetch remote manifest (NO PULL!)
+				const manifest = await podmanRPC.image.manifestInspect(container.image);
+
+				// Step 3: Find matching architecture in remote manifest
+				const remoteDigest = this.findArchDigest(manifest, localArch, localOs);
+
+				// Step 4: Compare digests
+				const hasUpdate = remoteDigest && localDigest &&
+					remoteDigest !== localDigest;
+
+				results.push({
+					name: container.name,
+					image: container.image,
+					running: container.running,
+					currentImageId: container.imageId,
+					hasUpdate: hasUpdate,
+					currentDigest: localDigest,
+					remoteDigest: remoteDigest
 				});
-		};
+			} catch (err) {
+				results.push({
+					name: container.name,
+					image: container.image,
+					running: container.running,
+					hasUpdate: false,
+					error: err.message || String(err)
+				});
+			}
+		}
 
-		return checkNext();
+		return results;
+	},
+
+	/**
+	 * Extract digest from local image for comparison.
+	 * @param {Object} imageData - Image inspect data
+	 * @returns {string|null} Digest string
+	 */
+	extractDigest: function(imageData) {
+		// Use Digest field (this is the manifest digest)
+		if (imageData.Digest) {
+			return imageData.Digest;
+		}
+		// Fallback to RepoDigests
+		if (imageData.RepoDigests && imageData.RepoDigests.length > 0) {
+			for (const rd of imageData.RepoDigests) {
+				if (rd.includes('@sha256:')) {
+					return rd.split('@')[1];
+				}
+			}
+		}
+		return null;
+	},
+
+	/**
+	 * Find digest for matching architecture in manifest.
+	 * @param {Object} manifest - Remote manifest data
+	 * @param {string} arch - Architecture to match (e.g., 'arm64')
+	 * @param {string} os - OS to match (e.g., 'linux')
+	 * @returns {string|null} Matching digest
+	 */
+	findArchDigest: function(manifest, arch, os) {
+		if (!manifest || !manifest.manifests) {
+			// Single-arch image, use main digest
+			return manifest.digest || null;
+		}
+
+		// Find matching platform (same arch + os as local image)
+		const entry = manifest.manifests.find((m) =>
+			m.platform &&
+			m.platform.architecture === arch &&
+			m.platform.os === os
+		);
+
+		return entry ? entry.digest : null;
 	},
 
 	/**
 	 * Update a single container.
 	 * @param {string} name - Container name
+	 * @param {string} image - Image name to pull
 	 * @param {boolean} wasRunning - Whether container was running before update
 	 * @param {string} oldImageId - Image ID before update (to remove after successful update)
 	 * @param {Function} onStep - Step callback (step, message)
+	 * @param {Function} onPullProgress - Pull progress callback (output)
 	 * @returns {Promise<Object>} Update result with success flag and createCommand
 	 */
-	updateContainer: async function(name, wasRunning, oldImageId, onStep) {
+	updateContainer: async function(name, image, wasRunning, oldImageId, onStep, onPullProgress) {
 		let createCommand = null;
 
 		const step = (stepNum, msg) => {
@@ -183,21 +219,30 @@ return baseclass.extend({
 				}
 				createCommand = inspectData.Config.CreateCommand;
 
-				// Step 2: Stop if running
+				// Step 2: Pull the new image
+				step(2, _('Pulling new image...'));
+				return this.pullImageStreaming(image, onPullProgress);
+			})
+			.then((pullSuccess) => {
+				if (!pullSuccess) {
+					throw new Error(_('Failed to pull image'));
+				}
+
+				// Step 3: Stop if running
 				if (wasRunning) {
-					step(2, _('Stopping container...'));
+					step(3, _('Stopping container...'));
 					return podmanRPC.container.stop(name);
 				}
 				return Promise.resolve();
 			})
 			.then(() => {
-				// Step 3: Remove old container
-				step(3, _('Removing old container...'));
+				// Step 4: Remove old container
+				step(4, _('Removing old container...'));
 				return podmanRPC.container.remove(name, true);
 			})
 			.then(() => {
-				// Step 4: Recreate using original command
-				step(4, _('Creating new container...'));
+				// Step 5: Recreate using original command (now uses newly pulled image)
+				step(5, _('Creating new container...'));
 				return podmanRPC.container.recreate(JSON.stringify(createCommand));
 			})
 			.then((result) => {
@@ -205,17 +250,17 @@ return baseclass.extend({
 					throw new Error(result.error + (result.details ? ': ' + result.details : ''));
 				}
 
-				// Step 5: Start if was running
+				// Step 6: Start if was running
 				if (wasRunning) {
-					step(5, _('Starting container...'));
+					step(6, _('Starting container...'));
 					return podmanRPC.container.start(name);
 				}
 				return Promise.resolve();
 			})
 			.then(() => {
-				// Step 6: Remove old image (cleanup dangling image)
+				// Step 7: Remove old image (cleanup dangling image)
 				if (oldImageId) {
-					step(6, _('Cleaning up old image...'));
+					step(7, _('Cleaning up old image...'));
 					return podmanRPC.image.remove(oldImageId, false).catch(() => {
 						// Ignore errors - image might be used by another container
 					});
@@ -223,7 +268,7 @@ return baseclass.extend({
 				return Promise.resolve();
 			})
 			.then(() => {
-				step(7, _('Update complete'));
+				step(8, _('Update complete'));
 				return {
 					success: true,
 					name: name,
@@ -242,13 +287,14 @@ return baseclass.extend({
 
 	/**
 	 * Update multiple containers.
-	 * @param {Array} containers - Containers to update (with name, running, currentImageId properties)
+	 * @param {Array} containers - Containers to update (with name, image, running, currentImageId properties)
 	 * @param {Function} onContainerStart - Callback when starting a container update
 	 * @param {Function} onContainerStep - Callback for container step progress
 	 * @param {Function} onContainerComplete - Callback when container update completes
+	 * @param {Function} onPullProgress - Callback for image pull progress
 	 * @returns {Promise<Object>} Summary with successes, failures arrays
 	 */
-	updateContainers: function(containers, onContainerStart, onContainerStep, onContainerComplete) {
+	updateContainers: function(containers, onContainerStart, onContainerStep, onContainerComplete, onPullProgress) {
 		const successes = [];
 		const failures = [];
 		let idx = 0;
@@ -271,13 +317,15 @@ return baseclass.extend({
 
 			return this.updateContainer(
 				container.name,
+				container.image,
 				container.running,
 				container.currentImageId,
 				(step, msg) => {
 					if (onContainerStep) {
 						onContainerStep(container, step, msg);
 					}
-				}
+				},
+				onPullProgress
 			).then((result) => {
 				if (result.success) {
 					successes.push(result);
@@ -294,26 +342,5 @@ return baseclass.extend({
 		};
 
 		return updateNext();
-	},
-
-	/**
-	 * Format CreateCommand array for display (copyable text).
-	 * @param {Array} command - CreateCommand array
-	 * @returns {string} Formatted command string
-	 */
-	formatCreateCommand: function(command) {
-		if (!command || !Array.isArray(command)) {
-			return '';
-		}
-
-		// Join with proper escaping for shell
-		return command.map((arg) => {
-			// If arg contains spaces or special chars, quote it
-			if (/[\s"'\\$`!]/.test(arg)) {
-				// Use single quotes and escape any single quotes in the arg
-				return "'" + arg.replace(/'/g, "'\\''") + "'";
-			}
-			return arg;
-		}).join(' ');
 	}
 });
