@@ -11,8 +11,7 @@
 'require podman.form as podmanForm';
 'require podman.list as List';
 
-const IMAGE_ID_SUBSTR_START = 7;
-const IMAGE_ID_SUBSTR_END = 19;
+const IMAGE_ID_TRUNCATE_LEN = 12;
 
 utils.addPodmanCss();
 
@@ -112,7 +111,7 @@ return view.extend({
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'ImageId', _('Image ID'));
 		o.click = (image) => this.handleInspect(image.Id);
-		o.text = (image) => utils.truncate(image.Id ? image.Id.substring(IMAGE_ID_SUBSTR_START, IMAGE_ID_SUBSTR_END) : '', 10);
+		o.text = (image) => utils.truncate(image.Id, IMAGE_ID_TRUNCATE_LEN);
 
 		o = section.option(podmanForm.field.DataDummyValue, 'Size', _('Size'));
 		o.cfgformatter = format.bytes;
@@ -125,8 +124,7 @@ return view.extend({
 			onRefresh: () => this.handleRefresh(),
 			customButtons: [{
 				text: _('Pull Latest'),
-				handler: () => this
-					.handlePullLatestSelected(),
+				handler: () => this.handlePullLatestSelected(),
 				cssClass: 'positive'
 			}]
 		});
