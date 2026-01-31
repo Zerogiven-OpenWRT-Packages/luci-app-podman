@@ -298,10 +298,17 @@ const ListUtil = baseclass.extend({
 
 		// Priority: Main errors > Cleanup errors > Success
 		if (mainErrors.length > 0) {
-			// Critical: Main deletion failed
-			podmanUI.errorNotification(_('Failed to delete %d %s').format(
+			// Critical: Main deletion failed - show detailed error messages
+			const formatFn = options.formatItemName || ((item) => typeof item === 'string' ? item : item.name || item.Name || item.id || item.Id);
+			const errorDetails = mainErrors.map((r) => {
+				const itemName = formatFn(r.item);
+				return itemName + ': ' + r.error;
+			}).join('\n');
+
+			podmanUI.errorNotification(_('Failed to delete %d %s:\n%s').format(
 				mainErrors.length,
-				mainErrors.length === 1 ? this.itemName : this.itemName + 's'
+				mainErrors.length === 1 ? this.itemName : this.itemName + 's',
+				errorDetails
 			));
 		} else if (cleanupErrors.length > 0) {
 			// Warning: Deletion succeeded but cleanup failed
