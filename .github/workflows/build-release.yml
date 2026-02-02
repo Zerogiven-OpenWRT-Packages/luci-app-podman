@@ -15,7 +15,7 @@ jobs:
             arch: 'x86_64'
       fail-fast: false
     permissions: {}
-    uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-build.yml@main
+    uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-build.yml@rust-patch
     with:
       package_name: 'luci-app-podman'
       sdk_packages: 'luci-app-podman'
@@ -32,7 +32,7 @@ jobs:
     needs: build-packages
     permissions:
       contents: write
-    uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-release.yml@main
+    uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-release.yml@rust-patch
     with:
       artifact_pattern: 'luci-app-podman-*'
       release_file_pattern: '*.{apk,ipk}'
