@@ -59,11 +59,11 @@ You can setup this package feed to install and update it with opkg:
 
 [https://github.com/Zerogiven-OpenWRT-Packages/package-feed](https://github.com/Zerogiven-OpenWRT-Packages/package-feed)
 
-### From IPK Package
+### From Package
 
 ```bash
-wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.5.0/luci-app-podman_1.5.0-r1_all.ipk
-opkg update && opkg install luci-app-podman_1.5.0-r1_all.ipk
+wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.10.0/luci-app-podman_1.10.0-r1_all.ipk
+opkg update && opkg install luci-app-podman_1.10.0-r1_all.ipk
 ```
 
 ### From Source
@@ -93,11 +93,17 @@ If encountering socket errors:
 
 You can generate a startup script which respects the restart policy set in the container.
 
+<details>
+
+<summary>Tip</summary>
+
 > [!TIP]
 > If you want save startup scripts during an upgrade you have to config your `/etc/sysupgrade.conf` with `/etc/init.d/container-*`.
 > ```bash
 > echo "/etc/init.d/container-*" >> /etc/sysupgrade.conf
 > ```
+
+</details>
 
 ## Container Auto-Update
 
@@ -129,6 +135,10 @@ Container names and init scripts are preserved - no manual reconfiguration neede
 
 This package installs a cron job that runs every 2 minutes to clean up orphaned streaming sessions. When users navigate away from the UI while viewing logs or pulling images, the background processes could be left running indefinitely. The cleanup script (`/usr/libexec/podman-cleanup`) terminates sessions with no activity for 2+ minutes.
 
+<details>
+
+<summary>Tip</summary>
+
 > [!TIP]
 > If cron execution logs are too verbose, you can silence them by setting the cron log level in `/etc/config/system`:
 > ```bash
@@ -136,6 +146,8 @@ This package installs a cron job that runs every 2 minutes to clean up orphaned 
 > uci commit system
 > /etc/init.d/system restart
 > ```
+
+</details>
 
 ## Credits
 
