@@ -36,7 +36,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - **Secret Management**: Encrypted storage for sensitive data
 - **System Overview**: Resource usage, disk space, system-wide cleanup
 - **Mobile Friendly Lists**: Optimized for basic usage
-- **OpenWRT JS API**: Use the new way to make luci apps
+- **OpenWRT JS API**: Using luci js api
 
 ## Screenshots
 
