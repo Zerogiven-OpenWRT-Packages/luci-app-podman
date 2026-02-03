@@ -22,6 +22,8 @@ jobs:
       artifacts_patterns: |
         luci-app-podman*.ipk
         luci-i18n-podman-*.ipk
+        luci-app-podman*.apk
+        luci-i18n-podman-*.apk
       openwrt_version: ${{ matrix.openwrt_version }}
       openwrt_build_version: ${{ matrix.openwrt_build_version }}
       arch: ${{ matrix.arch }}
@@ -35,7 +37,6 @@ jobs:
     uses: Zerogiven/gh-openwrt-package-build-workflows/.github/workflows/reusable-release.yml@rust-patch
     with:
       artifact_pattern: 'luci-app-podman-*'
-      release_file_pattern: '*.{apk,ipk}'
       tag_name: ${{ github.ref_name }}
     secrets:
       RELEASE_TOKEN: ${{ secrets.OWRT_PACKAGE_RELEASE_TOKEN }}
