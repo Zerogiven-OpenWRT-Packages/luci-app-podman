@@ -137,6 +137,11 @@
 }
 
 /* --- Form Elements --- */
+.editable-field {
+    width: 100%;
+    display: flex;
+}
+
 .input-xs {
     width: 80px;
 }

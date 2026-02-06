@@ -119,19 +119,23 @@ return baseclass.extend({
 			{ inner: _('Name') },
 			{
 				inner: [
-					E('input', {
-						'type': 'text',
-						'id': inputId,
-						'class': 'cbi-input-text edit-container-name',
-						'value': data.Name ? data.Name.replace(/^\//, '') : '-',
-					}),
-					new podmanUI.Button(
-						_('Update'),
-						() => this.handleUpdateName(
-							document.getElementById(inputId).value
-						),
-						'apply'
-					).render()
+					E('div', {
+						'class': 'editable-field'
+					}, [
+						E('input', {
+							'type': 'text',
+							'id': inputId,
+							'class': 'cbi-input-text edit-container-name',
+							'value': data.Name ? data.Name.replace(/^\//, '') : '-',
+						}),
+						new podmanUI.Button(
+							_('Update'),
+							() => this.handleUpdateName(
+								document.getElementById(inputId).value
+							),
+							'apply'
+						).render()
+					])
 				]
 			}
 		]);
@@ -189,12 +193,16 @@ return baseclass.extend({
 			{ inner: _('Restart Policy') },
 			{
 				inner: [
-					E('select', {
-						'id': selectId,
-						'class': 'cbi-input-select input-lg mr-xs'
-					}, policyOptions),
-					new podmanUI.Button(_('Update'), () => this.handleUpdateRestartPolicy(
-						document.getElementById(selectId).value), 'apply').render()
+					E('div', {
+						'class': 'editable-field'
+					}, [
+						E('select', {
+							'id': selectId,
+							'class': 'cbi-input-select input-lg mr-xs'
+						}, policyOptions),
+						new podmanUI.Button(_('Update'), () => this.handleUpdateRestartPolicy(
+							document.getElementById(selectId).value), 'apply').render()
+					])
 				]
 			}
 		]);
@@ -231,6 +239,9 @@ return baseclass.extend({
 					buttons.push(new podmanUI.Button(_('Show'), () => this
 						.handleShowInitScript(containerName), 'neutral').render());
 					buttons.push(' ');
+					buttons.push(new podmanUI.Button(_('Regenerate'), () => this
+						.handleGenerateInitScript(containerName), 'apply').render());
+					buttons.push(' ');
 					buttons.push(new podmanUI.Button(_('Disable'), () => this
 							.handleToggleInitScript(containerName, false), 'negative')
 						.render());
@@ -242,6 +253,9 @@ return baseclass.extend({
 
 					buttons.push(new podmanUI.Button(_('Show'), () => this
 						.handleShowInitScript(containerName), 'neutral').render());
+					buttons.push(' ');
+					buttons.push(new podmanUI.Button(_('Regenerate'), () => this
+						.handleGenerateInitScript(containerName), 'apply').render());
 					buttons.push(' ');
 					buttons.push(new podmanUI.Button(_('Enable'), () => this
 							.handleToggleInitScript(containerName, true), 'positive')
@@ -376,21 +390,21 @@ return baseclass.extend({
 				{ inner: _('Create Command') },
 				{
 					inner: createCommandElement,
-					options: { 'class': 'text-break' }
+					options: { 'class': 'text-break td' }
 				}
 			])
 			.addRow([
 				{ inner: _('Command') },
 				{
 					inner: cmd,
-					options: { 'class': 'text-break' }
+					options: { 'class': 'text-break td' }
 				}
 			])
 			.addRow([
 				{ inner: _('Entrypoint') },
 				{
 					inner: entrypoint,
-					options: { 'class': 'text-break' }
+					options: { 'class': 'text-break td' }
 				}
 			])
 			.addRow([
@@ -470,7 +484,7 @@ return baseclass.extend({
 				networkTable.addRow([{
 						inner: netName,
 						options: {
-							'class': 'tt',
+							'class': 'tt td',
 							'title': tooltip
 						}
 					},
