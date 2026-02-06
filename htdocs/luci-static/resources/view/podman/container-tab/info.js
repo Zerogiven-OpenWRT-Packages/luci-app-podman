@@ -376,7 +376,6 @@ return baseclass.extend({
 			E('button', {
 				'class': 'cbi-button',
 				'click': () => {
-					console.log('createCommand', createCommand);
 					navigator.clipboard.writeText(createCommand).then(() => {
 						podmanUI.infoTimeNotification(_('Command copied to clipboard'));
 					});
