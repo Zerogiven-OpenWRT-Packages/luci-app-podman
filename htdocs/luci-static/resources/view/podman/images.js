@@ -100,7 +100,7 @@ return view.extend({
 				return E(
 					'span', {
 						'title': tagValue,
-						'class': 'tt'
+						'class': 'tooltip'
 					},
 					tagValue.substring(0, 14) + '...'
 				);

@@ -484,7 +484,7 @@ return baseclass.extend({
 				networkTable.addRow([{
 						inner: netName,
 						options: {
-							'class': 'tt td',
+							'class': 'tooltip td',
 							'title': tooltip
 						}
 					},

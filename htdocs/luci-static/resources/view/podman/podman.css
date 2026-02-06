@@ -1,5 +1,12 @@
+:root {
+    /* Terminal color variables for consistency and theming */
+    --podman-terminal-bg: #1a1a1a;
+    --podman-terminal-fg: #0f0;
+    --warn-background-color-dark: rgba(166, 141, 69, 0.2);
+}
+
 /* --- Base Components & Helper Classes --- */
-.tt {
+.tooltip {
     border-bottom: 1px dotted;
     cursor: help;
 }
@@ -55,7 +62,7 @@
 }
 
 .ml-md {
-    margin-left: 20px;
+    margin-left: 15px;
 }
 
 .mt-sm {
@@ -206,7 +213,7 @@
 }
 
 [data-darkmode="true"] .warning-box {
-    background: rgba(166, 141, 69, 0.2);
+    background: var(--warn-background-color-dark);
 }
 
 /* --- Link Utilities --- */
@@ -247,13 +254,13 @@
 }
 
 .terminal-area {
-    background: #1a1a1a;
-    color: #0f0;
+    background: var(--podman-terminal-bg);
+    color: var(--podman-terminal-fg);
 }
 
 .logs-output {
-    background: #1a1a1a;
-    color: #0f0;
+    background: var(--podman-terminal-bg);
+    color: var(--podman-terminal-fg);
     padding: 10px;
     height: 600px;
     overflow: auto;
