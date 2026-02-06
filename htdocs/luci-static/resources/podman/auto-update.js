@@ -14,6 +14,11 @@ return baseclass.extend({
 	POLL_INTERVAL: 1000,
 
 	/**
+	 * Max polls without progress before aborting (seconds)
+	 */
+	STALL_TIMEOUT: 120,
+
+	/**
 	 * Get all containers with auto-update label.
 	 * @returns {Promise<Array>} Containers with auto-update enabled
 	 */
@@ -60,18 +65,28 @@ return baseclass.extend({
 	waitForPullComplete: function(sessionId, onProgress) {
 		const self = this;
 		let offset = 0;
+		let stallCount = 0;
+		const maxStallPolls = Math.ceil(self.STALL_TIMEOUT * 1000 / self.POLL_INTERVAL);
 
 		const checkStatus = () => {
 			return podmanRPC.image.pullStatus(sessionId, offset).then((status) => {
 				if (status.output) {
 					offset += status.output.length;
+					stallCount = 0;
 					if (onProgress) {
 						onProgress(status.output);
 					}
+				} else {
+					stallCount++;
 				}
 
 				if (status.complete) {
 					return status.success;
+				}
+
+				if (stallCount >= maxStallPolls) {
+					podmanRPC.image.pullStop(sessionId).catch(() => {});
+					throw new Error(_('Image pull stalled (no progress for %ds)').format(self.STALL_TIMEOUT));
 				}
 
 				// Not complete yet, wait and poll again
@@ -82,9 +97,7 @@ return baseclass.extend({
 				});
 			}).catch((err) => {
 				// Cleanup orphaned pull session on error
-				podmanRPC.image.pullStop(sessionId).catch(() => {
-					// Ignore cleanup errors
-				});
+				podmanRPC.image.pullStop(sessionId).catch(() => {});
 				throw err;
 			});
 		};
