@@ -28,7 +28,7 @@ const UINotifications = baseclass.extend({
 	 * @param {string} [type] - Type (info, warning, error)
 	 */
 	simpleNotification: function (text, type) {
-		ui.addNotification(null, E('p', text), type || '');
+		ui.addNotification(null, E('p', text), type || 'info');
 	},
 
 	/**
@@ -53,7 +53,7 @@ const UINotifications = baseclass.extend({
 	 * @param {string} [type] - Type (info, warning, success)
 	 */
 	simpleTimeNotification: function (text, type) {
-		ui.addTimeLimitedNotification(null, E('p', text), c.NOTIFICATION_TIMEOUT, type || '');
+		ui.addTimeLimitedNotification(null, E('p', text), c.NOTIFICATION_TIMEOUT, type || 'info');
 	},
 
 	/**

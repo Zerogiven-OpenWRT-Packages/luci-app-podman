@@ -376,9 +376,9 @@ return baseclass.extend({
 			E('button', {
 				'class': 'cbi-button',
 				'click': () => {
+					console.log('createCommand', createCommand);
 					navigator.clipboard.writeText(createCommand).then(() => {
-						ui.addTimeLimitedNotification(null,
-							E('p', _('Command copied to clipboard')), 2000);
+						podmanUI.infoTimeNotification(_('Command copied to clipboard'));
 					});
 				}
 			}, _('Copy'))
@@ -799,16 +799,20 @@ return baseclass.extend({
 		podmanRPC.container.rename(this.containerId, newName).then((result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to rename container: %s')
-					.format(result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', _('Container renamed successfully')));
-				window.location.reload();
+				podmanUI.errorNotification(
+					_('Failed to rename container: %s').format(result.error)
+				);
+
+				return;
 			}
+
+			podmanUI.infoNotification(_('Container renamed successfully'));
+			window.location.reload();
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to rename container: %s').format(err
-				.message)), 'error');
+			podmanUI.errorNotification(
+				_('Failed to rename container: %s').format(err.message)
+			);
 		});
 	},
 
@@ -900,8 +904,10 @@ return baseclass.extend({
 	 * @param {string} ip - Optional IP address
 	 */
 	handleNetworkConnect: function (networkName, ip) {
-		podmanUI.showSpinningModal(_('Connecting to Network'), _(
-			'Connecting container to network...'));
+		podmanUI.showSpinningModal(
+			_('Connecting to Network'),
+			_('Connecting container to network...')
+		);
 
 		// Build params according to Podman API NetworkConnectOptions schema
 		const params = {
@@ -914,16 +920,20 @@ return baseclass.extend({
 		podmanRPC.network.connect(networkName, JSON.stringify(params)).then((result) => {
 			ui.hideModal();
 			if (result && result.error) {
-				ui.addNotification(null, E('p', _('Failed to connect to network: %s')
-					.format(result.error)), 'error');
-			} else {
-				ui.addNotification(null, E('p', _('Connected to network successfully')));
-				window.location.reload();
+				podmanUI.errorNotification(
+					_('Failed to connect to network: %s').format(result.error)
+				);
+
+				return;
 			}
+
+			podmanUI.infoNotification(_('Connected to network successfully'));
+			window.location.reload();
 		}).catch((err) => {
 			ui.hideModal();
-			ui.addNotification(null, E('p', _('Failed to connect to network: %s').format(
-				err.message)), 'error');
+			podmanUI.errorNotification(
+				_('Failed to connect to network: %s').format(err.message)
+			);
 		});
 	},
 
@@ -932,11 +942,14 @@ return baseclass.extend({
 	 * @param {string} networkName - Network name
 	 */
 	handleNetworkDisconnect: function (networkName) {
-		if (!confirm(_('Disconnect from network %s?').format(networkName)))
+		if (!confirm(_('Disconnect from network %s?').format(networkName))) {
 			return;
+		}
 
-		podmanUI.showSpinningModal(_('Disconnecting from Network'), _(
-			'Disconnecting container from network...'));
+		podmanUI.showSpinningModal(
+			_('Disconnecting from Network'),
+			_('Disconnecting container from network...')
+		);
 
 		// Build params according to Podman API DisconnectOptions schema (capital C for Container)
 		podmanRPC.network.disconnect(networkName, JSON.stringify({
@@ -945,17 +958,20 @@ return baseclass.extend({
 			.then((result) => {
 				ui.hideModal();
 				if (result && result.error) {
-					ui.addNotification(null, E('p', _('Failed to disconnect from network: %s')
-						.format(result.error)), 'error');
-				} else {
-					ui.addNotification(null, E('p', _(
-						'Disconnected from network successfully')));
-					window.location.reload();
+					podmanUI.errorNotification(
+						_('Failed to disconnect from network: %s').format(result.error)
+					);
+
+					return;
 				}
+
+				podmanUI.infoNotification(_('Disconnected from network successfully'));
+				window.location.reload();
 			}).catch((err) => {
 				ui.hideModal();
-				ui.addNotification(null, E('p', _('Failed to disconnect from network: %s')
-					.format(err.message)), 'error');
+				podmanUI.errorNotification(
+					_('Failed to disconnect from network: %s').format(err.message)
+				);
 			});
 	},
 
@@ -964,8 +980,10 @@ return baseclass.extend({
 	 * @param {string} containerName - Container name
 	 */
 	handleGenerateInitScript: function (containerName) {
-		podmanUI.showSpinningModal(_('Generating Init Script'),
-			_('Creating auto-start configuration for %s').format(containerName));
+		podmanUI.showSpinningModal(
+			_('Generating Init Script'),
+			_('Creating auto-start configuration for %s').format(containerName)
+		);
 
 		podmanRPC.initScript.generate(containerName).then((result) => {
 			if (result && result.success) {
@@ -985,7 +1003,8 @@ return baseclass.extend({
 		}).catch((err) => {
 			ui.hideModal();
 			podmanUI.errorNotification(
-				_('Failed to setup auto-start: %s').format(err.message));
+				_('Failed to setup auto-start: %s').format(err.message)
+			);
 		});
 	},
 
@@ -1036,8 +1055,10 @@ return baseclass.extend({
 	 */
 	handleToggleInitScript: function (containerName, enabled) {
 		const action = enabled ? _('Enabling') : _('Disabling');
-		podmanUI.showSpinningModal(_('Updating Init Script'),
-			_('%s auto-start for %s').format(action, containerName));
+		podmanUI.showSpinningModal(
+			_('Updating Init Script'),
+			_('%s auto-start for %s').format(action, containerName)
+		);
 
 		podmanRPC.initScript.setEnabled(containerName, enabled).then((result) => {
 			ui.hideModal();

@@ -184,8 +184,9 @@ return view.extend({
 		const selected = this.getSelectedImages();
 
 		if (selected.length === 0) {
-			podmanUI.simpleTimeNotification(_('No %s selected').format(_('Images').toLowerCase()),
-				'warning');
+			podmanUI.warningTimeNotification(
+				_('No %s selected').format(_('Images').toLowerCase())
+			);
 			return;
 		}
 
@@ -195,8 +196,9 @@ return view.extend({
 			utils._n(selected.length, _('Image'), _('Images')).toLowerCase(),
 			imageNames
 		);
-		if (!confirm(confirmText))
+		if (!confirm(confirmText)) {
 			return;
+		}
 
 		podmanUI.showSpinningModal(
 			_('Pulling Images'),
