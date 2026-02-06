@@ -277,7 +277,7 @@ EOF
 
 				# Logs API returns binary stream format with Docker multiplexed headers
 				# Shell variables strip binary data, so save to temp file first
-				temp_file=$(mktemp /tmp/podman_logs_XXXXXX)
+				temp_file=$(mktemp podman_logs_XXXXXX)
 				curl -s -m 60 --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "$temp_file" 2>&1
 				exit_code=$?
 
@@ -389,7 +389,16 @@ EOF
 				# Kill the background curl process using stored PID
 				pid_file="/tmp/${session_id}.pid"
 				if [ -f "$pid_file" ]; then
-					kill "$(cat "$pid_file")" 2>/dev/null
+					pid="$(cat "$pid_file" 2>/dev/null)"
+					# Ensure PID is non-empty and numeric before killing
+					case "$pid" in
+						''|*[!0-9]*)
+							# Invalid PID; do not attempt to kill
+							;;
+						*)
+							kill "$pid" 2>/dev/null
+							;;
+					esac
 				fi
 
 				# Cleanup all session files
@@ -645,7 +654,7 @@ EOF
 
 				# Use podman CLI since REST API doesn't support export yet
 				# Export to temp file
-				temp_file=$(mktemp /tmp/podman_vol_export_XXXXXX)
+				temp_file=$(mktemp podman_vol_export_XXXXXX)
 				podman volume export "$name" | gzip > "$temp_file" 2>&1
 				exit_code=$?
 
@@ -669,7 +678,7 @@ EOF
 				validate_volume_name "$name"
 
 				# Base64 decode the uploaded tar data to temp file
-				temp_file=$(mktemp /tmp/podman_vol_import_XXXXXX)
+				temp_file=$(mktemp podman_vol_import_XXXXXX)
 				# Conditionally decompress based on compressed parameter
 				if [ "$compressed" = "true" ]; then
 					echo "$data" | openssl base64 -d | gunzip -c > "$temp_file"
@@ -1007,7 +1016,7 @@ EOF
 				fi
 
 				# Create temp script with properly quoted command
-				temp_script=$(mktemp /tmp/podman_cmd_XXXXXX)
+				temp_script=$(mktemp podman_cmd_XXXXXX)
 				printf '#!/bin/sh\n/usr/bin/podman' > "$temp_script"
 
 				# Skip first element ("podman"), quote all remaining arguments
