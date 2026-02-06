@@ -10,17 +10,16 @@ API_BASE="/v5.0.0/libpod"
 
 # URL encode a string (preserves : / @ for image references)
 urlencode() {
-	local string="$1"
-	local strlen=${#string}
-	local encoded="" pos c o
-
-	for pos in $(seq 0 $((strlen - 1))); do
-		c=$(printf '%s' "$string" | cut -c $((pos + 1)))
-		case "$c" in
-			[-_.~a-zA-Z0-9:/@]) o="$c" ;;
-			*) printf -v o '%%%02x' "'$c" ;;
+	local string="$1" encoded="" char rest
+	rest="$string"
+	while [ -n "$rest" ]; do
+		char="${rest%"${rest#?}"}"
+		rest="${rest#?}"
+		case "$char" in
+			[-_.~a-zA-Z0-9:/@]) encoded="${encoded}${char}" ;;
+			*) printf -v char '%%%02x' "'$char"
+			   encoded="${encoded}${char}" ;;
 		esac
-		encoded="${encoded}${o}"
 	done
 	echo "$encoded"
 }
