@@ -41,7 +41,6 @@ start_service() {
 		else
 			logger -t ${NAME} 'Container {name} already running'
 		fi
-		exec $PROG wait '{name}'
 	"
 	procd_close_instance
 }
