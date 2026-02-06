@@ -43,11 +43,19 @@ return baseclass.extend({
 		sections.push((await this.configSection(config, hostConfig)).render());
 
 		// Network section placeholder - will be populated async
-		const networkPlaceholder = E('div', { 'id': 'network-section-placeholder' }, [
-			E('div', { 'class': 'cbi-section section-container-info' }, [
+		const networkPlaceholder = E('div', {
+			'id': 'network-section-placeholder'
+		}, [
+			E('div', {
+				'class': 'cbi-section section-container-info'
+			}, [
 				E('h3', {}, _('Network')),
-				E('div', { 'class': 'p-md text-center' }, [
-					E('em', { 'class': 'spinning' }, _('Loading network information...'))
+				E('div', {
+					'class': 'p-md text-center'
+				}, [
+					E('em', {
+						'class': 'spinning'
+					}, _('Loading network information...'))
 				])
 			])
 		]);
@@ -92,10 +100,15 @@ return baseclass.extend({
 				const placeholder = document.getElementById('network-section-placeholder');
 				if (placeholder) {
 					// Clear placeholder and show error using DOM methods
-					dom.content(placeholder, E('div', { 'class': 'cbi-section section-container-info' }, [
+					dom.content(placeholder, E('div', {
+						'class': 'cbi-section section-container-info'
+					}, [
 						E('h3', {}, _('Network')),
-						E('div', { 'class': 'alert-message error' },
-							_('Failed to load network information: %s').format(err.message))
+						E('div', {
+								'class': 'alert-message error'
+							},
+							_('Failed to load network information: %s').format(err
+								.message))
 					]));
 				}
 			});
@@ -111,12 +124,15 @@ return baseclass.extend({
 	basicSection: async function (status, config, hostConfig) {
 		// Basic Information - using podmanUI.Table
 		const data = this.containerData;
-		const basicTable = new podmanUI.Table({ 'class': 'table table-list' });
+		const basicTable = new podmanUI.Table({
+			'class': 'table table-list'
+		});
 
 		// Name (editable)
 		const inputId = 'edit-name';
-		basicTable.addRow([
-			{ inner: _('Name') },
+		basicTable.addRow([{
+				inner: _('Name')
+			},
 			{
 				inner: [
 					E('div', {
@@ -126,7 +142,8 @@ return baseclass.extend({
 							'type': 'text',
 							'id': inputId,
 							'class': 'cbi-input-text edit-container-name',
-							'value': data.Name ? data.Name.replace(/^\//, '') : '-',
+							'value': data.Name ? data.Name.replace(/^\//,
+								'') : '-',
 						}),
 						new podmanUI.Button(
 							_('Update'),
@@ -142,30 +159,37 @@ return baseclass.extend({
 
 		// Standard info rows
 		basicTable
-			.addRow([
-				{ inner: _('Id').toUpperCase() },
+			.addRow([{
+					inner: _('Id').toUpperCase()
+				},
 				{
 					inner: data.Id ? data.Id.substring(0, 64) : '-'
 				}
 			])
-			.addRow([
-				{ inner: _('Image') },
+			.addRow([{
+					inner: _('Image')
+				},
 				{
 					inner: config.Image || '-'
 				}
 			])
-			.addRow([
-				{ inner: _('Status') },
-				{ inner: data.State ? _(data.State.Status) : '-' }
+			.addRow([{
+					inner: _('Status')
+				},
+				{
+					inner: data.State ? _(data.State.Status) : '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Created') },
+			.addRow([{
+					inner: _('Created')
+				},
 				{
 					inner: data.Created ? format.date(data.Created) : '-'
 				}
 			])
-			.addRow([
-				{ inner: _('Started') },
+			.addRow([{
+					inner: _('Started')
+				},
 				{
 					inner: data.State && data.State.StartedAt ? format.date(data.State
 						.StartedAt) : '-'
@@ -189,8 +213,9 @@ return baseclass.extend({
 			}, policies[key]);
 		});
 
-		basicTable.addRow([
-			{ inner: _('Restart Policy') },
+		basicTable.addRow([{
+				inner: _('Restart Policy')
+			},
 			{
 				inner: [
 					E('div', {
@@ -200,8 +225,10 @@ return baseclass.extend({
 							'id': selectId,
 							'class': 'cbi-input-select input-lg mr-xs'
 						}, policyOptions),
-						new podmanUI.Button(_('Update'), () => this.handleUpdateRestartPolicy(
-							document.getElementById(selectId).value), 'apply').render()
+						new podmanUI.Button(_('Update'), () => this
+							.handleUpdateRestartPolicy(
+								document.getElementById(selectId).value), 'apply')
+						.render()
 					])
 				]
 			}
@@ -209,15 +236,18 @@ return baseclass.extend({
 
 		// Auto-update status
 		const autoUpdateLabel = config.Labels && config.Labels['io.containers.autoupdate'];
-		basicTable.addRow([
-			{ inner: _('Auto-Update') },
+		basicTable.addRow([{
+				inner: _('Auto-Update')
+			},
 			{
 				inner: autoUpdateLabel || _('Disabled')
 			}
 		]);
 
 		// Init Script status (loaded asynchronously)
-		const initScriptCell = E('span', { 'class': 'loading-gray' }, '...');
+		const initScriptCell = E('span', {
+			'class': 'loading-gray'
+		}, '...');
 		const containerName = data.Name ? data.Name.replace(/^\//, '') : null;
 
 		// Check if container has a restart policy set
@@ -240,7 +270,8 @@ return baseclass.extend({
 						.handleShowInitScript(containerName), 'neutral').render());
 					buttons.push(' ');
 					buttons.push(new podmanUI.Button(_('Regenerate'), () => this
-						.handleGenerateInitScript(containerName), 'apply').render());
+						.handleGenerateInitScript(containerName), 'apply')
+					.render());
 					buttons.push(' ');
 					buttons.push(new podmanUI.Button(_('Disable'), () => this
 							.handleToggleInitScript(containerName, false), 'negative')
@@ -255,7 +286,8 @@ return baseclass.extend({
 						.handleShowInitScript(containerName), 'neutral').render());
 					buttons.push(' ');
 					buttons.push(new podmanUI.Button(_('Regenerate'), () => this
-						.handleGenerateInitScript(containerName), 'apply').render());
+						.handleGenerateInitScript(containerName), 'apply')
+					.render());
 					buttons.push(' ');
 					buttons.push(new podmanUI.Button(_('Enable'), () => this
 							.handleToggleInitScript(containerName, true), 'positive')
@@ -295,9 +327,12 @@ return baseclass.extend({
 			initScriptCell.textContent = '—';
 		}
 
-		basicTable.addRow([
-			{ inner: _('Init Script') },
-			{ inner: initScriptCell }
+		basicTable.addRow([{
+				inner: _('Init Script')
+			},
+			{
+				inner: initScriptCell
+			}
 		]);
 
 		// Health status if exists
@@ -332,12 +367,14 @@ return baseclass.extend({
 			// Add manual health check button if container is running
 			if (status === 'running') {
 				healthDetails.push(' ');
-				healthDetails.push(new podmanUI.Button(_('Run Check'), () => this.handleHealthCheck(),
+				healthDetails.push(new podmanUI.Button(_('Run Check'), () => this
+					.handleHealthCheck(),
 					'positive').render());
 			}
 
-			basicTable.addRow([
-				{ inner: _('Health') },
+			basicTable.addRow([{
+					inner: _('Health')
+				},
 				{
 					inner: healthDetails,
 					options: {
@@ -377,58 +414,88 @@ return baseclass.extend({
 				'class': 'cbi-button',
 				'click': () => {
 					navigator.clipboard.writeText(createCommand).then(() => {
-						podmanUI.infoTimeNotification(_('Command copied to clipboard'));
+						podmanUI.infoTimeNotification(_(
+							'Command copied to clipboard'));
 					});
 				}
 			}, _('Copy'))
 		]) : '-';
 
-		const configTable = new podmanUI.Table({ 'class': 'table table-list' });
+		const configTable = new podmanUI.Table({
+			'class': 'table table-list'
+		});
 		configTable
-			.addRow([
-				{ inner: _('Create Command') },
+			.addRow([{
+					inner: _('Create Command')
+				},
 				{
 					inner: createCommandElement,
-					options: { 'class': 'text-break td' }
+					options: {
+						'class': 'text-break td'
+					}
 				}
 			])
-			.addRow([
-				{ inner: _('Command') },
+			.addRow([{
+					inner: _('Command')
+				},
 				{
 					inner: cmd,
-					options: { 'class': 'text-break td' }
+					options: {
+						'class': 'text-break td'
+					}
 				}
 			])
-			.addRow([
-				{ inner: _('Entrypoint') },
+			.addRow([{
+					inner: _('Entrypoint')
+				},
 				{
 					inner: entrypoint,
-					options: { 'class': 'text-break td' }
+					options: {
+						'class': 'text-break td'
+					}
 				}
 			])
-			.addRow([
-				{ inner: _('Working Directory') },
-				{ inner: config.WorkingDir || '-' }
+			.addRow([{
+					inner: _('Working Directory')
+				},
+				{
+					inner: config.WorkingDir || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('User') },
-				{ inner: config.User || '-' }
+			.addRow([{
+					inner: _('User')
+				},
+				{
+					inner: config.User || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Hostname') },
-				{ inner: config.Hostname || '-' }
+			.addRow([{
+					inner: _('Hostname')
+				},
+				{
+					inner: config.Hostname || '-'
+				}
 			])
-			.addRow([
-				{ inner: _('Privileged') },
-				{ inner: hostConfig.Privileged ? _('Yes') : _('No') }
+			.addRow([{
+					inner: _('Privileged')
+				},
+				{
+					inner: hostConfig.Privileged ? _('Yes') : _('No')
+				}
 			])
-			.addRow([
-				{ inner: _('TTY') },
-				{ inner: config.Tty ? _('Yes') : _('No') }
+			.addRow([{
+					inner: _('TTY')
+				},
+				{
+					inner: config.Tty ? _('Yes') : _('No')
+				}
 			])
-			.addRow([
-				{ inner: _('Interactive') },
-				{ inner: config.OpenStdin ? _('Yes') : _('No') }
+			.addRow([{
+					inner: _('Interactive')
+				},
+				{
+					inner: config.OpenStdin ? _('Yes') : _('No')
+				}
 			]);
 
 		const configSection = new podmanUI.Section({
@@ -448,7 +515,9 @@ return baseclass.extend({
 	 */
 	networkSection: async function (config, hostConfig, networkSettings) {
 		// Network - using podmanUI.Table
-		const networkTable = new podmanUI.Table({ 'class': 'table table-list' });
+		const networkTable = new podmanUI.Table({
+			'class': 'table table-list'
+		});
 
 		// Network mode
 		networkTable.addInfoRow(_('Network Mode'), hostConfig.NetworkMode || 'default');
@@ -494,7 +563,8 @@ return baseclass.extend({
 							E('span', {
 								'class': 'ml-sm'
 							}, [
-								new podmanUI.Button(_('Disconnect'), () => this
+								new podmanUI.Button(_('Disconnect'), () =>
+									this
 									.handleNetworkDisconnect(netName),
 									'remove').render()
 							])
@@ -529,8 +599,9 @@ return baseclass.extend({
 			});
 		}
 
-		networkTable.addRow([
-			{ inner: _('Connect to') },
+		networkTable.addRow([{
+				inner: _('Connect to')
+			},
 			{
 				inner: [
 					E('select', {
@@ -587,7 +658,9 @@ return baseclass.extend({
 	 * @returns {Promise<Object>} Section object with render() method
 	 */
 	envSection: async function (envs) {
-		const envTable = new podmanUI.Table({ class: 'table table-env-vars' });
+		const envTable = new podmanUI.Table({
+			class: 'table table-env-vars'
+		});
 		envTable
 			.addHeader(_('Variable'))
 			.addHeader(_('Value'));
@@ -600,8 +673,9 @@ return baseclass.extend({
 			// Create censored value display (bullet points)
 			const censoredValue = '••••••••';
 
-			envTable.addRow([
-				{ inner: varName },
+			envTable.addRow([{
+					inner: varName
+				},
 				{
 					inner: censoredValue,
 					options: {
@@ -652,8 +726,9 @@ return baseclass.extend({
 			.addHeader(_('Mode'));
 
 		mounts.forEach(function (mount) {
-			mountsTable.addRow([
-				{ inner: mount.Type || '-' },
+			mountsTable.addRow([{
+					inner: mount.Type || '-'
+				},
 				{
 					inner: utils.truncate(mount.Source || '-', 50),
 					options: {
@@ -666,7 +741,9 @@ return baseclass.extend({
 						'title': mount.Destination || '-'
 					}
 				},
-				{ inner: mount.RW ? 'rw' : 'ro' }
+				{
+					inner: mount.RW ? 'rw' : 'ro'
+				}
 			]);
 		});
 
@@ -725,7 +802,7 @@ return baseclass.extend({
 						style: 'text-decoration: underline; color: #0066cc;',
 						title: _(
 							'Direct access to container on OpenWrt-integrated network'
-							)
+						)
 					}, linkText));
 				} else {
 					portElements.push(E('span', {},
@@ -757,7 +834,7 @@ return baseclass.extend({
 					} else {
 						portElements.push(E('span', {},
 							`${hostIp}:${port.hostPort} → ${port.containerPort}/${port.protocol}`
-							));
+						));
 					}
 				} else {
 					// Exposed port without host mapping
@@ -1023,8 +1100,9 @@ return baseclass.extend({
 				// Show script content in a modal
 				const content = E('div', {}, [
 					E(
-						'pre',
-						{ 'class': 'code-area' },
+						'pre', {
+							'class': 'code-area'
+						},
 						result.content.replace(/\\n/g, '\n')
 					)
 				]);
@@ -1034,7 +1112,8 @@ return baseclass.extend({
 					E('div', {
 						'class': 'right modal-buttons',
 					}, [
-						new podmanUI.Button(_('Close'), ui.hideModal, 'neutral')
+						new podmanUI.Button(_('Close'), ui.hideModal,
+							'neutral')
 						.render()
 					])
 				]);
@@ -1043,7 +1122,8 @@ return baseclass.extend({
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			podmanUI.errorNotification(`${_('Failed to load init script')}: ${err.message}`);
+			podmanUI.errorNotification(
+				`${_('Failed to load init script')}: ${err.message}`);
 		});
 	},
 
@@ -1072,7 +1152,8 @@ return baseclass.extend({
 			}
 		}).catch((err) => {
 			ui.hideModal();
-			podmanUI.errorNotification(`${_('Failed to update init script')}: ${err.message}`);
+			podmanUI.errorNotification(
+				`${_('Failed to update init script')}: ${err.message}`);
 		});
 	}
 });
