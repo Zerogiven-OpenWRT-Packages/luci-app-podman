@@ -20,78 +20,78 @@
 'require podman.form.secret as FormSecret';
 'require podman.form.volume as FormVolume';
 
-/**
- * Provides inline editing for single values
- */
-const FormEditableField = baseclass.extend({
-	map: null,
+// /**
+//  * Provides inline editing for single values
+//  */
+// const FormEditableField = baseclass.extend({
+// 	map: null,
 
-	/**
-	 * Render editable field
-	 * @param {Object} options - Field options
-	 * @param {string} options.title - Field title/label
-	 * @param {string} options.value - Current value
-	 * @param {string} [options.datatype] - LuCI datatype for validation
-	 * @param {string} [options.placeholder] - Placeholder text
-	 * @param {Function} options.onUpdate - Update callback (newValue) => void
-	 * @param {string} [options.type] - Field type: 'text' (default), 'select', 'flag'
-	 * @param {Array} [options.choices] - For select type: [{value, label}]
-	 * @returns {Promise<HTMLElement>} Rendered form element
-	 */
-	render: async function (options) {
-		this.options = options;
+// 	/**
+// 	 * Render editable field
+// 	 * @param {Object} options - Field options
+// 	 * @param {string} options.title - Field title/label
+// 	 * @param {string} options.value - Current value
+// 	 * @param {string} [options.datatype] - LuCI datatype for validation
+// 	 * @param {string} [options.placeholder] - Placeholder text
+// 	 * @param {Function} options.onUpdate - Update callback (newValue) => void
+// 	 * @param {string} [options.type] - Field type: 'text' (default), 'select', 'flag'
+// 	 * @param {Array} [options.choices] - For select type: [{value, label}]
+// 	 * @returns {Promise<HTMLElement>} Rendered form element
+// 	 */
+// 	render: async function (options) {
+// 		this.options = options;
 
-		const data = {
-			field: {
-				value: options.value || ''
-			}
-		};
+// 		const data = {
+// 			field: {
+// 				value: options.value || ''
+// 			}
+// 		};
 
-		this.map = new form.JSONMap(data, '');
-		const section = this.map.section(form.NamedSection, 'field', 'field');
-		section.anonymous = true;
-		section.addremove = false;
+// 		this.map = new form.JSONMap(data, 'abc');
+// 		const section = this.map.section(form.NamedSection, 'field', 'field', 'xxx');
+// 		section.anonymous = true;
+// 		section.addremove = false;
 
-		let field;
+// 		let field;
 
-		if (options.type === 'select') {
-			field = section.option(form.ListValue, 'value', options.title);
-			if (options.choices && Array.isArray(options.choices)) {
-				options.choices.forEach((choice) => {
-					field.value(choice.value, choice.label || choice.value);
-				});
-			}
-		} else if (options.type === 'flag') {
-			field = section.option(form.Flag, 'value', options.title);
-		} else {
-			field = section.option(form.Value, 'value', options.title);
-			if (options.placeholder) field.placeholder = options.placeholder;
-		}
+// 		if (options.type === 'select') {
+// 			field = section.option(form.ListValue, 'value', options.title);
+// 			if (options.choices && Array.isArray(options.choices)) {
+// 				options.choices.forEach((choice) => {
+// 					field.value(choice.value, choice.label || choice.value);
+// 				});
+// 			}
+// 		} else if (options.type === 'flag') {
+// 			field = section.option(form.Flag, 'value', options.title);
+// 		} else {
+// 			field = section.option(form.Value, 'value', options.title);
+// 			if (options.placeholder) field.placeholder = options.placeholder;
+// 		}
 
-		if (options.datatype) field.datatype = options.datatype;
-		if (options.description) field.description = options.description;
+// 		if (options.datatype) field.datatype = options.datatype;
+// 		if (options.description) field.description = options.description;
 
-		const btn = section.option(form.Button, '_update', ' ');
-		btn.inputtitle = _('Update');
-		btn.inputstyle = 'apply';
-		btn.onclick = () => this.handleUpdate();
+// 		const btn = section.option(form.Button, '_update', ' ');
+// 		btn.inputtitle = _('Update') + 'xxs';
+// 		btn.inputstyle = 'apply';
+// 		btn.onclick = () => this.handleUpdate();
 
-		return this.map.render();
-	},
+// 		return this.map.render();
+// 	},
 
-	/**
-	 * Handle field update
-	 */
-	handleUpdate: function () {
-		this.map.save().then(() => {
-			const newValue = this.map.data.data.field.value;
+// 	/**
+// 	 * Handle field update
+// 	 */
+// 	handleUpdate: function () {
+// 		this.map.save().then(() => {
+// 			const newValue = this.map.data.data.field.value;
 
-			if (this.options.onUpdate) {
-				this.options.onUpdate(newValue);
-			}
-		}).catch(() => {});
-	}
-});
+// 			if (this.options.onUpdate) {
+// 				this.options.onUpdate(newValue);
+// 			}
+// 		}).catch(() => {});
+// 	}
+// });
 
 /**
  * Checkbox column for row selection in GridSection tables
