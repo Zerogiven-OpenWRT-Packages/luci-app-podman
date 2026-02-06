@@ -9,6 +9,14 @@ USE_PROCD=1
 NAME={script_name}
 PROG=/usr/bin/podman
 
+# safe literal container name check at runtime.
+case "{name}" in
+	*[!A-Za-z0-9._-]*|'')
+		logger -t "${NAME}" "Invalid container name '{name}'; only [A-Za-z0-9._-] allowed"
+		exit 1
+		;;
+esac
+
 start_service() {
 	# Register procd instance - socket wait happens inside command (non-blocking)
 	procd_open_instance "${NAME}"
