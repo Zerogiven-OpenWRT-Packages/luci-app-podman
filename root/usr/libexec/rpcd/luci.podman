@@ -133,7 +133,7 @@ add_force() {
 	local path="$1"
 	local force="$2"
 	# Check for both "true" and "1" since JSON booleans become 1/0
-	if [ "$force" = "true" -o "$force" = "1" ]; then
+	if [ "$force" = "true" ] || [ "$force" = "1" ]; then
 		echo "${path}?force=true"
 	else
 		echo "$path"
@@ -254,8 +254,8 @@ EOF
 				id_enc=$(urlencode "$id")
 				# Build query parameters
 				query=""
-				[ "$force" = "true" -o "$force" = "1" ] && query="${query}force=true&"
-				[ "$depend" = "true" -o "$depend" = "1" ] && query="${query}depend=true&"
+				[ "$force" = "true" ] || [ "$force" = "1" ] && query="${query}force=true&"
+				[ "$depend" = "true" ] || [ "$depend" = "1" ] && query="${query}depend=true&"
 				# Remove trailing &
 				query="${query%&}"
 				# Add ? if we have parameters
@@ -806,8 +806,8 @@ EOF
 				get_json_params all volumes
 				# Build query parameters (check for both "true" and "1" since JSON booleans become 1/0)
 				query=""
-				[ "$all" = "true" -o "$all" = "1" ] && query="${query}all=true&"
-				[ "$volumes" = "true" -o "$volumes" = "1" ] && query="${query}volumes=true&"
+				[ "$all" = "true" ] || [ "$all" = "1" ] && query="${query}all=true&"
+				[ "$volumes" = "true" ] || [ "$volumes" = "1" ] && query="${query}volumes=true&"
 				# Remove trailing &
 				query="${query%&}"
 				# Add ? if we have parameters
@@ -902,7 +902,7 @@ EOF
 				fi
 
 				# Check for both "true" and "1" since JSON booleans become 1/0
-				if [ "$enabled" = "true" -o "$enabled" = "1" ]; then
+				if [ "$enabled" = "true" ] || [ "$enabled" = "1" ]; then
 					# Enable service
 					"${script_path}" enable >/dev/null 2>&1
 					exit_code=$?
