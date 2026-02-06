@@ -396,7 +396,20 @@ EOF
 							# Invalid PID; do not attempt to kill
 							;;
 						*)
-							kill "$pid" 2>/dev/null
+							if [ -r "/proc/$pid/comm" ]; then
+								cmd_name="$(cat "/proc/$pid/comm" 2>/dev/null)"
+								case "$cmd_name" in
+									curl|curl*)
+										kill "$pid" 2>/dev/null
+										;;
+									*)
+										# Unexpected command; skip killing
+										;;
+								esac
+							else
+								# /proc entry not readable; process may have exited
+								kill "$pid" 2>/dev/null
+							fi
 							;;
 					esac
 				fi
