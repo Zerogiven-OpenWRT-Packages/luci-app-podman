@@ -59,12 +59,17 @@ validate_query_params() {
 	esac
 }
 
+# Check boolean parameter (JSON booleans become 1/0 via ubus)
+is_true() {
+	[ "$1" = "true" ] || [ "$1" = "1" ]
+}
+
 # Validate session ID format for security
 validate_session_id() {
 	local session_id="$1"
 	local prefix="$2"
 	case "$session_id" in
-		${prefix}_[0-9][0-9]*_[0-9][0-9]*_[0-9][0-9]*)
+		${prefix}_[0-9][0-9]*_[0-9a-f][0-9a-f]*)
 			;;
 		*)
 			echo '{"error":"Invalid session ID format"}'
@@ -131,14 +136,78 @@ curl_request() {
 
 # Add force parameter to path
 add_force() {
-	local path="$1"
-	local force="$2"
-	# Check for both "true" and "1" since JSON booleans become 1/0
-	if [ "$force" = "true" ] || [ "$force" = "1" ]; then
-		echo "${path}?force=true"
-	else
-		echo "$path"
+	is_true "$2" && echo "${1}?force=true" || echo "$1"
+}
+
+# Spawn a background streaming process (logs or image pull)
+spawn_background_stream() {
+	local session_id="$1"
+	local curl_cmd="$2"
+	local script_file="/tmp/${session_id}.sh"
+
+	cat > "$script_file" <<EOF
+#!/bin/sh
+${curl_cmd} > "/tmp/${session_id}.log" 2>&1 &
+echo \$! > "/tmp/${session_id}.pid"
+wait \$!
+echo \$? > "/tmp/${session_id}.status"
+rm -f "$script_file"
+EOF
+	chmod +x "$script_file"
+	sh -c "($script_file &)" >/dev/null 2>&1 </dev/null &
+	echo "{\"session_id\":\"${session_id}\"}"
+}
+
+# Poll status of a background stream session
+poll_stream_status() {
+	local session_id="$1"
+	local encode_method="$2"
+	local chunk_size="${3:-131072}"
+
+	touch "/tmp/${session_id}.activity"
+
+	# Validate offset is numeric
+	case "$offset" in
+		''|*[!0-9]*) offset=0 ;;
+	esac
+
+	local log_file="/tmp/${session_id}.log"
+	local status_file="/tmp/${session_id}.status"
+
+	# Encode output based on method
+	_encode_output() {
+		if [ "$encode_method" = "base64" ]; then
+			tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c "$chunk_size" | openssl base64 -A
+		else
+			tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c "$chunk_size" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' '
+		fi
+	}
+
+	# Job completed
+	if [ -f "$status_file" ]; then
+		local exit_code success="false" output=""
+		exit_code=$(cat "$status_file")
+		[ "$exit_code" = "0" ] && success="true"
+
+		if [ -f "$log_file" ]; then
+			output=$(_encode_output)
+		fi
+
+		echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
+		rm -f "/tmp/${session_id}."* 2>/dev/null
+		exit 0
 	fi
+
+	# Job in progress
+	if [ -f "$log_file" ]; then
+		local output
+		output=$(_encode_output)
+		echo "{\"output\":\"${output}\",\"complete\":false,\"success\":false}"
+		exit 0
+	fi
+
+	# Job not started yet
+	echo '{"output":"","complete":false,"success":false}'
 }
 
 case "$1" in
@@ -255,8 +324,8 @@ EOF
 				id_enc=$(urlencode "$id")
 				# Build query parameters
 				query=""
-				[ "$force" = "true" ] || [ "$force" = "1" ] && query="${query}force=true&"
-				[ "$depend" = "true" ] || [ "$depend" = "1" ] && query="${query}depend=true&"
+				is_true "$force" && query="${query}force=true&"
+				is_true "$depend" && query="${query}depend=true&"
 				# Remove trailing &
 				query="${query%&}"
 				# Add ? if we have parameters
@@ -300,7 +369,8 @@ EOF
 
 				# Generate secure session ID with current timestamp
 				current_timestamp=$(date +%s)
-				session_id="podman_logs_${current_timestamp}_$$_${RANDOM}"
+				random_hex=$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')
+				session_id="podman_logs_${current_timestamp}_${random_hex}"
 				id_enc=$(urlencode "$id")
 
 				# Build path with params
@@ -315,71 +385,14 @@ EOF
 					path="${path}?stdout=true&stderr=true&follow=true&since=${current_timestamp}"
 				fi
 
-				# Create a temporary script file to run in background
-				script_file="/tmp/${session_id}.sh"
-				cat > "$script_file" <<EOF
-#!/bin/sh
-curl -s -N --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "/tmp/${session_id}.log" 2>&1 &
-echo \$! > "/tmp/${session_id}.pid"
-wait \$!
-echo \$? > "/tmp/${session_id}.status"
-rm -f "$script_file"
-EOF
-				chmod +x "$script_file"
-
-				# Start the script in background using nohup-like behavior
-				# Double fork to completely detach from parent process
-				sh -c "($script_file &)" >/dev/null 2>&1 </dev/null &
-
-				echo "{\"session_id\":\"${session_id}\"}"
+				spawn_background_stream "$session_id" \
+					"curl -s -N --unix-socket \"$SOCKET\" -X GET \"http://localhost${path}\""
 				;;
 			container_logs_status)
 				get_json_params session_id offset
 				require_param session_id
 				validate_session_id "$session_id" "podman_logs"
-
-				# Track activity for orphan cleanup
-				touch "/tmp/${session_id}.activity"
-
-				# Validate offset is numeric
-				case "$offset" in
-					''|*[!0-9]*) offset=0 ;;
-				esac
-
-				log_file="/tmp/${session_id}.log"
-				status_file="/tmp/${session_id}.status"
-
-				# Chunk size: 128KB max per poll (balances performance vs rpcd timeout)
-				# Tested: 128KB transfers in <5s even on slow connections
-				chunk_size=131072
-
-				# Job completed
-				if [ -f "$status_file" ]; then
-					exit_code=$(cat "$status_file")
-					success="false"
-					[ "$exit_code" = "0" ] && success="true"
-
-					output=""
-					if [ -f "$log_file" ]; then
-						# Get new output from offset, limit to chunk_size, and base64 encode
-						output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c $chunk_size | openssl base64 -A)
-					fi
-
-					echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
-					rm -f "/tmp/${session_id}."* 2>/dev/null
-					exit 0
-				fi
-
-				# Job in progress
-				if [ -f "$log_file" ]; then
-					# Get new output from offset, limit to chunk_size, and base64 encode
-					output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c $chunk_size | openssl base64 -A)
-					echo "{\"output\":\"${output}\",\"complete\":false,\"success\":false}"
-					exit 0
-				fi
-
-				# Job not started yet
-				echo '{"output":"","complete":false,"success":false}'
+				poll_stream_status "$session_id" "base64"
 				;;
 			container_logs_stop)
 				get_json_params session_id
@@ -501,68 +514,18 @@ EOF
 
 				# Generate secure session ID with pull prefix
 				current_timestamp=$(date +%s)
-				session_id="podman_pull_${current_timestamp}_$$_${RANDOM}"
+				random_hex=$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')
+				session_id="podman_pull_${current_timestamp}_${random_hex}"
 				image_enc=$(urlencode "$image")
 
-				# Create a temporary script file to run in background
-				script_file="/tmp/${session_id}.sh"
-				cat > "$script_file" <<EOF
-#!/bin/sh
-curl -s --unix-socket "$SOCKET" -X POST "http://localhost${API_BASE}/images/pull?reference=${image_enc}" > "/tmp/${session_id}.log" 2>&1 &
-echo \$! > "/tmp/${session_id}.pid"
-wait \$!
-echo \$? > "/tmp/${session_id}.status"
-rm -f "$script_file"
-EOF
-				chmod +x "$script_file"
-
-				# Start the script in background using nohup-like behavior
-				# Double fork to completely detach from parent process
-				sh -c "($script_file &)" >/dev/null 2>&1 </dev/null &
-
-				echo "{\"session_id\":\"${session_id}\"}"
+				spawn_background_stream "$session_id" \
+					"curl -s --unix-socket \"$SOCKET\" -X POST \"http://localhost${API_BASE}/images/pull?reference=${image_enc}\""
 				;;
 			image_pull_status)
 				get_json_params session_id offset
 				require_param session_id
 				validate_session_id "$session_id" "podman_pull"
-
-				# Track activity for orphan cleanup
-				touch "/tmp/${session_id}.activity"
-
-				# Validate offset is numeric
-				case "$offset" in
-					''|*[!0-9]*) offset=0 ;;
-				esac
-
-				log_file="/tmp/${session_id}.log"
-				status_file="/tmp/${session_id}.status"
-
-				# Job completed
-				if [ -f "$status_file" ]; then
-					exit_code=$(cat "$status_file")
-					success="false"
-					[ "$exit_code" = "0" ] && success="true"
-
-					output=""
-					if [ -f "$log_file" ]; then
-						output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
-					fi
-
-					echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
-					rm -f "$log_file" "$status_file"
-					exit 0
-				fi
-
-				# Job in progress
-				if [ -f "$log_file" ]; then
-					output=$(tail -c +$((offset + 1)) "$log_file" 2>/dev/null | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
-					echo "{\"output\":\"${output}\",\"complete\":false,\"success\":false}"
-					exit 0
-				fi
-
-				# Job not started yet
-				echo '{"output":"","complete":false,"success":false}'
+				poll_stream_status "$session_id" "json_escape"
 				;;
 			image_pull_stop)
 				get_json_params session_id
@@ -808,8 +771,8 @@ EOF
 				get_json_params all volumes
 				# Build query parameters (check for both "true" and "1" since JSON booleans become 1/0)
 				query=""
-				[ "$all" = "true" ] || [ "$all" = "1" ] && query="${query}all=true&"
-				[ "$volumes" = "true" ] || [ "$volumes" = "1" ] && query="${query}volumes=true&"
+				is_true "$all" && query="${query}all=true&"
+				is_true "$volumes" && query="${query}volumes=true&"
 				# Remove trailing &
 				query="${query%&}"
 				# Add ? if we have parameters
@@ -904,7 +867,7 @@ EOF
 				fi
 
 				# Check for both "true" and "1" since JSON booleans become 1/0
-				if [ "$enabled" = "true" ] || [ "$enabled" = "1" ]; then
+				if is_true "$enabled"; then
 					# Enable service
 					"${script_path}" enable >/dev/null 2>&1
 					exit_code=$?
@@ -967,8 +930,7 @@ EOF
 
 				# Check if jsonfilter parsing succeeded
 				if [ -z "$first_arg" ]; then
-					cmd_preview=$(printf '%s' "$command" | head -c 100)
-					echo "{\"error\":\"Failed to parse command JSON\",\"details\":\"received: ${cmd_preview}\"}"
+					echo '{"error":"Failed to parse command JSON"}'
 					exit 1
 				fi
 
@@ -999,9 +961,10 @@ EOF
 					exit 1
 				fi
 
-				# Security: Check for shell metacharacters that should never appear in podman args
-				# Reject backticks, $(), ${}, globbing, and other dangerous shell constructs
-				if echo "$command" | grep -qE '`|\$\(|\$\{|\&\&|\|\||[;<>*\?!]'; then
+				# Security: Check for shell metacharacters in command structure
+				# Note: backticks, $(), ${} can appear legitimately in labels (e.g., Traefik rules)
+				# They are safely neutralized by single-quote escaping of each argument below
+				if echo "$command" | grep -qE '\&\&|\|\||[;<>]'; then
 					echo '{"error":"Invalid command: contains forbidden shell characters"}'
 					exit 1
 				fi
