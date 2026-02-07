@@ -289,6 +289,10 @@ return baseclass.extend({
 				};
 			})
 			.catch((err) => {
+				// Clean up old dangling image on failure
+				if (oldImageId) {
+					podmanRPC.image.remove(oldImageId, false).catch(() => {});
+				}
 				return {
 					success: false,
 					name: name,
