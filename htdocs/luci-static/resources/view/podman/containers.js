@@ -414,11 +414,6 @@ return view.extend({
 	},
 
 	/**
-	 * Show import from compose file dialog (not implemented)
-	 */
-	handleImportFromCompose: function () {},
-
-	/**
 	 * Start selected containers
 	 */
 	handleStart: function () {

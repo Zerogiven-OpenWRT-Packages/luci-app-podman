@@ -206,7 +206,7 @@ return view.extend({
 		const selected = this.getSelectedPods();
 
 		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No %s selected').format(_('Pods').toLowerCase())), 3000, 'warning');
+			podmanUI.warningTimeNotification(_('No %s selected').format(_('Pods').toLowerCase()));
 			return;
 		}
 
@@ -242,7 +242,7 @@ return view.extend({
 		const selected = this.getSelectedPods();
 
 		if (selected.length === 0) {
-			ui.addTimeLimitedNotification(null, E('p', _('No %s selected').format(_('Pods').toLowerCase())), 3000, 'warning');
+			podmanUI.warningTimeNotification(_('No %s selected').format(_('Pods').toLowerCase()));
 			return;
 		}
 

@@ -558,7 +558,7 @@ return view.extend({
 					});
 
 					if (selected.length === 0) {
-						ui.addTimeLimitedNotification(null, E('p', _('No containers selected')), 3000, 'warning');
+						podmanUI.warningTimeNotification(_('No containers selected'));
 						return;
 					}
 
@@ -673,7 +673,7 @@ return view.extend({
 						'class': 'cbi-button mt-sm',
 						'click': () => {
 							navigator.clipboard.writeText(cmdStr).then(() => {
-								ui.addTimeLimitedNotification(null, E('p', _('Command copied to clipboard')), 2000, 'info');
+								podmanUI.infoTimeNotification(_('Command copied to clipboard'));
 							});
 						}
 					}, _('Copy Command')));

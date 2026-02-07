@@ -31,6 +31,10 @@ const UINotifications = baseclass.extend({
 		ui.addNotification(null, E('p', text), type || 'info');
 	},
 
+	infoNotification: function (text) {
+		ui.addNotification(null, E('p', text), 'info');
+	},
+
 	/**
 	 * Show persistent warning.
 	 * @param {string} text - Warning message
