@@ -58,7 +58,7 @@ validate_base64_content() {
     fi
 
     local len=${#data}
-    if (( len % 4 != 0 )); then
+    if [ $((len % 4)) -ne 0 ]; then
         echo "Error: Invalid Base64 length ($len). Must be a multiple of 4"
         exit 1
     fi
@@ -66,7 +66,7 @@ validate_base64_content() {
 
 require_param() {
 	local var_name="$1"
-	eval "local var_value=\"\$$var_name\""
+    local var_value="$2"
 	if [ -z "$var_value" ]; then
 		echo "Missing required parameter: $var_name"
 		exit 1
@@ -79,9 +79,9 @@ case "$action" in
         since="$3"
         containerId="$4"
 
-        require_param containerId
-        require_param lines
-        require_param since
+        require_param containerId "$containerId"
+        require_param lines "$lines"
+        require_param since "$since"
 
         validate_path_safe_id "$containerId"
         validate_int "$lines"
@@ -97,7 +97,7 @@ case "$action" in
     image_pull)
         image="$2"
 
-        require_param image
+        require_param image "$image"
 
         validate_path_safe_id "$image"
 
@@ -109,7 +109,7 @@ case "$action" in
     volume_export)
         volumeName="$2"
 
-        require_param volumeName
+        require_param volumeName "$volumeName"
 
         validate_volume_name "$volumeName"
 
@@ -120,9 +120,9 @@ case "$action" in
         volumeData="$4"
         compressed="$3"
 
-        require_param volumeName
-        require_param volumeData
-        require_param compressed
+        require_param volumeName "$volumeName"
+        require_param volumeData "$volumeData"
+        require_param compressed "$compressed"
 
         validate_volume_name "$volumeName"
         validate_base64_content "$volumeData"

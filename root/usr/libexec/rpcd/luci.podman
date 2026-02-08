@@ -68,7 +68,7 @@ get_json_params() {
 
 require_param() {
 	local var_name="$1"
-	eval "local var_value=\"\$$var_name\""
+	local var_value="$var_name"
 	if [ -z "$var_value" ]; then
 		echo "{\"error\":\"Missing required parameter: $var_name\"}"
 		exit 1
@@ -190,31 +190,31 @@ EOF
 				;;
 			container_inspect)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/json"
 				;;
 			container_start)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/start"
 				;;
 			container_stop)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/stop"
 				;;
 			container_restart)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/restart"
 				;;
 			container_remove)
 				get_json_params id force depend
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				# Build query parameters
 				query=""
@@ -228,7 +228,7 @@ EOF
 				;;
 			container_stats)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/stats?stream=false"
 				;;
@@ -238,16 +238,16 @@ EOF
 				;;
 			container_rename)
 				get_json_params id name
-				require_param id
-				require_param name
+				require_param id "$id"
+				require_param name "$name"
 				id_enc=$(urlencode "$id")
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/rename?name=${name_enc}"
 				;;
 			container_update)
 				get_json_params id data
-				require_param id
-				require_param data
+				require_param id "$id"
+				require_param data "$data"
 				id_enc=$(urlencode "$id")
 
 				json_load "$data"
@@ -275,13 +275,13 @@ EOF
 				;;
 			container_healthcheck_run)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/healthcheck"
 				;;
 			container_top)
 				get_json_params id ps_args
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				path="${API_BASE}/containers/${id_enc}/top"
 				if [ -n "$ps_args" ]; then
@@ -296,20 +296,20 @@ EOF
 				;;
 			image_inspect)
 				get_json_params id
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/images/${id_enc}/json"
 				;;
 			image_remove)
 				get_json_params id force
-				require_param id
+				require_param id "$id"
 				id_enc=$(urlencode "$id")
 				path=$(add_force "${API_BASE}/images/${id_enc}" "$force")
 				curl_request "DELETE" "$path"
 				;;
 			image_manifest_inspect)
 				get_json_params image
-				require_param image
+				require_param image "$image"
 				image_enc=$(urlencode "$image")
 				curl_request "GET" "${API_BASE}/manifests/${image_enc}/json"
 				;;
@@ -319,13 +319,13 @@ EOF
 				;;
 			network_inspect)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/networks/${name_enc}/json"
 				;;
 			network_remove)
 				get_json_params name force
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				path=$(add_force "${API_BASE}/networks/${name_enc}" "$force")
 				curl_request "DELETE" "$path"
@@ -336,15 +336,15 @@ EOF
 				;;
 			network_connect)
 				get_json_params name data
-				require_param name
-				require_param data
+				require_param name "$name"
+				require_param data "$data"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/networks/${name_enc}/connect" "$data"
 				;;
 			network_disconnect)
 				get_json_params name data
-				require_param name
-				require_param data
+				require_param name "$name"
+				require_param data "$data"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/networks/${name_enc}/disconnect" "$data"
 				;;
@@ -354,14 +354,14 @@ EOF
 				;;
 			volume_inspect)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				validate_volume_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/volumes/${name_enc}/json"
 				;;
 			volume_remove)
 				get_json_params name force
-				require_param name
+				require_param name "$name"
 				validate_volume_name "$name"
 				name_enc=$(urlencode "$name")
 				path=$(add_force "${API_BASE}/volumes/${name_enc}" "$force")
@@ -377,43 +377,43 @@ EOF
 				;;
 			pod_inspect)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/pods/${name_enc}/json"
 				;;
 			pod_start)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/start"
 				;;
 			pod_stop)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/stop"
 				;;
 			pod_restart)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/restart"
 				;;
 			pod_pause)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/pause"
 				;;
 			pod_unpause)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/unpause"
 				;;
 			pod_remove)
 				get_json_params name force
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				path=$(add_force "${API_BASE}/pods/${name_enc}" "$force")
 				curl_request "DELETE" "$path"
@@ -424,7 +424,7 @@ EOF
 				;;
 			pod_stats)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/pods/stats?stream=false&namesOrIDs=${name_enc}"
 				;;
@@ -434,14 +434,14 @@ EOF
 				;;
 			secret_inspect)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/secrets/${name_enc}/json"
 				;;
 			secret_create)
 				get_json_params name data
-				require_param name
-				require_param data
+				require_param name "$name"
+				require_param data "$data"
 
 				data_b64=$(printf '%s' "$data" | base64)
 				name_enc=$(urlencode "$name")
@@ -451,7 +451,7 @@ EOF
 				;;
 			secret_remove)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "DELETE" "${API_BASE}/secrets/${name_enc}"
 				;;
@@ -481,7 +481,7 @@ EOF
 				;;
 			init_script_generate)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				validate_container_name "$name"
 
 				# Read start priority from UCI and validate it's numeric (1-100)
@@ -510,7 +510,7 @@ EOF
 				;;
 			init_script_show)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				validate_container_name "$name"
 
 				script_name="container-${name}"
@@ -521,12 +521,16 @@ EOF
 					exit 1
 				fi
 
-				content=$(sed 's/\\/\\\\/g; s/"/\\"/g' "$script_path" | awk '{printf "%s\\n", $0}')
-				echo "{\"content\":\"${content}\"}"
+				content=$(cat "$script_path")
+
+				json_init
+				json_add_string content "$content"
+				json_dump
+
 				;;
 			init_script_status)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				validate_container_name "$name"
 
 				script_name="container-${name}"
@@ -544,7 +548,7 @@ EOF
 				;;
 			init_script_set_enabled)
 				get_json_params name enabled
-				require_param name
+				require_param name "$name"
 				validate_container_name "$name"
 
 				script_name="container-${name}"
@@ -575,7 +579,7 @@ EOF
 				;;
 			init_script_remove)
 				get_json_params name
-				require_param name
+				require_param name "$name"
 				validate_container_name "$name"
 
 				script_name="container-${name}"
@@ -598,7 +602,7 @@ EOF
 				;;
 			container_recreate)
 				get_json_params command
-				require_param command
+				require_param command "$command"
 
 				if [ -z "$command" ] || [ "$command" = "null" ]; then
 					echo '{"error":"Invalid command: empty or null"}'
