@@ -56,7 +56,7 @@ return view.extend({
 	 * @param {Object} data - Data from load()
 	 * @returns {Element} Rendered view element
 	 */
-	render: function(data) {
+	render: function (data) {
 		if (data && data.error) {
 			return utils.renderError(data.error);
 		}
@@ -83,7 +83,9 @@ return view.extend({
 		o = section.option(
 			podmanForm.field.SelectDummyValue,
 			'ID',
-			new ui.Checkbox(0, { hiddenname: 'all' }).render()
+			new ui.Checkbox(0, {
+				hiddenname: 'all'
+			}).render()
 		);
 
 		o = section.option(podmanForm.field.LinkDataDummyValue, 'VolumeName', _('Name'));
@@ -105,7 +107,7 @@ return view.extend({
 		const toolbar = this.listHelper.createToolbar({
 			onDelete: () => this.handleDeleteSelected(),
 			onRefresh: () => this.handleRefresh(),
-			onCreate: undefined,  // Will add multi-button instead
+			onCreate: undefined, // Will add multi-button instead
 			customButtons: [{
 				text: _('Export'),
 				handler: () => this.handleExportSelected(),
@@ -174,11 +176,12 @@ return view.extend({
 	/**
 	 * Export selected volumes as tar.gz files
 	 */
-	handleExportSelected: function() {
+	handleExportSelected: function () {
 		const selected = this.listHelper.getSelected((volume) => volume.Name);
 
 		if (selected.length === 0) {
-			podmanUI.warningTimeNotification(_('No %s selected').format(_('Volumes').toLowerCase()));
+			podmanUI.warningTimeNotification(_('No %s selected').format(_('Volumes')
+			.toLowerCase()));
 			return;
 		}
 
@@ -196,21 +199,23 @@ return view.extend({
 			const volumeName = selected[exportIndex];
 			exportIndex++;
 
-			fs.exec_direct('/usr/libexec/podman-api', ['volume_export', volumeName], 'blob').then((blob) => {
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = `${volumeName}.tar`;
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-				URL.revokeObjectURL(url);
+			fs.exec_direct('/usr/libexec/podman-api', ['volume_export', volumeName], 'blob')
+				.then((blob) => {
+					const url = URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = `${volumeName}.tar`;
+					document.body.appendChild(a);
+					a.click();
+					document.body.removeChild(a);
+					URL.revokeObjectURL(url);
 
-				exportNext();
-			}).catch((err) => {
-				ui.hideModal();
-				podmanUI.errorNotification(_('Failed to export volume %s: %s').format(volumeName, err.message));
-			});
+					exportNext();
+				}).catch((err) => {
+					ui.hideModal();
+					podmanUI.errorNotification(_('Failed to export volume %s: %s').format(
+						volumeName, err.message));
+				});
 		};
 
 		exportNext();
@@ -219,7 +224,7 @@ return view.extend({
 	/**
 	 * Show import volume dialog with file picker
 	 */
-	handleImportVolume: function() {
+	handleImportVolume: function () {
 		const fileInput = E('input', {
 			'type': 'file',
 			'accept': '.tar,.tar.gz,.tgz',
@@ -231,14 +236,21 @@ return view.extend({
 			if (!file) return;
 
 			// Detect if file is compressed based on extension
-			const isCompressed = file.name.endsWith('.tar.gz') || file.name.endsWith('.tgz');
+			const isCompressed = file.name.endsWith('.tar.gz') || file.name.endsWith(
+				'.tgz');
 			const volumeName = file.name.replace(/\.(tar\.gz|tgz|tar)$/, '');
 
 			ui.showModal(_('Import Volume'), [
 				E('p', {}, _('Import volume from archive: %s').format(file.name)),
-				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('Volume Name')),
-					E('div', { 'class': 'cbi-value-field' }, [
+				E('div', {
+					'class': 'cbi-value'
+				}, [
+					E('label', {
+						'class': 'cbi-value-title'
+					}, _('Volume Name')),
+					E('div', {
+						'class': 'cbi-value-field'
+					}, [
 						E('input', {
 							'type': 'text',
 							'class': 'cbi-input-text',
@@ -248,7 +260,9 @@ return view.extend({
 						})
 					])
 				]),
-				E('div', { 'class': 'right' }, [
+				E('div', {
+					'class': 'right'
+				}, [
 					E('button', {
 						'class': 'cbi-button cbi-button-neutral',
 						'click': ui.hideModal
@@ -257,43 +271,68 @@ return view.extend({
 					E('button', {
 						'class': 'cbi-button cbi-button-positive',
 						'click': () => {
-							const name = document.getElementById('import-volume-name').value.trim();
+							const name = document.getElementById(
+								'import-volume-name').value.trim();
 							if (!name) {
-								podmanUI.errorNotification(_('Volume name is required'));
+								podmanUI.errorNotification(_(
+										'Volume name is required'
+										));
 								return;
 							}
 
 							ui.hideModal();
-							podmanUI.showSpinningModal(_('Importing Volume'), _('Importing volume...'));
+							podmanUI.showSpinningModal(_(
+								'Importing Volume'), _(
+								'Importing volume...'));
 
 							// Read file and encode to base64
 							const reader = new FileReader();
 							reader.onload = (e) => {
-								const arrayBuffer = e.target.result;
-								const bytes = new Uint8Array(arrayBuffer);
+								const arrayBuffer = e.target
+									.result;
+								const bytes = new Uint8Array(
+									arrayBuffer);
 								let binary = '';
-								for (let i = 0; i < bytes.length; i++) {
-									binary += String.fromCharCode(bytes[i]);
+								for (let i = 0; i < bytes
+									.length; i++) {
+									binary += String.fromCharCode(
+										bytes[i]);
 								}
 								const base64Data = btoa(binary);
 
-								fs.exec_direct('/usr/libexec/podman-api', [
-									'volume_import',
-									name,
-									isCompressed ? '1' : '0',
-									base64Data
-								], 'text').then(() => {
+								fs.exec_direct(
+									'/usr/libexec/podman-api',
+									[
+										'volume_import',
+										name,
+										isCompressed ? '1' :
+										'0',
+										base64Data
+									], 'text').then(() => {
 									ui.hideModal();
-									podmanUI.successTimeNotification(_('Volume imported successfully'));
-									this.handleRefresh(false);
+									podmanUI
+										.successTimeNotification(
+											_(
+												'Volume imported successfully')
+											);
+									this.handleRefresh(
+										false);
 								}).catch((err) => {
 									ui.hideModal();
-									podmanUI.errorNotification(_('Failed to import volume: %s').format(err.message));
+									podmanUI
+										.errorNotification(
+											_(
+												'Failed to import volume: %s')
+											.format(err
+												.message)
+											);
 								});
 							};
 							reader.onerror = () => {
 								ui.hideModal();
-								podmanUI.errorNotification(_('Failed to read file'));
+								podmanUI.errorNotification(_(
+										'Failed to read file'
+										));
 							};
 							reader.readAsArrayBuffer(file);
 						}
