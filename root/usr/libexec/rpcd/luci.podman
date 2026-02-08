@@ -8,7 +8,6 @@ SOCKET=$(uci -q get podman.globals.socket_path 2>/dev/null)
 SOCKET="${SOCKET:-/run/podman/podman.sock}"
 API_BASE="/v5.0.0/libpod"
 
-# URL encode a string (preserves : / @ for image references)
 urlencode() {
 	local string="$1" encoded="" char rest
 	rest="$string"
@@ -17,7 +16,6 @@ urlencode() {
 		rest="${rest#?}"
 		case "$char" in
 			[-_.~a-zA-Z0-9:/@]) encoded="${encoded}${char}" ;;
-			# *) printf -v char '%%%02x' "'$char"
 			*) char=$(printf '%%%02x' "'$char")
 			   encoded="${encoded}${char}" ;;
 		esac
@@ -25,7 +23,6 @@ urlencode() {
 	echo "$encoded"
 }
 
-# Validate container name (alphanumeric, dash, underscore only)
 validate_container_name() {
 	local name="$1"
 	case "$name" in
@@ -36,7 +33,6 @@ validate_container_name() {
 	esac
 }
 
-# Validate volume name (alphanumeric, dash, underscore, dot only)
 validate_volume_name() {
 	local name="$1"
 	case "$name" in
@@ -47,8 +43,6 @@ validate_volume_name() {
 	esac
 }
 
-# Validate query parameters (only allow safe URL characters)
-# Allows: alphanumeric, =, &, -, _, ., comma
 validate_query_params() {
 	local params="$1"
 	case "$params" in
@@ -64,7 +58,6 @@ is_true() {
 	[ "$1" = "true" ] || [ "$1" = "1" ]
 }
 
-# Get JSON parameters from input
 get_json_params() {
 	read -r input
 	json_load "$input"
@@ -73,7 +66,6 @@ get_json_params() {
 	done
 }
 
-# Validate required parameter
 require_param() {
 	local var_name="$1"
 	eval "local var_value=\"\$$var_name\""
@@ -83,7 +75,6 @@ require_param() {
 	fi
 }
 
-# Make curl request with error handling
 curl_request() {
 	local method="$1"
 	local path="$2"
@@ -108,7 +99,6 @@ curl_request() {
 		return $exit_code
 	fi
 
-	# Check if result is an array and wrap it in an object for ubus compatibility
 	case "$result" in
 		\[*)
 			echo "{\"data\":$result}"
@@ -120,7 +110,6 @@ curl_request() {
 	return 0
 }
 
-# Add force parameter to path
 add_force() {
 	is_true "$2" && echo "${1}?force=true" || echo "$1"
 }
@@ -262,23 +251,18 @@ EOF
 				require_param data
 				id_enc=$(urlencode "$id")
 
-				# Parse the data JSON to extract restart policy (query params) and other resources (body)
 				json_load "$data"
 				json_get_var restart_policy RestartPolicy
 				json_get_var restart_retries RestartRetries
 
-				# Build query parameters for restart policy
 				query=""
 				[ -n "$restart_policy" ] && query="${query}restartPolicy=${restart_policy}&"
 				[ -n "$restart_retries" ] && query="${query}restartRetries=${restart_retries}&"
-				# Remove trailing &
+
 				query="${query%&}"
-				# Add ? if we have parameters
+
 				[ -n "$query" ] && query="?${query}"
 
-				# Check if we have resource/health updates (cpu, memory, blockIO, health) to send as body
-				# If the JSON contains fields other than RestartPolicy/RestartRetries, send as body
-				# This is a simple check - if data contains 'cpu', 'memory', 'blockIO', or 'health', use body
 				case "$data" in
 					*cpu*|*memory*|*blockIO*|*health*|*no_healthcheck*)
 						# Send with body for resource/health updates
@@ -308,7 +292,7 @@ EOF
 				curl_request "GET" "$path"
 				;;
 			images_list)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/images/json"
 				;;
 			image_inspect)
@@ -331,7 +315,7 @@ EOF
 				curl_request "GET" "${API_BASE}/manifests/${image_enc}/json"
 				;;
 			networks_list)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/networks/json"
 				;;
 			network_inspect)
@@ -366,7 +350,7 @@ EOF
 				curl_request "POST" "${API_BASE}/networks/${name_enc}/disconnect" "$data"
 				;;
 			volumes_list)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/volumes/json"
 				;;
 			volume_inspect)
@@ -498,7 +482,7 @@ EOF
 				curl_request "GET" "${API_BASE}/pods/stats?stream=false&namesOrIDs=${name_enc}"
 				;;
 			secrets_list)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/secrets/json"
 				;;
 			secret_inspect)
@@ -511,13 +495,11 @@ EOF
 				get_json_params name data
 				require_param name
 				require_param data
-				# Base64 encode the secret data
-				# data_b64=$(echo -n "$data" | base64)
+
 				data_b64=$(printf '%s' "$data" | base64)
-				# URL encode the name for query parameter
 				name_enc=$(urlencode "$name")
-				# Build JSON payload - just the base64 data as a JSON string
 				payload="\"${data_b64}\""
+
 				curl_request "POST" "${API_BASE}/secrets/create?name=${name_enc}" "$payload"
 				;;
 			secret_remove)
@@ -527,27 +509,27 @@ EOF
 				curl_request "DELETE" "${API_BASE}/secrets/${name_enc}"
 				;;
 			system_df)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/system/df"
 				;;
 			system_prune)
 				get_json_params all volumes
-				# Build query parameters (check for both "true" and "1" since JSON booleans become 1/0)
+
 				query=""
 				is_true "$all" && query="${query}all=true&"
 				is_true "$volumes" && query="${query}volumes=true&"
-				# Remove trailing &
+
 				query="${query%&}"
-				# Add ? if we have parameters
+
 				[ -n "$query" ] && query="?${query}"
 				curl_request "POST" "${API_BASE}/system/prune${query}"
 				;;
 			version)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/version"
 				;;
 			info)
-				read -r input  # consume ubus JSON input
+				read -r input
 				curl_request "GET" "${API_BASE}/info"
 				;;
 			init_script_generate)
@@ -592,7 +574,6 @@ EOF
 					exit 1
 				fi
 
-				# Read script content and escape for JSON
 				content=$(sed 's/\\/\\\\/g; s/"/\\"/g' "$script_path" | awk '{printf "%s\\n", $0}')
 				echo "{\"content\":\"${content}\"}"
 				;;
@@ -604,11 +585,9 @@ EOF
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
 
-				# Check if script exists
 				exists="false"
 				[ -f "$script_path" ] && exists="true"
 
-				# Check if enabled using the script's enabled command
 				enabled="false"
 				if [ -f "$script_path" ] && "${script_path}" enabled >/dev/null 2>&1; then
 					enabled="true"
@@ -629,9 +608,7 @@ EOF
 					exit 1
 				fi
 
-				# Check for both "true" and "1" since JSON booleans become 1/0
 				if is_true "$enabled"; then
-					# Enable service
 					"${script_path}" enable >/dev/null 2>&1
 					exit_code=$?
 					if [ $exit_code -ne 0 ]; then
@@ -640,7 +617,6 @@ EOF
 					fi
 					echo '{"success":true,"enabled":true}'
 				else
-					# Disable service
 					"${script_path}" disable >/dev/null 2>&1
 					exit_code=$?
 					if [ $exit_code -ne 0 ]; then
@@ -659,15 +635,11 @@ EOF
 				script_path="/etc/init.d/${script_name}"
 
 				if [ ! -f "$script_path" ]; then
-					# Not an error - already removed
 					echo '{"success":true,"message":"Init script does not exist"}'
 					exit 0
 				fi
 
-				# Disable first (removes symlinks)
 				"${script_path}" disable >/dev/null 2>&1
-
-				# Remove script file
 				rm -f "$script_path"
 
 				if [ -f "$script_path" ]; then
@@ -681,17 +653,14 @@ EOF
 				get_json_params command
 				require_param command
 
-				# Validate command is not empty and is valid JSON array
 				if [ -z "$command" ] || [ "$command" = "null" ]; then
 					echo '{"error":"Invalid command: empty or null"}'
 					exit 1
 				fi
 
-				# Security: Validate command structure
 				first_arg=$(echo "$command" | jsonfilter -e '@[0]' 2>/dev/null)
 				second_arg=$(echo "$command" | jsonfilter -e '@[1]' 2>/dev/null)
 
-				# Check if jsonfilter parsing succeeded
 				if [ -z "$first_arg" ]; then
 					echo '{"error":"Failed to parse command JSON"}'
 					exit 1
@@ -707,7 +676,6 @@ EOF
 						;;
 				esac
 
-				# Only allow run/create subcommands for container recreation
 				case "$second_arg" in
 					run|create)
 						;;
@@ -724,36 +692,27 @@ EOF
 					exit 1
 				fi
 
-				# Security: Check for shell metacharacters in command structure
-				# Note: backticks, $(), ${} can appear legitimately in labels (e.g., Traefik rules)
-				# They are safely neutralized by single-quote escaping of each argument below
 				if echo "$command" | grep -qE '\&\&|\|\||[;<>]'; then
 					echo '{"error":"Invalid command: contains forbidden shell characters"}'
 					exit 1
 				fi
 
-				# Create temp script with properly quoted command
 				temp_script=$(mktemp /tmp/podman_cmd_XXXXXX)
 				printf '#!/bin/sh\n/usr/bin/podman' > "$temp_script"
 
-				# Skip first element ("podman"), quote all remaining arguments
 				echo "$command" | jsonfilter -e '@[*]' | tail -n +2 | while IFS= read -r arg; do
-					# Escape single quotes for shell safety
 					escaped=$(printf '%s' "$arg" | sed "s/'/'\\\\''/g")
 					printf " '%s'" "$escaped" >> "$temp_script"
 				done
 
 				printf '\n' >> "$temp_script"
-				# chmod +x "$temp_script"
 				chmod 700 "$temp_script"
 
-				# Execute and capture output
 				result=$("$temp_script" 2>&1)
 				exit_code=$?
 				rm -f "$temp_script"
 
 				if [ $exit_code -ne 0 ]; then
-					# Escape result for JSON
 					result_escaped=$(printf '%s' "$result" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
 					echo "{\"error\":\"Command failed\",\"details\":\"${result_escaped}\",\"exit_code\":${exit_code}}"
 					exit 1
