@@ -66,10 +66,12 @@ return baseclass.extend({
 					}, _('Pulling %s...').format(imageName))
 				]);
 
-				fs.exec_direct('/usr/libexec/podman-api', ['image_pull', imageName], 'text')
+				fs.exec_direct('/usr/libexec/podman-api', ['image_pull',
+						imageName], 'text')
 					.then(() => {
 						ui.hideModal();
-						podmanUI.successTimeNotification(_('Image pulled successfully'));
+						podmanUI.successTimeNotification(_(
+							'Image pulled successfully'));
 
 						this.map.data.data.image.image = '';
 						this.map.save().then(() => {
@@ -78,7 +80,8 @@ return baseclass.extend({
 					}).catch((err) => {
 						ui.hideModal();
 						podmanUI.errorNotification(
-							_('Failed to pull image: %s').format(err.message));
+							_('Failed to pull image: %s').format(err
+								.message));
 					});
 			});
 		},
