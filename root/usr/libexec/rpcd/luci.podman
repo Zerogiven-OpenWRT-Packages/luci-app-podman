@@ -644,7 +644,7 @@ EOF
 					exit 1
 				fi
 
-				temp_script=$(mktemp /tmp/podman_cmd_XXXXXX)
+				temp_script=$(mktemp)
 				printf '#!/bin/sh\n/usr/bin/podman' > "$temp_script"
 
 				echo "$command" | jsonfilter -e '@[*]' | tail -n +2 | while IFS= read -r arg; do

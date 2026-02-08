@@ -52,7 +52,7 @@ validate_volume_name() {
 validate_base64_content() {
     local data="$1"
 
-    if [[ ! "$data" =~ ^[A-Za-z0-9+/]*={0,2}$ ]]; then
+    if ! printf '%s\n' "$data" | grep -Eq '^[A-Za-z0-9+/]*={0,2}$'; then
         echo 'Error: Invalid Base64 characters detected'
         exit 1
     fi
@@ -129,9 +129,9 @@ case "$action" in
         validate_int "$compressed"
 
         if [ "$compressed" = "1" ]; then
-			$data_decoded=$(echo "$volumeData" | base64 -d - | gunzip -c)
+			data_decoded=$(echo "$volumeData" | base64 -d - | gunzip -c)
 		else
-			$data_decoded=$(echo "$volumeData" | base64 -d -)
+			data_decoded=$(echo "$volumeData" | base64 -d -)
 		fi
 		decode_exit=$?
 
@@ -147,7 +147,7 @@ case "$action" in
         exit_code=$?
 
         if [ $exit_code -ne 0 ]; then
-            podman volume rm "$volumeName" 2>/dev/null
+            /usr/bin/podman volume rm "$volumeName" 2>/dev/null
             echo "Import failed"
             exit 1
         fi
