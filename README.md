@@ -45,7 +45,7 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 
 ## Requirements
 
-- OpenWrt 24.10, 25.12
+- OpenWrt 24.10
 - Dependencies can be seen in the [Makefile](Makefile) under `LUCI_DEPENDS`
 - Sufficient storage for images/containers
 
