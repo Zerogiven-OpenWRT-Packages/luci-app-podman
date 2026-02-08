@@ -8,50 +8,19 @@ SOCKET=$(uci -q get podman.globals.socket_path 2>/dev/null)
 SOCKET="${SOCKET:-/run/podman/podman.sock}"
 API_BASE="/v5.0.0/libpod"
 
-urlencode() {
-	local string="$1" encoded="" char rest
-	rest="$string"
-	while [ -n "$rest" ]; do
-		char="${rest%"${rest#?}"}"
-		rest="${rest#?}"
-		case "$char" in
-			[-_.~a-zA-Z0-9:/@]) encoded="${encoded}${char}" ;;
-			*) char=$(printf '%%%02x' "'$char")
-			   encoded="${encoded}${char}" ;;
-		esac
-	done
-	echo "$encoded"
+json_error() {
+	json_init
+	json_add_string error "$1"
+	[ -n "$2" ] && json_add_string details "$2"
+	[ -n "$3" ] && json_add_string code "$2"
+	json_dump
+	exit 1
 }
 
-validate_container_name() {
-	local name="$1"
-	case "$name" in
-		*[!a-zA-Z0-9_-]*)
-			echo '{"error":"Invalid container name format"}'
-			exit 1
-			;;
-	esac
-}
+# Route validation failures through json_error for JSON output
+fail_validation() { json_error "$1"; }
 
-validate_volume_name() {
-	local name="$1"
-	case "$name" in
-		*[!a-zA-Z0-9_.-]*)
-			echo '{"error":"Invalid volume name format"}'
-			exit 1
-			;;
-	esac
-}
-
-validate_query_params() {
-	local params="$1"
-	case "$params" in
-		*[!a-zA-Z0-9=\&_.,-]*)
-			echo '{"error":"Invalid query parameters"}'
-			exit 1
-			;;
-	esac
-}
+. /usr/share/podman/validation.sh
 
 # Check boolean parameter (JSON booleans become 1/0 via ubus)
 is_true() {
@@ -64,15 +33,6 @@ get_json_params() {
 	for var in "$@"; do
 		json_get_var "$var" "$var"
 	done
-}
-
-require_param() {
-	local var_name="$1"
-	local var_value="$var_name"
-	if [ -z "$var_value" ]; then
-		echo "{\"error\":\"Missing required parameter: $var_name\"}"
-		exit 1
-	fi
 }
 
 curl_request() {
@@ -95,7 +55,7 @@ curl_request() {
 	fi
 
 	if [ $exit_code -ne 0 ]; then
-		echo "{\"error\":\"Request failed\",\"details\":\"curl exit code $exit_code\"}"
+		json_error "Request failed" "curl exit code $exit_code" "$exit_code"
 		return $exit_code
 	fi
 
@@ -172,9 +132,11 @@ case "$1" in
 EOF
 		;;
 	call)
+		json_init
+
 		# Check socket availability
 		if [ ! -S "$SOCKET" ]; then
-			echo '{"error":"Podman socket not found or not accessible"}'
+			json_error "Podman socket not found or not accessible"
 			exit 1
 		fi
 
@@ -191,30 +153,36 @@ EOF
 			container_inspect)
 				get_json_params id
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/json"
 				;;
 			container_start)
 				get_json_params id
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/start"
 				;;
 			container_stop)
 				get_json_params id
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/stop"
 				;;
 			container_restart)
 				get_json_params id
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/restart"
 				;;
 			container_remove)
 				get_json_params id force depend
 				require_param id "$id"
+				validate_path_safe_id "$id"
+
 				id_enc=$(urlencode "$id")
 				# Build query parameters
 				query=""
@@ -229,17 +197,23 @@ EOF
 			container_stats)
 				get_json_params id
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/stats?stream=false"
 				;;
 			container_create)
 				get_json_params data
+				require_param data "$data"
 				curl_request "POST" "${API_BASE}/containers/create" "$data"
 				;;
 			container_rename)
 				get_json_params id name
+
 				require_param id "$id"
 				require_param name "$name"
+				validate_path_safe_id "$id"
+				validate_container_name "$name"
+
 				id_enc=$(urlencode "$id")
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/containers/${id_enc}/rename?name=${name_enc}"
@@ -248,11 +222,13 @@ EOF
 				get_json_params id data
 				require_param id "$id"
 				require_param data "$data"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 
 				json_load "$data"
 				json_get_var restart_policy RestartPolicy
 				json_get_var restart_retries RestartRetries
+				validate_restart_policy "$restart_policy"
 
 				query=""
 				[ -n "$restart_policy" ] && query="${query}restartPolicy=${restart_policy}&"
@@ -276,12 +252,14 @@ EOF
 			container_healthcheck_run)
 				get_json_params id
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/containers/${id_enc}/healthcheck"
 				;;
 			container_top)
 				get_json_params id ps_args
 				require_param id "$id"
+				validate_path_safe_id "$id"
 				id_enc=$(urlencode "$id")
 				path="${API_BASE}/containers/${id_enc}/top"
 				if [ -n "$ps_args" ]; then
@@ -297,12 +275,14 @@ EOF
 			image_inspect)
 				get_json_params id
 				require_param id "$id"
+				validate_image_ref "$id"
 				id_enc=$(urlencode "$id")
 				curl_request "GET" "${API_BASE}/images/${id_enc}/json"
 				;;
 			image_remove)
 				get_json_params id force
 				require_param id "$id"
+				validate_image_ref "$id"
 				id_enc=$(urlencode "$id")
 				path=$(add_force "${API_BASE}/images/${id_enc}" "$force")
 				curl_request "DELETE" "$path"
@@ -310,6 +290,7 @@ EOF
 			image_manifest_inspect)
 				get_json_params image
 				require_param image "$image"
+				validate_image_ref "$image"
 				image_enc=$(urlencode "$image")
 				curl_request "GET" "${API_BASE}/manifests/${image_enc}/json"
 				;;
@@ -320,24 +301,28 @@ EOF
 			network_inspect)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/networks/${name_enc}/json"
 				;;
 			network_remove)
 				get_json_params name force
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				path=$(add_force "${API_BASE}/networks/${name_enc}" "$force")
 				curl_request "DELETE" "$path"
 				;;
 			network_create)
 				get_json_params data
+				require_param data "$data"
 				curl_request "POST" "${API_BASE}/networks/create" "$data"
 				;;
 			network_connect)
 				get_json_params name data
 				require_param name "$name"
 				require_param data "$data"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/networks/${name_enc}/connect" "$data"
 				;;
@@ -345,6 +330,7 @@ EOF
 				get_json_params name data
 				require_param name "$name"
 				require_param data "$data"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/networks/${name_enc}/disconnect" "$data"
 				;;
@@ -369,6 +355,7 @@ EOF
 				;;
 			volume_create)
 				get_json_params data
+				require_param data "$data"
 				curl_request "POST" "${API_BASE}/volumes/create" "$data"
 				;;
 			pods_list)
@@ -378,53 +365,62 @@ EOF
 			pod_inspect)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/pods/${name_enc}/json"
 				;;
 			pod_start)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/start"
 				;;
 			pod_stop)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/stop"
 				;;
 			pod_restart)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/restart"
 				;;
 			pod_pause)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/pause"
 				;;
 			pod_unpause)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "POST" "${API_BASE}/pods/${name_enc}/unpause"
 				;;
 			pod_remove)
 				get_json_params name force
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				path=$(add_force "${API_BASE}/pods/${name_enc}" "$force")
 				curl_request "DELETE" "$path"
 				;;
 			pod_create)
 				get_json_params data
+				require_param data "$data"
 				curl_request "POST" "${API_BASE}/pods/create" "$data"
 				;;
 			pod_stats)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/pods/stats?stream=false&namesOrIDs=${name_enc}"
 				;;
@@ -435,6 +431,7 @@ EOF
 			secret_inspect)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "GET" "${API_BASE}/secrets/${name_enc}/json"
 				;;
@@ -442,6 +439,7 @@ EOF
 				get_json_params name data
 				require_param name "$name"
 				require_param data "$data"
+				validate_resource_name "$name"
 
 				data_b64=$(printf '%s' "$data" | base64)
 				name_enc=$(urlencode "$name")
@@ -452,6 +450,7 @@ EOF
 			secret_remove)
 				get_json_params name
 				require_param name "$name"
+				validate_resource_name "$name"
 				name_enc=$(urlencode "$name")
 				curl_request "DELETE" "${API_BASE}/secrets/${name_enc}"
 				;;
@@ -481,6 +480,7 @@ EOF
 				;;
 			init_script_generate)
 				get_json_params name
+
 				require_param name "$name"
 				validate_container_name "$name"
 
@@ -499,17 +499,21 @@ EOF
 					-e "s|{script_name}|$script_name|g" \
 					"/usr/share/podman/procd-startup-template.sh" > "$script_path"
 
-				chmod +x "$script_path"
+				chmod 755 "$script_path"
 
 				if [ ! -x "$script_path" ]; then
-					echo '{"error":"Failed to create init script"}'
+					json_error "Failed to create init script"
 					exit 1
 				fi
 
-				echo "{\"success\":true,\"path\":\"${script_path}\"}"
+				json_add_boolean success "1"
+				json_add_string path "$script_path"
+				json_dump
+
 				;;
 			init_script_show)
 				get_json_params name
+
 				require_param name "$name"
 				validate_container_name "$name"
 
@@ -517,37 +521,40 @@ EOF
 				script_path="/etc/init.d/${script_name}"
 
 				if [ ! -f "$script_path" ]; then
-					echo '{"error":"Init script not found"}'
+					json_error "Init script not found"
 					exit 1
 				fi
 
 				content=$(cat "$script_path")
 
-				json_init
 				json_add_string content "$content"
 				json_dump
 
 				;;
 			init_script_status)
 				get_json_params name
+
 				require_param name "$name"
 				validate_container_name "$name"
 
 				script_name="container-${name}"
 				script_path="/etc/init.d/${script_name}"
 
-				exists="false"
-				[ -f "$script_path" ] && exists="true"
+				exists="0"
+				[ -f "$script_path" ] && exists="1"
 
-				enabled="false"
+				enabled="0"
 				if [ -f "$script_path" ] && "${script_path}" enabled >/dev/null 2>&1; then
-					enabled="true"
+					enabled="1"
 				fi
 
-				echo "{\"exists\":${exists},\"enabled\":${enabled}}"
+				json_add_boolean exists "$exists"
+				json_add_boolean enabled "$enabled"
+				json_dump
 				;;
 			init_script_set_enabled)
 				get_json_params name enabled
+
 				require_param name "$name"
 				validate_container_name "$name"
 
@@ -555,7 +562,7 @@ EOF
 				script_path="/etc/init.d/${script_name}"
 
 				if [ ! -f "$script_path" ]; then
-					echo '{"error":"Init script not found. Generate it first."}'
+					json_error "Init script not found. Generate it first."
 					exit 1
 				fi
 
@@ -563,19 +570,23 @@ EOF
 					"${script_path}" enable >/dev/null 2>&1
 					exit_code=$?
 					if [ $exit_code -ne 0 ]; then
-						echo "{\"error\":\"Failed to enable service\",\"exit_code\":${exit_code}}"
+						json_error "Failed to enable service" "" "$exit_code"
 						exit 1
 					fi
-					echo '{"success":true,"enabled":true}'
+					enabled="1"
 				else
 					"${script_path}" disable >/dev/null 2>&1
 					exit_code=$?
 					if [ $exit_code -ne 0 ]; then
-						echo "{\"error\":\"Failed to disable service\",\"exit_code\":${exit_code}}"
+						json_error "Failed to disable service" "" "$exit_code"
 						exit 1
 					fi
-					echo '{"success":true,"enabled":false}'
+					enabled="0"
 				fi
+
+				json_add_boolean success "1"
+				json_add_boolean enabled "$enabled"
+				json_dump
 				;;
 			init_script_remove)
 				get_json_params name
@@ -586,7 +597,9 @@ EOF
 				script_path="/etc/init.d/${script_name}"
 
 				if [ ! -f "$script_path" ]; then
-					echo '{"success":true,"message":"Init script does not exist"}'
+					json_add_boolean success "1"
+					json_add_string message "Init script does not exist"
+					json_dump
 					exit 0
 				fi
 
@@ -594,58 +607,47 @@ EOF
 				rm -f "$script_path"
 
 				if [ -f "$script_path" ]; then
-					echo '{"error":"Failed to remove init script"}'
+					json_error "Failed to remove init script"
 					exit 1
 				fi
 
-				echo '{"success":true}'
+				json_add_boolean success "1"
+				json_dump
 				;;
 			container_recreate)
 				get_json_params command
 				require_param command "$command"
 
 				if [ -z "$command" ] || [ "$command" = "null" ]; then
-					echo '{"error":"Invalid command: empty or null"}'
-					exit 1
+					json_error "Invalid command: empty or null"
 				fi
 
 				first_arg=$(echo "$command" | jsonfilter -e '@[0]' 2>/dev/null)
 				second_arg=$(echo "$command" | jsonfilter -e '@[1]' 2>/dev/null)
 
 				if [ -z "$first_arg" ]; then
-					echo '{"error":"Failed to parse command JSON"}'
-					exit 1
+					json_error "Failed to parse command JSON"
 				fi
 
 				# Accept both "podman" and "/usr/bin/podman" (Podman stores full path in CreateCommand)
 				case "$first_arg" in
-					podman|/usr/bin/podman)
-						;;
-					*)
-						echo "{\"error\":\"Invalid command: must start with podman\",\"details\":\"got: ${first_arg}\"}"
-						exit 1
-						;;
+					podman|/usr/bin/podman) ;;
+					*) json_error "Invalid command: must start with podman" "got: ${first_arg}" ;;
 				esac
 
 				case "$second_arg" in
-					run|create)
-						;;
-					*)
-						echo "{\"error\":\"Invalid command: only run/create subcommands allowed\",\"details\":\"got: ${second_arg}\"}"
-						exit 1
-						;;
+					run|create) ;;
+					*) json_error "Invalid command: only run/create subcommands allowed" "got: ${second_arg}" ;;
 				esac
 
 				# Security: Limit argument count to prevent abuse (256 is generous for any real container)
 				arg_count=$(echo "$command" | jsonfilter -e '@[*]' 2>/dev/null | wc -l)
 				if [ "$arg_count" -gt 256 ]; then
-					echo '{"error":"Invalid command: too many arguments"}'
-					exit 1
+					json_error "Invalid command: too many arguments"
 				fi
 
 				if echo "$command" | grep -qE '\&\&|\|\||[;<>]'; then
-					echo '{"error":"Invalid command: contains forbidden shell characters"}'
-					exit 1
+					json_error "Invalid command: contains forbidden shell characters"
 				fi
 
 				temp_script=$(mktemp)
@@ -664,12 +666,12 @@ EOF
 				rm -f "$temp_script"
 
 				if [ $exit_code -ne 0 ]; then
-					result_escaped=$(printf '%s' "$result" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
-					echo "{\"error\":\"Command failed\",\"details\":\"${result_escaped}\",\"exit_code\":${exit_code}}"
+					json_error "Command failed" "$(printf '%s' "$result" | tr '\n' ' ')" "$exit_code"
 					exit 1
 				fi
 
-				echo '{"success":true}'
+				json_add_boolean success "1"
+				json_dump
 				;;
 		esac
 		;;
