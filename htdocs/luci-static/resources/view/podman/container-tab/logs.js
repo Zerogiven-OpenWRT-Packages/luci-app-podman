@@ -2,17 +2,20 @@
 
 'require baseclass';
 'require dom';
+'require fs';
 'require ui';
 'require poll';
 
 'require podman.ui as podmanUI';
-'require podman.format as format';
-'require podman.rpc as podmanRPC';
-'require podman.utils as utils';
 'require podman.constants as constants';
+
+const TIMESTAMP_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))\s/;
+const TIMESTAMP_RE_GLOBAL = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})\s/gm;
 
 /**
  * Container logs tab - displays container logs with optional live streaming
+ * Uses fs.exec_direct() with podman-api wrapper to fetch logs via Podman REST API
+ * The API returns Docker multiplexed stream format (8-byte header per frame)
  */
 return baseclass.extend({
 	/**
@@ -82,110 +85,111 @@ return baseclass.extend({
 	},
 
 	/**
+	 * Parse Docker multiplexed stream format from binary buffer.
+	 * Each frame: 1 byte stream type, 3 bytes padding, 4 bytes big-endian size, then payload.
+	 * @param {ArrayBuffer} buffer - Raw binary response from Podman logs API
+	 * @returns {string} Decoded log text with headers stripped
+	 */
+	parseDockerStream: function (buffer) {
+		const view = new DataView(buffer);
+		const decoder = new TextDecoder();
+		const chunks = [];
+		let offset = 0;
+
+		while (offset + 8 <= buffer.byteLength) {
+			const frameSize = view.getUint32(offset + 4, false);
+			offset += 8;
+
+			if (offset + frameSize > buffer.byteLength) break;
+
+			chunks.push(decoder.decode(new Uint8Array(buffer, offset, frameSize)));
+			offset += frameSize;
+		}
+
+		return chunks.join('');
+	},
+
+	/**
+	 * Fetch logs via podman-api wrapper and parse the Docker stream response
+	 * @param {number} lines - Number of tail lines (0 = all)
+	 * @param {string} since - Unix epoch timestamp or '0' for none
+	 * @returns {Promise<string>} Parsed log text
+	 */
+	fetchLogs: function (lines, since) {
+		return fs.exec_direct('/usr/libexec/podman-api',
+			['logs', String(lines), since || '0', this.containerId], 'blob'
+		).then((blob) => {
+			return blob.arrayBuffer();
+		}).then((buffer) => {
+			return this.parseDockerStream(buffer);
+		});
+	},
+
+	/**
+	 * Process timestamped log lines in a single pass:
+	 * - Filter out duplicate lines (timestamps <= previousTimestamp)
+	 * - Extract the last timestamp for the next --since baseline
+	 * - Strip timestamp prefixes for display
+	 *
+	 * @param {string} text - Timestamped log text (after stripAnsi)
+	 * @param {string|null} previousTimestamp - Filter threshold (null = keep all)
+	 * @returns {{displayText: string, lastTimestamp: string|null}}
+	 */
+	processLines: function (text, previousTimestamp) {
+		if (!text) return { displayText: '', lastTimestamp: null };
+
+		const lines = text.split('\n');
+		const result = [];
+		let lastTimestamp = null;
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			const match = line.match(TIMESTAMP_RE);
+
+			if (match) {
+				const ts = match[1];
+
+				// Filter duplicates if threshold is set
+				if (previousTimestamp && ts <= previousTimestamp) continue;
+
+				lastTimestamp = ts;
+
+				// Strip timestamp prefix for display
+				result.push(line.substring(match[0].length));
+			} else {
+				result.push(line);
+			}
+		}
+
+		return {
+			displayText: result.join('\n'),
+			lastTimestamp: lastTimestamp
+		};
+	},
+
+	/**
 	 * Refresh logs manually (non-streaming, fetch last N lines)
 	 */
 	refreshLogs: function () {
 		const output = document.getElementById('logs-output');
 		if (!output) return;
 
-		// Get the number of lines from input
 		const linesInput = document.getElementById('log-lines');
-		const lines = linesInput ? parseInt(linesInput.value) || 1000 : 1000;
-
-		// Get last N lines (non-streaming)
-		const params = 'stdout=true&stderr=true&tail=' + lines;
+		const lines = linesInput ? parseInt(linesInput.value) || 100 : 100;
 
 		output.textContent = _('Loading logs...');
 
-		podmanRPC.container.logs(this.containerId, params).then((result) => {
-			// Backend returns base64-encoded binary data in {data: "..."} object
-			let base64Data = '';
-			if (result && typeof result === 'object' && result.data) {
-				base64Data = result.data;
-			} else if (typeof result === 'string') {
-				base64Data = result;
-			}
-
-			if (!base64Data) {
-				output.textContent = _('No logs available');
-				return;
-			}
-
-			// Decode base64 to binary string
-			let binaryText = '';
-			try {
-				binaryText = atob(base64Data);
-			} catch (e) {
-				console.error('Base64 decode error:', e);
-				output.textContent = _('Failed to decode logs');
-				return;
-			}
-
-			// Strip Docker stream headers (8-byte headers)
-			const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
-
-			// Convert binary string to proper UTF-8
-			const utf8Text = this.binaryToUtf8(withoutHeaders);
-
-			// Strip ANSI escape sequences
-			const cleanText = this.stripAnsi(utf8Text);
-
-			if (cleanText && cleanText.trim().length > 0) {
+		this.fetchLogs(lines, '0').then((text) => {
+			const cleanText = this.stripAnsi(this.stripTimestamps(text || ''));
+			if (cleanText.trim().length > 0) {
 				output.textContent = cleanText;
 			} else {
 				output.textContent = _('No logs available');
 			}
 			output.scrollTop = output.scrollHeight;
 		}).catch((err) => {
-			console.error('LOG ERROR:', err);
 			output.textContent = _('Failed to load logs: %s').format(err.message);
 		});
-	},
-
-	/**
-	 * Strip Docker stream format headers (8-byte headers before each frame)
-	 * Docker/Podman logs use multiplexed stream format:
-	 * - Byte 0: Stream type (1=stdout, 2=stderr, 3=stdin)
-	 * - Bytes 1-3: Padding
-	 * - Bytes 4-7: Frame size (uint32 big-endian)
-	 * - Bytes 8+: Actual data
-	 * @param {string} text - Text with Docker stream headers
-	 * @returns {string} Text without headers
-	 */
-	stripDockerStreamHeaders: function (text) {
-		if (!text || text.length === 0) return text;
-
-		let result = '';
-		let pos = 0;
-
-		while (pos < text.length) {
-			// Need at least 8 bytes for header
-			if (pos + 8 > text.length) {
-				// Incomplete header, skip rest
-				break;
-			}
-
-			// Read frame size from bytes 4-7 (big-endian uint32)
-			const size = (text.charCodeAt(pos + 4) << 24) |
-				(text.charCodeAt(pos + 5) << 16) |
-				(text.charCodeAt(pos + 6) << 8) |
-				text.charCodeAt(pos + 7);
-
-			// Skip 8-byte header
-			pos += 8;
-
-			// Extract frame data
-			if (pos + size <= text.length) {
-				result += text.substring(pos, pos + size);
-				pos += size;
-			} else {
-				// Incomplete frame, take what we can
-				result += text.substring(pos);
-				break;
-			}
-		}
-
-		return result;
 	},
 
 	/**
@@ -195,26 +199,29 @@ return baseclass.extend({
 	 */
 	stripAnsi: function (text) {
 		if (!text) return text;
-		// Remove ANSI escape sequences (colors, cursor movement, etc.)
-		// eslint-disable-line no-control-regex
-		return text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').replace(/\x1B\[[\?]?[0-9;]*[a-zA-Z]/g,
-			'');
+		return text.replace(/\x1B\[[\?]?[0-9;]*[a-zA-Z]/g, '');
 	},
 
 	/**
-	 * Convert binary string (from atob) to proper UTF-8 text
-	 * atob() returns a "binary string" where each char is one byte (0-255).
-	 * This function properly decodes UTF-8 encoded bytes.
-	 * @param {string} binaryString - Binary string from atob()
-	 * @returns {string} Properly decoded UTF-8 text
+	 * Convert an RFC3339 timestamp to Unix epoch seconds string for the API
+	 * @param {string} timestamp - RFC3339 timestamp
+	 * @returns {string} Unix epoch seconds (e.g. "1707388200")
 	 */
-	binaryToUtf8: function (binaryString) {
-		if (!binaryString) return binaryString;
-		const bytes = new Uint8Array(binaryString.length);
-		for (let i = 0; i < binaryString.length; i++) {
-			bytes[i] = binaryString.charCodeAt(i);
-		}
-		return new TextDecoder('utf-8').decode(bytes);
+	timestampToEpoch: function (timestamp) {
+		if (!timestamp) return '0';
+		const ms = new Date(timestamp).getTime();
+		if (isNaN(ms)) return '0';
+		return String(Math.floor(ms / 1000));
+	},
+
+	/**
+	 * Strip timestamps from log lines for display
+	 * @param {string} text - Log text with timestamps
+	 * @returns {string} Log text without timestamp prefixes
+	 */
+	stripTimestamps: function (text) {
+		if (!text) return text;
+		return text.replace(TIMESTAMP_RE_GLOBAL, '');
 	},
 
 	/**
@@ -234,7 +241,6 @@ return baseclass.extend({
 	toggleLogStream: function (ev) {
 		if (ev.target.checked) {
 			this.startLogStream();
-
 			return;
 		}
 
@@ -242,10 +248,9 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Start log streaming session with backend
+	 * Start log streaming using poll.add + fetchLogs with --since
 	 */
 	startLogStream: function () {
-		// Prevent race condition from rapid toggling
 		if (this.isStartingStream) return;
 		this.isStartingStream = true;
 
@@ -255,72 +260,28 @@ return baseclass.extend({
 			return;
 		}
 
-		// Get the number of lines from input
 		const linesInput = document.getElementById('log-lines');
-		const lines = linesInput ? parseInt(linesInput.value) || 1000 : 1000;
+		const lines = linesInput ? parseInt(linesInput.value) || 100 : 100;
 
-		// Clear output and show loading
 		output.textContent = _('Loading logs...');
 
-		// First load existing logs with non-streaming call
-		const params = 'stdout=true&stderr=true&tail=' + lines;
-		podmanRPC.container.logs(this.containerId, params).then((result) => {
-			// Extract base64-encoded log data
-			let base64Data = '';
-			if (result && typeof result === 'object' && result.data) {
-				base64Data = result.data;
-			} else if (typeof result === 'string') {
-				base64Data = result;
-			}
+		this.fetchLogs(lines, '0').then((text) => {
+			const cleanText = this.stripAnsi(text || '');
+			const { displayText, lastTimestamp } = this.processLines(cleanText, null);
 
-			if (!base64Data) {
-				output.textContent = '';
+			this.lastTimestamp = lastTimestamp;
+
+			if (displayText.trim().length > 0) {
+				output.textContent = displayText;
 			} else {
-				// Decode base64 to binary string
-				const binaryText = atob(base64Data);
-
-				// Strip Docker headers, convert to UTF-8, strip ANSI codes
-				const withoutHeaders = this.stripDockerStreamHeaders(binaryText);
-				const utf8Text = this.binaryToUtf8(withoutHeaders);
-				const cleanText = this.stripAnsi(utf8Text);
-
-				output.textContent = cleanText || '';
+				output.textContent = '';
 			}
 			output.scrollTop = output.scrollHeight;
 
-			// Start streaming for NEW logs
-			// NOTE: Don't use tail=0 with follow - it causes curl to exit immediately
-			// Just use follow=true to stream new logs as they arrive
-			return podmanRPC.container.logsStream(
-				this.containerId,
-				'stdout=true&stderr=true&follow=true'
-			);
-		}).then((result) => {
-			if (!result || !result.session_id) {
-				console.error('Failed to start stream:', result);
-				const checkbox = document.getElementById('log-stream-toggle');
-				if (checkbox) checkbox.checked = false;
-				this.isStartingStream = false;
-				return;
-			}
-
-			// Store session ID and track byte offset in stream file (not displayed text length)
-			this.logStreamSessionId = result.session_id;
-			this.logStreamFileOffset = 0; // Start reading from beginning of stream file
-
-			// Register beforeunload handler for cleanup on page close/navigation
-			this._beforeUnloadHandler = () => {
-				if (this.logStreamSessionId) {
-					podmanRPC.container.logsStop(this.logStreamSessionId);
-				}
-			};
-			window.addEventListener('beforeunload', this._beforeUnloadHandler);
-
-			// Start polling for logs
-			this.pollLogsStatus();
+			// Start polling for new logs
+			this.pollNewLogs();
 			this.isStartingStream = false;
 		}).catch((err) => {
-			console.error('Stream error:', err);
 			output.textContent = _('Failed to start log stream: %s').format(err.message);
 			const checkbox = document.getElementById('log-stream-toggle');
 			if (checkbox) checkbox.checked = false;
@@ -329,112 +290,55 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Stop log streaming and cleanup backend resources
+	 * Poll for new log lines using --since timestamp
+	 */
+	pollNewLogs: function () {
+		const outputEl = document.getElementById('logs-output');
+		const view = this;
+
+		this.logPollFn = function () {
+			if (!view.logPollFn) {
+				return Promise.resolve();
+			}
+
+			const since = view.timestampToEpoch(view.lastTimestamp);
+
+			return view.fetchLogs(0, since).then((text) => {
+				const cleanText = view.stripAnsi(text || '');
+				if (cleanText.trim().length === 0) return;
+
+				const { displayText, lastTimestamp } = view.processLines(cleanText, view.lastTimestamp);
+
+				if (lastTimestamp) {
+					view.lastTimestamp = lastTimestamp;
+				}
+
+				if (displayText.trim().length > 0 && outputEl) {
+					outputEl.textContent += displayText;
+					outputEl.scrollTop = outputEl.scrollHeight;
+				}
+			}).catch((err) => {
+				console.error('Poll error:', err);
+			});
+		};
+
+		poll.add(this.logPollFn, constants.POLL_INTERVAL);
+	},
+
+	/**
+	 * Stop log streaming
 	 */
 	stopLogStream: function () {
-		// Store session ID for cleanup before clearing
-		const sessionId = this.logStreamSessionId;
-
-		// Clear session ID first to prevent poll function from running again
-		this.logStreamSessionId = null;
-
-		// Remove beforeunload handler
-		if (this._beforeUnloadHandler) {
-			window.removeEventListener('beforeunload', this._beforeUnloadHandler);
-			this._beforeUnloadHandler = null;
-		}
-
-		// Remove poll function if registered
 		if (this.logPollFn) {
 			try {
 				poll.remove(this.logPollFn);
 			} catch (e) {
-				// Ignore errors if poll function was already removed
+				// Ignore if already removed
 			}
 			this.logPollFn = null;
 		}
 
-		// Cleanup backend resources (kill curl process, remove temp files)
-		if (sessionId) {
-			podmanRPC.container.logsStop(sessionId).catch((err) => {
-				console.error('Failed to cleanup log stream:', err);
-			});
-		}
-	},
-
-	/**
-	 * Poll log stream status and append new log data using byte offset tracking
-	 */
-	pollLogsStatus: function () {
-		const outputEl = document.getElementById('logs-output');
-		const view = this;
-
-		// Define poll function and store reference for later removal
-		this.logPollFn = function () {
-			// Check if session still exists (user may have stopped it)
-			if (!view.logStreamSessionId) {
-				view.stopLogStream();
-				return Promise.resolve();
-			}
-
-			// MUST return a Promise
-			// Read from current offset to get only NEW data
-			return podmanRPC.container.logsStatus(view.logStreamSessionId, view
-				.logStreamFileOffset).then((status) => {
-				// Check for output
-				if (status.output && status.output.length > 0 && outputEl) {
-					// Backend returns base64-encoded data - decode it first
-					let binaryText = '';
-					try {
-						binaryText = atob(status.output);
-					} catch (e) {
-						console.error('Base64 decode error in streaming:', e);
-						return;
-					}
-
-					// Update file offset BEFORE processing (in case of errors)
-					view.logStreamFileOffset += binaryText.length;
-
-					// Strip Docker headers, convert to UTF-8, strip ANSI codes
-					const withoutHeaders = view.stripDockerStreamHeaders(binaryText);
-					const utf8Text = view.binaryToUtf8(withoutHeaders);
-					const cleanOutput = view.stripAnsi(utf8Text);
-
-					// Append the new content
-					if (cleanOutput.length > 0) {
-						outputEl.textContent += cleanOutput;
-						outputEl.scrollTop = outputEl.scrollHeight;
-					}
-				}
-
-				// Check for completion
-				if (status.complete) {
-					view.stopLogStream();
-
-					const checkbox = document.getElementById('log-stream-toggle');
-					if (checkbox) checkbox.checked = false;
-
-					if (!status.success && outputEl) {
-						outputEl.textContent += '\n\n' + _(
-							'Log stream ended with error');
-					}
-				}
-			}).catch((err) => {
-				console.error('Poll error:', err);
-				view.stopLogStream();
-
-				if (outputEl) {
-					outputEl.textContent += '\n\n' + _('Error polling log stream: %s')
-						.format(err.message);
-				}
-
-				const checkbox = document.getElementById('log-stream-toggle');
-				if (checkbox) checkbox.checked = false;
-			});
-		};
-
-		// Add the poll using stored function reference
-		poll.add(this.logPollFn, constants.POLL_INTERVAL);
+		this.lastTimestamp = null;
 	},
 
 	/**

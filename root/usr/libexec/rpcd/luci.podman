@@ -64,20 +64,6 @@ is_true() {
 	[ "$1" = "true" ] || [ "$1" = "1" ]
 }
 
-# Validate session ID format for security
-validate_session_id() {
-	local session_id="$1"
-	local prefix="$2"
-	case "$session_id" in
-		${prefix}_[0-9][0-9]*_[0-9a-f][0-9a-f]*)
-			;;
-		*)
-			echo '{"error":"Invalid session ID format"}'
-			exit 1
-			;;
-	esac
-}
-
 # Get JSON parameters from input
 get_json_params() {
 	read -r input
@@ -139,77 +125,6 @@ add_force() {
 	is_true "$2" && echo "${1}?force=true" || echo "$1"
 }
 
-# Spawn a background streaming process (logs or image pull)
-spawn_background_stream() {
-	local session_id="$1"
-	local curl_cmd="$2"
-	local script_file="/tmp/${session_id}.sh"
-
-	cat > "$script_file" <<EOF
-#!/bin/sh
-${curl_cmd} > "/tmp/${session_id}.log" 2>&1 &
-echo \$! > "/tmp/${session_id}.pid"
-wait \$!
-echo \$? > "/tmp/${session_id}.status"
-rm -f "$script_file"
-EOF
-	chmod +x "$script_file"
-	sh -c "($script_file &)" >/dev/null 2>&1 </dev/null &
-	echo "{\"session_id\":\"${session_id}\"}"
-}
-
-# Poll status of a background stream session
-poll_stream_status() {
-	local session_id="$1"
-	local encode_method="$2"
-	local chunk_size="${3:-131072}"
-
-	touch "/tmp/${session_id}.activity"
-
-	# Validate offset is numeric
-	case "$offset" in
-		''|*[!0-9]*) offset=0 ;;
-	esac
-
-	local log_file="/tmp/${session_id}.log"
-	local status_file="/tmp/${session_id}.status"
-
-	# Encode output based on method
-	_encode_output() {
-		if [ "$encode_method" = "base64" ]; then
-			tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c "$chunk_size" | openssl base64 -A
-		else
-			tail -c +$((offset + 1)) "$log_file" 2>/dev/null | head -c "$chunk_size" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' '
-		fi
-	}
-
-	# Job completed
-	if [ -f "$status_file" ]; then
-		local exit_code success="false" output=""
-		exit_code=$(cat "$status_file")
-		[ "$exit_code" = "0" ] && success="true"
-
-		if [ -f "$log_file" ]; then
-			output=$(_encode_output)
-		fi
-
-		echo "{\"output\":\"${output}\",\"complete\":true,\"success\":${success}}"
-		rm -f "/tmp/${session_id}."* 2>/dev/null
-		exit 0
-	fi
-
-	# Job in progress
-	if [ -f "$log_file" ]; then
-		local output
-		output=$(_encode_output)
-		echo "{\"output\":\"${output}\",\"complete\":false,\"success\":false}"
-		exit 0
-	fi
-
-	# Job not started yet
-	echo '{"output":"","complete":false,"success":false}'
-}
-
 case "$1" in
 	list)
 		cat <<EOF
@@ -220,10 +135,6 @@ case "$1" in
 	"container_stop": { "id": "" },
 	"container_restart": { "id": "" },
 	"container_remove": { "id": "", "force": false, "depend": false },
-	"container_logs": { "id": "", "params": "" },
-	"container_logs_stream": { "id": "", "params": "" },
-	"container_logs_status": { "session_id": "", "offset": 0 },
-	"container_logs_stop": { "session_id": "" },
 	"container_stats": { "id": "" },
 	"container_create": { "data": {} },
 	"container_rename": { "id": "", "name": "" },
@@ -234,10 +145,6 @@ case "$1" in
 	"image_inspect": { "id": "" },
 	"image_remove": { "id": "", "force": false },
 	"image_manifest_inspect": { "image": "" },
-	"image_pull": { "image": "" },
-	"image_pull_stream": { "image": "" },
-	"image_pull_status": { "session_id": "", "offset": 0 },
-	"image_pull_stop": { "session_id": "" },
 	"networks_list": {},
 	"network_inspect": { "name": "" },
 	"network_remove": { "name": "", "force": false },
@@ -248,7 +155,6 @@ case "$1" in
 	"volume_inspect": { "name": "" },
 	"volume_remove": { "name": "", "force": false },
 	"volume_create": { "data": {} },
-	"volume_export": { "name": "" },
 	"volume_import": { "name": "", "data": "" },
 	"pods_list": {},
 	"pod_inspect": { "name": "" },
@@ -331,84 +237,6 @@ EOF
 				# Add ? if we have parameters
 				[ -n "$query" ] && query="?${query}"
 				curl_request "DELETE" "${API_BASE}/containers/${id_enc}${query}"
-				;;
-			container_logs)
-				get_json_params id params
-				require_param id
-				id_enc=$(urlencode "$id")
-				path="${API_BASE}/containers/${id_enc}/logs"
-				if [ -n "$params" ]; then
-					validate_query_params "$params"
-					path="${path}?${params}"
-				else
-					path="${path}?stdout=true&stderr=true&tail=1000"
-				fi
-
-				# Logs API returns binary stream format with Docker multiplexed headers
-				# Shell variables strip binary data, so save to temp file first
-				temp_file=$(mktemp /tmp/podman_logs_XXXXXX)
-				curl -s -m 60 --unix-socket "$SOCKET" -X GET "http://localhost${path}" > "$temp_file" 2>&1
-				exit_code=$?
-
-				if [ $exit_code -ne 0 ]; then
-					rm -f "$temp_file"
-					echo "{\"error\":\"Request failed\",\"details\":\"curl exit code $exit_code\"}"
-					exit 1
-				fi
-
-				# Base64 encode binary data for JSON transport
-				# Stream directly to stdout to avoid shell variable size limits
-				printf '{"data":"'
-				openssl base64 -A < "$temp_file"
-				printf '"}'
-				rm -f "$temp_file"
-				;;
-			container_logs_stream)
-				get_json_params id params
-				require_param id
-
-				# Generate secure session ID with current timestamp
-				current_timestamp=$(date +%s)
-				random_hex=$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')
-				session_id="podman_logs_${current_timestamp}_${random_hex}"
-				id_enc=$(urlencode "$id")
-
-				# Build path with params
-				# Add since={current_timestamp} to only capture NEW logs from this moment forward
-				path="${API_BASE}/containers/${id_enc}/logs"
-				if [ -n "$params" ]; then
-					validate_query_params "$params"
-					# User provided params - append since parameter
-					path="${path}?${params}&since=${current_timestamp}"
-				else
-					# Default params with since to only get new logs
-					path="${path}?stdout=true&stderr=true&follow=true&since=${current_timestamp}"
-				fi
-
-				spawn_background_stream "$session_id" \
-					"curl -s -N --unix-socket \"$SOCKET\" -X GET \"http://localhost${path}\""
-				;;
-			container_logs_status)
-				get_json_params session_id offset
-				require_param session_id
-				validate_session_id "$session_id" "podman_logs"
-				poll_stream_status "$session_id" "base64"
-				;;
-			container_logs_stop)
-				get_json_params session_id
-				require_param session_id
-				validate_session_id "$session_id" "podman_logs"
-
-				# Kill the background curl process using stored PID
-				pid_file="/tmp/${session_id}.pid"
-				if [ -f "$pid_file" ]; then
-					kill "$(cat "$pid_file")" 2>/dev/null
-				fi
-
-				# Cleanup all session files
-				rm -f "/tmp/${session_id}."* 2>/dev/null
-
-				echo '{"success":true}'
 				;;
 			container_stats)
 				get_json_params id
@@ -502,47 +330,6 @@ EOF
 				image_enc=$(urlencode "$image")
 				curl_request "GET" "${API_BASE}/manifests/${image_enc}/json"
 				;;
-			image_pull)
-				get_json_params image
-				require_param image
-				image_enc=$(urlencode "$image")
-				curl_request "POST" "${API_BASE}/images/pull?reference=${image_enc}"
-				;;
-			image_pull_stream)
-				get_json_params image
-				require_param image
-
-				# Generate secure session ID with pull prefix
-				current_timestamp=$(date +%s)
-				random_hex=$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')
-				session_id="podman_pull_${current_timestamp}_${random_hex}"
-				image_enc=$(urlencode "$image")
-
-				spawn_background_stream "$session_id" \
-					"curl -s --unix-socket \"$SOCKET\" -X POST \"http://localhost${API_BASE}/images/pull?reference=${image_enc}\""
-				;;
-			image_pull_status)
-				get_json_params session_id offset
-				require_param session_id
-				validate_session_id "$session_id" "podman_pull"
-				poll_stream_status "$session_id" "json_escape"
-				;;
-			image_pull_stop)
-				get_json_params session_id
-				require_param session_id
-				validate_session_id "$session_id" "podman_pull"
-
-				# Kill the background curl process using stored PID
-				pid_file="/tmp/${session_id}.pid"
-				if [ -f "$pid_file" ]; then
-					kill "$(cat "$pid_file")" 2>/dev/null
-				fi
-
-				# Cleanup all session files
-				rm -f "/tmp/${session_id}."* 2>/dev/null
-
-				echo '{"success":true}'
-				;;
 			networks_list)
 				read -r input  # consume ubus JSON input
 				curl_request "GET" "${API_BASE}/networks/json"
@@ -600,30 +387,6 @@ EOF
 			volume_create)
 				get_json_params data
 				curl_request "POST" "${API_BASE}/volumes/create" "$data"
-				;;
-			volume_export)
-				get_json_params name
-				require_param name
-				validate_volume_name "$name"
-
-				# Use podman CLI since REST API doesn't support export yet
-				# Export to temp file
-				temp_file=$(mktemp /tmp/podman_vol_export_XXXXXX)
-				podman volume export "$name" | gzip > "$temp_file" 2>&1
-				exit_code=$?
-
-				if [ $exit_code -ne 0 ]; then
-					rm -f "$temp_file"
-					echo "{\"error\":\"Export failed\",\"details\":\"podman exit code $exit_code\"}"
-					exit 1
-				fi
-
-				# Base64 encode binary tar data for JSON transport (use openssl on OpenWrt)
-				encoded_data=$(openssl base64 -A < "$temp_file")
-				rm -f "$temp_file"
-
-				# Return as JSON with base64-encoded data
-				echo "{\"data\":\"${encoded_data}\"}"
 				;;
 			volume_import)
 				get_json_params name data compressed

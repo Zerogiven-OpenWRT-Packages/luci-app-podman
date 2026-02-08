@@ -2,20 +2,15 @@
 
 'require baseclass';
 'require form';
-'require poll';
+'require fs';
 'require ui';
 
 'require podman.ui as podmanUI';
-'require podman.rpc as podmanRPC';
-'require podman.constants as constants';
 
 return baseclass.extend({
 	init: baseclass.extend({
 		__name__: 'FormImage',
 		map: null,
-		pollFn: null,
-		currentSessionId: null,
-		beforeUnloadHandler: null,
 
 		/**
 		 * Render the image pull form
@@ -52,7 +47,7 @@ return baseclass.extend({
 		},
 
 		/**
-		 * Execute image pull with streaming progress
+		 * Execute image pull via fs.exec_direct
 		 */
 		handlePullExecute: function () {
 			this.map.save().then(() => {
@@ -69,250 +64,24 @@ return baseclass.extend({
 				ui.showModal(_('Pulling Image'), [
 					E('p', {
 						'class': 'spinning image-pull'
-					}, _('Starting image pull...')),
-					E('pre', {
-						'id': 'pull-output',
-						'class': 'terminal-area',
-					}, '')
+					}, _('Pulling %s...').format(imageName))
 				]);
 
-				podmanRPC.image.pullStream(imageName).then((result) => {
-					if (!result || !result.session_id) {
+				fs.exec_direct('/usr/libexec/podman-api', ['image_pull', imageName], 'text')
+					.then(() => {
 						ui.hideModal();
-						podmanUI.errorNotification(_(
-							'Failed to start image pull'));
-						return;
-					}
-
-					this.pollPullStatus(result.session_id);
-				}).catch((err) => {
-					ui.hideModal();
-					podmanUI.errorNotification(_(
-						'Failed to pull image: %s').format(err
-						.message));
-				});
-			});
-		},
-
-		/**
-		 * Parse Docker/Podman JSON stream output
-		 * @param {string} output - Raw output string
-		 * @returns {string} Cleaned output
-		 */
-		parseJsonStream: function (output) {
-			let cleanOutput = '';
-			const lines = output.split('\n');
-
-			lines.forEach((line) => {
-				line = line.trim();
-				if (!line) return;
-
-				let processedJson = false;
-				try {
-					const obj = JSON.parse(line);
-					if (obj.stream) {
-						cleanOutput += obj.stream;
-						processedJson = true;
-					} else if (obj.id && obj.images && obj.images.length > 0) {
-						cleanOutput += 'Image ID: ' + obj.id + '\n';
-						processedJson = true;
-					}
-				} catch (e) {
-					const parts = line.split(/\}\s*\{/);
-					if (parts.length > 1) {
-						parts.forEach((part, idx) => {
-							if (idx > 0) part = '{' + part;
-							if (idx < parts.length - 1) part = part + '}';
-
-							try {
-								const obj = JSON.parse(part);
-								if (obj.stream) {
-									cleanOutput += obj.stream;
-									processedJson = true;
-								} else if (obj.id && obj.images && obj.images
-									.length > 0) {
-									cleanOutput += 'Image ID: ' + obj.id +
-										'\n';
-									processedJson = true;
-								}
-							} catch (e2) {
-								// Intentionally ignore JSON parse errors for individual parts;
-								// malformed fragments are expected when splitting concatenated JSON.
-								if (typeof console !== 'undefined' &&
-									console.debug) {
-									console.debug(
-										'Ignoring malformed JSON part in parseJsonStream:',
-										e2);
-								}
-							}
-						});
-					}
-				}
-				if (!processedJson) {
-					cleanOutput += line + '\n';
-				}
-			});
-
-			return cleanOutput;
-		},
-
-		/**
-		 * Register beforeunload handler to cleanup pull session on page close
-		 * @param {string} sessionId - Pull session ID
-		 */
-		registerCleanupHandler: function(sessionId) {
-			this.currentSessionId = sessionId;
-			this.beforeUnloadHandler = () => {
-				if (this.currentSessionId) {
-					// Use sendBeacon for reliable cleanup on page unload
-					// Fall back to sync XHR if sendBeacon unavailable
-					const url = L.url('admin/ubus');
-					const payload = JSON.stringify({
-						jsonrpc: '2.0',
-						id: 1,
-						method: 'call',
-						params: [
-							L.env.sessionid,
-							'luci.podman',
-							'image_pull_stop',
-							{ session_id: this.currentSessionId }
-						]
-					});
-
-					if (navigator.sendBeacon) {
-						navigator.sendBeacon(url, payload);
-					}
-				}
-			};
-			window.addEventListener('beforeunload', this.beforeUnloadHandler);
-		},
-
-		/**
-		 * Unregister beforeunload handler after pull completes
-		 */
-		unregisterCleanupHandler: function() {
-			if (this.beforeUnloadHandler) {
-				window.removeEventListener('beforeunload', this.beforeUnloadHandler);
-				this.beforeUnloadHandler = null;
-			}
-			this.currentSessionId = null;
-		},
-
-		/**
-		 * Poll image pull status and update progress using poll.add()
-		 * @param {string} sessionId - Pull session ID
-		 */
-		pollPullStatus: function (sessionId) {
-			const outputEl = document.getElementById('pull-output');
-			let offset = 0;
-
-			// Register cleanup handler for page close
-			this.registerCleanupHandler(sessionId);
-
-			this.pollFn = () => {
-				return podmanRPC.image.pullStatus(sessionId, offset).then((
-				status) => {
-					if (status.output && outputEl) {
-						const cleanOutput = this.parseJsonStream(status
-							.output);
-						outputEl.textContent += cleanOutput;
-						outputEl.scrollTop = outputEl.scrollHeight;
-						offset += status.output.length;
-					}
-
-					if (status.complete) {
-						poll.remove(this.pollFn);
-						this.unregisterCleanupHandler();
-
-						if (!status.success) {
-							if (outputEl) {
-								outputEl.textContent += '\n\n';
-								outputEl.textContent += _(
-									'Failed to pull image');
-							}
-
-							const modalContent = document.querySelector(
-								'.modal');
-							if (modalContent) {
-								const closeBtn = modalContent.querySelector(
-									'.cbi-button');
-								if (!closeBtn) {
-									const btnContainer = E(
-										'div', {
-											'class': 'right mt-sm'
-										},
-										[
-											new podmanUI.Button(_(
-												'Close'), () => {
-													ui
-														.hideModal();
-												}).render()
-										]);
-									modalContent.appendChild(btnContainer);
-								}
-							}
-
-							podmanUI.errorNotification(_(
-								'Failed to pull image'));
-
-							return;
-						}
-
-						if (outputEl) {
-							outputEl.textContent +=
-								'\n\nImage pulled successfully!';
-						}
-
-						const modalContent = document.querySelector('.modal');
-						if (modalContent) {
-							const closeBtn = modalContent.querySelector(
-								'.cbi-button');
-							if (!closeBtn) {
-								const btnContainer = E(
-									'div', {
-										'class': 'right modal-buttons'
-									},
-									[
-										new podmanUI.Button(
-											_('Close'),
-											() => {
-												ui.hideModal();
-											},
-											'positive'
-										).render()
-									]
-								);
-								modalContent.appendChild(btnContainer);
-							}
-						}
-
-						podmanUI.successTimeNotification(
-							_('Image pulled successfully')
-						);
-
-						const spinnerEl = document.querySelector('.spinning.image-pull');
-						if (spinnerEl) {
-							spinnerEl.remove();
-						}
+						podmanUI.successTimeNotification(_('Image pulled successfully'));
 
 						this.map.data.data.image.image = '';
 						this.map.save().then(() => {
 							this.submit();
 						});
-					}
-				}).catch((err) => {
-					poll.remove(this.pollFn);
-					this.unregisterCleanupHandler();
-					if (outputEl) {
-						outputEl.textContent += '\n\nError: ' + err.message;
-					}
-					podmanUI.errorNotification(_('Failed to pull image: %s')
-						.format(err
-							.message));
-				});
-			};
-
-			poll.add(this.pollFn, constants.POLL_INTERVAL);
+					}).catch((err) => {
+						ui.hideModal();
+						podmanUI.errorNotification(
+							_('Failed to pull image: %s').format(err.message));
+					});
+			});
 		},
 
 		/**

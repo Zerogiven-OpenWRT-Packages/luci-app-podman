@@ -1,6 +1,7 @@
 'use strict';
 
 'require baseclass';
+'require fs';
 'require podman.rpc as podmanRPC';
 
 /**
@@ -8,16 +9,6 @@
  * Implements custom container update since Podman's built-in auto-update requires systemd.
  */
 return baseclass.extend({
-	/**
-	 * Poll interval for streaming operations (ms)
-	 */
-	POLL_INTERVAL: 1000,
-
-	/**
-	 * Max polls without progress before aborting (seconds)
-	 */
-	STALL_TIMEOUT: 120,
-
 	/**
 	 * Get all containers with auto-update label.
 	 * @returns {Promise<Array>} Containers with auto-update enabled
@@ -38,71 +29,23 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Pull image using streaming API (non-blocking).
-	 * This avoids XHR timeouts for large images or slow connections.
+	 * Pull image using fs.exec_direct (blocks until complete).
 	 * @param {string} image - Image name to pull
 	 * @param {Function} onProgress - Optional progress callback (output)
 	 * @returns {Promise<boolean>} True if pull succeeded
 	 */
-	pullImageStreaming: function(image, onProgress) {
-		const self = this;
+	pullImage: function(image, onProgress) {
+		if (onProgress) {
+			onProgress(_('Pulling %s...').format(image));
+		}
 
-		return podmanRPC.image.pullStream(image).then((result) => {
-			if (!result || !result.session_id) {
-				throw new Error(_('Failed to start image pull'));
-			}
-
-			return self.waitForPullComplete(result.session_id, onProgress);
-		});
-	},
-
-	/**
-	 * Wait for streaming pull to complete by polling status.
-	 * @param {string} sessionId - Pull session ID
-	 * @param {Function} onProgress - Optional progress callback (output)
-	 * @returns {Promise<boolean>} True if pull succeeded
-	 */
-	waitForPullComplete: function(sessionId, onProgress) {
-		const self = this;
-		let offset = 0;
-		let stallCount = 0;
-		const maxStallPolls = Math.ceil(self.STALL_TIMEOUT * 1000 / self.POLL_INTERVAL);
-
-		const checkStatus = () => {
-			return podmanRPC.image.pullStatus(sessionId, offset).then((status) => {
-				if (status.output) {
-					offset += status.output.length;
-					stallCount = 0;
-					if (onProgress) {
-						onProgress(status.output);
-					}
-				} else {
-					stallCount++;
+		return fs.exec_direct('/usr/libexec/podman-api', ['image_pull', image], 'text')
+			.then((output) => {
+				if (onProgress) {
+					onProgress(output || '');
 				}
-
-				if (status.complete) {
-					return status.success;
-				}
-
-				if (stallCount >= maxStallPolls) {
-					podmanRPC.image.pullStop(sessionId).catch(() => {});
-					throw new Error(_('Image pull stalled (no progress for %ds)').format(self.STALL_TIMEOUT));
-				}
-
-				// Not complete yet, wait and poll again
-				return new Promise((resolve, reject) => {
-					setTimeout(() => {
-						checkStatus().then(resolve).catch(reject);
-					}, self.POLL_INTERVAL);
-				});
-			}).catch((err) => {
-				// Cleanup orphaned pull session on error
-				podmanRPC.image.pullStop(sessionId).catch(() => {});
-				throw err;
+				return true;
 			});
-		};
-
-		return checkStatus();
 	},
 
 	/**
@@ -234,7 +177,7 @@ return baseclass.extend({
 
 				// Step 2: Pull the new image
 				step(2, _('Pulling new image...'));
-				return this.pullImageStreaming(image, onPullProgress);
+				return this.pullImage(image, onPullProgress);
 			})
 			.then((pullSuccess) => {
 				if (!pullSuccess) {

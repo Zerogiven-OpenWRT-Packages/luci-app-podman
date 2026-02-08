@@ -1,0 +1,82 @@
+#!/bin/sh
+
+action="$1"
+
+SOCKET=$(uci -q get podman.globals.socket_path 2>/dev/null)
+SOCKET="${SOCKET:-/run/podman/podman.sock}"
+API_BASE="/v5.0.0/libpod"
+
+urlencode() {
+	local string="$1" encoded="" char rest
+	rest="$string"
+	while [ -n "$rest" ]; do
+		char="${rest%"${rest#?}"}"
+		rest="${rest#?}"
+		case "$char" in
+			[-_.~a-zA-Z0-9:/@]) encoded="${encoded}${char}" ;;
+			*) char=$(printf '%%%02x' "'$char")
+			   encoded="${encoded}${char}" ;;
+		esac
+	done
+	echo "$encoded"
+}
+
+# Validate that a value contains only safe URL path characters
+# Allows: alphanumeric, dash, underscore, dot, colon (for image refs)
+validate_id() {
+	case "$1" in
+		*[!a-zA-Z0-9_.:-]*) return 1 ;;
+		"") return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+# Validate that a value is a non-negative integer
+validate_int() {
+	case "$1" in
+		*[!0-9]*) return 1 ;;
+		"") return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+case "$action" in
+    logs)
+        lines="$2"
+        since="$3"
+        containerId="$4"
+
+        validate_id "$containerId" || { echo "Invalid container ID" >&2; exit 1; }
+        validate_int "$lines" || { echo "Invalid lines value" >&2; exit 1; }
+
+        path="${API_BASE}/containers/${containerId}/logs"
+        path="${path}?stdout=true&stderr=true&timestamps=true"
+
+        [ "$lines" != "0" ] && path="${path}&tail=${lines}"
+        [ "$since" != "0" ] && path="${path}&since=${since}"
+
+        curl -s -m 60 --unix-socket "$SOCKET" -X GET "http://localhost${path}"
+        ;;
+    image_pull)
+        image="$2"
+
+        [ -n "$image" ] || { echo "Missing image reference" >&2; exit 1; }
+
+        image_enc=$(urlencode "$image")
+        path="${API_BASE}/images/pull?reference=${image_enc}"
+
+        curl -s -m 300 --unix-socket "$SOCKET" -X POST "http://localhost${path}"
+        ;;
+    volume_export)
+        volumeName="$2"
+
+        validate_id "$volumeName" || { echo "Invalid volume name" >&2; exit 1; }
+
+        # Volume export API not available on OpenWrt Podman build, use CLI
+        /usr/bin/podman volume export "$volumeName"
+        ;;
+    *)
+        echo "Unknown action: $action" >&2
+        exit 1
+        ;;
+esac

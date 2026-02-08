@@ -84,53 +84,6 @@ return baseclass.extend({
 		}),
 
 		/**
-		 * Get logs
-		 * @param {string} id - Container ID
-		 * @param {string} params - Log params (e.g., 'stdout=true&stderr=true&tail=100')
-		 * @returns {Promise<string>} Container logs (plain text)
-		 */
-		logs: rpc.declare({
-			object: 'luci.podman',
-			method: 'container_logs',
-			params: ['id', 'params']
-		}),
-
-		/**
-		 * Start log stream
-		 * @param {string} id - Container ID
-		 * @param {string} params - Log params (must include follow=true for streaming)
-		 * @returns {Promise<Object>} Session object with session_id
-		 */
-		logsStream: rpc.declare({
-			object: 'luci.podman',
-			method: 'container_logs_stream',
-			params: ['id', 'params']
-		}),
-
-		/**
-		 * Get logs stream status
-		 * @param {string} session_id - Logs session ID
-		 * @param {number} offset - Output offset for streaming
-		 * @returns {Promise<Object>} Status object with output, complete, and success flags
-		 */
-		logsStatus: rpc.declare({
-			object: 'luci.podman',
-			method: 'container_logs_status',
-			params: ['session_id', 'offset']
-		}),
-
-		/**
-		 * Stop log stream
-		 * @param {string} session_id - Logs session ID
-		 * @returns {Promise<Object>} Success result
-		 */
-		logsStop: rpc.declare({
-			object: 'luci.podman',
-			method: 'container_logs_stop',
-			params: ['session_id']
-		}),
-
-		/**
 		 * Get statistics
 		 * @param {string} id - Container ID
 		 * @returns {Promise<Object>} Container stats
@@ -285,50 +238,6 @@ return baseclass.extend({
 			params: ['image']
 		}),
 
-		/**
-		 * Pull image (blocking).
-		 * @param {string} image - Image name (e.g., 'nginx:latest')
-		 * @returns {Promise<Object>} Pull result
-		 */
-		pull: rpc.declare({
-			object: 'luci.podman',
-			method: 'image_pull',
-			params: ['image']
-		}),
-
-		/**
-		 * Start image pull stream.
-		 * @param {string} image - Image name (e.g., 'nginx:latest')
-		 * @returns {Promise<Object>} Session object with session_id
-		 */
-		pullStream: rpc.declare({
-			object: 'luci.podman',
-			method: 'image_pull_stream',
-			params: ['image']
-		}),
-
-		/**
-		 * Get pull stream status.
-		 * @param {string} session_id - Pull session ID
-		 * @param {number} offset - Output offset for streaming
-		 * @returns {Promise<Object>} Status object with output, complete, and success flags
-		 */
-		pullStatus: rpc.declare({
-			object: 'luci.podman',
-			method: 'image_pull_status',
-			params: ['session_id', 'offset']
-		}),
-
-		/**
-		 * Stop image pull stream.
-		 * @param {string} session_id - Pull session ID
-		 * @returns {Promise<Object>} Success result
-		 */
-		pullStop: rpc.declare({
-			object: 'luci.podman',
-			method: 'image_pull_stop',
-			params: ['session_id']
-		})
 	},
 
 	/**
@@ -500,17 +409,6 @@ return baseclass.extend({
 			object: 'luci.podman',
 			method: 'volume_create',
 			params: ['data']
-		}),
-
-		/**
-		 * Export volume to tar.
-		 * @param {string} name - Volume name
-		 * @returns {Promise<Object>} Export result with base64-encoded tar data
-		 */
-		exportVolume: rpc.declare({
-			object: 'luci.podman',
-			method: 'volume_export',
-			params: ['name']
 		}),
 
 		/**

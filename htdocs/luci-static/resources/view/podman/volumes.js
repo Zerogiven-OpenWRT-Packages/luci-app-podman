@@ -4,6 +4,7 @@
 'require form';
 'require ui';
 
+'require fs';
 'require podman.utils as utils';
 'require podman.format as format';
 'require podman.list as List';
@@ -194,24 +195,11 @@ return view.extend({
 			const volumeName = selected[exportIndex];
 			exportIndex++;
 
-			podmanRPC.volume.exportVolume(volumeName).then((result) => {
-				if (result.error) {
-					ui.hideModal();
-					podmanUI.errorNotification(_('Failed to export volume %s: %s').format(volumeName, result.error));
-					return;
-				}
-
-				// Decode base64 and trigger download
-				const binaryData = atob(result.data);
-				const bytes = new Uint8Array(binaryData.length);
-				for (let i = 0; i < binaryData.length; i++) {
-					bytes[i] = binaryData.charCodeAt(i);
-				}
-				const blob = new Blob([bytes], { type: 'application/x-tar' });
+			fs.exec_direct('/usr/libexec/podman-api', ['volume_export', volumeName], 'blob').then((blob) => {
 				const url = URL.createObjectURL(blob);
 				const a = document.createElement('a');
 				a.href = url;
-				a.download = `${volumeName}.tar.gz`;
+				a.download = `${volumeName}.tar`;
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);

@@ -2,6 +2,7 @@
 
 'require view';
 'require form';
+'require fs';
 'require ui';
 
 'require podman.rpc as podmanRPC';
@@ -208,33 +209,25 @@ return view.extend({
 			)
 		);
 
-		const pullPromises = selected.map((img) => podmanRPC.image.pull(img.name));
+		const pullPromises = selected.map((img) =>
+			fs.exec_direct('/usr/libexec/podman-api', ['image_pull', img.name], 'text'));
 
-		Promise.all(pullPromises).then((results) => {
+		Promise.all(pullPromises).then(() => {
 			ui.hideModal();
-			const errors = results.filter((r) => r && r.error);
-			if (errors.length > 0) {
-				podmanUI.errorNotification(
-					_('Failed to pull %d %s').format(
-						errors.length,
-						utils._n(errors.length, _('Image'), _('Images')).toLowerCase()
-					)
-				);
-			} else {
-				podmanUI.successTimeNotification(
-					_('Successfully pulled %d %s').format(
-						selected.length,
-						utils._n(selected.length, _('Image'), _('Images'))
-						.toLowerCase()
-					)
-				);
-			}
+			podmanUI.successTimeNotification(
+				_('Successfully pulled %d %s').format(
+					selected.length,
+					utils._n(selected.length, _('Image'), _('Images'))
+					.toLowerCase()
+				)
+			);
 			this.handleRefresh();
 		}).catch((err) => {
 			ui.hideModal();
 			podmanUI.errorNotification(
 				_('Failed to pull some images: %s').format(err.message)
 			);
+			this.handleRefresh();
 		});
 	},
 
