@@ -23,6 +23,7 @@ case "$action" in
 
         validate_path_safe_id "$containerId"
         validate_int "$lines"
+        validate_int "$since"
 
         path="${API_BASE}/containers/${containerId}/logs"
         path="${path}?stdout=true&stderr=true&timestamps=true"
