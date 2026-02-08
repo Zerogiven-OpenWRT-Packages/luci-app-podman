@@ -277,15 +277,15 @@ return view.extend({
 								}
 								const base64Data = btoa(binary);
 
-								// Pass compressed flag to backend
-								podmanRPC.volume.importVolume(name, base64Data, isCompressed).then((result) => {
+								fs.exec_direct('/usr/libexec/podman-api', [
+									'volume_import',
+									name,
+									isCompressed ? '1' : '0',
+									base64Data
+								], 'text').then(() => {
 									ui.hideModal();
-									if (result.error) {
-										podmanUI.errorNotification(_('Failed to import volume: %s').format(result.error));
-									} else {
-										podmanUI.successTimeNotification(_('Volume imported successfully'));
-										this.handleRefresh(false);
-									}
+									podmanUI.successTimeNotification(_('Volume imported successfully'));
+									this.handleRefresh(false);
 								}).catch((err) => {
 									ui.hideModal();
 									podmanUI.errorNotification(_('Failed to import volume: %s').format(err.message));

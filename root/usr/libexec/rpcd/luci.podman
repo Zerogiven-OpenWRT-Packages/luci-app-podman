@@ -144,7 +144,6 @@ case "$1" in
 	"volume_inspect": { "name": "" },
 	"volume_remove": { "name": "", "force": false },
 	"volume_create": { "data": {} },
-	"volume_import": { "name": "", "data": "" },
 	"pods_list": {},
 	"pod_inspect": { "name": "" },
 	"pod_start": { "name": "" },
@@ -371,58 +370,6 @@ EOF
 			volume_create)
 				get_json_params data
 				curl_request "POST" "${API_BASE}/volumes/create" "$data"
-				;;
-			volume_import)
-				get_json_params name data compressed
-				require_param name
-				require_param data
-				validate_volume_name "$name"
-
-				# Base64 decode the uploaded tar data to temp file
-				temp_file=$(mktemp /tmp/podman_vol_import_XXXXXX)
-				# Conditionally decompress based on compressed parameter
-				if [ "$compressed" = "true" ]; then
-					echo "$data" | openssl base64 -d | gunzip -c > "$temp_file"
-				else
-					echo "$data" | openssl base64 -d > "$temp_file"
-				fi
-				decode_exit=$?
-
-				if [ $decode_exit -ne 0 ]; then
-					rm -f "$temp_file"
-					echo "{\"error\":\"Failed to decode import data\"}"
-					exit 1
-				fi
-
-				podman volume exists "$name"
-				volume_exists=$?
-
-				if [ $volume_exists -ne 0 ]; then
-					# Create the volume first (import requires volume to exist)
-					podman volume create "$name" > /dev/null 2>&1
-					create_exit=$?
-
-					if [ $create_exit -ne 0 ]; then
-						rm -f "$temp_file"
-						echo "{\"error\":\"Failed to create volume\",\"details\":\"podman exit code $create_exit\"}"
-						exit 1
-					fi
-				fi
-
-				# Use podman CLI since REST API doesn't support import yet
-				podman volume import "$name" "$temp_file" > /dev/null 2>&1
-				exit_code=$?
-				rm -f "$temp_file"
-
-				if [ $exit_code -ne 0 ]; then
-					# Cleanup: remove the volume we just created if import fails
-					podman volume rm "$name" 2>/dev/null
-					echo "{\"error\":\"Import failed\",\"details\":\"podman exit code $exit_code\"}"
-					exit 1
-				fi
-
-				# Import success
-				echo "{\"success\":true}"
 				;;
 			pods_list)
 				read -r input  # consume ubus JSON input

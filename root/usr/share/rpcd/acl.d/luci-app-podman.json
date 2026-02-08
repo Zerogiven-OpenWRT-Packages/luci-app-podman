@@ -53,6 +53,9 @@
 			"file": {
 				"/usr/libexec/podman-api image_pull *": [
 					"exec"
+				],
+				"/usr/libexec/podman-api volume_import * * *": [
+					"exec"
 				]
 			},
 			"ubus": {
@@ -72,7 +75,6 @@
 					"network_disconnect",
 					"volume_create",
 					"volume_remove",
-					"volume_import",
 					"pod_start",
 					"pod_stop",
 					"pod_restart",

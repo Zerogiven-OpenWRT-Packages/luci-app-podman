@@ -23,18 +23,54 @@ urlencode() {
 
 validate_path_safe_id() {
 	case "$1" in
-		*[!a-zA-Z0-9_.:-]*) return 1 ;;
-		"") return 1 ;;
-		*) return 0 ;;
+		*[!a-zA-Z0-9_.:-]*)
+            echo "Invalid id"
+            exit 1
+			;;
 	esac
 }
 
 validate_int() {
 	case "$1" in
-		*[!0-9]*) return 1 ;;
-		"") return 1 ;;
-		*) return 0 ;;
+		*[!0-9]*)
+            echo "Invalid number"
+            exit 1
+			;;
 	esac
+}
+
+validate_volume_name() {
+	local name="$1"
+	case "$name" in
+		*[!a-zA-Z0-9_.-]*)
+			echo 'Invalid volume name format'
+			exit 1
+			;;
+	esac
+}
+
+validate_base64_content() {
+    local data="$1"
+
+    if [[ ! "$data" =~ ^[A-Za-z0-9+/]*={0,2}$ ]]; then
+        echo 'Error: Invalid Base64 characters detected'
+        exit 1
+    fi
+
+    local len=${#data}
+    if (( len % 4 != 0 )); then
+        echo "Error: Invalid Base64 length ($len). Must be a multiple of 4"
+        exit 1
+    fi
+}
+
+require_param() {
+	local var_name="$1"
+	eval "local var_value=\"\$$var_name\""
+	if [ -z "$var_value" ]; then
+		echo "Missing required parameter: $var_name"
+		exit 1
+	fi
 }
 
 case "$action" in
@@ -43,8 +79,12 @@ case "$action" in
         since="$3"
         containerId="$4"
 
-        validate_path_safe_id "$containerId" || { echo "Invalid container ID" >&2; exit 1; }
-        validate_int "$lines" || { echo "Invalid lines value" >&2; exit 1; }
+        require_param containerId
+        require_param lines
+        require_param since
+
+        validate_path_safe_id "$containerId"
+        validate_int "$lines"
 
         path="${API_BASE}/containers/${containerId}/logs"
         path="${path}?stdout=true&stderr=true&timestamps=true"
@@ -57,7 +97,9 @@ case "$action" in
     image_pull)
         image="$2"
 
-        [ -n "$image" ] || { echo "Missing image reference" >&2; exit 1; }
+        require_param image
+
+        validate_path_safe_id "$image"
 
         image_enc=$(urlencode "$image")
         path="${API_BASE}/images/pull?reference=${image_enc}"
@@ -67,9 +109,49 @@ case "$action" in
     volume_export)
         volumeName="$2"
 
-        validate_path_safe_id "$volumeName" || { echo "Invalid volume name" >&2; exit 1; }
+        require_param volumeName
+
+        validate_volume_name "$volumeName"
 
         /usr/bin/podman volume export "$volumeName"
+        ;;
+    volume_import)
+        volumeName="$2"
+        volumeData="$4"
+        compressed="$3"
+
+        require_param volumeName
+        require_param volumeData
+        require_param compressed
+
+        validate_volume_name "$volumeName"
+        validate_base64_content "$volumeData"
+        validate_int "$compressed"
+
+        if [ "$compressed" = "1" ]; then
+			$data_decoded=$(echo "$volumeData" | base64 -d - | gunzip -c)
+		else
+			$data_decoded=$(echo "$volumeData" | base64 -d -)
+		fi
+		decode_exit=$?
+
+        if [ $decode_exit -ne 0 ]; then
+            echo "Failed to decode import data"
+            exit 1
+        fi
+
+        /usr/bin/podman volume exists "$volumeName" 2>/dev/null || \
+            /usr/bin/podman volume create "$volumeName" > /dev/null 2>&1
+
+        echo "$data_decoded" | /usr/bin/podman volume import "$volumeName" -
+        exit_code=$?
+
+        if [ $exit_code -ne 0 ]; then
+            podman volume rm "$volumeName" 2>/dev/null
+            echo "Import failed"
+            exit 1
+        fi
+
         ;;
     *)
         echo "Unknown action: $action" >&2
