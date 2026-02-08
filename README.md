@@ -46,8 +46,7 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 ## Requirements
 
 - OpenWrt 24.10, 25.12
-- Podman
-- Curl
+- Dependencies can be seen in the [Makefile](Makefile) under `LUCI_DEPENDS`
 - Sufficient storage for images/containers
 
 ## Installation
