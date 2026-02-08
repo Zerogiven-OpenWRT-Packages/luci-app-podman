@@ -58,8 +58,7 @@ return baseclass.extend({
 					podmanUI.errorNotification(_('Please enter an image name'));
 					return;
 				}
-				const imageName = registry ? registry + image :
-					'docker.io/library/' + image;
+				const imageName = this.buildImageName(registry, image);
 
 				ui.showModal(_('Pulling Image'), [
 					E('p', {
@@ -82,6 +81,31 @@ return baseclass.extend({
 							_('Failed to pull image: %s').format(err.message));
 					});
 			});
+		},
+
+		/**
+		 * Build a normalized image reference from registry and image name.
+		 * Ensures consistent handling of slashes and default registry/namespace.
+		 *
+		 * @param {string} registry Selected registry (may be empty)
+		 * @param {string} image    Image name as entered by the user
+		 * @returns {string}        Normalized image reference
+		 */
+		buildImageName: function (registry, image) {
+			registry = (registry || '').trim();
+			image = (image || '').trim();
+			if (!registry) {
+				// Default to docker.io; add "library/" only when user did not specify a namespace
+				if (!image.includes('/')) {
+					return 'docker.io/library/' + image;
+				}
+				return 'docker.io/' + image;
+			}
+			// Ensure exactly one slash between registry and image
+			const normalizedRegistry = registry.replace(/\/+$/, '');
+			const normalizedImage = image.replace(/^\/+/, '');
+
+			return normalizedRegistry + '/' + normalizedImage;
 		},
 
 		/**
