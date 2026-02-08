@@ -21,9 +21,7 @@ urlencode() {
 	echo "$encoded"
 }
 
-# Validate that a value contains only safe URL path characters
-# Allows: alphanumeric, dash, underscore, dot, colon (for image refs)
-validate_id() {
+validate_path_safe_id() {
 	case "$1" in
 		*[!a-zA-Z0-9_.:-]*) return 1 ;;
 		"") return 1 ;;
@@ -31,7 +29,6 @@ validate_id() {
 	esac
 }
 
-# Validate that a value is a non-negative integer
 validate_int() {
 	case "$1" in
 		*[!0-9]*) return 1 ;;
@@ -46,7 +43,7 @@ case "$action" in
         since="$3"
         containerId="$4"
 
-        validate_id "$containerId" || { echo "Invalid container ID" >&2; exit 1; }
+        validate_path_safe_id "$containerId" || { echo "Invalid container ID" >&2; exit 1; }
         validate_int "$lines" || { echo "Invalid lines value" >&2; exit 1; }
 
         path="${API_BASE}/containers/${containerId}/logs"
@@ -70,9 +67,8 @@ case "$action" in
     volume_export)
         volumeName="$2"
 
-        validate_id "$volumeName" || { echo "Invalid volume name" >&2; exit 1; }
+        validate_path_safe_id "$volumeName" || { echo "Invalid volume name" >&2; exit 1; }
 
-        # Volume export API not available on OpenWrt Podman build, use CLI
         /usr/bin/podman volume export "$volumeName"
         ;;
     *)
