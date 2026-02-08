@@ -593,7 +593,7 @@ EOF
 				fi
 
 				# Read script content and escape for JSON
-				content=$(cat "$script_path" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}')
+				content=$(sed 's/\\/\\\\/g; s/"/\\"/g' "$script_path" | awk '{printf "%s\\n", $0}')
 				echo "{\"content\":\"${content}\"}"
 				;;
 			init_script_status)
