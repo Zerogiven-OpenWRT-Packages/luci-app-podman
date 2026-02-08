@@ -18,7 +18,6 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - [Usage](#usage)
 - [Container Auto-Update](#container-auto-update)
 - [Container Auto-Start](#container-auto-start)
-- [Cron Job](#cron-job)
 - [Credits](#credits)
 
 </details>
@@ -124,18 +123,6 @@ Or add via the LuCI interface in the container creation form under "Labels".
 5. Click **"Update Selected"** to pull new images and recreate containers
 
 Container names and init scripts are preserved - no manual reconfiguration needed.
-
-## Cron Job
-
-This package installs a cron job that runs every 2 minutes to clean up orphaned streaming sessions. When users navigate away from the UI while viewing logs or pulling images, the background processes could be left running indefinitely. The cleanup script (`/usr/libexec/podman-cleanup`) terminates sessions with no activity for 2+ minutes.
-
-> [!TIP]
-> If cron execution logs are too verbose, you can silence them by setting the cron log level in `/etc/config/system`:
-> ```bash
-> uci set system.@system[0].cronloglevel='9'
-> uci commit system
-> /etc/init.d/system restart
-> ```
 
 ## Credits
 
