@@ -55,6 +55,14 @@ const ListUtil = baseclass.extend({
 		utils.setupSelectAllCheckbox(rendered, this.prefix);
 	},
 
+	unselectAll: function() {
+		const checkboxes = document.querySelectorAll('input[type="hidden"][name^="' + this.prefix +
+			'"] ~ input[type="checkbox"]:checked');
+		checkboxes.forEach((checkbox) => {
+			checkbox.checked = false;
+		});
+	},
+
 	/**
 	 * Create toolbar with action buttons (create, delete, refresh, custom).
 	 * @param {{onCreate: Function, onDelete: Function, onRefresh: Function, customButtons: Array}} options - Button config

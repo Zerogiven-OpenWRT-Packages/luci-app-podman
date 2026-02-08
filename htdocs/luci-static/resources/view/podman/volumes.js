@@ -187,6 +187,7 @@ return view.extend({
 		let exportIndex = 0;
 		const exportNext = () => {
 			if (exportIndex >= selected.length) {
+				this.listHelper.unselectAll();
 				ui.hideModal();
 				podmanUI.successTimeNotification(_('All volumes exported successfully'));
 				return;

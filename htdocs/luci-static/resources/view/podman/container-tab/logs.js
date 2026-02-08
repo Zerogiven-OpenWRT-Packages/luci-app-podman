@@ -115,7 +115,7 @@ return baseclass.extend({
 	 * @param {string} since - Unix epoch timestamp or '0' for none
 	 * @returns {Promise<string>} Parsed log text
 	 */
-	fetchLogs: function (lines, since) {
+	fetchLogs: async function (lines, since) {
 		return fs.exec_direct('/usr/libexec/podman-api',
 			['logs', String(lines), since || '0', this.containerId], 'blob'
 		).then((blob) => {
