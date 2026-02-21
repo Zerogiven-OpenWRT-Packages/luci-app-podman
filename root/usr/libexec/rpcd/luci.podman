@@ -734,15 +734,14 @@ EOF
 				get_json_params command
 				require_param command "$command"
 
-				if [ -z "$command" ] || [ "$command" = "null" ]; then
-					json_error "Invalid command: empty or null"
-				fi
+				# Navigate into the command array (jshn uses json_select for arrays)
+				json_select command
 
-				first_arg=$(echo "$command" | jsonfilter -e '@[0]' 2>/dev/null)
-				second_arg=$(echo "$command" | jsonfilter -e '@[1]' 2>/dev/null)
+				json_get_var first_arg 1
+				json_get_var second_arg 2
 
 				if [ -z "$first_arg" ]; then
-					json_error "Failed to parse command JSON"
+					json_error "Failed to parse command array"
 				fi
 
 				# Accept both "podman" and "/usr/bin/podman" (Podman stores full path in CreateCommand)
@@ -757,21 +756,24 @@ EOF
 				esac
 
 				# Security: Limit argument count to prevent abuse (256 is generous for any real container)
-				arg_count=$(echo "$command" | jsonfilter -e '@[*]' 2>/dev/null | wc -l)
+				arg_count=0
+				while json_is_a "$((arg_count + 1))" string; do
+					arg_count=$((arg_count + 1))
+				done
 				if [ "$arg_count" -gt 256 ]; then
 					json_error "Invalid command: too many arguments"
-				fi
-
-				if echo "$command" | grep -qE '\&\&|\|\||[;<>]'; then
-					json_error "Invalid command: contains forbidden shell characters"
 				fi
 
 				temp_script=$(mktemp)
 				printf '#!/bin/sh\n/usr/bin/podman' > "$temp_script"
 
-				echo "$command" | jsonfilter -e '@[*]' | tail -n +2 | while IFS= read -r arg; do
+				# Iterate from index 2 (skip "podman"), build script
+				idx=2
+				while json_is_a "$idx" string; do
+					json_get_var arg "$idx"
 					escaped=$(printf '%s' "$arg" | sed "s/'/'\\\\''/g")
 					printf " '%s'" "$escaped" >> "$temp_script"
+					idx=$((idx + 1))
 				done
 
 				printf '\n' >> "$temp_script"
@@ -786,6 +788,7 @@ EOF
 					exit 1
 				fi
 
+				json_init
 				json_add_boolean success "1"
 				json_dump
 				;;
