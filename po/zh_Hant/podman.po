@@ -14,11 +14,6 @@ msgstr ""
 "X-Poedit-SearchPath-0: htdocs\n"
 "X-Poedit-SearchPath-1: root\n"
 
-#: htdocs/luci-static/resources/podman/auto-update.js:47
-#: htdocs/luci-static/resources/podman/form/image.js:81
-msgid "Failed to start image pull"
-msgstr "無法啟動映像檔獲取"
-
 #: htdocs/luci-static/resources/podman/auto-update.js:122
 #: htdocs/luci-static/resources/podman/form/image.js:183
 #: htdocs/luci-static/resources/podman/form/image.js:209
@@ -51,7 +46,7 @@ msgstr "正在啟動容器…"
 
 #: htdocs/luci-static/resources/podman/auto-update.js:212
 msgid "Cleaning up old image..."
-msgstr "正在清理舊的映像檔…"
+msgstr "正在清理舊映像..."
 
 #: htdocs/luci-static/resources/podman/auto-update.js:220
 msgid "Update complete"
@@ -656,10 +651,6 @@ msgstr "請輸入映像檔名稱"
 msgid "Pulling Image"
 msgstr "正在獲取映像檔"
 
-#: htdocs/luci-static/resources/podman/form/image.js:70
-msgid "Starting image pull..."
-msgstr "正在獲取映像檔…"
-
 #: htdocs/luci-static/resources/podman/form/image.js:89
 #: htdocs/luci-static/resources/podman/form/image.js:261
 #, javascript-format
@@ -770,6 +761,12 @@ msgstr "IPv4 子網域（CIDR）"
 #: htdocs/luci-static/resources/podman/form/network.js:108
 msgid "IPv4 subnet in CIDR notation"
 msgstr "CIDR 註記的 IPv4 子網域"
+
+msgid "IPv6 Gateway: %s"
+msgstr "IPv6 閘道：%s"
+
+msgid "IPv6 Subnet: %s"
+msgstr "IPv6 子網路：%s"
 
 #: htdocs/luci-static/resources/podman/form/network.js:111
 msgid "IPv4 Gateway"
@@ -1089,6 +1086,9 @@ msgstr "讀取：%s / 寫入：%s"
 msgid "No I/O"
 msgstr "沒有 I/O"
 
+msgid "Debug mode enabled in UCI config"
+msgstr "UCI 設定中已啟用除錯模式"
+
 #: htdocs/luci-static/resources/podman/list.js:75
 msgid "Delete Selected"
 msgstr "刪除已選項目"
@@ -1130,8 +1130,8 @@ msgstr "請求失敗"
 
 #: htdocs/luci-static/resources/podman/list.js:302
 #, javascript-format
-msgid "Failed to delete %d %s"
-msgstr "無法刪除 %d 個 %s"
+msgid "Failed to delete %d %s:\n%s"
+msgstr "刪除 %d 個%s失敗：\n%s"
 
 #: htdocs/luci-static/resources/podman/list.js:315
 #, javascript-format
@@ -1142,6 +1142,9 @@ msgstr "成功刪除 %d 個 %s"
 #, javascript-format
 msgid "Refreshing %s..."
 msgstr "正在更新 %s…"
+
+msgid "Regenerate"
+msgstr "重新產生"
 
 #: htdocs/luci-static/resources/podman/list.js:370
 #, javascript-format
@@ -1313,12 +1316,12 @@ msgstr "立刻執行健康檢查"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/info.js:49
 msgid "Loading network information..."
-msgstr "載入網路資訊…"
+msgstr "正在載入網路資訊..."
 
 #: htdocs/luci-static/resources/view/podman/container-tab/info.js:100
 #, javascript-format
 msgid "Failed to load network information: %s"
-msgstr "無法載入網路資訊：%s"
+msgstr "載入網路資訊失敗：%s"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/info.js:121
 #: htdocs/luci-static/resources/view/podman/containers.js:96
@@ -1428,7 +1431,7 @@ msgstr "複製"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/info.js:386
 msgid "Create Command"
-msgstr "建立指令"
+msgstr "建立命令"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/info.js:400
 msgid "Entrypoint"
@@ -1682,10 +1685,6 @@ msgstr "正在載入日誌…"
 msgid "No logs available"
 msgstr "沒有可用日誌"
 
-#: htdocs/luci-static/resources/view/podman/container-tab/logs.js:121
-msgid "Failed to decode logs"
-msgstr "無法解析日誌"
-
 #: htdocs/luci-static/resources/view/podman/container-tab/logs.js:142
 #, javascript-format
 msgid "Failed to load logs: %s"
@@ -1695,15 +1694,6 @@ msgstr "無法載入日誌：%s"
 #, javascript-format
 msgid "Failed to start log stream: %s"
 msgstr "無法啟動日誌資料流：%s"
-
-#: htdocs/luci-static/resources/view/podman/container-tab/logs.js:406
-msgid "Log stream ended with error"
-msgstr "日誌資料流以錯誤結束"
-
-#: htdocs/luci-static/resources/view/podman/container-tab/logs.js:414
-#, javascript-format
-msgid "Error polling log stream: %s"
-msgstr "讀取日誌資料流錯誤：%s"
 
 #: htdocs/luci-static/resources/view/podman/container-tab/stats.js:36
 msgid "CPU Usage"
@@ -1955,6 +1945,9 @@ msgstr ""
 "\n"
 "%s"
 
+msgid "Pulling %s..."
+msgstr "正在拉取 %s..."
+
 #: htdocs/luci-static/resources/view/podman/images.js:204
 msgid "Pulling Images"
 msgstr "正在獲取映像檔"
@@ -1964,10 +1957,8 @@ msgstr "正在獲取映像檔"
 msgid "Pulling latest version of %d %s..."
 msgstr "正在獲取 %d 個 %s 的最新版…"
 
-#: htdocs/luci-static/resources/view/podman/images.js:218
-#, javascript-format
-msgid "Failed to pull %d %s"
-msgstr "無法拉回 %d 個 %s"
+msgid "Pulling new image..."
+msgstr "正在拉取新映像..."
 
 #: htdocs/luci-static/resources/view/podman/images.js:225
 #, javascript-format
@@ -2213,6 +2204,9 @@ msgstr "檢查更新"
 #: htdocs/luci-static/resources/view/podman/overview.js:427
 msgid "Cleanup / Prune"
 msgstr "清理 / 裁剪"
+
+msgid "System Diagnostics"
+msgstr "系統診斷"
 
 #: htdocs/luci-static/resources/view/podman/overview.js:434
 msgid "System Maintenance"

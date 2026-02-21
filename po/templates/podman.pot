@@ -130,6 +130,9 @@ msgstr ""
 msgid "Clean Up Now"
 msgstr ""
 
+msgid "Cleaning up old image..."
+msgstr ""
+
 msgid "Cleanup / Prune"
 msgstr ""
 
@@ -238,6 +241,9 @@ msgstr ""
 msgid "Containers"
 msgstr ""
 
+msgid "Copy"
+msgstr ""
+
 msgid "Copy Command"
 msgstr ""
 
@@ -262,6 +268,9 @@ msgstr ""
 msgid "Create %s"
 msgstr ""
 
+msgid "Create Command"
+msgstr ""
+
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr ""
 
@@ -281,6 +290,9 @@ msgid "Creating container from image %s..."
 msgstr ""
 
 msgid "Creating new container..."
+msgstr ""
+
+msgid "Debug mode enabled in UCI config"
 msgstr ""
 
 msgid "Delete Selected"
@@ -376,9 +388,6 @@ msgstr ""
 msgid "Error loading details: %s"
 msgstr ""
 
-msgid "Error polling log stream: %s"
-msgstr ""
-
 msgid "Errors checking: %s"
 msgstr ""
 
@@ -412,10 +421,7 @@ msgstr ""
 msgid "Failed to create %s: %s"
 msgstr ""
 
-msgid "Failed to decode logs"
-msgstr ""
-
-msgid "Failed to delete %d %s"
+msgid "Failed to delete %d %s:\n%s"
 msgstr ""
 
 msgid "Failed to disconnect from network: %s"
@@ -448,6 +454,9 @@ msgstr ""
 msgid "Failed to load logs: %s"
 msgstr ""
 
+msgid "Failed to load network information: %s"
+msgstr ""
+
 msgid "Failed to load process list: %s"
 msgstr ""
 
@@ -455,9 +464,6 @@ msgid "Failed to load resources: %s"
 msgstr ""
 
 msgid "Failed to parse command: %s"
-msgstr ""
-
-msgid "Failed to pull %d %s"
 msgstr ""
 
 msgid "Failed to pull image"
@@ -494,9 +500,6 @@ msgid "Failed to setup OpenWrt integration: %s"
 msgstr ""
 
 msgid "Failed to start %d %s"
-msgstr ""
-
-msgid "Failed to start image pull"
 msgstr ""
 
 msgid "Failed to start log stream: %s"
@@ -703,6 +706,12 @@ msgstr ""
 msgid "IPv4 subnet in CIDR notation"
 msgstr ""
 
+msgid "IPv6 Gateway: %s"
+msgstr ""
+
+msgid "IPv6 Subnet: %s"
+msgstr ""
+
 msgid "Labels"
 msgstr ""
 
@@ -748,13 +757,13 @@ msgstr ""
 msgid "Loading logs..."
 msgstr ""
 
+msgid "Loading network information..."
+msgstr ""
+
 msgid "Loading process list..."
 msgstr ""
 
 msgid "Loading..."
-msgstr ""
-
-msgid "Log stream ended with error"
 msgstr ""
 
 msgid "Logs"
@@ -1021,6 +1030,9 @@ msgstr ""
 msgid "Pull latest version of %d %s?\n\n%s"
 msgstr ""
 
+msgid "Pulling %s..."
+msgstr ""
+
 msgid "Pulling Image"
 msgstr ""
 
@@ -1031,6 +1043,9 @@ msgid "Pulling images and comparing digests..."
 msgstr ""
 
 msgid "Pulling latest version of %d %s..."
+msgstr ""
+
+msgid "Pulling new image..."
 msgstr ""
 
 msgid "Read: %s / Write: %s"
@@ -1049,6 +1064,9 @@ msgid "Refresh"
 msgstr ""
 
 msgid "Refreshing %s..."
+msgstr ""
+
+msgid "Regenerate"
 msgstr ""
 
 msgid "Registries"
@@ -1085,6 +1103,9 @@ msgid "Renaming container..."
 msgstr ""
 
 msgid "Repository"
+msgstr ""
+
+msgid "Request failed"
 msgstr ""
 
 msgid "Resource Limits"
@@ -1258,9 +1279,6 @@ msgstr ""
 msgid "Starting container..."
 msgstr ""
 
-msgid "Starting image pull..."
-msgstr ""
-
 msgid "Starting selected %s..."
 msgstr ""
 
@@ -1322,6 +1340,9 @@ msgid "Successfully pulled %d %s"
 msgstr ""
 
 msgid "Successfully updated: %s"
+msgstr ""
+
+msgid "System Diagnostics"
 msgstr ""
 
 msgid "System Maintenance"

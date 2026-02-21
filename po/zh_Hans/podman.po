@@ -116,6 +116,9 @@ msgstr "为此网络选择防火墙区域。新区域使用安全默认值：输
 msgid "Clean Up Now"
 msgstr "立即清理"
 
+msgid "Cleaning up old image..."
+msgstr "正在清理旧镜像..."
+
 msgid "Cleanup / Prune"
 msgstr "清理 / 修剪"
 
@@ -218,6 +221,9 @@ msgstr "容器重命名成功"
 msgid "Containers"
 msgstr "容器"
 
+msgid "Copy"
+msgstr "复制"
+
 msgid "Count"
 msgstr "数量"
 
@@ -239,6 +245,9 @@ msgstr "CPU 使用率"
 msgid "Create %s"
 msgstr "创建 %s"
 
+msgid "Create Command"
+msgstr "创建命令"
+
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "创建新区域（命名为：podman_<网络名称>）"
 
@@ -256,6 +265,9 @@ msgstr "正在为 %s 创建自启动配置"
 
 msgid "Creating container from image %s..."
 msgstr "正在从镜像 %s 创建容器..."
+
+msgid "Debug mode enabled in UCI config"
+msgstr "UCI 配置中已启用调试模式"
 
 msgid "Delete Selected"
 msgstr "删除选中项"
@@ -350,9 +362,6 @@ msgstr "错误"
 msgid "Error loading details: %s"
 msgstr "加载详情错误：%s"
 
-msgid "Error polling log stream: %s"
-msgstr "轮询日志流错误：%s"
-
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr "用作父接口的现有物理接口。macvlan/ipvlan 网络必需。"
 
@@ -380,11 +389,8 @@ msgstr "无法连接网络：%s"
 msgid "Failed to create %s: %s"
 msgstr "创建 %s 失败：%s"
 
-msgid "Failed to decode logs"
-msgstr "日志解码失败"
-
-msgid "Failed to delete %d %s"
-msgstr "删除 %d 个 %s 失败"
+msgid "Failed to delete %d %s:\n%s"
+msgstr "删除 %d 个%s失败：\n%s"
 
 msgid "Failed to disconnect from network: %s"
 msgstr "无法断开网络连接：%s"
@@ -416,6 +422,9 @@ msgstr "加载 init 脚本失败"
 msgid "Failed to load logs: %s"
 msgstr "加载日志失败：%s"
 
+msgid "Failed to load network information: %s"
+msgstr "加载网络信息失败：%s"
+
 msgid "Failed to load process list: %s"
 msgstr "加载进程列表失败：%s"
 
@@ -424,9 +433,6 @@ msgstr "加载资源失败：%s"
 
 msgid "Failed to parse command: %s"
 msgstr "解析命令失败：%s"
-
-msgid "Failed to pull %d %s"
-msgstr "拉取 %d 个 %s 失败"
 
 msgid "Failed to pull image"
 msgstr "拉取镜像失败"
@@ -463,9 +469,6 @@ msgstr "设置 OpenWrt 集成失败：%s"
 
 msgid "Failed to start %d %s"
 msgstr "启动 %d 个 %s 失败"
-
-msgid "Failed to start image pull"
-msgstr "开始拉取镜像失败"
 
 msgid "Failed to start log stream: %s"
 msgstr "启动日志流失败：%s"
@@ -662,6 +665,12 @@ msgstr "IPv4 子网 (CIDR)"
 msgid "IPv4 subnet in CIDR notation"
 msgstr "CIDR 表示法的 IPv4 子网"
 
+msgid "IPv6 Gateway: %s"
+msgstr "IPv6 网关：%s"
+
+msgid "IPv6 Subnet: %s"
+msgstr "IPv6 子网：%s"
+
 msgid "Labels"
 msgstr "标签"
 
@@ -707,14 +716,14 @@ msgstr "正在加载 Init 脚本"
 msgid "Loading logs..."
 msgstr "正在加载日志..."
 
+msgid "Loading network information..."
+msgstr "正在加载网络信息..."
+
 msgid "Loading process list..."
 msgstr "正在加载进程列表..."
 
 msgid "Loading..."
 msgstr "正在加载..."
-
-msgid "Log stream ended with error"
-msgstr "日志流以错误结束"
 
 msgid "Logs"
 msgstr "日志"
@@ -974,6 +983,9 @@ msgstr "拉取最新"
 msgid "Pull latest version of %d %s?\n\n%s"
 msgstr "拉取 %d 个 %s 的最新版本吗？\n\n%s"
 
+msgid "Pulling %s..."
+msgstr "正在拉取 %s..."
+
 msgid "Pulling Image"
 msgstr "正在拉取镜像"
 
@@ -982,6 +994,9 @@ msgstr "正在拉取镜像"
 
 msgid "Pulling latest version of %d %s..."
 msgstr "正在拉取 %d 个 %s 的最新版本..."
+
+msgid "Pulling new image..."
+msgstr "正在拉取新镜像..."
 
 msgid "Read: %s / Write: %s"
 msgstr "读：%s / 写：%s"
@@ -1000,6 +1015,9 @@ msgstr "刷新"
 
 msgid "Refreshing %s..."
 msgstr "正在刷新 %s..."
+
+msgid "Regenerate"
+msgstr "重新生成"
 
 msgid "Registries"
 msgstr "注册表 (Registries)"
@@ -1033,6 +1051,9 @@ msgstr "正在重命名容器..."
 
 msgid "Repository"
 msgstr "仓库"
+
+msgid "Request failed"
+msgstr "请求失败"
 
 msgid "Resource Limits"
 msgstr "资源限制"
@@ -1202,9 +1223,6 @@ msgstr "正在启动 %s"
 msgid "Starting %s..."
 msgstr "正在启动 %s..."
 
-msgid "Starting image pull..."
-msgstr "正在开始拉取镜像..."
-
 msgid "Starting selected %s..."
 msgstr "正在启动所选 %s..."
 
@@ -1255,6 +1273,9 @@ msgstr "成功删除 %d 个 %s"
 
 msgid "Successfully pulled %d %s"
 msgstr "成功拉取 %d 个 %s"
+
+msgid "System Diagnostics"
+msgstr "系统诊断"
 
 msgid "System Maintenance"
 msgstr "系统维护"

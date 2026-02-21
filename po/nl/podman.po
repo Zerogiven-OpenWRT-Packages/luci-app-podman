@@ -116,6 +116,9 @@ msgstr "Kies de firewallzone voor dit netwerk. Nieuwe zones gebruiken veilige st
 msgid "Clean Up Now"
 msgstr "Nu opruimen"
 
+msgid "Cleaning up old image..."
+msgstr "Oude image wordt opgeruimd..."
+
 msgid "Cleanup / Prune"
 msgstr "Opruimen / Prune"
 
@@ -218,6 +221,9 @@ msgstr "Container succesvol hernoemd"
 msgid "Containers"
 msgstr "Containers"
 
+msgid "Copy"
+msgstr "Kopiëren"
+
 msgid "Count"
 msgstr "Aantal"
 
@@ -239,6 +245,9 @@ msgstr "CPU-gebruik"
 msgid "Create %s"
 msgstr "%s aanmaken"
 
+msgid "Create Command"
+msgstr "Aanmaakcommando"
+
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "Nieuwe zone aanmaken (naam wordt: podman_<netwerknaam>)"
 
@@ -256,6 +265,9 @@ msgstr "Automatische start configuratie aanmaken voor %s"
 
 msgid "Creating container from image %s..."
 msgstr "Container aanmaken van image %s..."
+
+msgid "Debug mode enabled in UCI config"
+msgstr "Debugmodus ingeschakeld in UCI-configuratie"
 
 msgid "Delete Selected"
 msgstr "Selectie verwijderen"
@@ -350,9 +362,6 @@ msgstr "Fout"
 msgid "Error loading details: %s"
 msgstr "Fout bij laden details: %s"
 
-msgid "Error polling log stream: %s"
-msgstr "Fout bij ophalen log-stream: %s"
-
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr "Bestaande fysieke interface om als parent te gebruiken. Vereist voor macvlan/ipvlan netwerken."
 
@@ -380,11 +389,8 @@ msgstr "Verbinden met netwerk mislukt: %s"
 msgid "Failed to create %s: %s"
 msgstr "Aanmaken van %s mislukt: %s"
 
-msgid "Failed to decode logs"
-msgstr "Decoderen van logs mislukt"
-
-msgid "Failed to delete %d %s"
-msgstr "Verwijderen van %d %s mislukt"
+msgid "Failed to delete %d %s:\n%s"
+msgstr "Verwijderen van %d %s mislukt:\n%s"
 
 msgid "Failed to disconnect from network: %s"
 msgstr "Verbinding met netwerk verbreken mislukt: %s"
@@ -416,6 +422,9 @@ msgstr "Laden van init-script mislukt"
 msgid "Failed to load logs: %s"
 msgstr "Laden van logs mislukt: %s"
 
+msgid "Failed to load network information: %s"
+msgstr "Laden van netwerkinformatie mislukt: %s"
+
 msgid "Failed to load process list: %s"
 msgstr "Laden van proceslijst mislukt: %s"
 
@@ -424,9 +433,6 @@ msgstr "Laden van bronnen mislukt: %s"
 
 msgid "Failed to parse command: %s"
 msgstr "Verwerken van opdracht mislukt: %s"
-
-msgid "Failed to pull %d %s"
-msgstr "Ophalen van %d %s mislukt"
 
 msgid "Failed to pull image"
 msgstr "Ophalen van image mislukt"
@@ -463,9 +469,6 @@ msgstr "Instellen van OpenWrt integratie mislukt: %s"
 
 msgid "Failed to start %d %s"
 msgstr "Starten van %d %s mislukt"
-
-msgid "Failed to start image pull"
-msgstr "Starten van image ophalen mislukt"
 
 msgid "Failed to start log stream: %s"
 msgstr "Starten van log-stream mislukt: %s"
@@ -662,6 +665,12 @@ msgstr "IPv4 Subnet (CIDR)"
 msgid "IPv4 subnet in CIDR-notatie"
 msgstr "IPv4 subnet in CIDR-notatie"
 
+msgid "IPv6 Gateway: %s"
+msgstr "IPv6-gateway: %s"
+
+msgid "IPv6 Subnet: %s"
+msgstr "IPv6-subnet: %s"
+
 msgid "Labels"
 msgstr "Labels"
 
@@ -707,14 +716,14 @@ msgstr "Init-script laden"
 msgid "Loading logs..."
 msgstr "Logs laden..."
 
+msgid "Loading network information..."
+msgstr "Netwerkinformatie laden..."
+
 msgid "Loading process list..."
 msgstr "Proceslijst laden..."
 
 msgid "Loading..."
 msgstr "Laden..."
-
-msgid "Log stream ended with error"
-msgstr "Log-stream beëindigd met fout"
 
 msgid "Logs"
 msgstr "Logs"
@@ -974,6 +983,9 @@ msgstr "Laatste versie ophalen"
 msgid "Pull latest version of %d %s?\n\n%s"
 msgstr "Laatste versie van %d %s ophalen?\n\n%s"
 
+msgid "Pulling %s..."
+msgstr "%s ophalen..."
+
 msgid "Pulling Image"
 msgstr "Bezig met ophalen image"
 
@@ -982,6 +994,9 @@ msgstr "Bezig met ophalen images"
 
 msgid "Pulling latest version of %d %s..."
 msgstr "Laatste versie van %d %s ophalen..."
+
+msgid "Pulling new image..."
+msgstr "Nieuwe image ophalen..."
 
 msgid "Read: %s / Write: %s"
 msgstr "Lezen: %s / Schrijven: %s"
@@ -1000,6 +1015,9 @@ msgstr "Vernieuwen"
 
 msgid "Refreshing %s..."
 msgstr "Vernieuwen van %s..."
+
+msgid "Regenerate"
+msgstr "Opnieuw genereren"
 
 msgid "Registries"
 msgstr "Registries"
@@ -1033,6 +1051,9 @@ msgstr "Container hernoemen..."
 
 msgid "Repository"
 msgstr "Repository"
+
+msgid "Request failed"
+msgstr "Verzoek mislukt"
 
 msgid "Resource Limits"
 msgstr "Bronlimieten"
@@ -1202,9 +1223,6 @@ msgstr "Starten van %s"
 msgid "Starting %s..."
 msgstr "Starten van %s..."
 
-msgid "Starting image pull..."
-msgstr "Starten ophalen image..."
-
 msgid "Starting selected %s..."
 msgstr "Starten van geselecteerde %s..."
 
@@ -1255,6 +1273,9 @@ msgstr "Succesvol %d %s verwijderd"
 
 msgid "Successfully pulled %d %s"
 msgstr "Succesvol %d %s opgehaald"
+
+msgid "System Diagnostics"
+msgstr "Systeemdiagnose"
 
 msgid "System Maintenance"
 msgstr "Systeemonderhoud"

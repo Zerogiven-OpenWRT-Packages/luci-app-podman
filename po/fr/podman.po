@@ -116,6 +116,9 @@ msgstr "Choisissez la zone de pare-feu pour ce réseau. Les nouvelles zones util
 msgid "Clean Up Now"
 msgstr "Nettoyer maintenant"
 
+msgid "Cleaning up old image..."
+msgstr "Nettoyage de l'ancienne image..."
+
 msgid "Cleanup / Prune"
 msgstr "Nettoyage / Prune"
 
@@ -218,6 +221,9 @@ msgstr "Conteneur renommé avec succès"
 msgid "Containers"
 msgstr "Conteneurs"
 
+msgid "Copy"
+msgstr "Copier"
+
 msgid "Count"
 msgstr "Nombre"
 
@@ -239,6 +245,9 @@ msgstr "Utilisation CPU"
 msgid "Create %s"
 msgstr "Créer %s"
 
+msgid "Create Command"
+msgstr "Commande de création"
+
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "Créer une nouvelle zone (sera nommée : podman_<nom-réseau>)"
 
@@ -256,6 +265,9 @@ msgstr "Création de la configuration de démarrage automatique pour %s"
 
 msgid "Creating container from image %s..."
 msgstr "Création du conteneur à partir de l'image %s..."
+
+msgid "Debug mode enabled in UCI config"
+msgstr "Mode débogage activé dans la configuration UCI"
 
 msgid "Delete Selected"
 msgstr "Supprimer la sélection"
@@ -350,9 +362,6 @@ msgstr "Erreur"
 msgid "Error loading details: %s"
 msgstr "Erreur lors du chargement des détails : %s"
 
-msgid "Error polling log stream: %s"
-msgstr "Erreur lors de la récupération du flux de journaux : %s"
-
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr "Interface physique existante comme parent. Requis pour les réseaux macvlan/ipvlan."
 
@@ -380,11 +389,8 @@ msgstr "Échec de connexion au réseau : %s"
 msgid "Failed to create %s: %s"
 msgstr "Échec de création de %s : %s"
 
-msgid "Failed to decode logs"
-msgstr "Échec du décodage des journaux"
-
-msgid "Failed to delete %d %s"
-msgstr "Échec de suppression de %d %s"
+msgid "Failed to delete %d %s:\n%s"
+msgstr "Échec de la suppression de %d %s :\n%s"
 
 msgid "Failed to disconnect from network: %s"
 msgstr "Échec de déconnexion du réseau : %s"
@@ -416,6 +422,9 @@ msgstr "Échec du chargement du script d'initialisation"
 msgid "Failed to load logs: %s"
 msgstr "Échec du chargement des journaux : %s"
 
+msgid "Failed to load network information: %s"
+msgstr "Échec du chargement des informations réseau : %s"
+
 msgid "Failed to load process list: %s"
 msgstr "Échec du chargement de la liste des processus : %s"
 
@@ -424,9 +433,6 @@ msgstr "Échec du chargement des ressources : %s"
 
 msgid "Failed to parse command: %s"
 msgstr "Échec de l'analyse de la commande : %s"
-
-msgid "Failed to pull %d %s"
-msgstr "Échec de récupération de %d %s"
 
 msgid "Failed to pull image"
 msgstr "Échec de récupération de l'image"
@@ -463,9 +469,6 @@ msgstr "Échec de configuration de l'intégration OpenWrt : %s"
 
 msgid "Failed to start %d %s"
 msgstr "Échec du démarrage de %d %s"
-
-msgid "Failed to start image pull"
-msgstr "Échec du lancement de la récupération de l'image"
 
 msgid "Failed to start log stream: %s"
 msgstr "Échec du lancement du flux de journaux : %s"
@@ -662,6 +665,12 @@ msgstr "Sous-réseau IPv4 (CIDR)"
 msgid "IPv4 subnet in CIDR notation"
 msgstr "Sous-réseau IPv4 en notation CIDR"
 
+msgid "IPv6 Gateway: %s"
+msgstr "Passerelle IPv6 : %s"
+
+msgid "IPv6 Subnet: %s"
+msgstr "Sous-réseau IPv6 : %s"
+
 msgid "Labels"
 msgstr "Étiquettes"
 
@@ -707,14 +716,14 @@ msgstr "Chargement du script d'initialisation"
 msgid "Loading logs..."
 msgstr "Chargement des journaux..."
 
+msgid "Loading network information..."
+msgstr "Chargement des informations réseau..."
+
 msgid "Loading process list..."
 msgstr "Chargement de la liste des processus..."
 
 msgid "Loading..."
 msgstr "Chargement..."
-
-msgid "Log stream ended with error"
-msgstr "Le flux de journaux s'est terminé avec une erreur"
 
 msgid "Logs"
 msgstr "Journaux"
@@ -974,6 +983,9 @@ msgstr "Récupérer la dernière version"
 msgid "Pull latest version of %d %s?\n\n%s"
 msgstr "Récupérer la dernière version de %d %s ?\n\n%s"
 
+msgid "Pulling %s..."
+msgstr "Téléchargement de %s..."
+
 msgid "Pulling Image"
 msgstr "Récupération de l'image"
 
@@ -982,6 +994,9 @@ msgstr "Récupération des images"
 
 msgid "Pulling latest version of %d %s..."
 msgstr "Récupération de la dernière version de %d %s..."
+
+msgid "Pulling new image..."
+msgstr "Téléchargement de la nouvelle image..."
 
 msgid "Read: %s / Write: %s"
 msgstr "Lecture : %s / Écriture : %s"
@@ -1000,6 +1015,9 @@ msgstr "Actualiser"
 
 msgid "Refreshing %s..."
 msgstr "Actualisation de %s..."
+
+msgid "Regenerate"
+msgstr "Régénérer"
 
 msgid "Registries"
 msgstr "Registres (Registries)"
@@ -1033,6 +1051,9 @@ msgstr "Renommer le conteneur..."
 
 msgid "Repository"
 msgstr "Dépôt"
+
+msgid "Request failed"
+msgstr "Échec de la requête"
 
 msgid "Resource Limits"
 msgstr "Limites de ressources"
@@ -1202,9 +1223,6 @@ msgstr "Démarrage de %s"
 msgid "Starting %s..."
 msgstr "Démarrage de %s..."
 
-msgid "Starting image pull..."
-msgstr "Lancement de la récupération de l'image..."
-
 msgid "Starting selected %s..."
 msgstr "Démarrage des %s sélectionnés..."
 
@@ -1255,6 +1273,9 @@ msgstr "%d %s supprimés avec succès"
 
 msgid "Successfully pulled %d %s"
 msgstr "%d %s récupérés avec succès"
+
+msgid "System Diagnostics"
+msgstr "Diagnostics système"
 
 msgid "System Maintenance"
 msgstr "Maintenance système"

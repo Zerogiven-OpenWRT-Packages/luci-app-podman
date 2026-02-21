@@ -116,6 +116,9 @@ msgstr "Wählen Sie die Firewall-Zone für dieses Netzwerk. Neue Zonen verwenden
 msgid "Clean Up Now"
 msgstr "Jetzt bereinigen"
 
+msgid "Cleaning up old image..."
+msgstr "Altes Image wird bereinigt..."
+
 msgid "Cleanup / Prune"
 msgstr "Bereinigen / Prune"
 
@@ -218,6 +221,9 @@ msgstr "Container erfolgreich umbenannt"
 msgid "Containers"
 msgstr "Container"
 
+msgid "Copy"
+msgstr "Kopieren"
+
 msgid "Count"
 msgstr "Anzahl"
 
@@ -239,6 +245,9 @@ msgstr "CPU-Auslastung"
 msgid "Create %s"
 msgstr "%s erstellen"
 
+msgid "Create Command"
+msgstr "Erstellungsbefehl"
+
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "Neue Zone erstellen (Name: podman_<Netzwerkname>)"
 
@@ -256,6 +265,9 @@ msgstr "Erstelle Autostart-Konfiguration für %s"
 
 msgid "Creating container from image %s..."
 msgstr "Erstelle Container aus Image %s..."
+
+msgid "Debug mode enabled in UCI config"
+msgstr "Debug-Modus in UCI-Konfiguration aktiviert"
 
 msgid "Delete Selected"
 msgstr "Ausgewählte löschen"
@@ -350,9 +362,6 @@ msgstr "Fehler"
 msgid "Error loading details: %s"
 msgstr "Fehler beim Laden der Details: %s"
 
-msgid "Error polling log stream: %s"
-msgstr "Fehler beim Abrufen des Log-Streams: %s"
-
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr "Bestehende physische Schnittstelle als Parent. Erforderlich für macvlan/ipvlan-Netzwerke."
 
@@ -380,11 +389,8 @@ msgstr "Verbindung zum Netzwerk fehlgeschlagen: %s"
 msgid "Failed to create %s: %s"
 msgstr "Erstellen von %s fehlgeschlagen: %s"
 
-msgid "Failed to decode logs"
-msgstr "Dekodieren der Logs fehlgeschlagen"
-
-msgid "Failed to delete %d %s"
-msgstr "Löschen von %d %s fehlgeschlagen"
+msgid "Failed to delete %d %s:\n%s"
+msgstr "Löschen von %d %s fehlgeschlagen:\n%s"
 
 msgid "Failed to disconnect from network: %s"
 msgstr "Trennung vom Netzwerk fehlgeschlagen: %s"
@@ -416,6 +422,9 @@ msgstr "Init-Skript konnte nicht geladen werden"
 msgid "Failed to load logs: %s"
 msgstr "Laden der Logs fehlgeschlagen: %s"
 
+msgid "Failed to load network information: %s"
+msgstr "Laden der Netzwerkinformationen fehlgeschlagen: %s"
+
 msgid "Failed to load process list: %s"
 msgstr "Laden der Prozessliste fehlgeschlagen: %s"
 
@@ -424,9 +433,6 @@ msgstr "Laden der Ressourcen fehlgeschlagen: %s"
 
 msgid "Failed to parse command: %s"
 msgstr "Parsen des Befehls fehlgeschlagen: %s"
-
-msgid "Failed to pull %d %s"
-msgstr "Pull von %d %s fehlgeschlagen"
 
 msgid "Failed to pull image"
 msgstr "Image-Pull fehlgeschlagen"
@@ -463,9 +469,6 @@ msgstr "Einrichtung der OpenWrt-Integration fehlgeschlagen: %s"
 
 msgid "Failed to start %d %s"
 msgstr "Start von %d %s fehlgeschlagen"
-
-msgid "Failed to start image pull"
-msgstr "Image-Pull konnte nicht gestartet werden"
 
 msgid "Failed to start log stream: %s"
 msgstr "Log-Stream konnte nicht gestartet werden: %s"
@@ -662,6 +665,12 @@ msgstr "IPv4-Subnetz (CIDR)"
 msgid "IPv4 subnet in CIDR notation"
 msgstr "IPv4-Subnetz in CIDR-Notation"
 
+msgid "IPv6 Gateway: %s"
+msgstr "IPv6-Gateway: %s"
+
+msgid "IPv6 Subnet: %s"
+msgstr "IPv6-Subnetz: %s"
+
 msgid "Labels"
 msgstr "Labels"
 
@@ -707,14 +716,14 @@ msgstr "Lade Init-Skript"
 msgid "Loading logs..."
 msgstr "Lade Logs..."
 
+msgid "Loading network information..."
+msgstr "Lade Netzwerkinformationen..."
+
 msgid "Loading process list..."
 msgstr "Lade Prozessliste..."
 
 msgid "Loading..."
 msgstr "Lade..."
-
-msgid "Log stream ended with error"
-msgstr "Log-Stream mit Fehler beendet"
 
 msgid "Logs"
 msgstr "Logs"
@@ -974,6 +983,9 @@ msgstr "Neueste Version abrufen"
 msgid "Pull latest version of %d %s?\n\n%s"
 msgstr "Neueste Version von %d %s abrufen?\n\n%s"
 
+msgid "Pulling %s..."
+msgstr "Rufe %s ab..."
+
 msgid "Pulling Image"
 msgstr "Image wird abgerufen"
 
@@ -982,6 +994,9 @@ msgstr "Images werden abgerufen"
 
 msgid "Pulling latest version of %d %s..."
 msgstr "Rufe neueste Version von %d %s ab..."
+
+msgid "Pulling new image..."
+msgstr "Rufe neues Image ab..."
 
 msgid "Read: %s / Write: %s"
 msgstr "Gelesen: %s / Geschrieben: %s"
@@ -1000,6 +1015,9 @@ msgstr "Aktualisieren"
 
 msgid "Refreshing %s..."
 msgstr "Aktualisiere %s..."
+
+msgid "Regenerate"
+msgstr "Neu generieren"
 
 msgid "Registries"
 msgstr "Registries"
@@ -1033,6 +1051,9 @@ msgstr "Container wird umbenannt..."
 
 msgid "Repository"
 msgstr "Repository"
+
+msgid "Request failed"
+msgstr "Anfrage fehlgeschlagen"
 
 msgid "Resource Limits"
 msgstr "Ressourcenlimits"
@@ -1202,9 +1223,6 @@ msgstr "Starte %s"
 msgid "Starting %s..."
 msgstr "Starte %s..."
 
-msgid "Starting image pull..."
-msgstr "Starte Image-Pull..."
-
 msgid "Starting selected %s..."
 msgstr "Starte ausgewählte %s..."
 
@@ -1255,6 +1273,9 @@ msgstr "%d %s erfolgreich gelöscht"
 
 msgid "Successfully pulled %d %s"
 msgstr "%d %s erfolgreich abgerufen"
+
+msgid "System Diagnostics"
+msgstr "Systemdiagnose"
 
 msgid "System Maintenance"
 msgstr "Systemwartung"

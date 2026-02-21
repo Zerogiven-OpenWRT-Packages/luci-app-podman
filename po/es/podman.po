@@ -116,6 +116,9 @@ msgstr "Elija la zona del cortafuegos para esta red. Las nuevas zonas utilizan v
 msgid "Clean Up Now"
 msgstr "Limpiar ahora"
 
+msgid "Cleaning up old image..."
+msgstr "Limpiando imagen antigua..."
+
 msgid "Cleanup / Prune"
 msgstr "Limpiar / Purgar"
 
@@ -218,6 +221,9 @@ msgstr "Contenedor renombrado correctamente"
 msgid "Containers"
 msgstr "Contenedores"
 
+msgid "Copy"
+msgstr "Copiar"
+
 msgid "Count"
 msgstr "Cantidad"
 
@@ -239,6 +245,9 @@ msgstr "Uso de CPU"
 msgid "Create %s"
 msgstr "Crear %s"
 
+msgid "Create Command"
+msgstr "Comando de creación"
+
 msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "Crear nueva zona (se llamará: podman_<nombre-de-red>)"
 
@@ -256,6 +265,9 @@ msgstr "Creando configuración de inicio automático para %s"
 
 msgid "Creating container from image %s..."
 msgstr "Creando contenedor a partir de la imagen %s..."
+
+msgid "Debug mode enabled in UCI config"
+msgstr "Modo de depuración activado en la configuración UCI"
 
 msgid "Delete Selected"
 msgstr "Eliminar seleccionados"
@@ -350,9 +362,6 @@ msgstr "Error"
 msgid "Error loading details: %s"
 msgstr "Error al cargar detalles: %s"
 
-msgid "Error polling log stream: %s"
-msgstr "Error al sondear el flujo de registros: %s"
-
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr "Interfaz física existente para usar como padre. Requerido para redes macvlan/ipvlan."
 
@@ -380,11 +389,8 @@ msgstr "Error al conectar a la red: %s"
 msgid "Failed to create %s: %s"
 msgstr "Error al crear %s: %s"
 
-msgid "Failed to decode logs"
-msgstr "Error al decodificar registros"
-
-msgid "Failed to delete %d %s"
-msgstr "Error al eliminar %d %s"
+msgid "Failed to delete %d %s:\n%s"
+msgstr "Error al eliminar %d %s:\n%s"
 
 msgid "Failed to disconnect from network: %s"
 msgstr "Error al desconectar de la red: %s"
@@ -416,6 +422,9 @@ msgstr "Error al cargar el script de inicio"
 msgid "Failed to load logs: %s"
 msgstr "Error al cargar registros: %s"
 
+msgid "Failed to load network information: %s"
+msgstr "Error al cargar la información de red: %s"
+
 msgid "Failed to load process list: %s"
 msgstr "Error al cargar la lista de procesos: %s"
 
@@ -424,9 +433,6 @@ msgstr "Error al cargar recursos: %s"
 
 msgid "Failed to parse command: %s"
 msgstr "Error al analizar el comando: %s"
-
-msgid "Failed to pull %d %s"
-msgstr "Error al descargar %d %s"
 
 msgid "Failed to pull image"
 msgstr "Error al descargar la imagen"
@@ -463,9 +469,6 @@ msgstr "Error al configurar la integración de OpenWrt: %s"
 
 msgid "Failed to start %d %s"
 msgstr "Error al iniciar %d %s"
-
-msgid "Failed to start image pull"
-msgstr "Error al iniciar la descarga de la imagen"
 
 msgid "Failed to start log stream: %s"
 msgstr "Error al iniciar el flujo de registros: %s"
@@ -662,6 +665,12 @@ msgstr "Subred IPv4 (CIDR)"
 msgid "IPv4 subnet in CIDR notation"
 msgstr "Subred IPv4 en notación CIDR"
 
+msgid "IPv6 Gateway: %s"
+msgstr "Puerta de enlace IPv6: %s"
+
+msgid "IPv6 Subnet: %s"
+msgstr "Subred IPv6: %s"
+
 msgid "Labels"
 msgstr "Etiquetas"
 
@@ -707,14 +716,14 @@ msgstr "Cargando script de inicio"
 msgid "Loading logs..."
 msgstr "Cargando registros..."
 
+msgid "Loading network information..."
+msgstr "Cargando información de red..."
+
 msgid "Loading process list..."
 msgstr "Cargando lista de procesos..."
 
 msgid "Loading..."
 msgstr "Cargando..."
-
-msgid "Log stream ended with error"
-msgstr "El flujo de registros terminó con error"
 
 msgid "Logs"
 msgstr "Registros"
@@ -974,6 +983,9 @@ msgstr "Descargar última versión"
 msgid "Pull latest version of %d %s?\n\n%s"
 msgstr "¿Descargar la última versión de %d %s?\n\n%s"
 
+msgid "Pulling %s..."
+msgstr "Descargando %s..."
+
 msgid "Pulling Image"
 msgstr "Descargando imagen"
 
@@ -982,6 +994,9 @@ msgstr "Descargando imágenes"
 
 msgid "Pulling latest version of %d %s..."
 msgstr "Descargando la última versión de %d %s..."
+
+msgid "Pulling new image..."
+msgstr "Descargando nueva imagen..."
 
 msgid "Read: %s / Write: %s"
 msgstr "Lectura: %s / Escritura: %s"
@@ -1000,6 +1015,9 @@ msgstr "Actualizar"
 
 msgid "Refreshing %s..."
 msgstr "Actualizando %s..."
+
+msgid "Regenerate"
+msgstr "Regenerar"
 
 msgid "Registries"
 msgstr "Registros (Registries)"
@@ -1033,6 +1051,9 @@ msgstr "Renombrando contenedor..."
 
 msgid "Repository"
 msgstr "Repositorio"
+
+msgid "Request failed"
+msgstr "Solicitud fallida"
 
 msgid "Resource Limits"
 msgstr "Límites de recursos"
@@ -1202,9 +1223,6 @@ msgstr "Iniciando %s"
 msgid "Starting %s..."
 msgstr "Iniciando %s..."
 
-msgid "Starting image pull..."
-msgstr "Iniciando descarga de imagen..."
-
 msgid "Starting selected %s..."
 msgstr "Iniciando %s seleccionados..."
 
@@ -1255,6 +1273,9 @@ msgstr "%d %s eliminados correctamente"
 
 msgid "Successfully pulled %d %s"
 msgstr "%d %s descargados correctamente"
+
+msgid "System Diagnostics"
+msgstr "Diagnósticos del sistema"
 
 msgid "System Maintenance"
 msgstr "Mantenimiento del sistema"
