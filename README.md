@@ -18,6 +18,7 @@ Modern LuCI web interface for managing Podman containers on OpenWrt.
 - [Usage](#usage)
 - [Container Auto-Update](#container-auto-update)
 - [Container Auto-Start](#container-auto-start)
+- [Configuration](#configuration)
 - [Credits](#credits)
 
 </details>
@@ -122,6 +123,23 @@ Or add via the LuCI interface in the container creation form under "Labels".
 5. Click **"Update Selected"** to pull new images and recreate containers
 
 Container names and init scripts are preserved - no manual reconfiguration needed.
+
+## Configuration
+
+The app stores its settings in `/etc/config/podman`:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `socket_path` | `/run/podman/podman.sock` | Path to the Podman API socket |
+| `init_start_priority` | `100` | procd start priority for container init scripts |
+| `debug` | `0` | Show system diagnostics on the Overview page |
+
+To enable debug mode (shows a diagnostics table checking all system prerequisites):
+
+```bash
+uci set podman.globals.debug='1'
+uci commit podman
+```
 
 ## Credits
 
