@@ -8,6 +8,7 @@
 'require podman.ui as podmanUI';
 'require podman.auto-update as autoUpdate';
 'require ui';
+'require uci';
 
 utils.addPodmanCss().addCss('view/podman/overview.css');
 
@@ -24,11 +25,19 @@ return view.extend({
 	 *   [1] info - System info (CPU, memory, paths, registries)
 	 */
 	load: function () {
-		// Phase 1: Fast initial load - version and system info only
+		// Phase 1: Fast initial load - version, system info, and UCI config
 		return Promise.all([
 			podmanRPC.system.version(),
-			podmanRPC.system.info()
-		]);
+			podmanRPC.system.info(),
+			uci.load('podman').then(() => uci.get('podman', 'globals', 'debug')).catch(() => '0')
+		]).then(([version, info, debug]) => {
+			if (debug === '1') {
+				return podmanRPC.system.debug().then((debugData) => {
+					return [version, info, debugData];
+				}).catch(() => [version, info, null]);
+			}
+			return [version, info, null];
+		});
 	},
 
 	/**
@@ -43,21 +52,27 @@ return view.extend({
 		// Phase 1 data (loaded immediately)
 		const version = data[0] || {};
 		const info = data[1] || {};
+		const debugData = data[2] || null;
 
 		// Tab 1: Overview (loads immediately)
-		const overviewTabContent = E('div', {}, [
+		const overviewChildren = [
 			this.createSystemActionsSection(),
-			this.createInfoSection(version, info),
-			E('div', {
-				'id': 'resource-cards-container',
-				'class': 'resources-section'
-			}, [
-				E('h3', {
-					'class': 'resources-heading'
-				}, _('Resources')),
-				this.createLoadingPlaceholder(_('Resources'))
-			])
-		]);
+			this.createInfoSection(version, info)
+		];
+
+		if (debugData && debugData.checks) {
+			overviewChildren.push(this.createDebugSection(debugData));
+		}
+
+		overviewChildren.push(E('div', {
+			'id': 'resource-cards-container',
+			'class': 'resources-section'
+		}, [
+			E('h3', {
+				'class': 'resources-heading'
+			}, _('Resources')),
+			this.createLoadingPlaceholder(_('Resources'))
+		]));
 
 		// Tab 2: Disk Usage (load on demand)
 		const diskUsageTabContent = E('div', {
@@ -65,6 +80,8 @@ return view.extend({
 		}, [
 			this.createDiskUsageLoadButton()
 		]);
+
+		const overviewTabContent = E('div', {}, overviewChildren);
 
 		// Create tabs
 		const tabs = new podmanUI.Tabs('overview')
@@ -182,6 +199,47 @@ return view.extend({
 
 		const section = new podmanUI.Section();
 		section.addNode(_('Information'), '', table.render());
+		return section.render();
+	},
+
+	/**
+	 * Create system diagnostics section (debug mode only)
+	 *
+	 * @param {Object} debugData - Debug data with checks array from system_debug RPC
+	 * @returns {Element} Diagnostics section element
+	 */
+	createDebugSection: function (debugData) {
+		const statusIcons = {
+			ok: '\u2713',
+			warn: '\u26A0',
+			error: '\u2717'
+		};
+		const statusColors = {
+			ok: '#2ecc71',
+			warn: '#e67e22',
+			error: '#e74c3c'
+		};
+
+		const table = new podmanUI.Table({ class: 'table table-list table-list-overview' });
+
+		(debugData.checks || []).forEach((check) => {
+			const icon = statusIcons[check.status] || '?';
+			const color = statusColors[check.status] || '#666';
+			const detail = check.detail || '';
+			const message = check.message ? ' \u2014 ' + check.message : '';
+
+			table.addInfoRow(
+				_(check.label),
+				E('span', { 'style': 'color:' + color }, [
+					E('strong', {}, icon + ' '),
+					E('span', { 'class': 'cli-value' }, detail),
+					message
+				])
+			);
+		});
+
+		const section = new podmanUI.Section();
+		section.addNode(_('System Diagnostics'), _('Debug mode enabled in UCI config'), table.render());
 		return section.render();
 	},
 

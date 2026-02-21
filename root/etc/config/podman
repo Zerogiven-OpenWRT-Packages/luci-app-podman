@@ -1,3 +1,4 @@
 config podman 'globals'
 	option socket_path '/run/podman/podman.sock'
 	option init_start_priority '100'
+	option debug '0'

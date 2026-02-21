@@ -36,7 +36,8 @@
 					"version",
 					"info",
 					"init_script_status",
-					"init_script_show"
+					"init_script_show",
+					"system_debug"
 				]
 			},
 			"uci": [

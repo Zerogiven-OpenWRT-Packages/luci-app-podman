@@ -596,6 +596,16 @@ return baseclass.extend({
 			object: 'luci.podman',
 			method: 'system_prune',
 			params: ['all', 'volumes']
+		}),
+
+		/**
+		 * Run system diagnostics checks.
+		 * @returns {Promise<Object>} Debug info with checks array
+		 */
+		debug: rpc.declare({
+			object: 'luci.podman',
+			method: 'system_debug',
+			params: []
 		})
 	},
 
