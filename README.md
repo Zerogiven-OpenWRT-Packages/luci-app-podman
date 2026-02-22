@@ -47,7 +47,7 @@ See more screenshots in [docs/screenshots/](docs/screenshots/)
 ## Requirements
 
 - OpenWrt 24.10
-- Dependencies can be seen in the [Makefile](Makefile) under `LUCI_DEPENDS`
+- Dependencies: `luci-base`, `rpcd`, `rpcd-mod-ucode`, `ucode-mod-socket`, `podman`
 - Sufficient storage for images/containers
 
 ## Installation
@@ -61,8 +61,8 @@ You can setup this package feed to install and update it with opkg:
 ### From Package
 
 ```bash
-wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.10.0/luci-app-podman_1.10.0-r1_all.ipk
-opkg update && opkg install luci-app-podman_1.10.0-r1_all.ipk
+wget https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman/releases/download/v1.12.1/luci-app-podman_1.12.1-r1_all.ipk
+opkg update && opkg install luci-app-podman_1.12.1-r1_all.ipk
 ```
 
 ### From Source
