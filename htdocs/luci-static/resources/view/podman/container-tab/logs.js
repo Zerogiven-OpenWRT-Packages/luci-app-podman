@@ -2,10 +2,10 @@
 
 'require baseclass';
 'require dom';
-'require fs';
 'require ui';
 'require poll';
 
+'require podman.rpc as podmanRPC';
 'require podman.ui as podmanUI';
 'require podman.constants as constants';
 
@@ -14,8 +14,7 @@ const TIMESTAMP_RE_GLOBAL = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|
 
 /**
  * Container logs tab - displays container logs with optional live streaming
- * Uses fs.exec_direct() with podman-api wrapper to fetch logs via Podman REST API
- * The API returns Docker multiplexed stream format (8-byte header per frame)
+ * Uses RPC to fetch logs (Docker stream parsing happens server-side in podman.uc)
  */
 return baseclass.extend({
 	/**
@@ -85,44 +84,14 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Parse Docker multiplexed stream format from binary buffer.
-	 * Each frame: 1 byte stream type, 3 bytes padding, 4 bytes big-endian size, then payload.
-	 * @param {ArrayBuffer} buffer - Raw binary response from Podman logs API
-	 * @returns {string} Decoded log text with headers stripped
-	 */
-	parseDockerStream: function (buffer) {
-		const view = new DataView(buffer);
-		const decoder = new TextDecoder();
-		const chunks = [];
-		let offset = 0;
-
-		while (offset + 8 <= buffer.byteLength) {
-			const frameSize = view.getUint32(offset + 4, false);
-			offset += 8;
-
-			if (offset + frameSize > buffer.byteLength) break;
-
-			chunks.push(decoder.decode(new Uint8Array(buffer, offset, frameSize)));
-			offset += frameSize;
-		}
-
-		return chunks.join('');
-	},
-
-	/**
-	 * Fetch logs via podman-api wrapper and parse the Docker stream response
+	 * Fetch logs via RPC (Docker stream parsing happens server-side)
 	 * @param {number} lines - Number of tail lines (0 = all)
 	 * @param {string} since - Unix epoch timestamp or '0' for none
 	 * @returns {Promise<string>} Parsed log text
 	 */
 	fetchLogs: async function (lines, since) {
-		return fs.exec_direct('/usr/libexec/podman-api',
-			['logs', String(lines), since || '0', this.containerId], 'blob'
-		).then((blob) => {
-			return blob.arrayBuffer();
-		}).then((buffer) => {
-			return this.parseDockerStream(buffer);
-		});
+		return podmanRPC.container.logs(this.containerId, lines, parseInt(since) || 0)
+			.then((result) => result.logs || '');
 	},
 
 	/**

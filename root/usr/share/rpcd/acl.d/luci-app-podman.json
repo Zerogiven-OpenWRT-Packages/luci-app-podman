@@ -6,20 +6,18 @@
 				"exec"
 			],
 			"file": {
-				"/usr/libexec/podman-api logs * * *": [
-					"exec"
-				],
 				"/usr/libexec/podman-api volume_export *": [
 					"exec"
 				]
 			},
 			"ubus": {
-				"luci.podman": [
+				"podman": [
 					"containers_list",
 					"container_inspect",
 					"container_stats",
 					"container_top",
 					"container_healthcheck_run",
+					"container_logs",
 					"images_list",
 					"image_inspect",
 					"image_manifest_inspect",
@@ -52,15 +50,12 @@
 				"exec"
 			],
 			"file": {
-				"/usr/libexec/podman-api image_pull *": [
-					"exec"
-				],
 				"/usr/libexec/podman-api volume_import * * *": [
 					"exec"
 				]
 			},
 			"ubus": {
-				"luci.podman": [
+				"podman": [
 					"container_start",
 					"container_stop",
 					"container_restart",
@@ -70,6 +65,7 @@
 					"container_update",
 					"container_healthcheck_run",
 					"image_remove",
+					"image_pull",
 					"network_create",
 					"network_remove",
 					"network_connect",

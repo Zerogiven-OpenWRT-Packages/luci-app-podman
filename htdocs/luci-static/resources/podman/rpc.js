@@ -4,7 +4,7 @@
 'require rpc';
 
 /**
- * Centralized interface to Podman API operations via luci.podman RPC.
+ * Centralized interface to Podman API operations via podman RPC.
  * Provides methods for containers, images, pods, volumes, networks, secrets, and system.
  */
 return baseclass.extend({
@@ -18,7 +18,7 @@ return baseclass.extend({
 		 * @returns {Promise<Array>} Container list
 		 */
 		list: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'containers_list',
 			params: ['query'],
 			expect: {
@@ -32,7 +32,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Container details
 		 */
 		inspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_inspect',
 			params: ['id']
 		}),
@@ -43,7 +43,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		start: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_start',
 			params: ['id']
 		}),
@@ -54,7 +54,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		stop: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_stop',
 			params: ['id']
 		}),
@@ -65,7 +65,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		restart: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_restart',
 			params: ['id']
 		}),
@@ -78,7 +78,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_remove',
 			params: ['id', 'force', 'depend']
 		}),
@@ -89,7 +89,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Container stats
 		 */
 		stats: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_stats',
 			params: ['id']
 		}),
@@ -100,7 +100,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_create',
 			params: ['data']
 		}),
@@ -112,7 +112,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		rename: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_rename',
 			params: ['id', 'name']
 		}),
@@ -124,7 +124,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		update: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_update',
 			params: ['id', 'data']
 		}),
@@ -135,7 +135,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Health check result with Status, FailingStreak, and Log
 		 */
 		healthcheck: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_healthcheck_run',
 			params: ['id']
 		}),
@@ -147,7 +147,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Process list with Titles and Processes arrays
 		 */
 		top: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_top',
 			params: ['id', 'ps_args']
 		}),
@@ -159,9 +159,22 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result with success flag or error
 		 */
 		recreate: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'container_recreate',
 			params: ['command']
+		}),
+
+		/**
+		 * Get container logs.
+		 * @param {string} id - Container ID or name
+		 * @param {number} lines - Number of tail lines (0 = all)
+		 * @param {number} since - Unix epoch timestamp (0 = none)
+		 * @returns {Promise<Object>} Result with logs text
+		 */
+		logs: rpc.declare({
+			object: 'podman',
+			method: 'container_logs',
+			params: ['id', 'lines', 'since']
 		})
 	},
 
@@ -175,7 +188,7 @@ return baseclass.extend({
 		 * @returns {Promise<Array>} List of image objects
 		 */
 		list: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'images_list',
 			params: [],
 			expect: {
@@ -210,7 +223,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Image details
 		 */
 		inspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'image_inspect',
 			params: ['id']
 		}),
@@ -222,7 +235,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'image_remove',
 			params: ['id', 'force']
 		}),
@@ -233,8 +246,19 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Manifest with architecture entries
 		 */
 		manifestInspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'image_manifest_inspect',
+			params: ['image']
+		}),
+
+		/**
+		 * Pull an image from a registry.
+		 * @param {string} image - Image reference (e.g., 'docker.io/library/alpine:latest')
+		 * @returns {Promise<Object>} Result with output text, images array, and id
+		 */
+		pull: rpc.declare({
+			object: 'podman',
+			method: 'image_pull',
 			params: ['image']
 		}),
 
@@ -250,7 +274,7 @@ return baseclass.extend({
 		 * @returns {Promise<Array>} List of pod objects
 		 */
 		list: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pods_list',
 			params: [],
 			expect: {
@@ -264,7 +288,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Pod details
 		 */
 		inspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_inspect',
 			params: ['name']
 		}),
@@ -275,7 +299,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		start: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_start',
 			params: ['id']
 		}),
@@ -286,7 +310,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		stop: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_stop',
 			params: ['id']
 		}),
@@ -297,7 +321,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		restart: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_restart',
 			params: ['id']
 		}),
@@ -308,7 +332,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		pause: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_pause',
 			params: ['id']
 		}),
@@ -319,7 +343,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		unpause: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_unpause',
 			params: ['id']
 		}),
@@ -331,7 +355,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_remove',
 			params: ['name', 'force']
 		}),
@@ -342,7 +366,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_create',
 			params: ['data']
 		}),
@@ -353,7 +377,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Pod stats
 		 */
 		stats: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'pod_stats',
 			params: ['name']
 		})
@@ -369,7 +393,7 @@ return baseclass.extend({
 		 * @returns {Promise<Array>} List of volume objects
 		 */
 		list: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'volumes_list',
 			params: [],
 			expect: {
@@ -383,7 +407,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Volume details
 		 */
 		inspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'volume_inspect',
 			params: ['name']
 		}),
@@ -395,7 +419,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'volume_remove',
 			params: ['name', 'force']
 		}),
@@ -406,7 +430,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'volume_create',
 			params: ['data']
 		}),
@@ -423,7 +447,7 @@ return baseclass.extend({
 		 * @returns {Promise<Array>} List of network objects
 		 */
 		list: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'networks_list',
 			params: [],
 			expect: {
@@ -445,7 +469,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Network details
 		 */
 		inspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'network_inspect',
 			params: ['name']
 		}),
@@ -457,7 +481,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'network_remove',
 			params: ['name', 'force']
 		}),
@@ -468,7 +492,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'network_create',
 			params: ['data']
 		}),
@@ -480,7 +504,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		connect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'network_connect',
 			params: ['name', 'data']
 		}),
@@ -492,7 +516,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		disconnect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'network_disconnect',
 			params: ['name', 'data']
 		})
@@ -508,7 +532,7 @@ return baseclass.extend({
 		 * @returns {Promise<Array>} List of secret objects
 		 */
 		list: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'secrets_list',
 			params: [],
 			expect: {
@@ -522,7 +546,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Secret metadata
 		 */
 		inspect: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'secret_inspect',
 			params: ['name']
 		}),
@@ -534,7 +558,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		create: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'secret_create',
 			params: ['name', 'data']
 		}),
@@ -545,7 +569,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Removal result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'secret_remove',
 			params: ['name']
 		})
@@ -561,7 +585,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Version object with Version, ApiVersion, GoVersion, Os, Arch
 		 */
 		version: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'version',
 			params: []
 		}),
@@ -571,7 +595,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} System info object with host details
 		 */
 		info: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'info',
 			params: []
 		}),
@@ -581,7 +605,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Disk usage data for images, containers, volumes
 		 */
 		df: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'system_df',
 			params: []
 		}),
@@ -593,7 +617,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Prune results
 		 */
 		prune: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'system_prune',
 			params: ['all', 'volumes']
 		}),
@@ -603,7 +627,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Debug info with checks array
 		 */
 		debug: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'system_debug',
 			params: []
 		})
@@ -619,7 +643,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result with path
 		 */
 		generate: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'init_script_generate',
 			params: ['name']
 		}),
@@ -630,7 +654,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result with content
 		 */
 		show: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'init_script_show',
 			params: ['name']
 		}),
@@ -641,7 +665,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Status with exists and enabled flags
 		 */
 		status: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'init_script_status',
 			params: ['name']
 		}),
@@ -653,7 +677,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		setEnabled: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'init_script_set_enabled',
 			params: ['name', 'enabled']
 		}),
@@ -664,7 +688,7 @@ return baseclass.extend({
 		 * @returns {Promise<Object>} Result
 		 */
 		remove: rpc.declare({
-			object: 'luci.podman',
+			object: 'podman',
 			method: 'init_script_remove',
 			params: ['name']
 		})

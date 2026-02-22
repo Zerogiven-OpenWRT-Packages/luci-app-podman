@@ -1,7 +1,6 @@
 'use strict';
 
 'require baseclass';
-'require fs';
 'require podman.rpc as podmanRPC';
 
 /**
@@ -29,7 +28,7 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Pull image using fs.exec_direct (blocks until complete).
+	 * Pull image via RPC.
 	 * @param {string} image - Image name to pull
 	 * @param {Function} onProgress - Optional progress callback (output)
 	 * @returns {Promise<boolean>} True if pull succeeded
@@ -39,10 +38,13 @@ return baseclass.extend({
 			onProgress(_('Pulling %s...').format(image));
 		}
 
-		return fs.exec_direct('/usr/libexec/podman-api', ['image_pull', image], 'text')
-			.then((output) => {
+		return podmanRPC.image.pull(image)
+			.then((result) => {
+				if (result && result.error) {
+					throw new Error(result.error);
+				}
 				if (onProgress) {
-					onProgress(output || '');
+					onProgress(result.output || '');
 				}
 				return true;
 			});

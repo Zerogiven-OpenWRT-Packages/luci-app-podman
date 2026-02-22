@@ -2,9 +2,9 @@
 
 'require baseclass';
 'require form';
-'require fs';
 'require ui';
 
+'require podman.rpc as podmanRPC';
 'require podman.ui as podmanUI';
 
 return baseclass.extend({
@@ -47,7 +47,7 @@ return baseclass.extend({
 		},
 
 		/**
-		 * Execute image pull via fs.exec_direct
+		 * Execute image pull via RPC
 		 */
 		handlePullExecute: function () {
 			this.map.save().then(() => {
@@ -66,9 +66,11 @@ return baseclass.extend({
 					}, _('Pulling %s...').format(imageName))
 				]);
 
-				fs.exec_direct('/usr/libexec/podman-api', ['image_pull',
-						imageName], 'text')
-					.then(() => {
+				podmanRPC.image.pull(imageName)
+					.then((result) => {
+						if (result && result.error) {
+							throw new Error(result.error);
+						}
 						ui.hideModal();
 						podmanUI.successTimeNotification(_(
 							'Image pulled successfully'));

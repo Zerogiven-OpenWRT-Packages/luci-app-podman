@@ -2,7 +2,6 @@
 
 'require view';
 'require form';
-'require fs';
 'require ui';
 
 'require podman.rpc as podmanRPC';
@@ -209,8 +208,7 @@ return view.extend({
 			)
 		);
 
-		const pullPromises = selected.map((img) =>
-			fs.exec_direct('/usr/libexec/podman-api', ['image_pull', img.name], 'text'));
+		const pullPromises = selected.map((img) => podmanRPC.image.pull(img.name));
 
 		Promise.all(pullPromises).then(() => {
 			ui.hideModal();

@@ -1,99 +1,107 @@
-#!/bin/sh
+#!/usr/bin/env ucode
 
-action="$1"
+'use strict';
 
-SOCKET=$(uci -q get podman.globals.socket_path 2>/dev/null)
-SOCKET="${SOCKET:-/run/podman/podman.sock}"
-API_BASE="/v5.0.0/libpod"
+import { popen, writefile, unlink } from 'fs';
 
-# Route validation failures through plain text output
-fail_validation() { echo "$1"; exit 1; }
+function die(msg) {
+	warn(`${msg}\n`);
+	exit(1);
+}
 
-. /usr/share/podman/validation.sh
+function validate_int(val) {
+	if (!val || !match(val, /^[0-9]+$/))
+		die('Invalid number');
+}
 
-case "$action" in
-    logs)
-        lines="$2"
-        since="$3"
-        containerId="$4"
+function validate_volume_name(name) {
+	if (!name || !match(name, /^[a-zA-Z0-9_.-]+$/))
+		die('Invalid volume name format');
+}
 
-        require_param containerId "$containerId"
-        require_param lines "$lines"
-        require_param since "$since"
+// --- Main ---
 
-        validate_path_safe_id "$containerId"
-        validate_int "$lines"
-        validate_int "$since"
+let action = ARGV[0];
 
-        path="${API_BASE}/containers/${containerId}/logs"
-        path="${path}?stdout=true&stderr=true&timestamps=true"
+if (action === 'volume_export') {
+	let volumeName = ARGV[1];
+	if (!volumeName) die('Missing required parameter: volumeName');
+	validate_volume_name(volumeName);
 
-        [ "$lines" != "0" ] && path="${path}&tail=${lines}"
-        [ "$since" != "0" ] && path="${path}&since=${since}"
+	// volume export outputs a tar stream — use podman CLI directly
+	let escaped = replace(volumeName, /'/g, "'\\''");
+	let p = popen(`/usr/bin/podman volume export '${escaped}'`, 'r');
+	if (!p)
+		die('Failed to run podman volume export');
 
-        curl -s -m 60 --unix-socket "$SOCKET" -X GET "http://localhost${path}"
-        ;;
-    image_pull)
-        image="$2"
+	let chunk;
+	while ((chunk = p.read(65536)) != null && length(chunk) > 0)
+		print(chunk);
+	p.close();
+}
+else if (action === 'volume_import') {
+	let volumeName = ARGV[1];
+	let compressed = ARGV[2];
+	let volumeData = ARGV[3];
 
-        require_param image "$image"
+	if (!volumeName) die('Missing required parameter: volumeName');
+	if (!volumeData) die('Missing required parameter: volumeData');
+	if (!compressed) die('Missing required parameter: compressed');
 
-        validate_image_ref "$image"
+	validate_volume_name(volumeName);
+	validate_int(compressed);
 
-        image_enc=$(urlencode "$image")
-        path="${API_BASE}/images/pull?reference=${image_enc}"
+	// Validate base64 content
+	if (!match(volumeData, /^[A-Za-z0-9+\/]*={0,2}$/) || (length(volumeData) % 4) !== 0)
+		die('Invalid Base64 content');
 
-        curl -s -m 300 --unix-socket "$SOCKET" -X POST "http://localhost${path}"
-        ;;
-    volume_export)
-        volumeName="$2"
+	let decoded = b64dec(volumeData);
+	if (decoded == null)
+		die('Failed to decode import data');
 
-        require_param volumeName "$volumeName"
+	// Decompress if needed
+	if (compressed === '1') {
+		let tp = popen('mktemp /tmp/podman_import_XXXXXX', 'r');
+		let tmppath = tp ? trim(tp.read('all') || '') : '';
+		if (tp) tp.close();
+		if (!tmppath)
+			die('Failed to create temp file');
 
-        validate_volume_name "$volumeName"
+		writefile(tmppath, decoded);
 
-        /usr/bin/podman volume export "$volumeName"
-        ;;
-    volume_import)
-        volumeName="$2"
-        volumeData="$4"
-        compressed="$3"
+		let p = popen(`gunzip -c '${tmppath}'`, 'r');
+		decoded = p ? p.read('all') : null;
+		if (p) p.close();
+		unlink(tmppath);
 
-        require_param volumeName "$volumeName"
-        require_param volumeData "$volumeData"
-        require_param compressed "$compressed"
+		if (!decoded)
+			die('Failed to decompress import data');
+	}
 
-        validate_volume_name "$volumeName"
-        validate_base64_content "$volumeData"
-        validate_int "$compressed"
+	// Ensure volume exists
+	let escaped = replace(volumeName, /'/g, "'\\''");
+	let p = popen(`/usr/bin/podman volume exists '${escaped}' 2>/dev/null; echo $?`, 'r');
+	let rc = p ? trim(p.read('all') || '') : '';
+	if (p) p.close();
 
-        if [ "$compressed" = "1" ]; then
-			data_decoded=$(echo "$volumeData" | base64 -d - | gunzip -c)
-		else
-			data_decoded=$(echo "$volumeData" | base64 -d -)
-		fi
-		decode_exit=$?
+	if (rc !== '0') {
+		p = popen(`/usr/bin/podman volume create '${escaped}' 2>/dev/null`, 'r');
+		if (p) { p.read('all'); p.close(); }
+	}
 
-        if [ $decode_exit -ne 0 ]; then
-            echo "Failed to decode import data"
-            exit 1
-        fi
+	// Import via stdin pipe
+	p = popen(`/usr/bin/podman volume import '${escaped}' -`, 'w');
+	if (!p)
+		die('Failed to start volume import');
+	p.write(decoded);
+	let exit_code = p.close();
 
-        /usr/bin/podman volume exists "$volumeName" 2>/dev/null || \
-            /usr/bin/podman volume create "$volumeName" > /dev/null 2>&1
-
-        echo "$data_decoded" | /usr/bin/podman volume import "$volumeName" -
-        exit_code=$?
-
-        if [ $exit_code -ne 0 ]; then
-            /usr/bin/podman volume rm "$volumeName" 2>/dev/null
-            echo "Import failed"
-            exit 1
-        fi
-
-        ;;
-    *)
-        echo "Unknown action: $action" >&2
-        exit 1
-        ;;
-esac
+	if (exit_code) {
+		// Cleanup on failure
+		popen(`/usr/bin/podman volume rm '${escaped}' 2>/dev/null`, 'r')?.close();
+		die('Import failed');
+	}
+}
+else {
+	die(`Unknown action: ${action}`);
+}
