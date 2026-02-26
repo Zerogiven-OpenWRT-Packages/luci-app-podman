@@ -19,7 +19,7 @@ define Package/$(PKG_NAME)/postinst
 sed -i '/podman-cleanup/d' /etc/crontabs/root 2>/dev/null
 
 [ -n "$${IPKG_INSTROOT}" ] || {$(foreach script,$(LUCI_DEFAULTS),
-	(. /etc/uci-defaults/$(script)) && rm -f /etc/uci-defaults/$(script))
+	[ -f /etc/uci-defaults/$(script) ] && (. /etc/uci-defaults/$(script)) && rm -f /etc/uci-defaults/$(script))
 	rm -f /tmp/luci-indexcache
 	rm -rf /tmp/luci-modulecache/
 	killall -HUP rpcd 2>/dev/null
