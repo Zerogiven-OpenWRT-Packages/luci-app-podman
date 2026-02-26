@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Handle config: podman-opkg is the shipped default, podman is the live config
+if [ ! -f /etc/config/podman ]; then
+	mv /etc/config/podman-opkg /etc/config/podman
+else
+	echo "Existing /etc/config/podman preserved. New defaults at /etc/config/podman-opkg"
+fi
+
 uci -q batch <<-EOF >/dev/null
 	delete ucitrack.@podman[-1]
 	add ucitrack podman
