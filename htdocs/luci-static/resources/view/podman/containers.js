@@ -408,7 +408,7 @@ return view.extend({
 	 * Show import from docker run command dialog
 	 */
 	handleImportFromRunCommand: function () {
-		const form = new podmanForm.Container();
+		const form = new podmanForm.Container.init();
 		form.submit = () => this.refreshTable(false);
 		form.showImportFromRunCommand();
 	},

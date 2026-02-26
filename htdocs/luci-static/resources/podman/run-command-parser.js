@@ -86,13 +86,11 @@ return baseclass.extend({
 				i++;
 				const network = tokens[i];
 				if (network === 'host') {
-					spec.netns = {
-						nsmode: 'host'
-					};
+					spec.netns = { nsmode: 'host' };
 				} else if (network === 'none') {
-					spec.netns = {
-						nsmode: 'none'
-					};
+					spec.netns = { nsmode: 'none' };
+				} else {
+					spec._network = network;
 				}
 			} else if (token === '--privileged') {
 				spec.privileged = true;
@@ -140,6 +138,26 @@ return baseclass.extend({
 			} else if (token === '--health-start-interval') {
 				i++;
 				spec.healthconfig.StartInterval = format.parseDuration(tokens[i]);
+			} else if (token === '-u' || token === '--user') {
+				i++;
+				spec.user = tokens[i];
+			} else if (token === '--group-add') {
+				i++;
+				if (!spec.groups) spec.groups = [];
+				spec.groups.push(tokens[i]);
+			} else if (token === '--ip') {
+				i++;
+				if (!spec._static_ips) spec._static_ips = [];
+				spec._static_ips.push(tokens[i]);
+			} else if (token === '--ip6') {
+				i++;
+				if (!spec._static_ips) spec._static_ips = [];
+				spec._static_ips.push(tokens[i]);
+			} else if (token === '--expose') {
+				i++;
+				if (!spec.expose) spec.expose = {};
+				const expParts = tokens[i].split('/');
+				spec.expose[parseInt(expParts[0], 10)] = expParts[1] || 'tcp';
 			}
 
 			i++;
@@ -149,13 +167,26 @@ return baseclass.extend({
 			throw new Error('No image specified in command');
 		}
 
+		// Convert _network + _static_ips into Networks map (PerNetworkOptions)
+		if (spec._network) {
+			spec.Networks = {};
+			const netOpts = {};
+			if (spec._static_ips) netOpts.static_ips = spec._static_ips;
+			spec.Networks[spec._network] = netOpts;
+		}
+		delete spec._network;
+		delete spec._static_ips;
+
 		if (Object.keys(spec.env).length === 0) delete spec.env;
 		if (spec.portmappings.length === 0) delete spec.portmappings;
 		if (spec.mounts.length === 0) delete spec.mounts;
 		if (Object.keys(spec.labels).length === 0) delete spec.labels;
 		if (Object.keys(spec.resource_limits).length === 0) delete spec.resource_limits;
 		if (Object.keys(spec.healthconfig).length === 0) delete spec.healthconfig;
+		if (!spec.expose || Object.keys(spec.expose).length === 0) delete spec.expose;
+		if (!spec.groups || spec.groups.length === 0) delete spec.groups;
 		if (!spec.name) delete spec.name;
+		if (!spec.user) delete spec.user;
 		if (!spec.command || spec.command.length === 0) delete spec.command;
 		if (!spec.restart_policy) delete spec.restart_policy;
 		if (!spec.netns) delete spec.netns;
@@ -267,7 +298,7 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Parse volume mount (e.g., "/host/path:/container/path" or "volume-name:/data")
+	 * Parse volume mount (e.g., "/host/path:/container/path:ro,Z" or "volume-name:/data")
 	 * @param {string} volumeStr - Volume string
 	 * @returns {Object|null} Mount object
 	 */
@@ -277,11 +308,20 @@ return baseclass.extend({
 		const parts = volumeStr.split(':');
 		if (parts.length < 2) return null;
 
-		return {
+		const mount = {
 			source: parts[0],
 			destination: parts[1],
 			type: 'bind'
 		};
+
+		if (parts.length > 2) {
+			const opts = parts[2].split(',');
+			if (opts.includes('ro')) mount.ReadOnly = true;
+			const selinux = opts.filter((o) => o === 'Z' || o === 'z');
+			if (selinux.length > 0) mount.options = selinux;
+		}
+
+		return mount;
 	},
 
 	/**

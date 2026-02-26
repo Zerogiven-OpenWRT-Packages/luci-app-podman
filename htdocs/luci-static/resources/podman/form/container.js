@@ -54,6 +54,9 @@ return baseclass.extend({
 					start: '0',
 					workdir: null,
 					hostname: null,
+					user: null,
+					groups: null,
+					expose: null,
 					labels: null,
 					cpus: null,
 					memory: null,
@@ -103,6 +106,11 @@ return baseclass.extend({
 			field.optional = true;
 			field.description = _('One per line, format: host:container');
 
+			field = section.option(form.Value, 'expose', _('Expose Ports'));
+			field.placeholder = '6052, 8080/udp';
+			field.optional = true;
+			field.description = _('Comma-separated ports to expose (e.g., 6052, 8080/udp)');
+
 			field = section.option(form.TextValue, 'env', _('Environment Variables'));
 			field.placeholder = 'VAR1=value1\nVAR2=value2';
 			field.rows = 4;
@@ -110,10 +118,10 @@ return baseclass.extend({
 			field.description = _('One per line, format: key=value');
 
 			field = section.option(form.TextValue, 'volumes', _('Volumes'));
-			field.placeholder = '/host/path:/container/path\nvolume-name:/data';
+			field.placeholder = '/host/path:/container/path:ro\nvolume-name:/data';
 			field.rows = 4;
 			field.optional = true;
-			field.description = _('One per line, format: source:destination');
+			field.description = _('One per line. Format: source:destination[:options]. Options: ro, rw, Z, z');
 
 			field = section.option(form.ListValue, 'network', _('Network'));
 			field.value('bridge', 'bridge (default)');
@@ -161,6 +169,16 @@ return baseclass.extend({
 			field.placeholder = 'container-host';
 			field.optional = true;
 			field.datatype = 'hostname';
+
+			field = section.option(form.Value, 'user', _('User'));
+			field.placeholder = '1000:1000';
+			field.optional = true;
+			field.description = _('User and group to run as (UID:GID)');
+
+			field = section.option(form.Value, 'groups', _('Supplementary Groups'));
+			field.placeholder = '500,1000';
+			field.optional = true;
+			field.description = _('Comma-separated list of supplementary group IDs');
 
 			field = section.option(form.TextValue, 'labels', _('Labels'));
 			field.placeholder = 'key1=value1\nkey2=value2';
@@ -328,17 +346,24 @@ return baseclass.extend({
 					container.volumes.split('\n').forEach((line) => {
 						const parts = line.trim().split(':');
 						if (parts.length >= 2) {
+							const opts = parts.length > 2 ? parts[2].split(',') : [];
 							// Path contains '/' = bind mount, otherwise = named volume
 							if (parts[0].indexOf('/') > -1) {
-								spec.mounts.push({
+								const mount = {
 									source: parts[0],
 									destination: parts[1],
-								});
+								};
+								if (opts.includes('ro')) mount.ReadOnly = true;
+								const selinux = opts.filter((o) => o === 'Z' || o === 'z');
+								if (selinux.length > 0) mount.options = selinux;
+								spec.mounts.push(mount);
 							} else {
-								spec.volumes.push({
+								const vol = {
 									name: parts[0],
 									dest: parts[1],
-								});
+								};
+								if (opts.length > 0) vol.Options = opts;
+								spec.volumes.push(vol);
 							}
 						}
 					});
@@ -362,6 +387,19 @@ return baseclass.extend({
 				if (container.remove === '1') spec.remove = true;
 				if (container.workdir) spec.work_dir = container.workdir;
 				if (container.hostname) spec.hostname = container.hostname;
+				if (container.user) spec.user = container.user;
+				if (container.groups) {
+					spec.groups = container.groups.split(',').map((g) => g.trim()).filter((g) => g);
+				}
+				if (container.expose) {
+					spec.expose = {};
+					container.expose.split(',').forEach((p) => {
+						p = p.trim();
+						if (!p) return;
+						const parts = p.split('/');
+						spec.expose[parseInt(parts[0], 10)] = parts[1] || 'tcp';
+					});
+				}
 				if (container.labels || container.autoupdate === '1') {
 					spec.labels = {};
 					if (container.labels) {
