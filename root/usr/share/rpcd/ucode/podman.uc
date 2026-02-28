@@ -220,7 +220,7 @@ function get_start_priority() {
 	let uci_ctx = cursor();
 	let val = uci_ctx.get('podman', 'globals', 'init_start_priority');
 	uci_ctx.unload('podman');
-	if (val && match(val, /^([1-9]|[1-9][0-9]|100)$/))
+	if (val && match(val, /^([0-9]|[1-9][0-9]|100)$/))
 		return val;
 	return '100';
 }
