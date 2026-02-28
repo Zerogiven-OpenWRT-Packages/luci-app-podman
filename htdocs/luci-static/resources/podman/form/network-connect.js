@@ -70,11 +70,11 @@ return baseclass.extend({
 				const networkData = this.map.data.data.network;
 
 				if (!networkData.name) {
-					pui.warningNotification(_('Please select a network'));
+					podmanUI.warningNotification(_('Please select a network'));
 					return;
 				}
 
-				pui.showSpinningModal(_('Connecting to Network'), _(
+				podmanUI.showSpinningModal(_('Connecting to Network'), _(
 					'Connecting container to network...'));
 
 				const params = { container: this.containerId };
@@ -86,16 +86,16 @@ return baseclass.extend({
 					result) => {
 					ui.hideModal();
 					if (result && result.error) {
-						pui.errorNotification(_('Failed to connect to network: %s')
+						podmanUI.errorNotification(_('Failed to connect to network: %s')
 							.format(result.error));
 					} else {
-						pui.successTimeNotification(_(
+						podmanUI.successTimeNotification(_(
 							'Connected to network successfully'));
 						if (this.onSuccess) this.onSuccess();
 					}
 				}).catch((err) => {
 					ui.hideModal();
-					pui.errorNotification(_('Failed to connect to network: %s')
+					podmanUI.errorNotification(_('Failed to connect to network: %s')
 						.format(err.message));
 				});
 			}).catch(() => { });
