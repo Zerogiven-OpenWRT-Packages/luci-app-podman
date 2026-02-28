@@ -142,9 +142,7 @@ return baseclass.extend({
 
 		if (isRunning) {
 			const view = this;
-
-			this.updateStats();
-			this.updateProcessList();
+			if (cpuEl) cpuEl.textContent = _('Loading stats');
 
 			this.statsPollFn = async function () {
 				return Promise.all([
@@ -185,10 +183,6 @@ return baseclass.extend({
 	 */
 	updateStats: function () {
 		return podmanRPC.container.stats(this.containerId).then((result) => {
-			// Podman stats API returns different formats:
-			// - With stream=false: Single stats object
-			// - CLI format: Wrapped in Stats array
-			// Try both formats
 			let stats = null;
 			if (result && result.Stats && result.Stats.length > 0) {
 				// Array format (CLI-style)

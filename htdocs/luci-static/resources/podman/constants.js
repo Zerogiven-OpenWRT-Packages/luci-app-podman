@@ -18,7 +18,7 @@ const POLL_INTERVAL = 1;
  * Polling interval for container stats updates (seconds)
  * @constant {number}
  */
-const STATS_POLL_INTERVAL = 2;
+const STATS_POLL_INTERVAL = 3;
 
 return baseclass.extend({
 	NOTIFICATION_TIMEOUT,
