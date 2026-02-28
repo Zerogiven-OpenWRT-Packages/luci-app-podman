@@ -172,7 +172,7 @@ return baseclass.extend({
 
 				podmanUI.showSpinningModal(_('Updating Resources'), _(
 					'Updating container resources...'));
-				podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then(
+				podmanRPC.container.update(this.containerId, updateData).then(
 					(result) => {
 						ui.hideModal();
 						if (result && result.error) {

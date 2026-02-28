@@ -82,7 +82,7 @@ return baseclass.extend({
 					params.static_ips = [networkData.ip];
 				}
 
-				podmanRPC.network.connect(networkData.name, JSON.stringify(params)).then((
+				podmanRPC.network.connect(networkData.name, params).then((
 					result) => {
 					ui.hideModal();
 					if (result && result.error) {

@@ -104,7 +104,7 @@ return baseclass.extend({
 				ui.hideModal();
 				podmanUI.showSpinningModal(_('Creating %s').format(_('Volume')), _('Creating %s...').format(_('Volume').toLowerCase()));
 
-				podmanRPC.volume.create(JSON.stringify(payload)).then((result) => {
+				podmanRPC.volume.create(payload).then((result) => {
 					ui.hideModal();
 					if (result && result.error) {
 						podmanUI.errorNotification(_('Failed to create %s: %s').format(_('Volume').toLowerCase(), result.error));

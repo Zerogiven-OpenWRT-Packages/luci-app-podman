@@ -914,7 +914,7 @@ return baseclass.extend({
 		}
 
 		// Step 1: Update restart policy
-		podmanRPC.container.update(this.containerId, JSON.stringify(updateData)).then((
+		podmanRPC.container.update(this.containerId, updateData).then((
 			result) => {
 			if (result && result.error) {
 				throw new Error(result.error);
@@ -993,7 +993,7 @@ return baseclass.extend({
 			params.static_ips = [ip]; // static_ips is an array
 		}
 
-		podmanRPC.network.connect(networkName, JSON.stringify(params)).then((result) => {
+		podmanRPC.network.connect(networkName, params).then((result) => {
 			ui.hideModal();
 			if (result && result.error) {
 				podmanUI.errorNotification(
@@ -1028,9 +1028,9 @@ return baseclass.extend({
 		);
 
 		// Build params according to Podman API DisconnectOptions schema (capital C for Container)
-		podmanRPC.network.disconnect(networkName, JSON.stringify({
+		podmanRPC.network.disconnect(networkName, {
 				Container: this.containerId
-			}))
+			})
 			.then((result) => {
 				ui.hideModal();
 				if (result && result.error) {

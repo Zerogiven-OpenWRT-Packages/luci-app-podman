@@ -7,12 +7,4 @@ else
 	echo "Existing /etc/config/podman preserved. New defaults at /etc/config/podman-opkg"
 fi
 
-uci -q batch <<-EOF >/dev/null
-	delete ucitrack.@podman[-1]
-	add ucitrack podman
-	set ucitrack.@podman[-1].init=rpcd
-	commit ucitrack
-EOF
-
-rm -f /tmp/luci-indexcache
 exit 0

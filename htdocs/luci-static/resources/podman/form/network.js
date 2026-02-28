@@ -272,7 +272,7 @@ return baseclass.extend({
 				ui.hideModal();
 				podmanUI.showSpinningModal(_('Creating %s').format(_('Network')), _('Creating %s...').format(_('Network').toLowerCase()));
 
-				podmanRPC.network.create(JSON.stringify(payload)).then((result) => {
+				podmanRPC.network.create(payload).then((result) => {
 					if (result && result.error) {
 						ui.hideModal();
 						podmanUI.errorNotification(_('Failed to create %s: %s').format(_('Network').toLowerCase(), result.error));

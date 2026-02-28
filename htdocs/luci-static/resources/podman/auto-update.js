@@ -201,7 +201,7 @@ return baseclass.extend({
 			.then(() => {
 				// Step 5: Recreate using original command (now uses newly pulled image)
 				step(5, _('Creating new container...'));
-				return podmanRPC.container.recreate(JSON.stringify(createCommand));
+				return podmanRPC.container.recreate(createCommand);
 			})
 			.then((result) => {
 				if (result && result.error) {

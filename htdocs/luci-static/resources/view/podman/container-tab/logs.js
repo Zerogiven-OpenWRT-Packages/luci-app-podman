@@ -12,9 +12,12 @@
 const TIMESTAMP_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))\s/;
 const TIMESTAMP_RE_GLOBAL = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})\s/gm;
 
+const POLL_TAIL_LINES = 30;
+
 /**
- * Container logs tab - displays container logs with optional live streaming
- * Uses RPC to fetch logs (Docker stream parsing happens server-side in podman.uc)
+ * Container logs tab - displays container logs with optional live streaming.
+ * Streaming uses tail+dedupe: always fetches last N lines, filters already-seen
+ * lines by timestamp. Avoids --since which hangs on empty results in Podman API.
  */
 return baseclass.extend({
 	/**
@@ -25,17 +28,14 @@ return baseclass.extend({
 	render: function (content, containerId) {
 		this.containerId = containerId;
 
-		// Clear existing content
 		dom.content(content, null);
 
-		// Create logs display
 		const logsDisplay = E('div', {
 			'class': 'cbi-section'
 		}, [
 			E('div', {
 				'class': 'cbi-section-node'
 			}, [
-				// Controls
 				E('div', {
 					'class': 'mb-sm'
 				}, [
@@ -69,7 +69,6 @@ return baseclass.extend({
 					new podmanUI.Button(_('Refresh'), () => this.refreshLogs())
 					.render()
 				]),
-				// Logs container
 				E('pre', {
 					'id': 'logs-output',
 					'class': 'logs-output'
@@ -78,33 +77,26 @@ return baseclass.extend({
 		]);
 
 		content.appendChild(logsDisplay);
-
-		// Load initial logs
 		this.refreshLogs();
 	},
 
 	/**
-	 * Fetch logs via RPC (Docker stream parsing happens server-side)
-	 * @param {number} lines - Number of tail lines (0 = all)
-	 * @param {string} since - Unix epoch timestamp or '0' for none
-	 * @returns {Promise<string>} Parsed log text
+	 * Fetch last N log lines via RPC
+	 * @param {number} lines - Number of tail lines
+	 * @returns {Promise<string>} Log text
 	 */
-	fetchLogs: async function (lines, since) {
-		return podmanRPC.container.logs(this.containerId, lines, parseInt(since) || 0)
+	fetchLogs: function (lines) {
+		return podmanRPC.container.logs(this.containerId, lines || 100, 0)
 			.then((result) => result.logs || '');
 	},
 
 	/**
-	 * Process timestamped log lines in a single pass:
-	 * - Filter out duplicate lines (timestamps <= previousTimestamp)
-	 * - Extract the last timestamp for the next --since baseline
-	 * - Strip timestamp prefixes for display
-	 *
-	 * @param {string} text - Timestamped log text (after stripAnsi)
-	 * @param {string|null} previousTimestamp - Filter threshold (null = keep all)
+	 * Process timestamped log lines: filter duplicates and strip timestamps.
+	 * @param {string} text - Raw log text with timestamps
+	 * @param {string|null} afterTimestamp - Only keep lines with ts > this (null = keep all)
 	 * @returns {{displayText: string, lastTimestamp: string|null}}
 	 */
-	processLines: function (text, previousTimestamp) {
+	processLines: function (text, afterTimestamp) {
 		if (!text) return { displayText: '', lastTimestamp: null };
 
 		const lines = text.split('\n');
@@ -117,13 +109,8 @@ return baseclass.extend({
 
 			if (match) {
 				const ts = match[1];
-
-				// Filter duplicates if threshold is set
-				if (previousTimestamp && ts <= previousTimestamp) continue;
-
+				if (afterTimestamp && ts <= afterTimestamp) continue;
 				lastTimestamp = ts;
-
-				// Strip timestamp prefix for display
 				result.push(line.substring(match[0].length));
 			} else {
 				result.push(line);
@@ -148,7 +135,7 @@ return baseclass.extend({
 
 		output.textContent = _('Loading logs...');
 
-		this.fetchLogs(lines, '0').then((text) => {
+		this.fetchLogs(lines).then((text) => {
 			const cleanText = this.stripAnsi(this.stripTimestamps(text || ''));
 			if (cleanText.trim().length > 0) {
 				output.textContent = cleanText;
@@ -161,41 +148,16 @@ return baseclass.extend({
 		});
 	},
 
-	/**
-	 * Strip ANSI escape sequences from log text
-	 * @param {string} text - Text with ANSI codes
-	 * @returns {string} Clean text
-	 */
 	stripAnsi: function (text) {
 		if (!text) return text;
 		return text.replace(/\x1B\[[\?]?[0-9;]*[a-zA-Z]/g, '');
 	},
 
-	/**
-	 * Convert an RFC3339 timestamp to Unix epoch seconds string for the API
-	 * @param {string} timestamp - RFC3339 timestamp
-	 * @returns {string} Unix epoch seconds (e.g. "1707388200")
-	 */
-	timestampToEpoch: function (timestamp) {
-		if (!timestamp) return '0';
-		const ms = new Date(timestamp).getTime();
-		if (isNaN(ms)) return '0';
-		return String(Math.floor(ms / 1000));
-	},
-
-	/**
-	 * Strip timestamps from log lines for display
-	 * @param {string} text - Log text with timestamps
-	 * @returns {string} Log text without timestamp prefixes
-	 */
 	stripTimestamps: function (text) {
 		if (!text) return text;
 		return text.replace(TIMESTAMP_RE_GLOBAL, '');
 	},
 
-	/**
-	 * Clear logs display
-	 */
 	clearLogs: function () {
 		const output = document.getElementById('logs-output');
 		if (output) {
@@ -203,21 +165,16 @@ return baseclass.extend({
 		}
 	},
 
-	/**
-	 * Toggle log streaming on/off
-	 * @param {Event} ev - Change event from checkbox
-	 */
 	toggleLogStream: function (ev) {
 		if (ev.target.checked) {
 			this.startLogStream();
 			return;
 		}
-
 		this.stopLogStream();
 	},
 
 	/**
-	 * Start log streaming using poll.add + fetchLogs with --since
+	 * Start log streaming: load initial lines, then poll with tail+dedupe
 	 */
 	startLogStream: function () {
 		if (this.isStartingStream) return;
@@ -234,20 +191,15 @@ return baseclass.extend({
 
 		output.textContent = _('Loading logs...');
 
-		this.fetchLogs(lines, '0').then((text) => {
+		this.fetchLogs(lines).then((text) => {
 			const cleanText = this.stripAnsi(text || '');
 			const { displayText, lastTimestamp } = this.processLines(cleanText, null);
 
 			this.lastTimestamp = lastTimestamp;
 
-			if (displayText.trim().length > 0) {
-				output.textContent = displayText;
-			} else {
-				output.textContent = '';
-			}
+			output.textContent = displayText.trim().length > 0 ? displayText : '';
 			output.scrollTop = output.scrollHeight;
 
-			// Start polling for new logs
 			this.pollNewLogs();
 			this.isStartingStream = false;
 		}).catch((err) => {
@@ -259,20 +211,23 @@ return baseclass.extend({
 	},
 
 	/**
-	 * Poll for new log lines using --since timestamp
+	 * Poll for new log lines using tail+dedupe (not --since).
+	 * Fetches last POLL_TAIL_LINES lines each interval, filters out already-seen
+	 * lines by comparing timestamps against this.lastTimestamp.
 	 */
 	pollNewLogs: function () {
 		const outputEl = document.getElementById('logs-output');
 		const view = this;
 
 		this.logPollFn = function () {
-			if (!view.logPollFn) {
+			if (!view.logPollFn) return Promise.resolve();
+
+			// Skip when logs tab is not visible
+			const el = document.getElementById('tab-logs-content');
+			if (!el || !el.offsetParent)
 				return Promise.resolve();
-			}
 
-			const since = view.timestampToEpoch(view.lastTimestamp);
-
-			return view.fetchLogs(0, since).then((text) => {
+			return view.fetchLogs(POLL_TAIL_LINES).then((text) => {
 				const cleanText = view.stripAnsi(text || '');
 				if (cleanText.trim().length === 0) return;
 
@@ -294,25 +249,14 @@ return baseclass.extend({
 		poll.add(this.logPollFn, constants.POLL_INTERVAL);
 	},
 
-	/**
-	 * Stop log streaming
-	 */
 	stopLogStream: function () {
 		if (this.logPollFn) {
-			try {
-				poll.remove(this.logPollFn);
-			} catch (e) {
-				// Ignore if already removed
-			}
+			try { poll.remove(this.logPollFn); } catch (e) {}
 			this.logPollFn = null;
 		}
-
 		this.lastTimestamp = null;
 	},
 
-	/**
-	 * Cleanup poll functions when view is destroyed
-	 */
 	cleanup: function () {
 		this.stopLogStream();
 	}

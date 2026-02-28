@@ -397,7 +397,8 @@ return baseclass.extend({
 						p = p.trim();
 						if (!p) return;
 						const parts = p.split('/');
-						spec.expose[parseInt(parts[0], 10)] = parts[1] || 'tcp';
+						const port = parseInt(parts[0], 10);
+						if (!isNaN(port)) spec.expose[port] = parts[1] || 'tcp';
 					});
 				}
 				if (container.labels || container.autoupdate === '1') {
@@ -452,7 +453,8 @@ return baseclass.extend({
 							.healthcheck_start_interval);
 					}
 					if (container.healthcheck_retries) {
-						healthConfig.Retries = parseInt(container.healthcheck_retries);
+						const retries = parseInt(container.healthcheck_retries, 10);
+						if (!isNaN(retries)) healthConfig.Retries = retries;
 					}
 
 					spec.healthconfig = healthConfig;
@@ -464,7 +466,7 @@ return baseclass.extend({
 				podmanUI.showSpinningModal(_('Creating %s').format(_('Container')), _(
 					'Creating container from image %s...').format(container.image));
 
-				podmanRPC.container.create(JSON.stringify(spec)).then((result) => {
+				podmanRPC.container.create(spec).then((result) => {
 					if (result && result.error) {
 						ui.hideModal();
 						podmanUI.errorNotification(_('Failed to create %s: %s').format(_('Container').toLowerCase(), result.error));
@@ -600,7 +602,7 @@ return baseclass.extend({
 			podmanUI.showSpinningModal(_('Creating %s').format(_('Container')), _('Creating container from image %s...')
 				.format(spec.image));
 
-			podmanRPC.container.create(JSON.stringify(spec)).then((result) => {
+			podmanRPC.container.create(spec).then((result) => {
 				if (result && result.error) {
 					ui.hideModal();
 					podmanUI.errorNotification(_('Failed to create %s: %s').format(_('Container').toLowerCase(), result.error));

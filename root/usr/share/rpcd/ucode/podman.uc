@@ -76,7 +76,8 @@ function validate_restart_policy(policy) {
 }
 
 function require_param(name, value) {
-	if (value == null || value === '')
+	if (value == null || value === ''
+		|| (type(value) === 'object' && length(keys(value)) === 0))
 		return `Missing required parameter: ${name}`;
 }
 
@@ -382,7 +383,7 @@ const methods = {
 			let err = require_param('id', req.args.id) || validate_id(req.args.id);
 			if (err) return { error: err };
 
-			let path = `${API_BASE}/containers/${encode_id(req.args.id)}/logs?stdout=true&stderr=true&timestamps=true`;
+			let path = `${API_BASE}/containers/${encode_id(req.args.id)}/logs?stdout=true&stderr=true&timestamps=true&follow=false`;
 			if (req.args.lines > 0)
 				path += `&tail=${req.args.lines}`;
 			if (req.args.since > 0)
@@ -832,7 +833,7 @@ const methods = {
 				push(checks, { name: 'socket_responsive', label: 'Socket Responsive', status: 'error', detail: 'Skipped', message: 'Socket not available' });
 			}
 
-			// 4. ucode-mod-socket (replaces curl check)
+			// 4. ucode-mod-socket
 			push(checks, { name: 'ucode_socket', label: 'ucode-mod-socket', status: 'ok', detail: 'Built-in', message: 'Available (running ucode)' });
 
 			// 5. Init directory writable

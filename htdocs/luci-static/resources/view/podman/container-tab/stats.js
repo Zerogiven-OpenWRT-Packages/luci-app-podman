@@ -154,7 +154,7 @@ return baseclass.extend({
 				});
 			};
 
-			poll.add(this.statsPollFn, constants.STATS_POLL_INTERVAL / 1000);
+			poll.add(this.statsPollFn, constants.STATS_POLL_INTERVAL);
 		}
 	},
 

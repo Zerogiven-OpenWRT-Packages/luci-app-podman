@@ -157,7 +157,8 @@ return baseclass.extend({
 				i++;
 				if (!spec.expose) spec.expose = {};
 				const expParts = tokens[i].split('/');
-				spec.expose[parseInt(expParts[0], 10)] = expParts[1] || 'tcp';
+				const port = parseInt(expParts[0], 10);
+				if (!isNaN(port)) spec.expose[port] = expParts[1] || 'tcp';
 			}
 
 			i++;
