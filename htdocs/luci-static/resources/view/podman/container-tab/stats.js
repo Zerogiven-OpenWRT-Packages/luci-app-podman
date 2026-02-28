@@ -141,10 +141,11 @@ return baseclass.extend({
 		const isRunning = this.containerData.State && this.containerData.State.Running;
 
 		if (isRunning) {
+			const view = this;
+
 			this.updateStats();
 			this.updateProcessList();
 
-			const view = this;
 			this.statsPollFn = async function () {
 				return Promise.all([
 					view.updateStats(),
@@ -154,7 +155,27 @@ return baseclass.extend({
 				});
 			};
 
-			poll.add(this.statsPollFn, constants.STATS_POLL_INTERVAL);
+			const mainNode = document.querySelector('[data-tab="stats"]');
+			const mutationObserver = new MutationObserver((mutationsList, observer) => {
+				let activateStatsPoll = true;
+				mutationsList.forEach(mutation => {
+					if (activateStatsPoll === true && mutation.attributeName === 'class' && mutation.target.classList.contains('cbi-tab-disabled') === false) {
+						activateStatsPoll = false;
+						poll.add(this.statsPollFn, constants.STATS_POLL_INTERVAL);
+
+						return;
+					}
+
+					if (activateStatsPoll === true && mutation.attributeName === 'class' && mutation.target.classList.contains('cbi-tab-disabled') === true) {
+						activateStatsPoll = false;
+						poll.remove(this.statsPollFn);
+
+						return;
+					}
+				});
+			});
+
+			mutationObserver.observe(mainNode, { attributes: true });
 		}
 	},
 
