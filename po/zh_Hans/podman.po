@@ -41,6 +41,9 @@ msgstr "分配 TTY (-t)"
 msgid "Already configured:"
 msgstr "已配置："
 
+msgid "Already up-to-date: %s"
+msgstr "已经是最新的：%s"
+
 msgid "Always"
 msgstr "始终"
 
@@ -109,6 +112,15 @@ msgstr "取消"
 
 msgid "Cannot setup OpenWrt integration: Network \"%s\" does not have subnet and gateway configured"
 msgstr "无法设置 OpenWrt 集成：网络 \"%s\" 未配置子网和网关"
+
+msgid "Check for Updates"
+msgstr "检查更新"
+
+msgid "Checking %d containers for updates..."
+msgstr "正在为 %d 个容器检查更新…"
+
+msgid "Checking %s (%d/%d)..."
+msgstr "正在检查 %s（%d/%d）…"
 
 msgid "Choose firewall zone for this network. New zones use safe defaults: input DROP, output ACCEPT, forward REJECT. You can customize zone policies later in Firewall settings."
 msgstr "为此网络选择防火墙区域。新区域使用安全默认值：输入 DROP，输出 ACCEPT，转发 REJECT。您稍后可以在防火墙设置中自定义区域策略。"
@@ -203,6 +215,9 @@ msgstr "容器已创建但启动失败：%s"
 msgid "Container created, started, and auto-start configured"
 msgstr "容器已创建、启动并配置自启动"
 
+msgid "Container does not have CreateCommand"
+msgstr "容器缺少 CreateCommand（创建命令）"
+
 msgid "Container image to use"
 msgstr "要使用的容器镜像"
 
@@ -223,6 +238,9 @@ msgstr "容器"
 
 msgid "Copy"
 msgstr "复制"
+
+msgid "Copy Command"
+msgstr "复制命令"
 
 msgid "Count"
 msgstr "数量"
@@ -265,6 +283,9 @@ msgstr "正在为 %s 创建自启动配置"
 
 msgid "Creating container from image %s..."
 msgstr "正在从镜像 %s 创建容器..."
+
+msgid "Creating new container..."
+msgstr "正在创建新容器…"
 
 msgid "Debug mode enabled in UCI config"
 msgstr "UCI 配置中已启用调试模式"
@@ -360,7 +381,10 @@ msgid "Error"
 msgstr "错误"
 
 msgid "Error loading details: %s"
-msgstr "加载详情错误：%s"
+msgstr "加载详情时出错：%s"
+
+msgid "Errors checking: %s"
+msgstr "检查时出错：%s"
 
 msgid "Existing physical interface to use as parent. Required for macvlan/ipvlan networks."
 msgstr "用作父接口的现有物理接口。macvlan/ipvlan 网络必需。"
@@ -382,6 +406,9 @@ msgstr "暴露的端口"
 
 msgid "Failed"
 msgstr "失败"
+
+msgid "Failed to check for updates: %s"
+msgstr "检查更新失败：%s"
 
 msgid "Failed to connect to network: %s"
 msgstr "无法连接网络：%s"
@@ -482,6 +509,9 @@ msgstr "停止 %d 个 %s 失败"
 msgid "Failed to stop some pods: %s"
 msgstr "停止部分 Pod 失败：%s"
 
+msgid "Failed to update:"
+msgstr "更新失败："
+
 msgid "Failed to update init script"
 msgstr "更新 init 脚本失败"
 
@@ -506,6 +536,9 @@ msgstr "正在获取信息..."
 msgid "Fetching script"
 msgstr "正在获取脚本"
 
+msgid "Finding containers with auto-update label..."
+msgstr "正在查找有自动更新标签的容器…"
+
 msgid "Firewall Zone"
 msgstr "防火墙区域"
 
@@ -526,6 +559,9 @@ msgstr "生成"
 
 msgid "Generating Init Script"
 msgstr "正在生成 Init 脚本"
+
+msgid "Getting container configuration..."
+msgstr "正在获取容器配置…"
 
 msgid "Grace period before health checks count toward failures. Default: 0s"
 msgstr "健康检查计入失败前的宽限期。默认：0s"
@@ -845,6 +881,12 @@ msgstr "未配置自启动"
 msgid "No container ID in URL"
 msgstr "URL 中没有容器 ID"
 
+msgid "No containers selected"
+msgstr "沒有选择容器"
+
+msgid "No containers with auto-update label found."
+msgstr "沒有找到有自动更新标签的容器。"
+
 msgid "No data received"
 msgstr "未收到数据"
 
@@ -1043,6 +1085,9 @@ msgstr "已移除：%s"
 msgid "Removing %d %s..."
 msgstr "正在移除 %d 个 %s..."
 
+msgid "Removing old container..."
+msgstr "正在移除旧容器…"
+
 msgid "Removing unused resources, please wait..."
 msgstr "正在移除未使用的资源，请稍候..."
 
@@ -1214,6 +1259,9 @@ msgstr "已启动"
 msgid "Started %d %s successfully"
 msgstr "成功启动 %d 个 %s"
 
+msgid "Starting..."
+msgstr "正在启动…"
+
 msgid "Starting %d %s..."
 msgstr "正在启动 %d 个 %s..."
 
@@ -1223,11 +1271,17 @@ msgstr "正在启动 %s"
 msgid "Starting %s..."
 msgstr "正在启动 %s..."
 
+msgid "Starting container..."
+msgstr "正在启动容器…"
+
 msgid "Starting selected %s..."
 msgstr "正在启动所选 %s..."
 
 msgid "Static IP (Optional)"
 msgstr "静态 IP（可选）"
+
+msgid "Starting updates..."
+msgstr "正在启动更新…"
 
 msgid "Stats"
 msgstr "统计"
@@ -1249,6 +1303,9 @@ msgstr "正在停止 %d 个 %s..."
 
 msgid "Stopping %s"
 msgstr "正在停止 %s"
+
+msgid "Stopping container..."
+msgstr "正在停止容器…"
 
 msgid "Stopping selected %s..."
 msgstr "正在停止所选 %s..."
@@ -1273,6 +1330,9 @@ msgstr "成功删除 %d 个 %s"
 
 msgid "Successfully pulled %d %s"
 msgstr "成功拉取 %d 个 %s"
+
+msgid "Successfully updated: %s"
+msgstr "成功更新：%s"
 
 msgid "System Diagnostics"
 msgstr "系统诊断"
@@ -1303,6 +1363,12 @@ msgstr "健康检查之间的时间（例如 30s, 1m, 5m）。默认：30s"
 
 msgid "Timeout"
 msgstr "超时"
+
+msgid "To enable auto-update for a container, add the label: io.containers.autoupdate=registry"
+msgstr "要为容器启用自动更新，添加标签：io.containers.autoupdate=registry"
+
+msgid "To manually recreate, run:"
+msgstr "要手动重新创建，执行："
 
 msgid "To update a secret, delete and recreate it"
 msgstr "要更新机密，请将其删除并重新创建"
@@ -1337,10 +1403,25 @@ msgstr "无限制"
 msgid "Update"
 msgstr "更新"
 
+msgid "Update Check Results"
+msgstr "更新检查结果"
+
+msgid "Update Complete"
+msgstr "更新完成"
+
+msgid "Update failed: %s"
+msgstr "更新失败：%s"
+
 msgid "Update Resources"
 msgstr "更新资源"
 
+msgid "Update Selected"
+msgstr "更新选择的项目"
+
 msgid "Updating Container"
+msgstr "正在更新容器"
+
+msgid "Updating Containers"
 msgstr "正在更新容器"
 
 msgid "Updating container resources..."
@@ -1354,6 +1435,9 @@ msgstr "正在更新资源"
 
 msgid "Updating restart policy..."
 msgstr "正在更新重启策略..."
+
+msgid "Updates available:"
+msgstr "有可用更新："
 
 msgid "Use: 512m, 1g"
 msgstr "使用：512m, 1g"
