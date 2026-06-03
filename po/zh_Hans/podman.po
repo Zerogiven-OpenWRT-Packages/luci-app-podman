@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: luci-app-podman\n"
-"PO-Revision-Date: 2026-05-03 11:05+0000\n"
+"PO-Revision-Date: 2026-06-03 05:20+0000\n"
 "Last-Translator:\n"
 "Language-Team: Chinese (Simplified Han script) <https://github.com/openwrt/luci/tree/master/modules/luci-base/po/zh_Hans>\n"
 "Language: zh_Hans\n"
@@ -76,7 +76,7 @@ msgid "Auto-Update"
 msgstr "自动更新"
 
 msgid "Automatically configure OpenWrt network interface, bridge, and firewall zone. <strong>Highly recommended</strong> for proper container networking on OpenWrt."
-msgstr "自动配置 OpenWrt 网络接口、桥接和防火墙区域。<strong>强烈建议</strong>在 OpenWrt 上进行正确的容器网络设置。"
+msgstr "自动配置 OpenWrt 网络接口、桥接和防火墙区域。<strong>强烈建议</strong>勾选以在 OpenWrt 上进行正确的容器网络设置。"
 
 msgid "Automatically start the container after it is created"
 msgstr "容器创建后自动启动"
@@ -91,7 +91,7 @@ msgid "Block I/O"
 msgstr "块 I/O"
 
 msgid "Boot"
-msgstr "开机"
+msgstr "开机自启"
 
 msgid "Bridge Interface Name"
 msgstr "网桥接口名称"
@@ -256,7 +256,7 @@ msgid "Create new zone (will be named: podman_<network-name>)"
 msgstr "创建新区域（命名为：podman_<网络名称>）"
 
 msgid "Created"
-msgstr "已创建"
+msgstr "创建时间"
 
 msgid "Creating %s"
 msgstr "正在创建 %s"
@@ -445,7 +445,7 @@ msgid "Inspect"
 msgstr "检查 (Inspect)"
 
 msgid "Int"
-msgstr "整数"
+msgstr "集成"
 
 msgid "Interactive"
 msgstr "交互式"
@@ -817,7 +817,7 @@ msgid "Start stream"
 msgstr "开始流"
 
 msgid "Started"
-msgstr "已启动"
+msgstr "启动时间"
 
 msgid "Started At"
 msgstr "启动时间"
