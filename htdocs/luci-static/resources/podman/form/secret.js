@@ -17,6 +17,7 @@ const PodmanFormSecret = podmanView.form.extend({
 			secret: {
 				name: null,
 				data: null,
+				labels: null,
 			}
 		};
 	},
@@ -44,6 +45,12 @@ const PodmanFormSecret = podmanView.form.extend({
 		field.rmempty = false;
 		field.rows = 6;
 		field.description = _('The sensitive data to store securely');
+
+		field = this.section.option(form.TextValue, 'labels', _('Labels'));
+		field.placeholder = 'key1=value1\nkey2=value2';
+		field.rows = 3;
+		field.optional = true;
+		field.description = _('Labels in key=value format, one per line');
 	},
 
 	async handleCreate() {
@@ -59,7 +66,19 @@ const PodmanFormSecret = podmanView.form.extend({
 			return;
 		}
 
-		const createFn = () => podmanRPC.secrets.create(data.name, data.data);
+		const labels = {};
+		if (data.labels) {
+			data.labels.split('\n').forEach((line) => {
+				const parts = line.split('=');
+				if (parts.length >= 2) {
+					const key = parts[0].trim();
+					const value = parts.slice(1).join('=').trim();
+					if (key) labels[key] = value;
+				}
+			});
+		}
+
+		const createFn = () => podmanRPC.secrets.create(data.name, data.data, labels);
 
 		return this.super('handleCreate', [ createFn, _('Secret') ]);
 	},

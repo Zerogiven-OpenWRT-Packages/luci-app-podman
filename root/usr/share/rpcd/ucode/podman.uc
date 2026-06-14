@@ -661,13 +661,16 @@ const methods = {
 	},
 
 	secret_create: {
-		args: { name: '', data: '' },
+		args: { name: '', data: '', labels: {} },
 		call: function(req) {
 			let err = require_param('name', req.args.name) || validate_name(req.args.name)
 				|| require_param('data', req.args.data);
 			if (err) return { error: err };
-			let name_enc = encode_id(req.args.name);
-			return podman_request('POST', `${API_BASE}/secrets/create?name=${name_enc}`, `${req.args.data}`);
+			let query = `?name=${encode_id(req.args.name)}`;
+			let labels = req.args.labels;
+			if (type(labels) === 'object' && length(labels) > 0)
+				query += `&labels=${urlencode(sprintf('%J', labels), ENCODE_FULL)}`;
+			return podman_request('POST', `${API_BASE}/secrets/create${query}`, `${req.args.data}`);
 		}
 	},
 

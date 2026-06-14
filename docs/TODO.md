@@ -77,8 +77,4 @@
 
 ### Add
 
-- Missing labels (3)
-
 ### List
-
-- Missing labels (3)

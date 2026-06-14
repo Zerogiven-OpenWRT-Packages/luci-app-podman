@@ -33,6 +33,10 @@ const Secret = Model.base.extend({
 		return this.Spec?.Driver?.Name;
 	},
 
+	getLabels() {
+		return this.Spec?.Labels ?? {};
+	},
+
 	async inspect() {
 		return SecretRPC.inspect(this.getName());
 	},

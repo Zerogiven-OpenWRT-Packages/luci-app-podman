@@ -146,7 +146,7 @@ return baseclass.extend({
 		create: Model.declareRPC({
 			object: 'podman',
 			method: 'secret_create',
-			params: ['name', 'data']
+			params: ['name', 'data', 'labels']
 		}),
 	},
 
