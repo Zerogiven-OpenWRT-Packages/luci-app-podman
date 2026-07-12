@@ -87,7 +87,7 @@ opkg update && opkg install luci-app-podman_2.3.4-r1_all.ipk
 
 ```bash
 git clone https://github.com/Zerogiven-OpenWRT-Packages/luci-app-podman.git package/luci-app-podman
-make menuconfig  # Navigate to: LuCI → Applications → luci-app-podman
+make menuconfig  # Navigate to: LuCI → Applications → luci-app-podman，Utilities → podman
 make package/luci-app-podman/compile V=s
 ```
 
