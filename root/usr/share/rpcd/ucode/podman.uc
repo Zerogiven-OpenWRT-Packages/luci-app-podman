@@ -37,9 +37,14 @@ import {
 
 const uci = cursor();
 const _prio = uci.get('luci-podman', 'globals', 'init_start_priority');
-const INIT_START_PRIORITY = (type(_prio) === 'string' && match(_prio, /^([0-9]|[1-9][0-9]|100)$/)) ? _prio : '100';
+// Capped at 99: procd sorts rc.d symlinks as plain strings, so a 3-digit
+// value like 100 sorts *before* 2-digit priorities (e.g. network at 19-20).
+const INIT_START_PRIORITY = (type(_prio) === 'string' && match(_prio, /^([0-9]|[1-9][0-9])$/)) ? _prio : '99';
 uci.unload('luci-podman');
 
+// "podman" is a strict string prefix of this, so generated init scripts
+// always sort after the real /etc/init.d/podman at any tied START value.
+const INIT_SCRIPT_PREFIX = 'podman-container-';
 
 // Validators come from luci.podman_validate (imported above).
 
@@ -161,7 +166,7 @@ function to_json_body(data) {
  * @param {string} name
  */
 function init_script_path(name) {
-	return `/etc/init.d/container-${name}`;
+	return `/etc/init.d/${INIT_SCRIPT_PREFIX}${name}`;
 }
 
 // --- RPC Methods ---
@@ -850,7 +855,7 @@ const methods = {
 
 			let name = `${req.args.name}`;
 			let start_priority = `${INIT_START_PRIORITY}`;
-			let script_name = `container-${name}`;
+			let script_name = `${INIT_SCRIPT_PREFIX}${name}`;
 			let script_path = init_script_path(name);
 
 			let template = readfile('/usr/share/podman/procd-startup-template.sh');
@@ -897,7 +902,7 @@ const methods = {
 			let enabled = false;
 
 			if (exists)
-				enabled = init_enabled(`container-${req.args.name}`);
+				enabled = init_enabled(`${INIT_SCRIPT_PREFIX}${req.args.name}`);
 
 			return { exists: exists, enabled: enabled };
 		}
@@ -914,7 +919,7 @@ const methods = {
 				return { error: 'Init script not found. Generate it first.' };
 
 			let action = (req.args.enabled === true || req.args.enabled === 1) ? 'enable' : 'disable';
-			let rc = init_action(`container-${req.args.name}`, action);
+			let rc = init_action(`${INIT_SCRIPT_PREFIX}${req.args.name}`, action);
 			if (rc)
 				return { error: `Failed to ${action} service` };
 
@@ -933,7 +938,7 @@ const methods = {
 				return { success: true, message: 'Init script does not exist' };
 
 			// Disable before removing
-			init_action(`container-${req.args.name}`, 'disable');
+			init_action(`${INIT_SCRIPT_PREFIX}${req.args.name}`, 'disable');
 			unlink(script_path);
 
 			if (stat(script_path))

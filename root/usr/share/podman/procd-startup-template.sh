@@ -49,6 +49,10 @@ start_service() {
 			logger -t ${NAME} 'Container {name} already running'
 		fi
 	"
+	# Bounded retries: if S99podman's tie-break puts it after this script,
+	# the socket wait above may time out on a slow first boot. A capped
+	# respawn gives extra 120s windows without looping forever.
+	procd_set_param respawn 3600 5 5
 	procd_close_instance
 }
 

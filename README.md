@@ -111,9 +111,9 @@ If encountering socket errors:
 You can generate a startup script which respects the restart policy set in the container.
 
 > [!TIP]
-> If you want save startup scripts during an upgrade you have to config your `/etc/sysupgrade.conf` with `/etc/init.d/container-*`.
+> If you want save startup scripts during an upgrade you have to config your `/etc/sysupgrade.conf` with `/etc/init.d/podman-container-*`.
 > ```bash
-> echo "/etc/init.d/container-*" >> /etc/sysupgrade.conf
+> echo "/etc/init.d/podman-container-*" >> /etc/sysupgrade.conf
 > ```
 
 ## Container Auto-Update
@@ -148,7 +148,7 @@ The app stores its settings in `/etc/config/luci-podman`:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `init_start_priority` | `100` | procd start priority for container init scripts |
+| `init_start_priority` | `99` | procd start priority for container init scripts (max 99: procd sorts rc.d symlinks as strings, so 100+ breaks ordering) |
 | `socket_path` | `/run/podman/podman.sock` | Path to the Podman API socket |
 
 ## Credits
