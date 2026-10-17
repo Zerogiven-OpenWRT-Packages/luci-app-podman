@@ -254,10 +254,8 @@ const PodmanFormContainer = podmanView.form.extend({
 
 				const opts = parts.length > 2 ? parts[2].split(',') : [];
 				if (parts[0].includes('/')) {
-					const mount = { Source: parts[0], Destination: parts[1] };
-					if (opts.includes('ro')) mount.ReadOnly = true;
-					const selinux = opts.filter((o) => o === 'Z' || o === 'z');
-					if (selinux.length > 0) mount.options = selinux;
+					const mount = { Type: 'bind', Source: parts[0], Destination: parts[1] };
+					if (opts.length > 0) mount.Options = opts;
 					mounts.push(mount);
 					return;
 				}
