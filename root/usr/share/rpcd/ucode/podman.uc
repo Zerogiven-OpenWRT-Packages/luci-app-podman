@@ -22,7 +22,6 @@
 import { readfile, writefile, popen, stat, chmod, unlink, glob, access } from 'fs';
 import { cursor } from 'uci';
 import { urlencode, ENCODE_FULL } from 'lucihttp'; // ucode-lsp disable
-import { init_enabled, init_action } from 'luci.sys'; // ucode-lsp disable
 import * as podman_socket from 'luci.podman_socket'; // ucode-lsp disable
 import { API_BASE } from 'luci.podman_socket'; // ucode-lsp disable
 import {
@@ -32,6 +31,9 @@ import {
 import {
 	build_request, parse_status, parse_content_length, read_headers
 } from 'luci.podman_http'; // ucode-lsp disable
+
+import { connect } from 'ubus';
+let ubus = connect();
 
 // --- Configuration ---
 
@@ -897,14 +899,17 @@ const methods = {
 			let err = require_param('name', req.args.name) || validate_name(req.args.name);
 			if (err) return { error: err };
 
-			let script_path = init_script_path(req.args.name);
-			let exists = !!stat(script_path);
-			let enabled = false;
-
-			if (exists)
-				enabled = init_enabled(`${INIT_SCRIPT_PREFIX}${req.args.name}`);
-
-			return { exists: exists, enabled: enabled };
+			let name = `${INIT_SCRIPT_PREFIX}${req.args.name}`;
+			return ubus.defer(
+				'rc', 'list', { name: name },
+				function (rc, reply) {
+					if (reply[name] == null) {
+						req.reply({ exists: false, enabled: false });
+					} else {
+						req.reply({ exists: true, enabled: reply[name].enabled });
+					}
+				}
+			);
 		}
 	},
 
@@ -918,12 +923,18 @@ const methods = {
 			if (!stat(script_path))
 				return { error: 'Init script not found. Generate it first.' };
 
+			let name = `${INIT_SCRIPT_PREFIX}${req.args.name}`;
 			let action = (req.args.enabled === true || req.args.enabled === 1) ? 'enable' : 'disable';
-			let rc = init_action(`${INIT_SCRIPT_PREFIX}${req.args.name}`, action);
-			if (rc)
-				return { error: `Failed to ${action} service` };
-
-			return { success: true, enabled: (action === 'enable') };
+			return ubus.defer(
+				'rc', 'init', { name: name, action: action },
+				function (rc, reply) {
+					if (rc == 0) {
+						req.reply({ success: true, enabled: (action === 'enable')});
+					} else {
+						req.reply({ error: `Failed to ${action} service: ${reply}`});
+					}
+				}
+			);
 		}
 	},
 
@@ -938,13 +949,22 @@ const methods = {
 				return { success: true, message: 'Init script does not exist' };
 
 			// Disable before removing
-			init_action(`${INIT_SCRIPT_PREFIX}${req.args.name}`, 'disable');
-			unlink(script_path);
-
-			if (stat(script_path))
-				return { error: 'Failed to remove init script' };
-
-			return { success: true };
+			let name = `${INIT_SCRIPT_PREFIX}${req.args.name}`;
+			return ubus.call(
+				'rc', 'init', { name: name, action: 'disable' },
+				function (rc, reply) {
+					if (rc == 0) {
+						unlink(script_path);
+						if (stat(script_path)) {
+							req.reply({ error: 'failed to remove init script' });
+						} else {
+							req.reply({ success: true });
+						}
+					} else {
+						req.reply({ error: `Failed to disable service: ${reply}` });
+					}
+				}
+			);
 		}
 	}
 };
