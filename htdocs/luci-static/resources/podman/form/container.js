@@ -85,7 +85,9 @@ const PodmanFormContainer = podmanView.form.extend({
 				field.value(name, name);
 			}
 		});
-		field.description = _('Add the container to an existing pod. Network, hostname and port mappings come from the pod\'s infra container.');
+		field.description = _(
+			'Add the container to an existing pod. Network, hostname and port mappings come from the pod\'s infra container.'
+			);
 
 		field = this.section.option(form.Value, 'command', _('Command'));
 		field.placeholder = '/bin/sh';
@@ -115,7 +117,8 @@ const PodmanFormContainer = podmanView.form.extend({
 		field.placeholder = '/host/path:/container/path:ro\nvolume-name:/data';
 		field.rows = 4;
 		field.optional = true;
-		field.description = _('One per line. Format: source:destination[:options]. Options: ro, rw, Z, z');
+		field.description = _(
+			'One per line. Format: source:destination[:options]. Options: ro, rw, Z, z');
 
 		field = this.section.option(form.ListValue, 'network', _('Network'));
 		field.depends('pod', '');
@@ -254,13 +257,20 @@ const PodmanFormContainer = podmanView.form.extend({
 
 				const opts = parts.length > 2 ? parts[2].split(',') : [];
 				if (parts[0].includes('/')) {
-					const mount = { Type: 'bind', Source: parts[0], Destination: parts[1] };
+					const mount = {
+						Type: 'bind',
+						Source: parts[0],
+						Destination: parts[1]
+					};
 					if (opts.length > 0) mount.Options = opts;
 					mounts.push(mount);
 					return;
 				}
 
-				const vol = { Name: parts[0], Dest: parts[1] };
+				const vol = {
+					Name: parts[0],
+					Dest: parts[1]
+				};
 				if (opts.length > 0) vol.Options = opts;
 				volumes.push(vol);
 			});
@@ -269,11 +279,17 @@ const PodmanFormContainer = podmanView.form.extend({
 		}
 		if (!data.pod) {
 			if (data.network === 'host') {
-				spec.netns = { nsmode: 'host' };
+				spec.netns = {
+					nsmode: 'host'
+				};
 			} else if (data.network === 'none') {
-				spec.netns = { nsmode: 'none' };
+				spec.netns = {
+					nsmode: 'none'
+				};
 			} else if (data.network && data.network !== 'bridge') {
-				spec.networks = { [data.network]: {} };
+				spec.networks = {
+					[data.network]: {}
+				};
 			}
 		}
 		if (data.restart !== 'no') spec.restart_policy = data.restart;
@@ -302,11 +318,15 @@ const PodmanFormContainer = podmanView.form.extend({
 		if (data.cpus || data.memory) {
 			spec.resource_limits = {};
 			if (data.cpus) {
-				spec.resource_limits.cpu = { quota: parseFloat(data.cpus) * 100000 };
+				spec.resource_limits.cpu = {
+					quota: parseFloat(data.cpus) * 100000
+				};
 			}
 			if (data.memory) {
 				const memBytes = podmanUtil.format.parseMemory(data.memory);
-				if (memBytes > 0) spec.resource_limits.memory = { limit: memBytes };
+				if (memBytes > 0) spec.resource_limits.memory = {
+					limit: memBytes
+				};
 			}
 		}
 
@@ -326,7 +346,7 @@ const PodmanFormContainer = podmanView.form.extend({
 			if (shouldStart) await container.start();
 		};
 
-		return this.super('handleCreate', [ createFn, _('Container') ]);
+		return this.super('handleCreate', [createFn, _('Container')]);
 	},
 });
 
