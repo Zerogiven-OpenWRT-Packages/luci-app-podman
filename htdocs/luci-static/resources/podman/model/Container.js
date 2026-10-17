@@ -281,12 +281,16 @@ const Container = Model.base.extend({
 		}
 
 		if (bindMounts.length) {
-			spec.mounts = bindMounts.map(m => ({
-				Source: m.Source,
-				Destination: m.Destination,
-				ReadOnly: !m.RW,
-				options: m.Options || []
-			}));
+			spec.mounts = bindMounts.map(m => {
+				const options = (m.Options || []).slice();
+				if (!m.RW) options.push('ro');
+				return {
+					Type: 'bind',
+					Source: m.Source,
+					Destination: m.Destination,
+					Options: options
+				};
+			});
 		}
 
 		// Network
