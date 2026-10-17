@@ -135,7 +135,9 @@ const Container = Model.base.extend({
 	},
 
 	getStateBadge() {
-		return E('div', { class: `badge ${this.getState()}` }, [ this.getState() ]);
+		return E('div', {
+			class: `badge ${this.getState()}`
+		}, [this.getState()]);
 	},
 
 	getAutoUpdateLabel() {
@@ -164,7 +166,9 @@ const Container = Model.base.extend({
 		const networkSettings = this.NetworkSettings || {};
 		const mounts = this.Mounts || [];
 
-		const spec = { image: imageRef };
+		const spec = {
+			image: imageRef
+		};
 
 		// Name (strip leading slash added by Podman inspect)
 		if (this.Name) spec.name = this.Name.replace(/^\//, '');
@@ -179,12 +183,36 @@ const Container = Model.base.extend({
 		if (config.Hostname) spec.hostname = config.Hostname;
 		if (config.StopSignal) {
 			const sigMap = {
-				SIGHUP: 1, SIGINT: 2, SIGQUIT: 3, SIGILL: 4, SIGTRAP: 5,
-				SIGABRT: 6, SIGBUS: 7, SIGFPE: 8, SIGKILL: 9, SIGUSR1: 10,
-				SIGSEGV: 11, SIGUSR2: 12, SIGPIPE: 13, SIGALRM: 14, SIGTERM: 15,
-				SIGCHLD: 17, SIGCONT: 18, SIGSTOP: 19, SIGTSTP: 20, SIGTTIN: 21,
-				SIGTTOU: 22, SIGURG: 23, SIGXCPU: 24, SIGXFSZ: 25, SIGVTALRM: 26,
-				SIGPROF: 27, SIGWINCH: 28, SIGIO: 29, SIGPWR: 30, SIGSYS: 31,
+				SIGHUP: 1,
+				SIGINT: 2,
+				SIGQUIT: 3,
+				SIGILL: 4,
+				SIGTRAP: 5,
+				SIGABRT: 6,
+				SIGBUS: 7,
+				SIGFPE: 8,
+				SIGKILL: 9,
+				SIGUSR1: 10,
+				SIGSEGV: 11,
+				SIGUSR2: 12,
+				SIGPIPE: 13,
+				SIGALRM: 14,
+				SIGTERM: 15,
+				SIGCHLD: 17,
+				SIGCONT: 18,
+				SIGSTOP: 19,
+				SIGTSTP: 20,
+				SIGTTIN: 21,
+				SIGTTOU: 22,
+				SIGURG: 23,
+				SIGXCPU: 24,
+				SIGXFSZ: 25,
+				SIGVTALRM: 26,
+				SIGPROF: 27,
+				SIGWINCH: 28,
+				SIGIO: 29,
+				SIGPWR: 30,
+				SIGSYS: 31,
 			};
 			const sigStr = String(config.StopSignal).toUpperCase().replace(/^SIG/, '');
 			const sigNum = sigMap['SIG' + sigStr] ?? parseInt(config.StopSignal, 10);
@@ -213,9 +241,12 @@ const Container = Model.base.extend({
 		if (hostConfig.CapAdd && hostConfig.CapAdd.length) spec.cap_add = hostConfig.CapAdd;
 		if (hostConfig.CapDrop && hostConfig.CapDrop.length) spec.cap_drop = hostConfig.CapDrop;
 		if (hostConfig.Dns && hostConfig.Dns.length) spec.dns_server = hostConfig.Dns;
-		if (hostConfig.DnsOptions && hostConfig.DnsOptions.length) spec.dns_option = hostConfig.DnsOptions;
-		if (hostConfig.DnsSearch && hostConfig.DnsSearch.length) spec.dns_search = hostConfig.DnsSearch;
-		if (hostConfig.ExtraHosts && hostConfig.ExtraHosts.length) spec.hostadd = hostConfig.ExtraHosts;
+		if (hostConfig.DnsOptions && hostConfig.DnsOptions.length) spec.dns_option = hostConfig
+			.DnsOptions;
+		if (hostConfig.DnsSearch && hostConfig.DnsSearch.length) spec.dns_search = hostConfig
+			.DnsSearch;
+		if (hostConfig.ExtraHosts && hostConfig.ExtraHosts.length) spec.hostadd = hostConfig
+			.ExtraHosts;
 		if (hostConfig.GroupAdd && hostConfig.GroupAdd.length) spec.groups = hostConfig.GroupAdd;
 		if (hostConfig.ShmSize) spec.shm_size = hostConfig.ShmSize;
 		if (hostConfig.OomScoreAdj) spec.oom_score_adj = hostConfig.OomScoreAdj;
@@ -248,7 +279,10 @@ const Container = Model.base.extend({
 				const [port, protocol] = portProto.split('/');
 				const containerPort = parseInt(port, 10);
 				for (const b of bindings) {
-					const m = { container_port: containerPort, protocol: protocol || 'tcp' };
+					const m = {
+						container_port: containerPort,
+						protocol: protocol || 'tcp'
+					};
 					if (b.HostPort) m.host_port = parseInt(b.HostPort, 10);
 					if (b.HostIp && b.HostIp !== '0.0.0.0') m.host_ip = b.HostIp;
 					spec.portmappings.push(m);
@@ -260,9 +294,13 @@ const Container = Model.base.extend({
 		if (hostConfig.Memory > 0 || hostConfig.CpuQuota > 0) {
 			spec.resource_limits = {};
 			if (hostConfig.Memory > 0)
-				spec.resource_limits.memory = { limit: hostConfig.Memory };
+				spec.resource_limits.memory = {
+					limit: hostConfig.Memory
+				};
 			if (hostConfig.CpuQuota > 0) {
-				spec.resource_limits.cpu = { quota: hostConfig.CpuQuota };
+				spec.resource_limits.cpu = {
+					quota: hostConfig.CpuQuota
+				};
 				if (hostConfig.CpuPeriod > 0)
 					spec.resource_limits.cpu.period = hostConfig.CpuPeriod;
 			}
@@ -296,9 +334,13 @@ const Container = Model.base.extend({
 		// Network
 		const nm = hostConfig.NetworkMode || '';
 		if (nm === 'host') {
-			spec.netns = { nsmode: 'host' };
+			spec.netns = {
+				nsmode: 'host'
+			};
 		} else if (nm === 'none') {
-			spec.netns = { nsmode: 'none' };
+			spec.netns = {
+				nsmode: 'none'
+			};
 		} else {
 			const nets = networkSettings.Networks || {};
 			const nonDefault = Object.keys(nets).filter(n => n !== 'bridge' && n !== 'default');
@@ -368,7 +410,13 @@ const Container = Model.base.extend({
 			const portBindings = networkPorts[port] || [];
 
 			if (portBindings.length === 0) {
-				ports.push({ string: port, port: portOnly, protocol: protocol || '', hostPort: null, hostIp: null });
+				ports.push({
+					string: port,
+					port: portOnly,
+					protocol: protocol || '',
+					hostPort: null,
+					hostIp: null
+				});
 				return;
 			}
 
@@ -397,16 +445,28 @@ const Container = Model.base.extend({
 		const cleanUrl = this.Image.split('@')[0];
 		const lastColon = cleanUrl.lastIndexOf(':');
 		const lastSlash = cleanUrl.lastIndexOf('/');
-		return { cleanUrl, lastColon, lastSlash };
+		return {
+			cleanUrl,
+			lastColon,
+			lastSlash
+		};
 	},
 
 	getImageRepo() {
-		const { cleanUrl, lastColon, lastSlash } = this._parseImageRef();
+		const {
+			cleanUrl,
+			lastColon,
+			lastSlash
+		} = this._parseImageRef();
 		return lastColon > lastSlash ? cleanUrl.substring(0, lastColon) : '';
 	},
 
 	getImageTag() {
-		const { cleanUrl, lastColon, lastSlash } = this._parseImageRef();
+		const {
+			cleanUrl,
+			lastColon,
+			lastSlash
+		} = this._parseImageRef();
 		return lastColon > lastSlash ? cleanUrl.substring(lastColon + 1) : 'latest';
 	},
 
@@ -450,15 +510,17 @@ const Container = Model.base.extend({
 			text = constants.ICON.INIT_DISABLED;
 		}
 
-		return E('span', { class: `autostart-status autostart-${status || ''}` }, text);
+		return E('span', {
+			class: `autostart-status autostart-${status || ''}`
+		}, text);
 	},
 
 	isRunning() {
 		const state = this.getState();
-		return this.State?.Running
-			|| state === 'running'
-			|| state === 'starting'
-			|| state === 'unhealthy';
+		return this.State?.Running ||
+			state === 'running' ||
+			state === 'starting' ||
+			state === 'unhealthy';
 	},
 
 	isStopped() {
@@ -534,7 +596,8 @@ const Container = Model.base.extend({
 		if (hasRestartPolicy && (initScriptStatus === 'none' || initScriptStatus === 'missing')) {
 			await this.generateInitScript();
 			await this.enableInitScript();
-		} else if (!hasRestartPolicy && (initScriptStatus === 'enabled' || initScriptStatus === 'disabled')) {
+		} else if (!hasRestartPolicy && (initScriptStatus === 'enabled' || initScriptStatus ===
+				'disabled')) {
 			await this.removeInitScript();
 		}
 	},
@@ -568,25 +631,39 @@ const Container = Model.base.extend({
 	},
 
 	async connect(networkName, payload) {
-		return Network.getSingleton({ name: networkName }).connect(Object.assign({ container: this.getID() }, payload));
+		return Network.getSingleton({
+			name: networkName
+		}).connect(Object.assign({
+			container: this.getID()
+		}, payload));
 	},
 
 	async disconnect(networkName) {
-		return Network.getSingleton({ name: networkName }).disconnect({ Container: this.getID() });
+		return Network.getSingleton({
+			name: networkName
+		}).disconnect({
+			Container: this.getID()
+		});
 	},
 
 	streamTop(onChunk, delay, psargs) {
-		const params = new URLSearchParams({ delay: String(delay || 2) });
+		const params = new URLSearchParams({
+			delay: String(delay || 2)
+		});
 		if (psargs) params.set('ps_args', psargs);
 		const url = L.url('admin/podman/stream/top', this.getID()) + '?' + params;
 		return this._stream(
 			() => url,
-			(data) => { if (!data.raw && !data.Error) onChunk(data); }
+			(data) => {
+				if (!data.raw && !data.Error) onChunk(data);
+			}
 		);
 	},
 
 	streamStats(onChunk, interval) {
-		const params = new URLSearchParams({ interval: String(interval || 2) });
+		const params = new URLSearchParams({
+			interval: String(interval || 2)
+		});
 		const url = L.url('admin/podman/stream/stats', this.getID()) + '?' + params;
 		return this._stream(
 			() => url,
@@ -599,7 +676,12 @@ const Container = Model.base.extend({
 		);
 	},
 
-	streamLogs(onChunk, { tail = 100, since = null, until = null, follow = true } = {}) {
+	streamLogs(onChunk, {
+		tail = 100,
+		since = null,
+		until = null,
+		follow = true
+	} = {}) {
 		if (!follow) {
 			// Historical fetch: single request, stop after completion (no reconnect)
 			let handle;
@@ -636,7 +718,9 @@ const Container = Model.base.extend({
 				return L.url('admin/podman/stream/logs', this.getID()) + '?' + params;
 			},
 			onChunk,
-			() => { reconnectSince = Date.now() / 1000; }
+			() => {
+				reconnectSince = Date.now() / 1000;
+			}
 		);
 	},
 
@@ -660,7 +744,9 @@ const Container = Model.base.extend({
 
 			const imageRef = image.getDisplayTag() || this.Image;
 			if (!imageRef || imageRef.startsWith('<none>'))
-				return { hasUpdate: false };
+				return {
+					hasUpdate: false
+				};
 
 			const localArch = image.Architecture || 'amd64';
 			const localOs = image.Os || 'linux';
@@ -670,7 +756,8 @@ const Container = Model.base.extend({
 			const remoteDigest = findArchDigest(manifest, localArch, localOs);
 
 			const repoDigests = image.RepoDigests || [];
-			const hasUpdate = !!(remoteDigest && !repoDigests.some(rd => rd.includes(remoteDigest)));
+			const hasUpdate = !!(remoteDigest && !repoDigests.some(rd => rd.includes(
+				remoteDigest)));
 
 			return {
 				hasUpdate,
@@ -731,37 +818,58 @@ const Container = Model.base.extend({
 
 		if (wasRunning) {
 			onProgress?.('→ ' + _('Stopping container') + '\n');
-			try { await this.stop(); }
-			catch (e) { throw new Error(_('Stop failed: %s').format(e.message || e)); }
+			try {
+				await this.stop();
+			} catch (e) {
+				throw new Error(_('Stop failed: %s').format(e.message || e));
+			}
 		}
 
 		onProgress?.('→ ' + _('Removing container') + '\n');
-		try { await this.remove(); }
-		catch (e) { throw new Error(_('Remove failed: %s').format(e.message || e)); }
+		try {
+			await this.remove();
+		} catch (e) {
+			throw new Error(_('Remove failed: %s').format(e.message || e));
+		}
 
 		onProgress?.('→ ' + _('Creating container') + '\n');
 		let created;
-		try { created = await ContainerRPC.create(spec); }
-		catch (e) { throw new Error(_('Create failed: %s').format(e.message || e)); }
+		try {
+			created = await ContainerRPC.create(spec);
+		} catch (e) {
+			throw new Error(_('Create failed: %s').format(e.message || e));
+		}
 		if (!created || created.error)
-			throw new Error(_('Create failed: %s').format(created?.error || _('Failed to create container')));
+			throw new Error(_('Create failed: %s').format(created?.error || _(
+				'Failed to create container')));
 
 		if (wasRunning) {
 			onProgress?.('→ ' + _('Starting container') + '\n');
-			try { await ContainerRPC.start(created.Id); }
-			catch (e) { throw new Error(_('Start failed: %s').format(e.message || e)); }
+			try {
+				await ContainerRPC.start(created.Id);
+			} catch (e) {
+				throw new Error(_('Start failed: %s').format(e.message || e));
+			}
 		}
 
 		onProgress?.('→ ' + _('Reinstating init script') + '\n');
-		try { await this._reinstateInitScript(initStatus); }
-		catch (e) { throw new Error(_('Init script reinstate failed: %s').format(e.message || e)); }
+		try {
+			await this._reinstateInitScript(initStatus);
+		} catch (e) {
+			throw new Error(_('Init script reinstate failed: %s').format(e.message || e));
+		}
 
-		onProgress?.('✓ ' + _('Updated to %s').format((newImageId || '').substring(0, 12)) + '\n');
-		return { oldImage: image };
+		onProgress?.('✓ ' + _('Updated to %s').format((newImageId || '').substring(0, 12)) +
+		'\n');
+		return {
+			oldImage: image
+		};
 	},
 
 	async getImage() {
-		const image = Image.getSingleton({ Id: this.ImageID || this.Image });
+		const image = Image.getSingleton({
+			Id: this.ImageID || this.Image
+		});
 		return Image.getSingleton(await image.inspect());
 	},
 
